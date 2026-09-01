@@ -3,40 +3,304 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Bali In Bangalore</title>
+  <title>Bali in Bengaluru — A Cultural Festival</title>
+  <meta name="description" content="Bali in Bengaluru is a 15-day curated cultural festival bringing together traditional performance practices from Bali and India — their shared ritual roots, performative vocabularies, and community-based knowledge. Presented by Param Foundation." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <header class="site-header">
+
+  <!-- Header -->
+  <header class="site-header" id="top">
     <nav class="nav">
-      <a class="brand" href="/">Bali In Bangalore</a>
+      <a class="brand" href="#top">
+        <span class="brand-main">Bali <em>in</em> Bengaluru</span>
+        <span class="brand-sub">A Cultural Festival</span>
+      </a>
+      <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
       <ul class="nav-links">
-        <li><a href="#about">About</a></li>
-        <li><a href="#contact">Contact</a></li>
+        <li><a href="#about">Festival</a></li>
+        <li><a href="#roots">Roots</a></li>
+        <li><a href="#featuring">Featuring</a></li>
+        <li><a href="#events">Events</a></li>
+        <li><a href="#support" class="nav-cta">Support Us</a></li>
       </ul>
     </nav>
   </header>
 
-  <main>
-    <section class="hero">
-      <h1>Bali In Bangalore</h1>
-      <p class="tagline">A new project by Param Foundation.</p>
-      <a class="btn" href="#about">Learn more</a>
-    </section>
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-media">
+      <img src="assets/hero-kecak-sea.jpg" alt="Kecak performance in a circle beside the sea at sunset in Bali" />
+      <div class="hero-scrim"></div>
+    </div>
+    <div class="hero-content">
+      <p class="eyebrow">Param Foundation presents</p>
+      <h1>Bali <em>in</em> Bengaluru</h1>
+      <p class="hero-lead">
+        A curated cultural festival bringing together traditional performance
+        practices from Bali and India — their shared ritual foundations,
+        performative vocabularies, and community-based modes of knowledge.
+      </p>
+      <div class="hero-meta">
+        <div><span class="hero-meta-num">15</span><span class="hero-meta-label">Days</span></div>
+        <div><span class="hero-meta-num">Workshops</span><span class="hero-meta-label">Hands-on learning</span></div>
+        <div><span class="hero-meta-num">Lectures</span><span class="hero-meta-label">&amp; demonstrations</span></div>
+        <div><span class="hero-meta-num">Performances</span><span class="hero-meta-label">Live &amp; collaborative</span></div>
+      </div>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="#events">Explore the festival</a>
+        <a class="btn btn-ghost" href="#support">Become a partner</a>
+      </div>
+    </div>
+  </section>
 
-    <section id="about" class="section">
-      <h2>About</h2>
-      <p>Replace this text with a description of the project.</p>
-    </section>
+  <!-- About -->
+  <section class="section" id="about">
+    <div class="wrap grid-2">
+      <div class="col-text">
+        <p class="eyebrow">The festival</p>
+        <h2>A living dialogue between two temple cultures</h2>
+        <p>
+          Rooted in temple culture, oral traditions, and embodied learning systems,
+          <strong>Bali in Bengaluru</strong> creates a space for artistic exchange,
+          learning, and public engagement. Over fifteen days, master artists from
+          Bali and India share the stage, the workshop, and the classroom.
+        </p>
+        <ul class="fact-list">
+          <li><span>Duration</span> 15 days</li>
+          <li><span>Venues</span> Auditoriums, performance spaces, universities</li>
+          <li><span>Format</span> Workshops, lectures, performances</li>
+        </ul>
+      </div>
+      <div class="col-media">
+        <img src="assets/yakshagana-trio.jpg" alt="Yakshagana performers in elaborate costume and makeup" loading="lazy" />
+      </div>
+    </div>
+  </section>
 
-    <section id="contact" class="section">
-      <h2>Contact</h2>
-      <p>Add your contact details here.</p>
-    </section>
-  </main>
+  <!-- Objectives -->
+  <section class="section section-tint" id="objectives">
+    <div class="wrap">
+      <p class="eyebrow center">Festival objectives</p>
+      <h2 class="center">Why we gather</h2>
+      <div class="cards cards-5">
+        <div class="card-plain"><span class="card-idx">01</span><p>Create a meaningful cross-cultural dialogue between Balinese and Indian performance traditions.</p></div>
+        <div class="card-plain"><span class="card-idx">02</span><p>Foreground traditional knowledge systems rooted in embodiment, apprenticeship, and making.</p></div>
+        <div class="card-plain"><span class="card-idx">03</span><p>Provide hands-on learning for students, practitioners, and young audiences.</p></div>
+        <div class="card-plain"><span class="card-idx">04</span><p>Position performance as a living archive of cultural memory.</p></div>
+        <div class="card-plain"><span class="card-idx">05</span><p>Build sustainable pathways for future collaboration, research, and documentation.</p></div>
+      </div>
+    </div>
+  </section>
 
+  <!-- Roots -->
+  <section class="section" id="roots">
+    <div class="wrap grid-2 reverse">
+      <div class="col-media">
+        <img src="assets/carvings.jpg" alt="Balinese stone temple carvings with frangipani flowers" loading="lazy" />
+      </div>
+      <div class="col-text">
+        <p class="eyebrow">Balinese culture &amp; its Bhāratīya roots</p>
+        <h2>Shared stories, reinterpreted</h2>
+        <p>
+          Balinese culture is a living testament to the deep historical and spiritual
+          connections between the island of Bali and the traditions of Bhārat.
+          Hinduism remains its dominant spiritual framework, and the great epics —
+          the <strong>Ramayana</strong> and <strong>Mahabharata</strong> — are central to it.
+        </p>
+        <p>
+          These epics are core narrative sources for rituals, temple ceremonies,
+          visual arts, dance dramas, shadow puppetry (Wayang Kulit), and seasonal
+          performances across the island — continually reinterpreted and localised
+          in Balinese aesthetics, theology, and practice.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Featuring -->
+  <section class="section section-dark" id="featuring">
+    <div class="wrap grid-2">
+      <div class="col-media">
+        <img src="assets/dibia-mask.jpg" alt="Master artist holding a traditional Balinese Topeng mask" loading="lazy" />
+      </div>
+      <div class="col-text">
+        <p class="eyebrow gold">Featuring</p>
+        <h2>Dr. I&nbsp;Wayan&nbsp;Dibia</h2>
+        <p class="lead-line">Padma Shri awardee &amp; team</p>
+        <p>
+          Dr. I Wayan Dibia is a renowned Balinese artist, scholar, and choreographer
+          known for bridging Balinese performing arts with Bhāratīya epic traditions.
+          Born in Singapadu, Bali, into a family of artists, he trained in dance and
+          music from a young age and later pursued advanced studies in Southeast Asian
+          performing arts, including postgraduate work in the United States.
+        </p>
+        <p>
+          Over his career he has authored several books and choreographed more than
+          <strong>150 works</strong> inspired by the Ramayana and Mahabharata. In 2021 he was
+          awarded the <strong>Padma Shri</strong> by the Government of India for his contributions
+          to the arts and cross-cultural dialogue.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Events -->
+  <section class="section" id="events">
+    <div class="wrap">
+      <p class="eyebrow center">Festival events</p>
+      <h2 class="center">Fifteen days of making, learning &amp; performing</h2>
+
+      <h3 class="group-title">Workshops</h3>
+      <div class="cards cards-2">
+        <article class="card">
+          <div class="card-img"><img src="assets/shadow-bali.jpg" alt="Balinese shadow puppets lit against a screen" loading="lazy" /></div>
+          <div class="card-body">
+            <span class="tag">2 Days</span>
+            <h4>Shadow Puppetry Workshop</h4>
+            <p>An introduction to Balinese and Indian shadow traditions — techniques of light, material, movement, and narration. Participants develop short sequences, and selected performers appear alongside master artists in a live presentation.</p>
+          </div>
+        </article>
+        <article class="card">
+          <div class="card-img"><img src="assets/masks-wall.jpg" alt="A wall of colourful Balinese masks" loading="lazy" /></div>
+          <div class="card-body">
+            <span class="tag">2 Days</span>
+            <h4>Mask-Making Workshop</h4>
+            <p>Exploring Balinese and Indian mask traditions — symbolism, facial geometry, colour, and expression. Hands-on creation of masks using traditional and accessible materials, exhibited as part of the festival display.</p>
+          </div>
+        </article>
+      </div>
+
+      <h3 class="group-title">Academic interactions</h3>
+      <div class="cards cards-2">
+        <article class="card">
+          <div class="card-img"><img src="assets/dance-class.jpg" alt="Students learning Balinese dance in a garden" loading="lazy" /></div>
+          <div class="card-body">
+            <h4>Dance &amp; Movement Classes</h4>
+            <p>Traditional Balinese dance techniques, with a focus on body discipline, expression, and musicality.</p>
+          </div>
+        </article>
+        <article class="card">
+          <div class="card-img"><img src="assets/classical-dance.jpg" alt="Indian classical dancers in formation" loading="lazy" /></div>
+          <div class="card-body">
+            <h4>Lecture–Demonstration Sessions</h4>
+            <p>An introduction to Balinese arts and culture by Dr. Wayan Dibia for university students and faculty, practitioners, researchers, scholars, and heritage enthusiasts across Bengaluru.</p>
+          </div>
+        </article>
+      </div>
+
+      <h3 class="group-title">Performances</h3>
+      <div class="cards cards-3">
+        <article class="card">
+          <div class="card-img"><img src="assets/shadow-india.jpg" alt="Indian shadow puppets depicting a Ramayana scene" loading="lazy" /></div>
+          <div class="card-body">
+            <h4>Shadow Puppetry Collaboration</h4>
+            <p>Indonesian and Indian shadow puppets and stories brought together by master artists — a common thread of Ramayana and Mahabharata.</p>
+          </div>
+        </article>
+        <article class="card">
+          <div class="card-img"><img src="assets/balinese-dance.jpg" alt="Balinese dancers performing at sunset" loading="lazy" /></div>
+          <div class="card-body">
+            <h4>Balinese Dance × Yakshagana</h4>
+            <p>The vocal rhythm and choral structures of Balinese dance meet the percussive, movement-based vocabulary of Yakshagana — bound by the Ramayana.</p>
+          </div>
+        </article>
+        <article class="card">
+          <div class="card-img"><img src="assets/kecak-hanuman.jpg" alt="Kecak dancer as Hanuman at sunset" loading="lazy" /></div>
+          <div class="card-body">
+            <h4>Kecak Performance</h4>
+            <p>The famed “Ramayana Monkey Chant.” A powerful “cak-cak-cak” chorus of seated men builds rhythm and atmosphere without instruments while dancers perform in classical Balinese style.</p>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- Also includes -->
+  <section class="feature-band">
+    <div class="feature-band-media">
+      <img src="assets/kecak-crowd.jpg" alt="Kecak performers reaching towards a central figure" loading="lazy" />
+      <div class="feature-band-scrim"></div>
+    </div>
+    <div class="feature-band-content wrap">
+      <p class="eyebrow gold">The festival will also include</p>
+      <div class="also-grid">
+        <div class="also-item"><h4>Exhibition</h4><p>Masks, textiles, and puppets of Bali on display.</p></div>
+        <div class="also-item"><h4>Food traditions</h4><p>The flavours and rituals of Balinese cuisine.</p></div>
+        <div class="also-item"><h4>Handlooms &amp; textiles</h4><p>Batik and woven traditions across the archipelago.</p></div>
+        <div class="also-item"><h4>Film screenings</h4><p>Selected Indonesian art cinema.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Param Foundation -->
+  <section class="section" id="foundation">
+    <div class="wrap grid-2 reverse">
+      <div class="col-media">
+        <img src="assets/param-building.jpg" alt="Architectural rendering of the Param Foundation centre" loading="lazy" />
+      </div>
+      <div class="col-text">
+        <p class="eyebrow">Presented by</p>
+        <h2>Param Foundation</h2>
+        <p>
+          Param Foundation is a transdisciplinary ecosystem designed to inspire
+          creativity, empower innovation, and celebrate India’s rich cultural,
+          historical, and scientific heritage. Through a network of physical centres
+          and digital platforms, it brings together art, science, history, culture,
+          and technology to transform lives and build communities.
+        </p>
+        <p>
+          <strong>Param Culture</strong> is dedicated to encouraging, organising, and elevating
+          the essence of Bhāratīya culture — connecting practitioners and academicians
+          through research, immersive experiences, storytelling, and innovation, towards
+          a sustainable, interconnected, and globally relevant culture ecosystem.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Support -->
+  <section class="section section-support" id="support">
+    <div class="wrap">
+      <p class="eyebrow center gold">Support us</p>
+      <h2 class="center">Partner with Bali in Bengaluru</h2>
+      <p class="center support-lead">
+        Param Foundation invites generous contributions from corporates, individuals,
+        philanthropic organisations, and patrons of art in organising the festival.
+        Beyond financial support, you can partner in kind — as hospitality, travel,
+        venue, printing, and publicity partners.
+      </p>
+      <div class="cards cards-3 support-cards">
+        <div class="card-plain"><h4>CSR eligible</h4><p>We are eligible to receive CSR donations under Schedule VII — Education, Arts, Heritage, and Innovation.</p></div>
+        <div class="card-plain"><h4>80G benefits</h4><p>All contributions are eligible for Income Tax deduction under Section 80G, with grateful acknowledgement in festival materials.</p></div>
+        <div class="card-plain"><h4>Full compliance</h4><p>We provide complete compliance support, reporting, and co-branding options for institutional partners.</p></div>
+      </div>
+      <div class="support-cta">
+        <p>To learn more about the festival and donor &amp; sponsorship options:</p>
+        <a class="btn btn-primary" href="tel:+917259607121">Call +91 72596 07121</a>
+        <a class="btn btn-ghost" href="https://paramfoundation.org" target="_blank" rel="noopener">paramfoundation.org</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
   <footer class="site-footer">
-    <p>&copy; <span id="year"></span> Param Foundation</p>
+    <div class="wrap footer-inner">
+      <div>
+        <p class="footer-brand">Bali <em>in</em> Bengaluru</p>
+        <p class="footer-sub">A cultural festival by Param Foundation</p>
+      </div>
+      <div class="footer-contact">
+        <a href="https://paramfoundation.org" target="_blank" rel="noopener">paramfoundation.org</a>
+        <a href="tel:+917259607121">+91 72596 07121</a>
+      </div>
+    </div>
+    <p class="footer-copy">&copy; <span id="year"></span> Param Foundation. All rights reserved.</p>
   </footer>
 
   <script src="main.js"></script>
