@@ -1,0 +1,86 @@
+[
+  {
+    "id": "kecak",
+    "title": "Kecak Performance",
+    "category": "Performance",
+    "date": "",
+    "time": "",
+    "venue": "",
+    "status": "announced",
+    "ticketUrl": "",
+    "image": "assets/kecak-hanuman.jpg",
+    "description": "Bali's iconic ritual chant, brought to life through Balinese movement."
+  },
+  {
+    "id": "yakshagana",
+    "title": "Balinese Dance × Yakshagana",
+    "category": "Performance",
+    "date": "",
+    "time": "",
+    "venue": "",
+    "status": "announced",
+    "ticketUrl": "",
+    "image": "assets/balinese-dance.jpg",
+    "description": "Two percussive, choral traditions meet, exploring shared stories."
+  },
+  {
+    "id": "shadow-collab",
+    "title": "Shadow Puppetry",
+    "category": "Performance",
+    "date": "",
+    "time": "",
+    "venue": "",
+    "status": "announced",
+    "ticketUrl": "",
+    "image": "assets/shadow-india.jpg",
+    "description": "Collaborative puppetry performances by master artists of Indonesia and India."
+  },
+  {
+    "id": "shadow-workshop",
+    "title": "Shadow Puppetry Workshop",
+    "category": "Workshop",
+    "date": "",
+    "time": "",
+    "venue": "",
+    "status": "announced",
+    "ticketUrl": "",
+    "image": "assets/shadow-bali.jpg",
+    "description": "An introduction to Balinese and Indian shadow traditions — light, material, movement, and narration."
+  },
+  {
+    "id": "mask-workshop",
+    "title": "Mask-Making Workshop",
+    "category": "Workshop",
+    "date": "",
+    "time": "",
+    "venue": "",
+    "status": "announced",
+    "ticketUrl": "",
+    "image": "assets/masks-wall.jpg",
+    "description": "Exploring Balinese mask traditions — symbolism, facial geometry, colour, and expression."
+  },
+  {
+    "id": "dance-classes",
+    "title": "Dance & Movement Workshops",
+    "category": "Academic",
+    "date": "",
+    "time": "",
+    "venue": "",
+    "status": "announced",
+    "ticketUrl": "",
+    "image": "assets/dance-class.jpg",
+    "description": "Traditional Balinese dance techniques — body discipline, expression, and musicality."
+  },
+  {
+    "id": "lecture-dem",
+    "title": "Lecture–Demonstration Sessions",
+    "category": "Academic",
+    "date": "",
+    "time": "",
+    "venue": "",
+    "status": "announced",
+    "ticketUrl": "",
+    "image": "assets/classical-dance.jpg",
+    "description": "An introduction to Balinese arts and culture by Dr. Wayan Dibia for students, faculty, and practitioners."
+  }
+]

@@ -3,12 +3,53 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Bali in Bengaluru — A Cultural Festival</title>
-  <meta name="description" content="Bali in Bengaluru is an 18-day curated cultural festival bringing together traditional performance practices of Indonesia and India — their shared ritual foundations, performative vocabularies, and community-based knowledge. Presented by Param Foundation." />
+
+  <!-- Primary SEO -->
+  <title>Bali in Bengaluru — A Cultural Festival by Param Foundation</title>
+  <meta name="description" content="Bali in Bengaluru is an 18-day cultural festival bringing together traditional performance practices of Indonesia and India — performances, workshops and talks. Register for updates, browse the calendar, and book your passes." />
+  <link rel="canonical" href="https://p-cult.github.io/bali-in-blr/" />
+  <meta name="theme-color" content="#0e0f12" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Bali in Bengaluru" />
+  <meta property="og:title" content="Bali in Bengaluru — A Cultural Festival" />
+  <meta property="og:description" content="An 18-day festival of Indonesian and Indian performance traditions. Performances, workshops and talks. Register for updates and book your passes." />
+  <meta property="og:url" content="https://p-cult.github.io/bali-in-blr/" />
+  <meta property="og:image" content="https://p-cult.github.io/bali-in-blr/assets/kecak-crowd.jpg" />
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Bali in Bengaluru — A Cultural Festival" />
+  <meta name="twitter:description" content="An 18-day festival of Indonesian and Indian performance traditions. Register for updates and book your passes." />
+  <meta name="twitter:image" content="https://p-cult.github.io/bali-in-blr/assets/kecak-crowd.jpg" />
+
+  <!-- Structured data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Festival",
+    "name": "Bali in Bengaluru",
+    "description": "An 18-day cultural festival bringing together traditional performance practices of Indonesia and India — performances, workshops and talks.",
+    "url": "https://p-cult.github.io/bali-in-blr/",
+    "image": "https://p-cult.github.io/bali-in-blr/assets/kecak-crowd.jpg",
+    "location": {
+      "@type": "Place",
+      "name": "Bengaluru",
+      "address": { "@type": "PostalAddress", "addressLocality": "Bengaluru", "addressRegion": "Karnataka", "addressCountry": "IN" }
+    },
+    "organizer": {
+      "@type": "Organization",
+      "name": "Param Foundation",
+      "url": "https://paramfoundation.org"
+    }
+  }
+  </script>
+
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800;900&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=bold5" />
+  <link rel="stylesheet" href="styles.css?v=hub1" />
 </head>
 <body>
 
@@ -23,10 +64,12 @@
         <span></span><span></span><span></span>
       </button>
       <ul class="nav-links">
-        <li><a href="#about">Festival</a></li>
+        <li><a href="#register">Register</a></li>
+        <li><a href="#calendar">Calendar</a></li>
+        <li><a href="#programme">Programme</a></li>
         <li><a href="#featuring">Featuring</a></li>
-        <li><a href="#events">Events</a></li>
-        <li><a href="#support" class="nav-cta">Support Us</a></li>
+        <li><a href="#partners">Partners</a></li>
+        <li><a href="#register" class="nav-cta">Get updates</a></li>
       </ul>
     </nav>
   </header>
@@ -52,74 +95,94 @@
         <div><span class="hero-meta-num">Talks</span><span class="hero-meta-label">Lectures &amp; demonstrations</span></div>
       </div>
       <div class="hero-actions">
-        <a class="btn btn-primary" href="#events">Explore the festival</a>
-        <a class="btn btn-ghost" href="#support">Become a partner</a>
+        <a class="btn btn-primary" href="#register">Get festival updates</a>
+        <a class="btn btn-ghost" href="#calendar">See the calendar</a>
       </div>
     </div>
   </section>
 
-  <!-- About -->
-  <section class="section" id="about">
+  <!-- Register / Notify -->
+  <section class="section section-tint" id="register">
     <div class="wrap grid-2">
       <div class="col-text">
-        <p class="eyebrow">The festival</p>
-        <h2>A living dialogue between two traditions</h2>
+        <p class="eyebrow">Stay in the loop</p>
+        <h2>Register for updates</h2>
         <p>
-          Rooted in oral traditions and embodied learning systems,
-          <strong>Bali in Bengaluru</strong> creates a space for artistic exchange,
-          learning, and public engagement where master artists and practitioners
-          from Bali and India share the stage.
+          Be the first to know as the programme, dates, and passes are announced.
+          Tell us how you'd like to hear from us and what you're interested in —
+          we'll keep you posted through the season.
         </p>
         <ul class="fact-list">
-          <li><span>Duration</span> 18 days</li>
-          <li><span>Venues</span> Cultural and shared spaces, auditoriums, universities and more</li>
+          <li><span>Announcements</span> New shows &amp; dates as they're confirmed</li>
+          <li><span>Passes</span> Early access to tickets and collection details</li>
+          <li><span>Behind the scenes</span> Workshops, artists, and archives</li>
         </ul>
       </div>
-      <div class="col-media">
-        <img src="assets/yakshagana-trio.jpg" alt="Yakshagana performers in elaborate costume and makeup" loading="lazy" />
+      <div class="col-form">
+        <form class="signup-form" id="signup-form" novalidate>
+          <div class="field">
+            <label for="sf-name">Name <span class="req">*</span></label>
+            <input type="text" id="sf-name" name="name" autocomplete="name" required />
+          </div>
+          <div class="field">
+            <label for="sf-email">Email <span class="req">*</span></label>
+            <input type="email" id="sf-email" name="email" autocomplete="email" required />
+          </div>
+          <div class="field">
+            <label for="sf-phone">Phone (WhatsApp)</label>
+            <input type="tel" id="sf-phone" name="phone" autocomplete="tel" inputmode="tel" placeholder="+91" />
+          </div>
+          <div class="field">
+            <label for="sf-interest">I'm interested in</label>
+            <select id="sf-interest" name="interest">
+              <option value="Everything">Everything</option>
+              <option value="Performances">Performances</option>
+              <option value="Workshops">Workshops</option>
+              <option value="Talks">Talks &amp; lectures</option>
+              <option value="Partnering">Partnering / sponsoring</option>
+            </select>
+          </div>
+          <fieldset class="field field-notify">
+            <legend>Notify me by</legend>
+            <label class="check"><input type="checkbox" name="notify_email" value="Email" checked /> Email</label>
+            <label class="check"><input type="checkbox" name="notify_phone" value="Phone" /> Phone / WhatsApp</label>
+          </fieldset>
+          <label class="check check-consent">
+            <input type="checkbox" name="consent" value="Yes" required />
+            <span>I agree to Param Foundation contacting me about Bali in Bengaluru, and to my details being stored for this purpose. <a href="#" class="quiet">Privacy</a></span>
+          </label>
+          <button type="submit" class="btn btn-primary btn-block">Register</button>
+          <p class="form-note" id="form-note" role="status" aria-live="polite"></p>
+        </form>
       </div>
     </div>
   </section>
 
-  <!-- Objectives -->
-  <section class="section section-tint" id="objectives">
+  <!-- Calendar -->
+  <section class="section" id="calendar">
     <div class="wrap">
-      <p class="eyebrow center">Festival objectives</p>
-      <h2 class="center">Why we gather</h2>
-      <div class="cards cards-3">
-        <div class="card-plain"><span class="card-idx">01</span><p>Shared stories, reinterpreted — a cross-cultural dialogue between Indonesian and Indian traditions.</p></div>
-        <div class="card-plain"><span class="card-idx">02</span><p>To bring knowledge systems to life through hands-on learning and making.</p></div>
-        <div class="card-plain"><span class="card-idx">03</span><p>Position performance as a living archive of cultural memory, fostering exchange, research, and continuity.</p></div>
+      <p class="eyebrow center">Festival calendar</p>
+      <h2 class="center">What's on</h2>
+      <p class="section-intro center">
+        The schedule fills in through September as dates are confirmed. Check back —
+        or register above to be notified the moment a show goes live.
+      </p>
+      <div class="calendar-filters" id="calendar-filters" hidden>
+        <button class="chip is-active" data-filter="all">All</button>
+        <button class="chip" data-filter="Performance">Performances</button>
+        <button class="chip" data-filter="Workshop">Workshops</button>
+        <button class="chip" data-filter="Academic">Talks</button>
+      </div>
+      <div class="calendar-grid" id="calendar-grid" aria-live="polite">
+        <p class="loading">Loading events…</p>
       </div>
     </div>
   </section>
 
-  <!-- Featuring -->
-  <section class="section section-dark" id="featuring">
-    <div class="wrap grid-2">
-      <div class="col-media">
-        <img src="assets/dibia-mask.jpg" alt="Master artist holding a traditional Balinese Topeng mask" loading="lazy" />
-      </div>
-      <div class="col-text">
-        <p class="eyebrow gold">Featuring</p>
-        <h2>Dr. I&nbsp;Wayan&nbsp;Dibia</h2>
-        <p class="lead-line">Padma Shri awardee &amp; team</p>
-        <p>
-          Dr. I Wayan Dibia is a renowned Balinese artist, scholar, and choreographer
-          known for connecting Balinese and Indian performing traditions. With over
-          <strong>150 choreographic works</strong> and several books to his name, his work draws
-          deeply from the Ramayana and Mahabharata. He was awarded the <strong>Padma Shri</strong>
-          by the Government of India in 2021 for his contributions to the arts and
-          cross-cultural dialogue.
-        </p>
-      </div>
-    </div>
-  </section>
-
-  <!-- Events -->
-  <section class="section" id="events">
+  <!-- Programme -->
+  <section class="section section-tint" id="programme">
     <div class="wrap">
-      <p class="eyebrow center">Festival events</p>
+      <p class="eyebrow center">The programme</p>
       <h2 class="center">Eighteen days of performances, learning &amp; making</h2>
 
       <h3 class="group-title">Performances</h3>
@@ -128,7 +191,7 @@
           <div class="card-img"><img src="assets/kecak-hanuman.jpg" alt="Kecak dancer as Hanuman at sunset" loading="lazy" /></div>
           <div class="card-body">
             <h4>Kecak Performance</h4>
-            <p>Performed by master artists, Kecak is one of Bali’s most iconic performance traditions, rooted in ritual trance chants. A powerful chorus of men creates its signature “cak, cak, cak” rhythm, as dancers bring the stories to life through Balinese movement.</p>
+            <p>Performed by master artists, Kecak is one of Bali's most iconic performance traditions, rooted in ritual trance chants. A powerful chorus of men creates its signature “cak, cak, cak” rhythm, as dancers bring the stories to life through Balinese movement.</p>
           </div>
         </article>
         <article class="card">
@@ -185,6 +248,28 @@
     </div>
   </section>
 
+  <!-- Featuring -->
+  <section class="section section-dark" id="featuring">
+    <div class="wrap grid-2">
+      <div class="col-media">
+        <img src="assets/dibia-mask.jpg" alt="Master artist holding a traditional Balinese Topeng mask" loading="lazy" />
+      </div>
+      <div class="col-text">
+        <p class="eyebrow gold">Featuring</p>
+        <h2>Dr. I&nbsp;Wayan&nbsp;Dibia</h2>
+        <p class="lead-line">Padma Shri awardee &amp; team</p>
+        <p>
+          Dr. I Wayan Dibia is a renowned Balinese artist, scholar, and choreographer
+          known for connecting Balinese and Indian performing traditions. With over
+          <strong>150 choreographic works</strong> and several books to his name, his work draws
+          deeply from the Ramayana and Mahabharata. He was awarded the <strong>Padma Shri</strong>
+          by the Government of India in 2021 for his contributions to the arts and
+          cross-cultural dialogue.
+        </p>
+      </div>
+    </div>
+  </section>
+
   <!-- Also includes -->
   <section class="feature-band">
     <div class="feature-band-media">
@@ -202,8 +287,19 @@
     </div>
   </section>
 
+  <!-- Partners -->
+  <section class="section" id="partners">
+    <div class="wrap">
+      <p class="eyebrow center">Partners &amp; supporters</p>
+      <h2 class="center">Made possible together</h2>
+      <div class="partners-grid" id="partners-grid" aria-live="polite">
+        <p class="loading">Loading…</p>
+      </div>
+    </div>
+  </section>
+
   <!-- Param Foundation -->
-  <section class="section" id="foundation">
+  <section class="section section-tint" id="foundation">
     <div class="wrap grid-2 reverse">
       <div class="col-media">
         <img src="assets/param-building.jpg" alt="Architectural rendering of the Param Foundation centre" loading="lazy" />
@@ -213,7 +309,7 @@
         <h2>Param Foundation</h2>
         <p>
           A transdisciplinary ecosystem designed to inspire creativity, empower
-          innovation, and celebrate India’s rich cultural, historical, and scientific
+          innovation, and celebrate India's rich cultural, historical, and scientific
           heritage. Through a network of physical centres and digital platforms, it
           brings together art, science, history, culture, and technology to transform
           lives and build communities.
@@ -233,7 +329,7 @@
     <div class="wrap">
       <p class="eyebrow center gold">Support us</p>
       <h2 class="center">Partner with Bali in Bengaluru</h2>
-      <p class="center support-lead">
+      <p class="support-lead">
         Param Foundation invites contributions from corporates, individuals,
         philanthropic organisations, and patrons of art in organising the festival.
         Beyond financial support, you can partner in kind, as hospitality, travel,
@@ -267,6 +363,6 @@
     <p class="footer-copy">&copy; <span id="year"></span> Param Foundation. All rights reserved.</p>
   </footer>
 
-  <script src="main.js"></script>
+  <script src="main.js?v=hub1"></script>
 </body>
 </html>

@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://p-cult.github.io/bali-in-blr/sitemap.xml
