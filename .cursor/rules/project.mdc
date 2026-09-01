@@ -1,0 +1,46 @@
+---
+description: Bali in Bengaluru festival hub — project context and rules
+alwaysApply: true
+---
+
+# Bali in Bengaluru — project rules for AI assistants
+
+**Read `HANDOVER.md` in the repo root first** — it is the complete brief. This file
+is the quick-reference version.
+
+## What this is
+A campaign hub website for the "Bali in Bengaluru" cultural festival by Param
+Foundation. Plain **HTML + CSS + vanilla JS**, no framework, no build step, no
+dependencies. Hosted on GitHub Pages (auto-deploys on push to `main`).
+Live: https://p-cult.github.io/bali-in-blr/
+
+## File map
+- `index.html` — content & structure (sections marked with HTML comments; each has an `id`)
+- `styles.css` — all styling; **design tokens are in `:root` at the top**; responsive `@media` at the bottom
+- `main.js` — behaviour + the `CONFIG` data-bridge object at the very top
+- `data/events.json`, `data/partners.json` — local stand-ins for Google Sheets
+- `docs/BRIDGE-SETUP.md`, `docs/apps-script/Code.gs` — the backend bridge (not yet connected)
+
+## Architecture
+Data comes from **Google Sheets via a Google Apps Script Web App** ("the bridge").
+Currently the calendar/partners read local JSON and the signup form is in demo mode.
+To go live, set `CONFIG.BRIDGE_URL` and repoint `EVENTS_URL`/`PARTNERS_URL` in
+`main.js` — no other changes. See HANDOVER §3–4.
+
+## Rules
+- Keep it **dependency-free** vanilla JS/CSS. Do not add frameworks, build tools, or
+  npm packages without a strong, stated reason.
+- Styling goes in `styles.css` using classes + `:root` tokens. No inline styles.
+- Content edits go in `index.html`; data-driven content goes in `data/*.json` (later the Sheet).
+- Always `esc()` any sheet/user-supplied value before inserting into HTML (XSS).
+- **Privacy/compliance (Param Foundation):** personal data (emails/phones) may live
+  only in approved systems (Google Workspace / Zoho). Never store PII in the repo,
+  never send it to unapproved third parties, never expose personal rows on the public
+  page — aggregates only. Keep the signup consent checkbox and purpose text (DPDP Act 2023).
+- Prefer the Google + Zoho stack for any new integrations.
+- Conventions: dates `DD MMM YYYY`, currency INR (₹), Indian English. Festival title
+  is exactly "Bali in Bengaluru".
+- After changing CSS/JS, bump the `?v=` query on their `<link>`/`<script>` tags in
+  `index.html` for cache-busting.
+- Run locally with a server (`python3 -m http.server 8000`), not `file://`, because
+  the page `fetch()`es `data/*.json`.
