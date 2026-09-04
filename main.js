@@ -30,9 +30,10 @@ const CONFIG = {
    trackers at all. Only ids and campaign refs are ever sent — never a name,
    email or phone. See docs/ANALYTICS.md. */
 const ANALYTICS = {
-  // Google Tag Manager. Set this alone and a marketer can add or change
-  // GA4, Google Ads, Meta and the rest inside GTM without touching this
-  // file — the site just announces what happened, GTM decides who hears it.
+  // Google Tag Manager is installed as Google's own snippet at the top of
+  // <head> in index.html (GTM-5S6DXF7V), so it loads before anything else.
+  // Left blank here on purpose — setting it would load a second copy.
+  // Everything below announces itself to dataLayer, which GTM reads.
   GTM_ID: "",            // "GTM-XXXXXXX"
 
   // Or wire the tags directly, without GTM:
@@ -203,7 +204,11 @@ function jsonpLoad(url, timeoutMs = 10000) {
     const cb = "__baliCb" + Math.random().toString(36).slice(2);
     const script = document.createElement("script");
     const done = (fn, arg) => {
-      delete window[cb];
+      // A reply can still arrive after we have given up. Leave a harmless
+      // stub behind rather than deleting the callback, or that late script
+      // throws a ReferenceError into the console.
+      window[cb] = function () {};
+      setTimeout(() => { delete window[cb]; }, 60000);
       script.remove();
       clearTimeout(timer);
       fn(arg);
