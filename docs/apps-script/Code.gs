@@ -53,14 +53,15 @@ const FLAVOURS = {
   updates: {
     tab: 'Signups',
     label: 'Festival updates',
-    required: ['name', 'email'],
+    // Answers are required too: every question must be answered.
+    required: ['name', 'email', 'interest', 'notify'],
     // These must match the question ids in data/questions.json.
     fields: ['interest', 'notify']
   },
   volunteer: {
     tab: 'Volunteers',
     label: 'Volunteering',
-    required: ['name', 'email', 'phone'],
+    required: ['name', 'email', 'phone', 'areas', 'availability'],
     fields: ['areas', 'availability']
   }
 };

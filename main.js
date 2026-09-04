@@ -415,6 +415,11 @@ function wireForm(formId, noteId, messages) {
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
+    // Every question must be answered before any details are sent.
+    if (typeof form.onboardingGuard === "function" && !form.onboardingGuard()) {
+      return; // the unanswered card is now on screen, showing its own message
+    }
+
     const problem = validateForm(form);
     if (problem) {
       say(problem, "err");
@@ -692,6 +697,14 @@ function setupOnboarding(shell, questions) {
   stage.addEventListener("change", (e) => {
     const err = cards[index] && cards[index].querySelector(".onboard-error");
     if (err) err.hidden = true;
+
+    // Unticking the last box clears the recorded answer, so a stale one can
+    // never travel with the form.
+    const question = questions[index];
+    if (question && !selected(index).length) {
+      delete answers[question.id];
+      form.elements[question.id].value = "";
+    }
     // A single-answer question has nothing more to say once picked.
     const q = questions[index];
     if (q && q.multi === false && e.target.checked) setTimeout(advance, 260);
@@ -728,6 +741,20 @@ function setupOnboarding(shell, questions) {
     if (e.key === "ArrowRight") advance();
     if (e.key === "ArrowLeft" && index > 0) show(index - 1);
   });
+
+  /* Last line of defence: the form refuses to submit while any question is
+     unanswered, whatever route was taken to reach it. */
+  form.onboardingGuard = function () {
+    for (let i = 0; i < total; i++) {
+      if (!selected(i).length) {
+        show(i);
+        const err = cards[i].querySelector(".onboard-error");
+        if (err) err.hidden = false;
+        return false;
+      }
+    }
+    return true;
+  };
 
   show(0);
 }
