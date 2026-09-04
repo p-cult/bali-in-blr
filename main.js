@@ -12,6 +12,11 @@
 const CONFIG = {
   // Paste your Apps Script Web App URL here, e.g.
   // "https://script.google.com/macros/s/AKfy.../exec"
+  // Deployed and working for READS, but POST is blocked at Google's edge for
+  // this Workspace domain (400 before the script runs; zero doPost executions
+  // logged, while doGet runs fine). Left empty so the forms stay in demo mode
+  // rather than failing for visitors. Paste the URL back in once POST works:
+  // https://script.google.com/macros/s/AKfycbzIpvypHYnNryBO6FuSNjneRQA-IQpK8yD1yTI7Hi5perQG8Ao1gsH7P_LffdT15WcRGw/exec
   BRIDGE_URL: "",
 
   // Used only while BRIDGE_URL is empty.
