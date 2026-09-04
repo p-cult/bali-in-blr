@@ -611,6 +611,11 @@ function validateForm(form) {
     }
   }
 
+  const age = form.elements.age18;
+  if (age && !age.checked) {
+    return "Please confirm you are 18 or over.";
+  }
+
   const consent = form.elements.consent;
   if (consent && !consent.checked) {
     return "Please tick the consent box so we know we may contact you.";

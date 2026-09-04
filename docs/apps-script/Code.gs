@@ -123,6 +123,7 @@ function doPost(e) {
       return json({ ok: false, error: 'Invalid phone' });
     }
     if (!clean(p.consent)) return json({ ok: false, error: 'Consent is required' });
+    if (!clean(p.age18)) return json({ ok: false, error: 'Age confirmation is required' });
 
     const ss = book();
 
@@ -149,7 +150,7 @@ function doPost(e) {
     const ref = cleanRef(p.ref);
     const row = [new Date(), name, phone, email];
     flavour.fields.forEach(function (f) { row.push(clean(p[f])); });
-    row.push(ref, clean(p.consent));
+    row.push(ref, clean(p.consent), clean(p.age18));
     sh.appendRow(row);
 
     // 3. Upsert the person into Master.
@@ -194,7 +195,7 @@ function readReceipt(sid) {
 function flavourHeaders(flavour) {
   return ['Timestamp', 'Full Name', 'Phone', 'Email']
     .concat(flavour.fields.map(titleise))
-    .concat(['Ref', 'Consent']);
+    .concat(['Ref', 'Consent', 'Age 18+']);
 }
 
 /**
@@ -286,6 +287,16 @@ function tab(ss, name, headers) {
     sh.appendRow(headers);
     sh.getRange(1, 1, 1, headers.length).setFontWeight('bold');
     sh.setFrozenRows(1);
+    return sh;
+  }
+  // A tab made before a column was added: fill in the missing headers, so
+  // new rows do not land under blank ones.
+  const width = sh.getLastColumn();
+  if (width < headers.length) {
+    const missing = headers.slice(width);
+    sh.getRange(1, width + 1, 1, missing.length)
+      .setValues([missing])
+      .setFontWeight('bold');
   }
   return sh;
 }
