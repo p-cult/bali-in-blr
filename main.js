@@ -2,24 +2,69 @@
    Bali in Bengaluru — hub front-end
    ------------------------------------------------------------
    DATA BRIDGE CONFIG
-   Phase 1 reads from local JSON files in /data.
-   To go live with the Google Sheets + Apps Script bridge, set
-   BRIDGE_URL to your deployed Web App URL and switch the
-   EVENTS_URL / PARTNERS_URL / STATS_URL lines to the bridge
-   (examples shown). Nothing else needs to change.
+   Set BRIDGE_URL to the deployed Apps Script Web App URL (the
+   one ending in /exec) and everything switches over: signups
+   POST to it, and the calendar/partners/stats read from the
+   Sheet. Leave it "" and the site stays in Phase 1 mode —
+   reading the local files in /data with the form in demo mode.
+   See docs/BRIDGE-SETUP.md.
    ============================================================ */
 const CONFIG = {
-  // Paste your Apps Script Web App URL here when ready, e.g.
+  // Paste your Apps Script Web App URL here, e.g.
   // "https://script.google.com/macros/s/AKfy.../exec"
   BRIDGE_URL: "",
 
-  // Sources. Local now; swap to the bridge later:
-  //   EVENTS_URL:   CONFIG.BRIDGE_URL + "?sheet=events"
-  //   PARTNERS_URL: CONFIG.BRIDGE_URL + "?sheet=partners"
-  EVENTS_URL: "data/events.json",
-  PARTNERS_URL: "data/partners.json",
-  STATS_URL: "", // e.g. CONFIG.BRIDGE_URL + "?sheet=stats"
+  // Used only while BRIDGE_URL is empty.
+  LOCAL_EVENTS_URL: "data/events.json",
+  LOCAL_PARTNERS_URL: "data/partners.json",
 };
+
+/* Where each dataset comes from: the bridge when configured, else local. */
+function sourceFor(sheet, localUrl) {
+  return CONFIG.BRIDGE_URL
+    ? CONFIG.BRIDGE_URL + "?sheet=" + encodeURIComponent(sheet)
+    : localUrl;
+}
+const SOURCES = {
+  events: sourceFor("events", CONFIG.LOCAL_EVENTS_URL),
+  partners: sourceFor("partners", CONFIG.LOCAL_PARTNERS_URL),
+  stats: CONFIG.BRIDGE_URL ? sourceFor("stats", "") : "",
+};
+
+/* ---------- Data loading ----------
+   Apps Script normally allows cross-origin GET, but some browsers/
+   configurations block it. Code.gs also speaks JSONP (?callback=),
+   so fall back to that rather than showing an empty calendar. */
+function jsonpLoad(url, timeoutMs = 10000) {
+  return new Promise((resolve, reject) => {
+    const cb = "__baliCb" + Math.random().toString(36).slice(2);
+    const script = document.createElement("script");
+    const done = (fn, arg) => {
+      delete window[cb];
+      script.remove();
+      clearTimeout(timer);
+      fn(arg);
+    };
+    const timer = setTimeout(() => done(reject, new Error("JSONP timeout")), timeoutMs);
+    window[cb] = (data) => done(resolve, data);
+    script.onerror = () => done(reject, new Error("JSONP failed"));
+    script.src = url + (url.includes("?") ? "&" : "?") + "callback=" + cb;
+    document.head.appendChild(script);
+  });
+}
+
+async function loadJSON(url) {
+  if (!url) throw new Error("No source configured");
+  try {
+    const res = await fetch(url, { cache: "no-store" });
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    return await res.json();
+  } catch (err) {
+    // Only the bridge can answer JSONP; local files cannot.
+    if (!CONFIG.BRIDGE_URL || !url.startsWith(CONFIG.BRIDGE_URL)) throw err;
+    return jsonpLoad(url);
+  }
+}
 
 /* ---------- Footer year ---------- */
 document.getElementById("year").textContent = new Date().getFullYear();
@@ -63,8 +108,7 @@ async function loadCalendar() {
 
   let events = [];
   try {
-    const res = await fetch(CONFIG.EVENTS_URL, { cache: "no-store" });
-    events = await res.json();
+    events = await loadJSON(SOURCES.events);
   } catch (e) {
     grid.innerHTML = '<p class="loading">The calendar will appear here soon.</p>';
     return;
@@ -148,8 +192,7 @@ async function loadPartners() {
 
   let partners = [];
   try {
-    const res = await fetch(CONFIG.PARTNERS_URL, { cache: "no-store" });
-    partners = await res.json();
+    partners = await loadJSON(SOURCES.partners);
   } catch (e) {
     partners = [];
   }
