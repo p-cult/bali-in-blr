@@ -18,41 +18,40 @@
       "title": "How should we reach you?",
       "hint": "Choose as many as you like.",
       "multi": true,
-      "options": ["Email", "WhatsApp", "SMS"]
+      "options": [
+        "Email",
+        "WhatsApp",
+        "SMS"
+      ]
     }
   ],
   "volunteer": [
     {
       "id": "areas",
-      "title": "Where would you like to help?",
-      "hint": "Choose as many as you like — no experience needed.",
+      "title": "Which areas would you be interested in volunteering for?",
+      "hint": "Choose as many as you like.",
       "multi": true,
       "options": [
-        "Front-of-house & audience",
-        "Artist hospitality",
-        "Workshop support",
-        "Photography & documentation",
-        "Setup & pack-down"
+        "Event / workshops — production and coordination",
+        "Audience engagement",
+        "Registration / help desk",
+        "Backstage support",
+        "Hospitality",
+        "Venue / on-ground support",
+        "I'm happy to help wherever needed"
       ]
     },
     {
       "id": "availability",
-      "title": "When are you free?",
-      "hint": "Choose as many as you like.",
-      "multi": true,
-      "options": [
-        "Weekday mornings",
-        "Weekday evenings",
-        "Weekends",
-        "Across the full eighteen days"
-      ]
-    },
-    {
-      "id": "experience",
-      "title": "Have you volunteered at an arts festival before?",
-      "hint": "Either answer is welcome.",
+      "title": "How would you like to volunteer?",
+      "hint": "Choose the one that fits you best.",
       "multi": false,
-      "options": ["Yes, I have", "No — this would be my first"]
+      "options": [
+        "Throughout the festival — 2 weeks",
+        "On weekends only",
+        "On specific days",
+        "I'm flexible"
+      ]
     }
   ]
 }

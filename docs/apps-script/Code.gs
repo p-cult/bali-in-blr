@@ -61,7 +61,7 @@ const FLAVOURS = {
     tab: 'Volunteers',
     label: 'Volunteering',
     required: ['name', 'email', 'phone'],
-    fields: ['areas', 'availability', 'experience']
+    fields: ['areas', 'availability']
   }
 };
 
