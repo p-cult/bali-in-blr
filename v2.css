@@ -59,7 +59,15 @@
    The wordmark is the page's thesis, so it gets the room. */
 .hero-v2 { min-height: min(88vh, 760px); }
 .hero-v2 .hero-content { padding-bottom: clamp(2.5rem, 6vw, 4.5rem); }
-.hero-v2 h1 { font-size: clamp(2.4rem, 11vw, 8rem); }
+/* Bold, and sized to be read rather than to fill the screen. The base rule
+   runs to 9rem; this stops well short so the lead and the numbers below it
+   stay part of the same first impression. */
+.hero-v2 h1 {
+  font-size: clamp(1.9rem, 5vw, 3.6rem);
+  font-weight: 900;
+  letter-spacing: -0.005em;
+  margin-bottom: 1.2rem;
+}
 .hero-kicker {
   display: flex; flex-wrap: wrap; gap: 0.5rem 1.4rem; align-items: baseline;
   margin: 0 0 1.6rem; font-family: var(--display); font-variation-settings: "wdth" 125;
@@ -114,3 +122,35 @@
   padding: 0.4rem 0.7rem; border-radius: 2px; text-decoration: none;
 }
 .v2-badge:hover { background: var(--accent); }
+
+/* ---------- Support, on maroon ----------
+   The first attempt put translucent cards on the red, which went brown, and
+   an orange button on red, which fought it. Maroon is a strong ground: it
+   wants type and rules, not boxes, and a paper-coloured button rather than
+   another warm one. */
+.support-v2 { background: var(--maroon); }
+.support-v2 h2,
+.support-v2 dt { color: var(--ink); }                      /* 12.74 */
+.support-v2 p,
+.support-v2 dd { color: var(--muted); }                    /* 7.41 */
+.support-v2 .eyebrow { color: var(--accent-2); }           /* 7.24 */
+.support-v2 h2 { font-size: clamp(1.8rem, 4.4vw, 3rem); }
+
+/* The three points as a list divided by hairlines, not floating cards. */
+.support-points { margin: 0; display: grid; align-content: start; }
+.support-points > div {
+  padding: 1.15rem 0;
+  border-top: 1px solid rgba(239, 231, 216, 0.16);
+}
+.support-points > div:last-child { border-bottom: 1px solid rgba(239, 231, 216, 0.16); }
+.support-points dt {
+  font-family: var(--display); font-variation-settings: "wdth" 125; font-weight: 800;
+  text-transform: uppercase; font-size: 0.9rem; letter-spacing: 0.02em; margin-bottom: 0.3rem;
+}
+.support-points dd { margin: 0; font-size: 0.92rem; line-height: 1.6; max-width: 46ch; }
+
+/* Paper against the red, rather than a second warm colour fighting it. */
+.btn-paper { background: var(--cream); color: var(--maroon); }
+.btn-paper:hover { background: #FFF; }
+.btn-outline { border: 1px solid rgba(239, 231, 216, 0.4); color: var(--ink); }
+.btn-outline:hover { border-color: var(--ink); background: rgba(239, 231, 216, 0.08); }
