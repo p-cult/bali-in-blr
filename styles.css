@@ -516,10 +516,47 @@ em { font-style: italic; }
 }
 .choice:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-.onboard-error { color: var(--accent); font-size: 0.85rem; margin: 0 0 0.8rem; }
-.onboard-nav { display: flex; gap: 0.6rem; justify-content: flex-end; }
-.onboard-nav .btn { cursor: pointer; border: 1px solid transparent; }
-.onboard-nav .btn-ghost { border-color: var(--line); }
+.onboard-error { color: var(--accent); font-size: 0.85rem; margin: 0.2rem 0 0; }
+
+/* An arrow either side of the question block. */
+.onboard-carousel {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas: "prev stage next";
+  align-items: center;
+  gap: 0.8rem;
+}
+.onboard-stage { grid-area: stage; min-width: 0; }
+.onboard-arrow-prev { grid-area: prev; }
+.onboard-arrow-next { grid-area: next; }
+
+.onboard-arrow {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease, opacity 0.15s ease;
+}
+.onboard-arrow:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+.onboard-arrow:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.onboard-arrow:disabled { opacity: 0.25; cursor: default; }
+.onboard-arrow-next svg { transform: rotate(180deg); }
+/* Keeps its grid space, so the block does not shift when it goes away. */
+.onboard-arrow.is-gone { visibility: hidden; }
+
+/* Final submit sits centred, not stretched across the card. */
+.onboard-signup .btn-block {
+  display: block;
+  width: auto;
+  min-width: 220px;
+  margin-inline: auto;
+}
 
 .onboard-change {
   display: inline-flex;
@@ -541,12 +578,33 @@ em { font-style: italic; }
 
 /* Compact enough that a seven-option question still fits one phone screen. */
 @media (max-width: 560px) {
+  /* No room to flank the card on a phone: the arrows sit beneath it,
+     still one on each side. */
+  .onboard-carousel {
+    /* Equal columns, with each arrow pushed to its own outer edge —
+       "auto" collapses here because the stage spans both columns. */
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+      "stage stage"
+      "prev  next";
+    row-gap: 0.7rem;
+  }
+  .onboard-arrow-prev { justify-self: start; }
+  .onboard-arrow-next { justify-self: end; }
+  .onboard-arrow { width: 48px; height: 48px; }
+  /* On the signup card the arrow row is dead weight — "Change my answers"
+     already goes back — and the space keeps the form on one screen. */
+  .onboard-carousel.is-done { row-gap: 0; }
+  .onboard-carousel.is-done .onboard-arrow { display: none; }
+  .onboard-signup .field { margin-bottom: 0.85rem; }
+  .onboard-signup .check-consent { font-size: 0.82rem; margin-bottom: 0.9rem; }
+  .onboard-change { margin-bottom: 0.9rem; }
   .onboard-card { padding: 1rem; }
   .onboard-question legend { font-size: 1.15rem; margin-bottom: 0.35rem; }
   .onboard-hint { font-size: 0.83rem; margin-bottom: 0.75rem; }
   .onboard-progress { margin-bottom: 0.5rem; }
   .onboard-step { font-size: 0.68rem; margin-bottom: 0.6rem; }
-  .choices { gap: 0.4rem; margin-bottom: 0.8rem; }
+  .choices { gap: 0.4rem; margin-bottom: 0.4rem; }
   .choice {
     padding: 0.6rem 0.8rem;
     gap: 0.6rem;
@@ -554,7 +612,7 @@ em { font-style: italic; }
     line-height: 1.35;
   }
   .choice input { width: 17px; height: 17px; }
-  .page-view .section { padding-top: 1rem; padding-bottom: 1.4rem; }
+  .page-view .section { padding-top: 1rem; padding-bottom: 1rem; }
 }
 
 @media (max-width: 900px) {

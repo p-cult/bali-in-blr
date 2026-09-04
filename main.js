@@ -585,18 +585,42 @@ function setupOnboarding(shell, questions) {
       "<legend>" + esc(q.title || "") + "</legend>" +
       (q.hint ? '<p class="onboard-hint">' + esc(q.hint) + "</p>" : "") +
       '<div class="choices">' + options + "</div>" +
-      '<p class="onboard-error" role="alert" hidden>Please choose at least one to continue.</p>' +
-      '<div class="onboard-nav">' +
-        '<button type="button" class="btn btn-ghost btn-sm" data-onboard="back"' +
-        (i === 0 ? " hidden" : "") + ">Back</button>" +
-        '<button type="button" class="btn btn-primary btn-sm" data-onboard="next">' +
-        (i === total - 1 ? "Continue" : "Next") + "</button>" +
-      "</div>";
+      '<p class="onboard-error" role="alert" hidden>Please choose at least one to continue.</p>';
 
     stage.appendChild(card);
   });
 
   const cards = Array.from(stage.querySelectorAll(".onboard-question"));
+
+  /* One arrow either side of the question block, rather than a pair of
+     buttons inside every card. */
+  const CHEVRON =
+    '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor"' +
+    ' stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+    '<polyline points="15 18 9 12 15 6"></polyline></svg>';
+
+  const carousel = document.createElement("div");
+  carousel.className = "onboard-carousel";
+  const prev = document.createElement("button");
+  prev.type = "button";
+  prev.className = "onboard-arrow onboard-arrow-prev";
+  prev.dataset.onboard = "back";
+  prev.setAttribute("aria-label", "Previous question");
+  prev.innerHTML = CHEVRON;
+  const next = document.createElement("button");
+  next.type = "button";
+  next.className = "onboard-arrow onboard-arrow-next";
+  next.dataset.onboard = "next";
+  next.setAttribute("aria-label", "Next question");
+  next.innerHTML = CHEVRON;
+
+  stage.parentNode.insertBefore(carousel, stage);
+  carousel.appendChild(prev);
+  carousel.appendChild(stage);
+  carousel.appendChild(next);
+  // The signup card joins the question cards in the stage, so it lines up
+  // with them exactly instead of sitting wider and shifting on the last step.
+  stage.appendChild(signup);
 
   /* ----- a hidden input per question, so answers post with the form ----- */
   questions.forEach((q) => {
@@ -619,8 +643,8 @@ function setupOnboarding(shell, questions) {
     return Array.from(cards[i].querySelectorAll("input:checked")).map((el) => el.value);
   }
 
-  function show(next) {
-    index = Math.max(0, Math.min(total, next));
+  function show(to) {
+    index = Math.max(0, Math.min(total, to));
     cards.forEach((c, i) => { c.hidden = i !== index; });
     signup.hidden = index !== total;
 
@@ -630,9 +654,20 @@ function setupOnboarding(shell, questions) {
     if (progress) progress.setAttribute("aria-valuenow", String(pct));
     if (stepLabel) {
       stepLabel.textContent = index === total
-        ? "Almost done — your details"
+        ? "Your details"
         : "Question " + (index + 1) + " of " + total;
     }
+
+    // First card has nowhere back; the signup card has its own submit.
+    // The next arrow keeps its place rather than being removed, so the
+    // question block does not jump sideways on the last step.
+    const done = index === total;
+    prev.disabled = index === 0;
+    next.classList.toggle("is-gone", done);
+    next.setAttribute("aria-hidden", String(done));
+    next.tabIndex = done ? -1 : 0;
+    next.disabled = done;
+    carousel.classList.toggle("is-done", done);
 
     const card = index === total ? signup : cards[index];
     const focusTarget = card.querySelector("legend, h2, input, button");
