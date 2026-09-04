@@ -15,6 +15,8 @@
   --copper: #C87941;     /* copper, lit — rules and edges */
   --copper-ox: #8E4A24;  /* copper, oxidised — reserved for cream grounds */
   --rose: #C9A9A2;       /* rose smoke — charcoal only */
+  --oxblood: #782828;    /* section ground — sampled from the board */
+  --maroon: #500000;     /* section ground, deeper */
   --line: #2C3036;
   --line-soft: rgba(239, 231, 216, 0.09);
   --display: "Archivo", "Arial Narrow", system-ui, sans-serif;
@@ -241,6 +243,7 @@ em { font-style: italic; }
   padding: 1.8rem;
 }
 .section-tint .card-plain { background: var(--bg); }
+.section-support .card-plain { background: rgba(27, 29, 33, 0.6); border-color: rgba(239, 231, 216, 0.12); }
 .card-idx {
   font-family: var(--display); font-weight: 900; font-size: 2.2rem; color: var(--accent);
   display: block; margin-bottom: 0.6rem; line-height: 1;
@@ -306,7 +309,37 @@ em { font-style: italic; }
 .also-item p { color: var(--muted); font-size: 0.9rem; margin: 0; }
 
 /* ===== Support ===== */
-.section-support { background: var(--bg-2); }
+.section-support { background: var(--maroon); }
+
+/* ---------- Coloured section grounds ----------
+   Oxblood and deep maroon from the elements board. Both are dark enough to
+   keep cream type, but they are not interchangeable: on oxblood the orange
+   drops to 3.18 and lit copper to 2.94, so neither may set text there. Each
+   ground therefore restates what its own text is allowed to be. */
+.section-oxblood { background: var(--oxblood); }
+.section-oxblood h2,
+.section-oxblood h3,
+.section-oxblood h4 { color: var(--ink); }                 /* 8.01 */
+.section-oxblood p { color: var(--muted); }                /* 4.66 */
+.section-oxblood p strong,
+.section-oxblood .eyebrow,
+.section-oxblood .lead-line { color: var(--accent-2); }    /* 4.55 */
+/* Orange is unreadable here, so a link carries a copper underline instead. */
+.section-oxblood a:not(.btn) { color: var(--ink); box-shadow: inset 0 -2px 0 var(--accent-2); }
+.section-oxblood a:not(.btn):hover { color: var(--accent-2); box-shadow: inset 0 -2px 0 var(--ink); }
+.section-oxblood .card-plain { background: rgba(27, 29, 33, 0.55); border-color: rgba(239, 231, 216, 0.14); }
+
+/* Maroon is darker and holds everything, orange included. */
+.section-maroon { background: var(--maroon); }
+.section-maroon h2,
+.section-maroon h3,
+.section-maroon h4 { color: var(--ink); }                  /* 12.74 */
+.section-maroon p { color: var(--muted); }                 /* 7.41 */
+.section-maroon p strong,
+.section-maroon .eyebrow,
+.section-maroon .lead-line { color: var(--accent-2); }     /* 7.24 */
+.section-maroon .card-plain { background: rgba(27, 29, 33, 0.6); border-color: rgba(239, 231, 216, 0.12); }
+
 .support-lead { max-width: 48rem; margin: 0 auto 1rem; text-align: center; font-size: 1.1rem; color: var(--muted); }
 .support-cards { margin-top: 2.6rem; }
 .support-cards .card-plain h4 { color: var(--accent-2); }
