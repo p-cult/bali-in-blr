@@ -183,7 +183,10 @@ A server is required (not file://) because the page `fetch()`es the JSON in `dat
       Unused images `assets/carvings.jpg` and `assets/batik.jpg` are available.
 - [ ] **Analytics/marketing:** add GA4 and/or Meta Pixel snippets in `<head>`
       (IDs not yet provided). UTM links from campaigns work out of the box.
-- [ ] **Custom domain** (optional): configure in repo Settings ▸ Pages + a CNAME.
+- [ ] **Custom domain**: moving to `bali-in-blr.paramfoundation.org`. The repo
+      side is done (`CNAME` file, and all absolute URLs repointed). Waiting on
+      one DNS record — send `docs/DOMAIN-SETUP.md` to whoever manages
+      paramfoundation.org, and push only after they confirm it is in place.
 - [ ] **Privacy policy:** the consent checkbox links to a `#` placeholder — point it
       at a real privacy page.
 

@@ -19,7 +19,8 @@ the single source of truth; always build forward from the latest `main`.
 Campaign hub website for the **"Bali in Bengaluru"** festival by **Param
 Foundation**. Plain **HTML + CSS + vanilla JS**, no framework, no build step, no
 dependencies. Hosted on **GitHub Pages**, auto-deploys on push to `main`.
-- Live: https://p-cult.github.io/bali-in-blr/
+- Live: https://p-cult.github.io/bali-in-blr/ (moving to
+  https://bali-in-blr.paramfoundation.org — see `docs/DOMAIN-SETUP.md`)
 - Repo: https://github.com/p-cult/bali-in-blr
 
 ## File map
