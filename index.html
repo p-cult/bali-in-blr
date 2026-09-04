@@ -69,6 +69,7 @@
         <li><a href="#programme">Programme</a></li>
         <li><a href="#featuring">Featuring</a></li>
         <li><a href="#partners">Partners</a></li>
+        <li><a href="#volunteer">Volunteer</a></li>
         <li><a href="#register" class="nav-cta">Get updates</a></li>
       </ul>
     </nav>
@@ -119,7 +120,8 @@
         </ul>
       </div>
       <div class="col-form">
-        <form class="signup-form" id="signup-form" novalidate>
+        <form class="signup-form" id="signup-form" data-require="name email" novalidate>
+          <input type="hidden" name="flavour" value="updates" />
           <div class="field">
             <label for="sf-name">Name <span class="req">*</span></label>
             <input type="text" id="sf-name" name="name" autocomplete="name" required />
@@ -324,6 +326,58 @@
     </div>
   </section>
 
+  <!-- Volunteer -->
+  <section class="section" id="volunteer">
+    <div class="wrap grid-2">
+      <div class="col-text">
+        <p class="eyebrow">Get involved</p>
+        <h2>Volunteer with us</h2>
+        <p>
+          Bali in Bengaluru is built by the people who show up. Over eighteen days
+          we need hands for front-of-house, artist hospitality, workshop support,
+          documentation, and setup — no prior experience needed, just time and care.
+        </p>
+        <ul class="fact-list">
+          <li><span>Who</span> Students, artists, and anyone curious about the work</li>
+          <li><span>What</span> Front-of-house, hospitality, workshops, documentation</li>
+          <li><span>Next</span> Register below — our team will call you with the details</li>
+        </ul>
+      </div>
+      <div class="col-form">
+        <form class="signup-form" id="volunteer-form"
+              data-require="name email phone" data-fullname="true" novalidate>
+          <input type="hidden" name="flavour" value="volunteer" />
+          <div class="field">
+            <label for="vf-name">Full name <span class="req">*</span></label>
+            <input type="text" id="vf-name" name="name" autocomplete="name"
+                   placeholder="First and last name" required />
+          </div>
+          <div class="field">
+            <label for="vf-email">Email <span class="req">*</span></label>
+            <input type="email" id="vf-email" name="email" autocomplete="email"
+                   placeholder="you@example.com" required />
+          </div>
+          <div class="field">
+            <label for="vf-phone">Phone / WhatsApp <span class="req">*</span></label>
+            <input type="tel" id="vf-phone" name="phone" autocomplete="tel"
+                   inputmode="tel" placeholder="+91 98450 12345" required />
+          </div>
+          <label class="check check-consent">
+            <input type="checkbox" name="consent" value="Yes" required />
+            <span>
+              I agree to be contacted by the Param Foundation team about volunteering
+              at Bali in Bengaluru, and to my name, email, and phone number being stored
+              for this purpose. By clicking Submit I give my permission.
+              <a href="#" class="quiet">Privacy</a>
+            </span>
+          </label>
+          <button type="submit" class="btn btn-primary btn-block">Submit</button>
+          <p class="form-note" id="volunteer-note" role="status" aria-live="polite"></p>
+        </form>
+      </div>
+    </div>
+  </section>
+
   <!-- Support -->
   <section class="section section-support" id="support">
     <div class="wrap">
@@ -363,6 +417,6 @@
     <p class="footer-copy">&copy; <span id="year"></span> Param Foundation. All rights reserved.</p>
   </footer>
 
-  <script src="main.js?v=hub2"></script>
+  <script src="main.js?v=hub3"></script>
 </body>
 </html>

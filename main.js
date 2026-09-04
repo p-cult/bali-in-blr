@@ -217,55 +217,135 @@ async function loadPartners() {
   }).join("");
 }
 
-/* ---------- Signup form ---------- */
-(function signup() {
-  const form = document.getElementById("signup-form");
-  const note = document.getElementById("form-note");
-  if (!form) return;
+/* ---------- Forms ----------
+   Every form declares a `flavour` (its purpose) via a hidden input. The
+   bridge stores it on that flavour's own tab and upserts the person into
+   the Master contact registry, recording which flavour they came from. */
+
+const VALID = {
+  /* A full name: at least two words, letters only (plus . ' -). */
+  fullName: (v) => /^[\p{L}][\p{L}.'-]*(\s+[\p{L}][\p{L}.'-]*)+$/u.test(v.trim()),
+  name: (v) => v.trim().length >= 2,
+  email: (v) => /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(v.trim()),
+  phone: (v) => {
+    let d = v.replace(/\D/g, "");
+    if (d.length > 10 && d.startsWith("91")) d = d.slice(2);
+    if (d.length === 11 && d.startsWith("0")) d = d.slice(1);
+    if (d.length === 10) return /^[6-9]\d{9}$/.test(d); // Indian mobile
+    return d.length >= 11 && d.length <= 15;            // international
+  },
+};
+
+/* Validate one form. Returns an error message, or "" when valid. */
+function validateForm(form) {
+  const get = (n) => (form.elements[n] ? String(form.elements[n].value || "") : "");
+  const need = (form.dataset.require || "").split(/\s+/).filter(Boolean);
+
+  for (const field of need) {
+    const value = get(field);
+    if (!value.trim()) {
+      return field === "name" ? "Please enter your full name."
+        : field === "email" ? "Please enter your email address."
+        : "Please enter your phone number.";
+    }
+    if (field === "name" && form.dataset.fullname === "true" && !VALID.fullName(value)) {
+      return "Please enter your full name (first and last).";
+    }
+    if (field === "name" && !VALID.name(value)) return "Please enter your name.";
+    if (field === "email" && !VALID.email(value)) {
+      return "That email address doesn't look right — please check it.";
+    }
+    if (field === "phone" && !VALID.phone(value)) {
+      return "That phone number doesn't look right — please enter a 10-digit mobile number.";
+    }
+  }
+
+  const consent = form.elements.consent;
+  if (consent && !consent.checked) {
+    return "Please tick the consent box so we know we may contact you.";
+  }
+  return "";
+}
+
+function wireForm(formId, noteId, messages) {
+  const form = document.getElementById(formId);
+  const note = document.getElementById(noteId);
+  if (!form || !note) return;
+
+  const say = (text, kind) => {
+    note.textContent = text;
+    note.className = "form-note" + (kind ? " " + kind : "");
+  };
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
-    note.className = "form-note";
 
-    if (!form.checkValidity()) {
-      form.reportValidity();
+    const problem = validateForm(form);
+    if (problem) {
+      say(problem, "err");
       return;
     }
 
     const data = Object.fromEntries(new FormData(form).entries());
     const btn = form.querySelector('button[type="submit"]');
+    const label = btn.textContent;
     btn.disabled = true;
-    btn.textContent = "Registering…";
+    btn.textContent = "Submitting…";
+    say("", "");
+
+    const done = () => {
+      btn.disabled = false;
+      btn.textContent = label;
+    };
 
     // No bridge configured yet → front-end demo mode.
     if (!CONFIG.BRIDGE_URL) {
-      note.textContent = "Thanks! Your registration form is ready — it will start saving once the data bridge is connected.";
-      note.classList.add("ok");
+      say(messages.demo, "ok");
       form.reset();
-      btn.disabled = false;
-      btn.textContent = "Register";
+      done();
       return;
     }
 
+    const body = new URLSearchParams(data).toString();
+    const headers = { "Content-Type": "application/x-www-form-urlencoded" };
+
     try {
-      await fetch(CONFIG.BRIDGE_URL, {
-        method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams(data).toString(),
-      });
-      note.textContent = "Thank you for registering — we'll be in touch with festival updates.";
-      note.classList.add("ok");
-      form.reset();
+      // Read the reply where we can, so duplicates get an honest message.
+      const res = await fetch(CONFIG.BRIDGE_URL, { method: "POST", headers, body });
+      const out = await res.json();
+      if (out.ok === false) throw new Error(out.error || "Rejected");
+      say(out.duplicate ? messages.duplicate : messages.success, "ok");
+      if (!out.duplicate) form.reset();
     } catch (err) {
-      note.textContent = "Sorry, something went wrong. Please try again, or call +91 90350 34725.";
-      note.classList.add("err");
+      // Some browsers block reading a cross-origin Apps Script reply. Resend
+      // opaquely: the row still saves and the bridge still de-duplicates, we
+      // just cannot tell the user whether it was a duplicate.
+      try {
+        await fetch(CONFIG.BRIDGE_URL, { method: "POST", mode: "no-cors", headers, body });
+        say(messages.success, "ok");
+        form.reset();
+      } catch (err2) {
+        say(messages.failure, "err");
+      }
     } finally {
-      btn.disabled = false;
-      btn.textContent = "Register";
+      done();
     }
   });
-})();
+}
+
+wireForm("signup-form", "form-note", {
+  success: "Thank you for registering — we'll be in touch with festival updates.",
+  duplicate: "You're already on the list — we have your details and will keep you posted.",
+  demo: "Thanks! Your registration form is ready — it will start saving once the data bridge is connected.",
+  failure: "Sorry, something went wrong. Please try again, or call +91 90350 34725.",
+});
+
+wireForm("volunteer-form", "volunteer-note", {
+  success: "Your response has been recorded. Our team will connect with you soon using the details you've shared.",
+  duplicate: "You've already registered to volunteer — your response is with us and our team will connect with you soon.",
+  demo: "Your response has been recorded. Our team will connect with you soon using the details you've shared.",
+  failure: "Sorry, we couldn't record your response. Please try again, or call +91 90350 34725.",
+});
 
 /* ---------- Boot ---------- */
 loadCalendar();

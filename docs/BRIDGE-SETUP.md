@@ -13,11 +13,23 @@ Time: ~15 minutes. No cost.
 
 1. In the Foundation's Google Drive, create a new **Google Sheet** named
    `Bali in Bengaluru — Hub Data`.
-2. Create four tabs (bottom-left) named exactly:
-   - `Signups`
+2. Create the tabs you fill in by hand:
    - `Events`
    - `Partners`
-   - `Stats`
+   - `Stats` (optional)
+
+The **contact tabs are created automatically** on the first submission, with their
+header rows — you do not need to make them:
+
+| Tab | What it holds |
+| --- | --- |
+| `Master` | One row per **person**, deduplicated. `First seen, Full Name, Phone, Email, Sources, Submissions, Last seen, Consent` |
+| `Signups` | Every "register for updates" submission |
+| `Volunteers` | Every volunteering submission |
+
+**`Sources`** is the column that records where a contact came from — a person who
+registers for updates and later volunteers stays **one row**, with
+`Festival updates, Volunteering` in `Sources` and `Submissions` at 2.
 
 ### Column headers (row 1) — must match exactly
 
@@ -40,12 +52,31 @@ name | logo | url | tier
 ```
 key | value
 ```
-e.g. a row `attended | 540`. (`registered` is counted automatically.)
-
-**Signups** — leave empty; the script creates its header row on first submission:
-`Timestamp, Name, Email, Phone, Interest, NotifyEmail, NotifyPhone, Consent`.
+e.g. a row `attended | 540`. (Per-flavour counts are added automatically.)
 
 ---
+
+## Flavours (one tab per purpose)
+
+Each form on the site declares a **flavour** — its purpose — in a hidden field.
+The bridge writes the submission to that flavour's own tab and upserts the person
+into `Master`. Currently:
+
+| Flavour | Tab | Required fields |
+| --- | --- | --- |
+| `updates` | `Signups` | name, email |
+| `volunteer` | `Volunteers` | name, email, phone (all mandatory) |
+
+To add a flavour later (say, `workshop-interest`), add one entry to the `FLAVOURS`
+block at the top of `Code.gs` and give the new form a matching
+`<input type="hidden" name="flavour" value="…">`. Nothing else changes.
+
+### Duplicate handling
+A person is matched on **name + phone**, or **name + email** (phone numbers are
+normalised, so `+91 98450 12345`, `09845012345` and `9845012345` are the same
+person). Submitting the *same flavour* twice is rejected and the site tells the
+visitor we already have their response. Arriving through a *different* flavour is
+not a duplicate — it adds a source to their existing `Master` row.
 
 ## Step 2 — Add the Apps Script
 
@@ -78,34 +109,38 @@ e.g. a row `attended | 540`. (`registered` is counted automatically.)
 
 ## Step 4 — Wire the site
 
-In `main.js`, edit the `CONFIG` block at the top:
+In `main.js`, set the one value in the `CONFIG` block at the top:
 
 ```js
 const CONFIG = {
   BRIDGE_URL: "https://script.google.com/macros/s/XXXXXXXX/exec", // your /exec URL
-  EVENTS_URL:   "https://script.google.com/macros/s/XXXXXXXX/exec?sheet=events",
-  PARTNERS_URL: "https://script.google.com/macros/s/XXXXXXXX/exec?sheet=partners",
-  STATS_URL:    "https://script.google.com/macros/s/XXXXXXXX/exec?sheet=stats",
+  ...
 };
 ```
 
-Bump the cache-busting version on the script/style tags in `index.html`
-(e.g. `main.js?v=hub2`), commit, and push. Done.
+That single URL is the switch: the events, partners and stats sources are all
+derived from it. While it is empty the site runs on the local files in `/data`
+with the forms in demo mode.
 
----
+Bump the cache-busting version on the script tag in `index.html`
+(e.g. `main.js?v=hub4`), commit, and push. Done.
 
 ## Step 5 — Test
 
-- **Signups:** submit the form on the live site → a row should appear in `Signups`.
+- **Signups:** submit the updates form on the live site → a row appears in
+  `Signups` **and** in `Master` with `Festival updates` as the source.
+- **Volunteers:** submit the volunteer form → a row in `Volunteers`, and the same
+  person in `Master` (source `Volunteering`). Submit it again with the same name
+  and phone → no new row, and the site says we already have the response.
 - **Calendar:** add/edit a row in `Events` → reload the site; it should show.
 - **Partners:** add a row in `Partners` → reload; the logo grid should populate.
 
 ### If the calendar/partners don't load (CORS)
-Cross-origin `GET` to Apps Script normally works with `fetch`. If a browser blocks
-it, switch those reads to **JSONP** (the script already supports a `callback`
-param): append `&callback=?`-style handling, or ask the developer to swap the two
-`fetch` reads in `main.js` for a small JSONP loader. Signups (POST) are unaffected
-because they use `mode: "no-cors"`.
+Handled automatically — no action needed. Cross-origin `GET` to Apps Script
+normally works with `fetch`; if a browser blocks it, `main.js` retries the read
+over **JSONP** (`?callback=`), which `Code.gs` speaks. Form submissions likewise
+fall back to an opaque `no-cors` POST: the row still saves and the bridge still
+de-duplicates, we just can't tell the visitor it was a duplicate in that case.
 
 ---
 
@@ -113,7 +148,11 @@ because they use `mode: "no-cors"`.
 
 - Personal data (emails, phones) stays in the Foundation's Google Workspace. The
   site only reads back **aggregates** via `?sheet=stats` — never personal rows.
-- Keep the signup **consent** checkbox and purpose text (DPDP Act 2023).
+- Keep every form's **consent** checkbox and purpose text (DPDP Act 2023). The
+  consent wording is stored alongside each submission.
+- `Master` is the single contact registry; `Sources` records the purpose each
+  person was collected for. Do not repurpose a contact beyond the purpose they
+  consented to.
 - To email/SMS registrants later, export/segment from the sheet into **Zoho
   Campaigns** (email) or an approved SMS/WhatsApp tool — the approved stack.
 - Anyone editing the sheet can now update the site's calendar and partners with no
