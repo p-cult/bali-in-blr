@@ -31,6 +31,42 @@ const SOURCES = {
   stats: CONFIG.BRIDGE_URL ? sourceFor("stats", "") : "",
 };
 
+/* ---------- Campaign source ----------
+   Each signup link can carry where it was shared, so the sheet records
+   "Volunteering (instagram-bio)" rather than just "Volunteering":
+
+     .../#volunteer?ref=instagram-bio      (ref inside the hash)
+     .../?ref=poster-qr#volunteer          (ordinary query string)
+     .../?utm_source=instagram#volunteer   (UTM links work too)
+
+   Remembered for the visit, so it still applies if the visitor browses
+   the page first and signs up a few clicks later. */
+const REF_KEY = "bali.ref";
+
+function readRef() {
+  const params = new URLSearchParams(location.search);
+  // Also accept a query tacked onto the hash, e.g. #volunteer?ref=x
+  const hashQuery = location.hash.indexOf("?");
+  if (hashQuery !== -1) {
+    new URLSearchParams(location.hash.slice(hashQuery + 1)).forEach((v, k) => {
+      if (!params.has(k)) params.set(k, v);
+    });
+  }
+
+  const ref = params.get("ref") || params.get("utm_source") || "";
+  const campaign = params.get("utm_campaign") || "";
+  const found = [ref, campaign].filter(Boolean).join("/");
+
+  try {
+    if (found) sessionStorage.setItem(REF_KEY, found);
+    return found || sessionStorage.getItem(REF_KEY) || "";
+  } catch (err) {
+    return found; // private browsing can refuse storage
+  }
+}
+
+const CAMPAIGN_REF = readRef();
+
 /* ---------- Data loading ----------
    Apps Script normally allows cross-origin GET, but some browsers/
    configurations block it. Code.gs also speaks JSONP (?callback=),
@@ -91,7 +127,7 @@ async function loadJSON(url) {
     window.scrollTo({ top: restoreScrollTo, behavior: "instant" });
     if (lastFocus && document.contains(lastFocus)) lastFocus.focus();
     lastFocus = null;
-    if (!silent && KEYS.indexOf(location.hash.slice(1)) !== -1) {
+    if (!silent && KEYS.indexOf(location.hash.slice(1).split("?")[0]) !== -1) {
       history.replaceState(null, "", location.pathname + location.search);
     }
   }
@@ -117,14 +153,15 @@ async function loadJSON(url) {
   }
 
   function route() {
-    const id = location.hash.slice(1);
+    // "#volunteer?ref=instagram-bio" still routes to the volunteer view.
+    const id = location.hash.slice(1).split("?")[0];
     if (KEYS.indexOf(id) !== -1) open(id); else close({ silent: true });
   }
 
   document.addEventListener("click", (e) => {
     // Any link to a view: note the scroll position before the hash moves.
     const link = e.target.closest('a[href^="#"]');
-    if (link && KEYS.indexOf(link.getAttribute("href").slice(1)) !== -1) {
+    if (link && KEYS.indexOf(link.getAttribute("href").slice(1).split("?")[0]) !== -1) {
       pendingScroll = window.scrollY;
     }
 
@@ -132,7 +169,8 @@ async function loadJSON(url) {
     if (!back) return;
     e.preventDefault();
     // Prefer real Back so the view leaves no dead entry in history.
-    if (KEYS.indexOf(location.hash.slice(1)) !== -1 && history.length > 1) history.back();
+    const openId = location.hash.slice(1).split("?")[0];
+    if (KEYS.indexOf(openId) !== -1 && history.length > 1) history.back();
     else close();
   });
 
@@ -193,7 +231,9 @@ async function loadCalendar() {
   }
 
   if (!Array.isArray(events) || events.length === 0) {
-    grid.innerHTML = '<p class="loading">Dates are being confirmed — register above to be notified.</p>';
+    grid.innerHTML =
+      '<p class="loading">Dates are being confirmed — ' +
+      '<a class="text-link" href="#register">register for updates</a> to be notified.</p>';
     return;
   }
 
@@ -382,6 +422,7 @@ function wireForm(formId, noteId, messages) {
     }
 
     const data = Object.fromEntries(new FormData(form).entries());
+    if (CAMPAIGN_REF) data.ref = CAMPAIGN_REF;
     const btn = form.querySelector('button[type="submit"]');
     const label = btn.textContent;
     btn.disabled = true;

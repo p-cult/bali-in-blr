@@ -111,13 +111,16 @@ function doPost(e) {
 
     // 2. Record the submission on the flavour's own tab.
     const sh = tab(ss, flavour.tab, flavourHeaders(flavour));
+    const ref = cleanRef(p.ref);
     const row = [new Date(), name, phone, email];
     flavour.fields.forEach(function (f) { row.push(clean(p[f])); });
-    row.push(clean(p.consent));
+    row.push(ref, clean(p.consent));
     sh.appendRow(row);
 
     // 3. Upsert the person into Master.
-    upsertMaster(ss, name, phone, email, flavour.label, clean(p.consent));
+    // Source reads "Volunteering (instagram-bio)" when a campaign link was used.
+    const source = ref ? flavour.label + ' (' + ref + ')' : flavour.label;
+    upsertMaster(ss, name, phone, email, source, clean(p.consent));
 
     // 4. Leave a receipt the browser can look up to confirm this landed.
     logReceipt(ss, sid, key, 'saved');
@@ -156,7 +159,15 @@ function readReceipt(sid) {
 function flavourHeaders(flavour) {
   return ['Timestamp', 'Full Name', 'Phone', 'Email']
     .concat(flavour.fields.map(titleise))
-    .concat(['Consent']);
+    .concat(['Ref', 'Consent']);
+}
+
+/**
+ * Which link brought this person in, e.g. "instagram-bio". Kept short and
+ * tidy so the Sources column stays readable.
+ */
+function cleanRef(v) {
+  return clean(v).replace(/[^\w .:@/-]/g, '').slice(0, 60);
 }
 
 /** One row per person; a returning person gains a source rather than a new row. */

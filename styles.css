@@ -309,6 +309,32 @@ em { font-style: italic; }
 .footer-copy { text-align: center; color: var(--muted-2); font-size: 0.78rem; margin: 2.6rem 0 0; padding-top: 1.8rem; border-top: 1px solid var(--line); }
 
 /* ===== Section intro ===== */
+/* Inline links in body copy. Also catches prose links added later, so a
+   new one never lands as an unstyled browser-blue default. */
+.text-link,
+.section-intro a:not(.btn),
+.col-text p a:not(.btn),
+.card-body p a:not(.btn) {
+  color: var(--ink);
+  text-decoration: none;
+  font-weight: 600;
+  box-shadow: inset 0 -2px 0 var(--accent);
+  transition: color 0.15s ease, box-shadow 0.15s ease;
+}
+.text-link:hover,
+.section-intro a:not(.btn):hover,
+.col-text p a:not(.btn):hover,
+.card-body p a:not(.btn):hover {
+  color: var(--accent);
+  box-shadow: inset 0 -2px 0 var(--accent-2);
+}
+.text-link:focus-visible,
+.section-intro a:not(.btn):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
 .section-intro { max-width: 44rem; margin: 0 auto; color: var(--muted); font-size: 1.05rem; }
 .section-intro.center { text-align: center; }
 

@@ -72,6 +72,37 @@ To add a flavour later (say, `workshop-interest`), add one entry to the `FLAVOUR
 block at the top of `Code.gs` and give the new form a matching
 `<input type="hidden" name="flavour" value="…">`. Nothing else changes.
 
+### Share links (one per form, with campaign tracking)
+
+Every form has its own link. Share these directly — they open that form as its
+own screen, and "Back to main page" returns to the site.
+
+```
+https://p-cult.github.io/bali-in-blr/#volunteer
+https://p-cult.github.io/bali-in-blr/#register
+```
+
+Add `ref=` to record **which link** someone came through. Use a different `ref`
+per poster, post, or WhatsApp forward, and the `Sources` column tells you which
+one actually worked:
+
+```
+https://p-cult.github.io/bali-in-blr/#volunteer?ref=instagram-bio
+https://p-cult.github.io/bali-in-blr/?ref=college-poster#volunteer
+https://p-cult.github.io/bali-in-blr/?utm_source=whatsapp&utm_campaign=oct-drive#register
+```
+
+| The link they clicked | `Sources` in Master |
+| --- | --- |
+| `#volunteer` | `Volunteering` |
+| `#volunteer?ref=instagram-bio` | `Volunteering (instagram-bio)` |
+| `?utm_source=whatsapp&utm_campaign=oct-drive#register` | `Festival updates (whatsapp/oct-drive)` |
+
+`ref` is also stored on its own in the flavour tab's **Ref** column. It is
+remembered for the visit, so it still counts if someone lands on the home page,
+reads a while, and signs up several clicks later. UTM links work unchanged, so
+the same link can feed your analytics.
+
 ### Duplicate handling
 A person is matched on **name + phone**, or **name + email** (phone numbers are
 normalised, so `+91 98450 12345`, `09845012345` and `9845012345` are the same
