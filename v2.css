@@ -273,3 +273,39 @@
   [data-calendar-images="on"] .cal-what { padding: 0 0 0.9rem; }
   [data-calendar-images="on"] .cal-action { grid-column: 2; padding: 0 0 1rem; }
 }
+
+/* ---------- "Also includes" band ----------
+   The grid was four columns holding three items, so they bunched left with
+   a dead column on the right. Three columns, centred, with the headings
+   given a fixed two-line box so every description starts on the same line
+   whatever the title length. */
+.feature-band .also-grid {
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  max-width: 880px;
+  margin-inline: auto;
+}
+.feature-band .also-item {
+  text-align: center;
+  padding: 1.7rem 1.3rem;
+  background: rgba(27, 29, 33, 0.66);
+  border-color: rgba(239, 231, 216, 0.14);
+  backdrop-filter: blur(3px);
+}
+.feature-band .also-item h4 {
+  min-height: 2.2em;          /* two lines' worth, so the rows align */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+}
+.feature-band .also-item p { max-width: 24ch; margin-inline: auto; }
+/* A touch more scrim: this photograph is busy behind small text. */
+.feature-band .feature-band-scrim {
+  background: linear-gradient(rgba(27, 29, 33, 0.92), rgba(27, 29, 33, 0.95));
+}
+
+@media (max-width: 760px) {
+  .feature-band .also-grid { grid-template-columns: 1fr; max-width: 420px; }
+  .feature-band .also-item h4 { min-height: 0; }
+}
