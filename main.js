@@ -616,8 +616,12 @@ function validateForm(form) {
     }
   }
 
+  // Only if it is still a tick in its own right — it is now folded into the
+  // consent wording and posted as a hidden field.
   const age = form.elements.age18;
-  if (age && !age.checked) return problem("age18", "Please confirm this to continue.");
+  if (age && age.type === "checkbox" && !age.checked) {
+    return problem("age18", "Please confirm this to continue.");
+  }
 
   const consent = form.elements.consent;
   if (consent && !consent.checked) {
