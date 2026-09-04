@@ -25,6 +25,24 @@ const CONFIG = {
   LOCAL_PARTNERS_URL: "data/partners.json",
 };
 
+/* ---------- Analytics ----------
+   Nothing loads until an id is filled in below, so the site ships with no
+   trackers at all. Only ids and campaign refs are ever sent — never a name,
+   email or phone. See docs/ANALYTICS.md. */
+const ANALYTICS = {
+  // Google Tag Manager. Set this alone and a marketer can add or change
+  // GA4, Google Ads, Meta and the rest inside GTM without touching this
+  // file — the site just announces what happened, GTM decides who hears it.
+  GTM_ID: "",            // "GTM-XXXXXXX"
+
+  // Or wire the tags directly, without GTM:
+  GA4_ID: "",            // "G-XXXXXXXXXX"
+  META_PIXEL_ID: "",     // "1234567890"
+  GOOGLE_ADS_ID: "",     // "AW-XXXXXXXXX"
+  // Optional: the conversion label Google Ads gives you, per form.
+  GOOGLE_ADS_LABELS: { updates: "", volunteer: "" },
+};
+
 /* Where each dataset comes from: the bridge when configured, else local. */
 function sourceFor(sheet, localUrl) {
   return CONFIG.BRIDGE_URL
@@ -38,6 +56,107 @@ const SOURCES = {
   partners: sourceFor("partners", CONFIG.LOCAL_PARTNERS_URL),
   stats: CONFIG.BRIDGE_URL ? sourceFor("stats", "") : "",
 };
+
+/* ---------- Analytics loader ----------
+   Loads Google (GA4 and/or Ads) and the Meta pixel, but only for the ids
+   that are actually set. */
+(function analytics() {
+  window.dataLayer = window.dataLayer || [];
+
+  if (ANALYTICS.GTM_ID) {
+    dataLayer.push({ "gtm.start": Date.now(), event: "gtm.js" });
+    const gtm = document.createElement("script");
+    gtm.async = true;
+    gtm.src = "https://www.googletagmanager.com/gtm.js?id=" + encodeURIComponent(ANALYTICS.GTM_ID);
+    document.head.appendChild(gtm);
+  }
+
+  const googleId = ANALYTICS.GA4_ID || ANALYTICS.GOOGLE_ADS_ID;
+
+  if (googleId) {
+    const tag = document.createElement("script");
+    tag.async = true;
+    tag.src = "https://www.googletagmanager.com/gtag/js?id=" + encodeURIComponent(googleId);
+    document.head.appendChild(tag);
+    window.dataLayer = window.dataLayer || [];
+    window.gtag = function () { window.dataLayer.push(arguments); };
+    gtag("js", new Date());
+    // send_page_view off: this is one page, so views are sent by hand below.
+    if (ANALYTICS.GA4_ID) gtag("config", ANALYTICS.GA4_ID, { send_page_view: false });
+    if (ANALYTICS.GOOGLE_ADS_ID) gtag("config", ANALYTICS.GOOGLE_ADS_ID);
+  }
+
+  if (ANALYTICS.META_PIXEL_ID) {
+    /* Meta's own loader, unmodified. */
+    !function (f, b, e, v, n, t, s) {
+      if (f.fbq) return; n = f.fbq = function () {
+        n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments);
+      };
+      if (!f._fbq) f._fbq = n; n.push = n; n.loaded = !0; n.version = "2.0"; n.queue = [];
+      t = b.createElement(e); t.async = !0; t.src = v;
+      s = b.getElementsByTagName(e)[0]; s.parentNode.insertBefore(t, s);
+    }(window, document, "script", "https://connect.facebook.net/en_US/fbevents.js");
+    fbq("init", ANALYTICS.META_PIXEL_ID);
+  }
+})();
+
+/* A screen was opened. This site is one page, so each view is reported as
+   its own page view — otherwise every visit looks like a single landing. */
+function trackView(path, title) {
+  // Announced whether or not anything is listening. GTM picks this up as a
+  // "virtual_page_view" trigger; with no GTM it simply sits in the array.
+  (window.dataLayer = window.dataLayer || []).push({
+    event: "virtual_page_view",
+    page_path: path,
+    page_title: title,
+  });
+  if (window.gtag && ANALYTICS.GA4_ID) {
+    gtag("event", "page_view", {
+      page_title: title,
+      page_path: path,
+      page_location: location.origin + location.pathname + path,
+    });
+  }
+  if (window.fbq) fbq("track", "PageView");
+}
+
+/* A registration the bridge has confirmed. Never called for a duplicate and
+   never in demo mode — a conversion has to mean a real row. Carries no
+   personal data: the flavour, the campaign ref, and the submission id, which
+   doubles as Meta's deduplication key against any server-side copy. */
+function trackRegistration(flavour, submissionId) {
+  const ref = CAMPAIGN_REF || "(direct)";
+
+  /* The one event a performance marketer actually needs, pushed once, in a
+     shape GTM can route anywhere. No personal data — the submission id is an
+     opaque key, useful for deduplicating against a server-side copy. */
+  (window.dataLayer = window.dataLayer || []).push({
+    event: "registration_complete",
+    form: flavour,                 // "volunteer" | "updates"
+    campaign_ref: ref,             // ?ref= or utm_source[/utm_campaign]
+    submission_id: submissionId,
+  });
+
+  if (window.gtag && ANALYTICS.GA4_ID) {
+    gtag("event", flavour === "volunteer" ? "sign_up" : "generate_lead", {
+      method: flavour,
+      campaign_ref: ref,
+      transaction_id: submissionId,
+    });
+  }
+  const label = (ANALYTICS.GOOGLE_ADS_LABELS || {})[flavour];
+  if (window.gtag && ANALYTICS.GOOGLE_ADS_ID && label) {
+    gtag("event", "conversion", {
+      send_to: ANALYTICS.GOOGLE_ADS_ID + "/" + label,
+      transaction_id: submissionId,
+    });
+  }
+  if (window.fbq) {
+    fbq("track", flavour === "volunteer" ? "CompleteRegistration" : "Lead",
+      { content_name: flavour, source: ref },
+      { eventID: submissionId });
+  }
+}
 
 /* ---------- Campaign source ----------
    Each signup link can carry where it was shared, so the sheet records
@@ -130,6 +249,7 @@ async function loadJSON(url) {
     if (!open) return;
     open.hidden = true;
     document.body.classList.remove("view-open");
+    trackView("/", document.title);
     // Instant, not smooth: closing should put the page back where it was,
     // not animate a scroll the visitor never asked for.
     window.scrollTo({ top: restoreScrollTo, behavior: "instant" });
@@ -155,6 +275,8 @@ async function loadJSON(url) {
     pendingScroll = null;
     views.forEach((v) => { v.hidden = v !== view; });
     document.body.classList.add("view-open");
+    const barTitle = view.querySelector(".view-bar-title");
+    trackView("#" + view.id, barTitle ? barTitle.textContent.trim() : view.id);
     view.scrollTop = 0;
     const heading = view.querySelector("h2, .view-back");
     if (heading) heading.focus({ preventScroll: true });
@@ -686,7 +808,11 @@ function wireForm(formId, noteId, messages) {
     }
 
     say(outcome.duplicate ? messages.duplicate : messages.success, "ok");
-    if (!outcome.duplicate) form.reset();
+    if (!outcome.duplicate) {
+      // Confirmed by the bridge, and not a duplicate: a real conversion.
+      trackRegistration(data.flavour, data.submission);
+      form.reset();
+    }
     done();
   });
 }
