@@ -118,7 +118,7 @@
 .support-v2 p,
 .support-v2 dd { color: var(--muted); }                    /* 7.41 */
 .support-v2 .eyebrow { color: var(--accent-2); }           /* 7.24 */
-.support-v2 h2 { font-size: clamp(1.8rem, 4.4vw, 3rem); }
+
 
 /* The three points as a list divided by hairlines, not floating cards. */
 .support-points { margin: 0; display: grid; align-content: start; }
@@ -318,4 +318,41 @@
 @media (max-width: 760px) {
   .feature-band .also-grid { grid-template-columns: 1fr; max-width: 420px; }
   .feature-band .also-item h4 { min-height: 0; }
+}
+
+/* ---------- Heading scale ----------
+   The base runs section headings to 3.6rem, which is fine for two words and
+   a wall for a sentence like "Eighteen days of performances, learning and
+   making". Brought down, and given a measure so a long one breaks into two
+   readable lines rather than four shouted ones. */
+.section h2 {
+  font-size: clamp(1.45rem, 2.9vw, 2.15rem);
+  font-weight: 800;   /* 900 at this length reads as shouting */
+  line-height: 1.08;
+  letter-spacing: -0.004em;
+  margin-bottom: 1.1rem;
+  text-wrap: balance;
+}
+.section h2.center { max-width: 32ch; margin-inline: auto; }
+
+/* The strand headings were display type competing with the section heading
+   above them. They are labels — small, spaced, copper, with a rule. */
+.group-title {
+  font-family: var(--display);
+  font-variation-settings: "wdth" 125;
+  font-weight: 700;
+  font-size: 0.7rem;
+  letter-spacing: 0.16em;
+  color: var(--accent-2);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 2.8rem 0 1.1rem;
+}
+.group-title::before {
+  content: "";
+  width: 20px;
+  height: 1px;
+  background: var(--copper);
+  flex: none;
 }
