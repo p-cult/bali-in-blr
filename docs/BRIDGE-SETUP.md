@@ -143,6 +143,12 @@ cause. The submission id is therefore sent as **`submission`**. If you add a
 field later, avoid `sid` and test a POST before assuming the name is free.
 
 ### Duplicate handling
+Refused at the point of entry: as soon as someone has typed a name and a phone
+or email, the form asks the bridge (`mode=check`) whether they are already
+registered for that flavour, and says so there rather than after Submit. The
+check writes nothing. A failed check never blocks anyone — if the bridge cannot
+be reached the form carries on, and the server-side rejection still applies.
+
 A person is matched on **name + phone**, or **name + email** (phone numbers are
 normalised, so `+91 98450 12345`, `09845012345` and `9845012345` are the same
 person). Submitting the *same flavour* twice is rejected and the site tells the

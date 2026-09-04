@@ -96,6 +96,23 @@ function doPost(e) {
     const email = clean(p.email);
     const phone = normalisePhone(p.phone);
 
+    // A check asks "is this person already registered for this flavour?" and
+    // writes nothing. It lets the form refuse a duplicate while someone is
+    // still filling it in, rather than after they press Submit. Needs only a
+    // name plus one way of reaching them — no consent, no answers.
+    if (clean(p.mode) === 'check') {
+      if (!name || (!phone && !email)) {
+        return json({ ok: false, error: 'A check needs a name and a phone or email' });
+      }
+      const ss0 = book();
+      const found = !!findPersonRow(
+        tab(ss0, flavour.tab, flavourHeaders(flavour)), name, phone, email, 2, 3, 4);
+      // Recorded so the answer can be read back by id when a browser refuses
+      // to read our reply. Holds no personal data, as ever.
+      logReceipt(ss0, clean(p.submission), key, found ? 'exists' : 'new');
+      return json({ ok: true, check: true, exists: found });
+    }
+
     for (let i = 0; i < flavour.required.length; i++) {
       const f = flavour.required[i];
       const v = f === 'phone' ? phone : clean(p[f]);

@@ -402,6 +402,49 @@ async function confirmBySid(sid, tries = 5) {
   return null;
 }
 
+/* Ask the bridge whether this person is already registered for this
+   flavour, without writing anything. Runs while the form is being filled
+   in, so a duplicate is refused there rather than after Submit. */
+async function checkAlreadyRegistered(form) {
+  if (!CONFIG.BRIDGE_URL) return null; // demo mode: nothing to check against
+
+  const get = (n) => (form.elements[n] ? String(form.elements[n].value || "").trim() : "");
+  const name = get("name");
+  const phone = get("phone");
+  const email = get("email");
+  if (!name || (!phone && !email)) return null; // not enough to identify anyone
+
+  const submission =
+    (crypto.randomUUID && crypto.randomUUID()) ||
+    String(Date.now()) + Math.random().toString(36).slice(2);
+
+  const body = new URLSearchParams({
+    mode: "check",
+    flavour: get("flavour"),
+    name: name,
+    phone: phone,
+    email: email,
+    submission: submission,
+  }).toString();
+  const headers = { "Content-Type": "application/x-www-form-urlencoded" };
+
+  try {
+    const res = await fetch(CONFIG.BRIDGE_URL, { method: "POST", headers, body });
+    const out = await res.json();
+    if (out && out.ok) return !!out.exists;
+  } catch (err) {
+    // Reply unreadable — read the answer back by id instead.
+    try {
+      await fetch(CONFIG.BRIDGE_URL, { method: "POST", mode: "no-cors", headers, body });
+    } catch (err2) {
+      return null;
+    }
+    const receipt = await confirmBySid(submission, 3);
+    if (receipt && receipt.found) return receipt.result === "exists";
+  }
+  return null; // unknown: never block someone on a failed check
+}
+
 function wireForm(formId, noteId, messages) {
   const form = document.getElementById(formId);
   const note = document.getElementById(noteId);
@@ -412,8 +455,37 @@ function wireForm(formId, noteId, messages) {
     note.className = "form-note" + (kind ? " " + kind : "");
   };
 
+  /* Check as soon as there is enough to identify someone, so a duplicate is
+     refused while the form is being filled in. */
+  let alreadyRegistered = false;
+  const idFields = ["phone", "email", "name"].filter((f) => form.elements[f]);
+
+  async function runCheck() {
+    const found = await checkAlreadyRegistered(form);
+    if (found === null) return; // unknown — never block on a failed check
+    alreadyRegistered = found;
+    if (found) {
+      say(messages.alreadyRegistered, "err");
+    } else if (note.textContent === messages.alreadyRegistered) {
+      say("", "");
+    }
+  }
+
+  idFields.forEach((f) => {
+    form.elements[f].addEventListener("blur", () => {
+      // Only worth asking once the field is plausibly complete.
+      if (!validateForm(form) || form.elements[f].value.trim()) runCheck();
+    });
+  });
+
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
+
+    // Refuse a duplicate outright rather than sending it.
+    if (alreadyRegistered) {
+      say(messages.alreadyRegistered, "err");
+      return;
+    }
 
     // Every question must be answered before any details are sent.
     if (typeof form.onboardingGuard === "function" && !form.onboardingGuard()) {
@@ -423,6 +495,14 @@ function wireForm(formId, noteId, messages) {
     const problem = validateForm(form);
     if (problem) {
       say(problem, "err");
+      return;
+    }
+
+    // Last look before sending, in case they never left the last field.
+    const dupe = await checkAlreadyRegistered(form);
+    if (dupe === true) {
+      alreadyRegistered = true;
+      say(messages.alreadyRegistered, "err");
       return;
     }
 
@@ -510,6 +590,7 @@ wireForm("signup-form", "form-note", {
   verifying: "Verifying your registration…",
   success: "Thank you for registering — we'll be in touch with festival updates.",
   duplicate: "You're already on the list — we have your details and will keep you posted.",
+  alreadyRegistered: "These details are already registered for updates — no need to register again. To change anything, call +91 90350 34725.",
   demo: "Your details look good. Registrations start saving once the data bridge is connected.",
   unconfirmed: "We couldn't confirm your registration just now. Please try again in a moment, or call +91 90350 34725.",
   failure: "Sorry, something went wrong. Please try again, or call +91 90350 34725.",
@@ -520,6 +601,7 @@ wireForm("volunteer-form", "volunteer-note", {
   verifying: "Verifying your details…",
   success: "Your response has been recorded. Our team will connect with you soon using the details you've shared.",
   duplicate: "You've already registered to volunteer — your response is with us and our team will connect with you soon.",
+  alreadyRegistered: "These details are already registered to volunteer — no need to register again. Our team will be in touch, or call +91 90350 34725.",
   demo: "Your details look good. Volunteer responses start saving once the data bridge is connected.",
   unconfirmed: "We couldn't confirm your response just now. Please try again in a moment, or call +91 90350 34725.",
   failure: "Sorry, we couldn't record your response. Please try again, or call +91 90350 34725.",
