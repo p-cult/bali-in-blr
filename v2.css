@@ -173,8 +173,10 @@
 .signup-form .check-consent {
   font-size: 0.68rem;
   line-height: 1.5;
+  font-weight: 400;   /* the lightest Instrument Sans carries — it has no 300 */
   color: #928D85;
 }
+.signup-form .check-consent span { font-weight: 400; }
 .signup-form .check-consent .quiet { color: #928D85; }
 
 /* ---------- Support buttons ----------
