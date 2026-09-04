@@ -12,12 +12,7 @@
 const CONFIG = {
   // Paste your Apps Script Web App URL here, e.g.
   // "https://script.google.com/macros/s/AKfy.../exec"
-  // Deployed and working for READS, but POST is blocked at Google's edge for
-  // this Workspace domain (400 before the script runs; zero doPost executions
-  // logged, while doGet runs fine). Left empty so the forms stay in demo mode
-  // rather than failing for visitors. Paste the URL back in once POST works:
-  // https://script.google.com/macros/s/AKfycbzIpvypHYnNryBO6FuSNjneRQA-IQpK8yD1yTI7Hi5perQG8Ao1gsH7P_LffdT15WcRGw/exec
-  BRIDGE_URL: "",
+  BRIDGE_URL: "https://script.google.com/macros/s/AKfycbyKXzPHQLsHCoryx0aJVpVkP0Z0XrnPxjucaiUJtR1aXeux33ygq2Br2QcBNU_MAB7qDw/exec",
 
   // Used only while BRIDGE_URL is empty.
   LOCAL_EVENTS_URL: "data/events.json",
@@ -454,7 +449,9 @@ function wireForm(formId, noteId, messages) {
 
     // A random id lets us confirm this exact submission afterwards without
     // sending name, email or phone through a URL.
-    data.sid =
+    // Named "submission", not "sid": Google rejects requests carrying a
+    // parameter called sid with a 400 before the script ever runs.
+    data.submission =
       (crypto.randomUUID && crypto.randomUUID()) ||
       String(Date.now()) + Math.random().toString(36).slice(2);
 
@@ -479,11 +476,11 @@ function wireForm(formId, noteId, messages) {
       // so look for its receipt BEFORE resending. Resending blind would file
       // a first-time entry as a duplicate.
       say(messages.verifying || "Verifying your details…", "");
-      outcome = await confirmBySid(data.sid, 3);
+      outcome = await confirmBySid(data.submission, 3);
 
       if (!outcome) {
         // No receipt: it really did not arrive. Send it again, opaquely.
-        // The bridge keys on sid, so a resend cannot double-book.
+        // The bridge keys on the submission id, so a resend cannot double-book.
         try {
           await fetch(CONFIG.BRIDGE_URL, { method: "POST", mode: "no-cors", headers, body });
         } catch (err2) {
@@ -491,7 +488,7 @@ function wireForm(formId, noteId, messages) {
           done();
           return;
         }
-        outcome = await confirmBySid(data.sid, 4);
+        outcome = await confirmBySid(data.submission, 4);
       }
     }
 

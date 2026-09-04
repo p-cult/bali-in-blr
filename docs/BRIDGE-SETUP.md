@@ -134,6 +134,14 @@ remembered for the visit, so it still counts if someone lands on the home page,
 reads a while, and signs up several clicks later. UTM links work unchanged, so
 the same link can feed your analytics.
 
+### A reserved parameter name to avoid
+
+Google's front end rejects any request carrying a parameter called **`sid`**
+with an HTTP 400, *before* the script runs — no execution is logged, and the
+error page says "unable to open the file", which points nowhere near the real
+cause. The submission id is therefore sent as **`submission`**. If you add a
+field later, avoid `sid` and test a POST before assuming the name is free.
+
 ### Duplicate handling
 A person is matched on **name + phone**, or **name + email** (phone numbers are
 normalised, so `+91 98450 12345`, `09845012345` and `9845012345` are the same

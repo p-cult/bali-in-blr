@@ -109,7 +109,9 @@ function doPost(e) {
 
     const ss = book();
 
-    const sid = clean(p.sid);
+    // Named "submission", not "sid": Google's front end rejects any request
+    // carrying a parameter called sid with a 400, before the script runs.
+    const sid = clean(p.submission);
 
     // 0. Idempotency: if this exact submission already has a receipt, the row
     //    is already in — a resend after an unreadable reply must not become a
