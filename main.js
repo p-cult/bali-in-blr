@@ -514,8 +514,16 @@ async function loadCalendar() {
       : "";
     const meta = [ev.time, ev.venue].filter(Boolean).map(esc).join(" · ");
 
+    // Thumbnails only where the page asks for them, so the original layout
+    // is untouched: index.html sets no flag and renders exactly as before.
+    const wantsThumb = document.body.dataset.calendarImages === "on";
+    const thumb = wantsThumb && ev.image
+      ? `<div class="cal-thumb"><img src="${esc(ev.image)}" alt="" loading="lazy" /></div>`
+      : "";
+
     return `
       <article class="cal-bar" data-category="${esc(ev.category || "")}">
+        ${thumb}
         <div class="cal-when">
           <span class="cal-day">${day}</span>
           <span class="cal-mon">${mon}</span>

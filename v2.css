@@ -66,6 +66,7 @@
   font-size: clamp(1.9rem, 5vw, 3.6rem);
   font-weight: 900;
   letter-spacing: -0.005em;
+  line-height: 0.92;   /* two lines, stacked tight */
   margin-bottom: 1.2rem;
 }
 .hero-kicker {
@@ -204,4 +205,71 @@
 }
 .support-v2 .support-actions .btn-outline:hover {
   border-color: var(--ink); background: rgba(239, 231, 216, 0.1);
+}
+
+/* ---------- Calendar, rebuilt ----------
+   The bars were a grey list of text. Each event now leads with its
+   photograph, the date reads as a block rather than a line, and the
+   category is carried in colour as well as words. Scoped to the page that
+   opts in, so the original calendar is untouched. */
+[data-calendar-images="on"] .calendar-list { gap: 0.9rem; }
+
+[data-calendar-images="on"] .cal-bar {
+  grid-template-columns: 116px 74px minmax(0, 1fr) auto;
+  gap: 1.2rem;
+  padding: 0;
+  overflow: hidden;
+  align-items: stretch;
+  border-left-width: 2px;
+  transition: border-color 0.18s ease, background 0.18s ease, transform 0.18s ease;
+}
+[data-calendar-images="on"] .cal-bar:hover {
+  transform: translateY(-2px);
+  background: var(--bg-2);
+}
+
+/* The photograph carries the row. */
+[data-calendar-images="on"] .cal-thumb { overflow: hidden; background: var(--bg-2); }
+[data-calendar-images="on"] .cal-thumb img {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+  transition: transform 0.4s ease;
+}
+[data-calendar-images="on"] .cal-bar:hover .cal-thumb img { transform: scale(1.05); }
+
+/* Date as a block, aligned to the photo's top edge. */
+[data-calendar-images="on"] .cal-when {
+  border-right: 1px solid var(--line);
+  padding: 1.1rem 1rem 1.1rem 0;
+  align-content: center;
+}
+[data-calendar-images="on"] .cal-day { font-size: 2.1rem; line-height: 0.9; }
+[data-calendar-images="on"] .cal-mon { font-size: 0.66rem; margin-top: 0.3rem; }
+[data-calendar-images="on"] .cal-weekday { font-size: 0.64rem; }
+
+[data-calendar-images="on"] .cal-what { padding: 1.1rem 0; }
+[data-calendar-images="on"] .cal-what h4 { font-size: 1.15rem; margin: 0.4rem 0 0.3rem; }
+[data-calendar-images="on"] .cal-meta { font-size: 0.86rem; }
+[data-calendar-images="on"] .cal-action { padding: 1.1rem 1.3rem 1.1rem 0; align-self: center; }
+
+/* Category as colour as well as a word, so the strands read at a glance. */
+[data-calendar-images="on"] .cal-bar[data-category="Performance"] { border-left-color: var(--accent); }
+[data-calendar-images="on"] .cal-bar[data-category="Workshop"] { border-left-color: var(--copper); }
+[data-calendar-images="on"] .cal-bar[data-category="Talk"] { border-left-color: var(--rose); }
+[data-calendar-images="on"] .cal-bar[data-category="Performance"] .cal-cat { color: var(--accent); background: rgba(255, 90, 60, 0.12); }
+[data-calendar-images="on"] .cal-bar[data-category="Workshop"] .cal-cat { color: var(--accent-2); background: rgba(200, 121, 65, 0.16); }
+[data-calendar-images="on"] .cal-bar[data-category="Talk"] .cal-cat { color: var(--rose); background: rgba(201, 169, 162, 0.14); }
+
+@media (max-width: 760px) {
+  [data-calendar-images="on"] .cal-bar {
+    grid-template-columns: 92px minmax(0, 1fr);
+    gap: 0.9rem;
+  }
+  [data-calendar-images="on"] .cal-thumb { grid-row: span 2; }
+  [data-calendar-images="on"] .cal-when {
+    border-right: 0; border-bottom: 1px solid var(--line);
+    padding: 0.9rem 0 0.5rem; text-align: left; justify-items: start;
+  }
+  [data-calendar-images="on"] .cal-day { font-size: 1.6rem; }
+  [data-calendar-images="on"] .cal-what { padding: 0 0 0.9rem; }
+  [data-calendar-images="on"] .cal-action { grid-column: 2; padding: 0 0 1rem; }
 }

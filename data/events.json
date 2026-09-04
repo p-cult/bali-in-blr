@@ -10,7 +10,8 @@
     "ticketed": false,
     "status": "announced",
     "ticketUrl": "",
-    "description": ""
+    "description": "",
+    "image": "assets/dance-class.jpg"
   },
   {
     "id": "shadow-puppetry-jagriti",
@@ -23,7 +24,8 @@
     "ticketed": false,
     "status": "announced",
     "ticketUrl": "",
-    "description": ""
+    "description": "",
+    "image": "assets/shadow-bali.jpg"
   },
   {
     "id": "param-kecak-workshop",
@@ -36,7 +38,8 @@
     "ticketed": true,
     "status": "onsale",
     "ticketUrl": "",
-    "description": ""
+    "description": "",
+    "image": "assets/kecak-crowd.jpg"
   },
   {
     "id": "kumarans-workshop",
@@ -49,7 +52,8 @@
     "ticketed": true,
     "status": "onsale",
     "ticketUrl": "",
-    "description": ""
+    "description": "",
+    "image": "assets/carvings.jpg"
   },
   {
     "id": "balinese-dance-meenakshi",
@@ -62,7 +66,8 @@
     "ticketed": true,
     "status": "onsale",
     "ticketUrl": "",
-    "description": ""
+    "description": "",
+    "image": "assets/balinese-dance.jpg"
   },
   {
     "id": "dathu-workshop",
@@ -75,7 +80,8 @@
     "ticketed": true,
     "status": "onsale",
     "ticketUrl": "",
-    "description": ""
+    "description": "",
+    "image": "assets/batik.jpg"
   },
   {
     "id": "kecak-pcpa",
@@ -88,7 +94,8 @@
     "ticketed": true,
     "status": "onsale",
     "ticketUrl": "",
-    "description": ""
+    "description": "",
+    "image": "assets/kecak-hanuman.jpg"
   },
   {
     "id": "shadow-puppetry-dathu",
@@ -101,7 +108,8 @@
     "ticketed": true,
     "status": "onsale",
     "ticketUrl": "",
-    "description": ""
+    "description": "",
+    "image": "assets/shadow-india.jpg"
   },
   {
     "id": "dance-yakshagana-chowdiah",
@@ -114,7 +122,8 @@
     "ticketed": true,
     "status": "onsale",
     "ticketUrl": "",
-    "description": ""
+    "description": "",
+    "image": "assets/yakshagana-trio.jpg"
   },
   {
     "id": "shadow-puppetry-yuvapatha",
@@ -127,7 +136,8 @@
     "ticketed": true,
     "status": "onsale",
     "ticketUrl": "",
-    "description": ""
+    "description": "",
+    "image": "assets/shadow-bali.jpg"
   },
   {
     "id": "gamelan-jama",
@@ -140,7 +150,8 @@
     "ticketed": true,
     "status": "onsale",
     "ticketUrl": "",
-    "description": ""
+    "description": "",
+    "image": "assets/masks-wall.jpg"
   },
   {
     "id": "closing-sabha",
@@ -153,6 +164,7 @@
     "ticketed": true,
     "status": "onsale",
     "ticketUrl": "",
-    "description": ""
+    "description": "",
+    "image": "assets/dibia-mask.jpg"
   }
 ]
