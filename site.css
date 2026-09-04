@@ -1,7 +1,8 @@
 /* ============================================================
-   v2 — additions only, loaded after styles.css.
-   Nothing here overrides an existing rule, so index.html is
-   unaffected. If v2.html becomes index.html, fold this in.
+   site.css — the current design, layered over styles.css.
+   styles.css holds the tokens and the shared components;
+   this holds the layout and treatment specific to this design.
+   v1.html, the previous design, does not load this file.
    ============================================================ */
 
 /* ---------- The cream ground ----------
