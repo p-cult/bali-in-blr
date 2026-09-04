@@ -375,6 +375,19 @@ em { font-style: italic; }
 .field-notify .check { display: inline-flex; margin-right: 1.4rem; }
 .check-consent { margin: 0.6rem 0 1.2rem; }
 .check-consent .quiet { color: var(--muted); text-decoration: underline; }
+/* A validation message, shown at the control it is about. */
+.field-error {
+  color: var(--accent);
+  font-size: 0.82rem;
+  line-height: 1.4;
+  margin: 0.35rem 0 0.9rem;
+}
+.field.is-invalid input,
+.field.is-invalid select { border-color: var(--accent); }
+/* The consent ticks are labels, so mark the whole row. */
+.check.is-invalid { color: var(--ink); }
+.check.is-invalid input { outline: 2px solid var(--accent); outline-offset: 2px; }
+
 .form-note { font-size: 0.9rem; margin: 0.9rem 0 0; min-height: 1.2em; }
 .form-note.ok { color: var(--accent-2); }
 .form-note.err { color: var(--accent); }

@@ -588,40 +588,83 @@ const VALID = {
 };
 
 /* Validate one form. Returns an error message, or "" when valid. */
+/* Returns { field, message } for the first problem, or null. The field name
+   matters: the message is shown at that control, not in a summary somewhere
+   below the button. */
 function validateForm(form) {
   const get = (n) => (form.elements[n] ? String(form.elements[n].value || "") : "");
   const need = (form.dataset.require || "").split(/\s+/).filter(Boolean);
+  const problem = (field, message) => ({ field, message });
 
   for (const field of need) {
     const value = get(field);
     if (!value.trim()) {
-      return field === "name" ? "Please enter your full name."
-        : field === "email" ? "Please enter your email address."
-        : "Please enter your phone number.";
+      return problem(field,
+        field === "name" ? "Please enter your full name."
+          : field === "email" ? "Please enter your email address."
+          : "Please enter your phone number.");
     }
     if (field === "name" && form.dataset.fullname === "true" && !VALID.fullName(value)) {
-      return "Please enter your full name (first and last).";
+      return problem("name", "Please enter your full name (first and last).");
     }
-    if (field === "name" && !VALID.name(value)) return "Please enter your name.";
+    if (field === "name" && !VALID.name(value)) return problem("name", "Please enter your name.");
     if (field === "email" && !VALID.email(value)) {
-      return "That email address doesn't look right — please check it.";
+      return problem("email", "That email address doesn't look right — please check it.");
     }
     if (field === "phone" && !VALID.phone(value)) {
-      return "That phone number doesn't look right — please enter a 10-digit mobile number.";
+      return problem("phone", "That phone number doesn't look right — please enter a 10-digit mobile number.");
     }
   }
 
   const age = form.elements.age18;
-  if (age && !age.checked) {
-    return "Please confirm you are 18 or over.";
-  }
+  if (age && !age.checked) return problem("age18", "Please confirm this to continue.");
 
   const consent = form.elements.consent;
   if (consent && !consent.checked) {
-    return "Please tick the consent box so we know we may contact you.";
+    return problem("consent", "Please tick this so we know we may contact you.");
   }
-  return "";
+  return null;
 }
+
+/* Put the message directly under the control it is about, and mark that
+   control. Anything shown for a previous attempt is cleared first. */
+function clearFieldErrors(form) {
+  form.querySelectorAll(".field-error").forEach((el) => el.remove());
+  form.querySelectorAll(".is-invalid").forEach((el) => el.classList.remove("is-invalid"));
+  form.querySelectorAll('[aria-invalid="true"]').forEach((el) => el.removeAttribute("aria-invalid"));
+}
+
+function showFieldError(form, fieldName, message) {
+  clearFieldErrors(form);
+  const el = form.elements[fieldName];
+  if (!el) return false;
+
+  // A checkbox lives inside its label; a text input inside a .field wrapper.
+  const holder = el.closest(".check") || el.closest(".field") || el;
+  const note = document.createElement("p");
+  note.className = "field-error";
+  note.setAttribute("role", "alert");
+  note.textContent = message;
+  holder.insertAdjacentElement("afterend", note);
+  holder.classList.add("is-invalid");
+  el.setAttribute("aria-invalid", "true");
+
+  el.focus({ preventScroll: true });
+  note.scrollIntoView({ block: "nearest", behavior: "smooth" });
+
+  // Clear it the moment they put it right.
+  const fix = () => {
+    note.remove();
+    holder.classList.remove("is-invalid");
+    el.removeAttribute("aria-invalid");
+    el.removeEventListener("input", fix);
+    el.removeEventListener("change", fix);
+  };
+  el.addEventListener("input", fix);
+  el.addEventListener("change", fix);
+  return true;
+}
+
 
 /* Confirm a submission landed, using only its random id — never any
    personal data, which must not travel in a URL. Polls because the row is
@@ -712,7 +755,7 @@ function wireForm(formId, noteId, messages) {
   idFields.forEach((f) => {
     form.elements[f].addEventListener("blur", () => {
       // Only worth asking once the field is plausibly complete.
-      if (!validateForm(form) || form.elements[f].value.trim()) runCheck();
+      if (validateForm(form) === null || form.elements[f].value.trim()) runCheck();
     });
   });
 
@@ -732,7 +775,11 @@ function wireForm(formId, noteId, messages) {
 
     const problem = validateForm(form);
     if (problem) {
-      say(problem, "err");
+      // Show it at the control itself; fall back to the note only if that
+      // control cannot be found.
+      if (!showFieldError(form, problem.field, problem.message)) {
+        say(problem.message, "err");
+      }
       return;
     }
 
@@ -743,6 +790,8 @@ function wireForm(formId, noteId, messages) {
       say(messages.alreadyRegistered, "err");
       return;
     }
+
+    clearFieldErrors(form);
 
     const data = Object.fromEntries(new FormData(form).entries());
     if (CAMPAIGN_REF) data.ref = CAMPAIGN_REF;
