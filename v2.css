@@ -127,3 +127,79 @@
 .btn-paper:hover { background: #FFF; }
 .btn-outline { border: 1px solid rgba(239, 231, 216, 0.4); color: var(--ink); }
 .btn-outline:hover { border-color: var(--ink); background: rgba(239, 231, 216, 0.08); }
+
+/* ---------- Support: alignment and buttons ----------
+   Three faults in the first cut. The grid centres its columns, so the copy
+   floated against a list that started at the top. The ghost button carries a
+   1px border and the filled one does not, so they were different heights.
+   And the actions inherited a centred row, which put them out of line with
+   the text above. */
+.support-v2 .grid-2 {
+  align-items: start;
+  gap: clamp(2rem, 5vw, 3.6rem);
+}
+.support-v2 .support-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  align-items: stretch;
+  gap: 0.7rem;
+  margin-top: 1.7rem;
+}
+/* Same box for both: a transparent border on the filled one matches the
+   outlined one, so they end up the same height to the pixel. */
+.support-v2 .support-actions .btn {
+  border: 1px solid transparent;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.85rem 1.6rem;
+}
+.support-v2 .btn-paper { border-color: var(--cream); }
+
+/* The list's first rule now lines up with the eyebrow, so the two columns
+   start on the same line. */
+.support-v2 .support-points > div:first-child { padding-top: 0.35rem; border-top: 0; }
+.support-v2 .support-points > div:last-child { border-bottom: 0; }
+.support-v2 .support-points > div + div { border-top: 1px solid rgba(239, 231, 216, 0.16); }
+.support-v2 h2 { margin-bottom: 1.1rem; }
+.support-v2 .col-text p { max-width: 44ch; }
+
+/* ---------- Consent, quieter still ----------
+   Scoped to v2 so index.html is unaffected. The wording was the bulk, not
+   the size — it is now one sentence — and the type steps down to 0.68rem at
+   #928D85, which measures 4.60 on the card. One step dimmer fails, so this
+   is the floor for text someone is agreeing to. */
+.check-consent,
+.signup-form .check-consent {
+  font-size: 0.68rem;
+  line-height: 1.5;
+  color: #928D85;
+}
+.signup-form .check-consent .quiet { color: #928D85; }
+
+/* ---------- Support buttons ----------
+   Equal width, on one row, and both plainly buttons — the outlined one was
+   reading as loose text against the red. */
+.support-v2 .support-actions { display: flex; gap: 0.7rem; flex-wrap: wrap; }
+.support-v2 .support-actions .btn {
+  flex: 1 1 0;
+  min-width: 12.5rem;
+  justify-content: center;
+  text-align: center;
+  padding: 0.85rem 1rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  border: 1px solid transparent;
+}
+/* Three classes deep, or the base rule above wins on specificity and the
+   outlined button keeps a transparent border — which is what made it read
+   as loose text rather than a button. */
+.support-v2 .support-actions .btn-paper {
+  background: var(--cream); color: var(--maroon); border-color: var(--cream);
+}
+.support-v2 .support-actions .btn-outline {
+  background: transparent; color: var(--ink); border-color: rgba(239, 231, 216, 0.55);
+}
+.support-v2 .support-actions .btn-outline:hover {
+  border-color: var(--ink); background: rgba(239, 231, 216, 0.1);
+}
