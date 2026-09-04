@@ -27,8 +27,22 @@
  * PRIVACY: never return personal rows. doGet exposes only aggregates (readStats).
  */
 
-// Paste the spreadsheet ID (the long string in the sheet URL between /d/ and /edit).
-const SHEET_ID = 'PASTE_SPREADSHEET_ID_HERE';
+/**
+ * Normally nothing to set here. Create this script from inside the spreadsheet
+ * (Extensions > Apps Script) and it is bound to that sheet, which book() uses.
+ * Only set SHEET_ID if the script lives somewhere else and must reach the
+ * sheet by id. Deliberately left blank in the repository: the id is not a
+ * secret, but the sheet holds personal data, so it does not belong in a
+ * public repo.
+ */
+const SHEET_ID = '';
+
+/** The spreadsheet this script works on. */
+function book() {
+  return SHEET_ID
+    ? SpreadsheetApp.openById(SHEET_ID)
+    : SpreadsheetApp.getActiveSpreadsheet();
+}
 
 const MASTER_TAB = 'Master';
 
@@ -93,7 +107,7 @@ function doPost(e) {
     }
     if (!clean(p.consent)) return json({ ok: false, error: 'Consent is required' });
 
-    const ss = SpreadsheetApp.openById(SHEET_ID);
+    const ss = book();
 
     const sid = clean(p.sid);
 
@@ -145,7 +159,7 @@ function logReceipt(ss, sid, flavourKey, result) {
 function readReceipt(sid) {
   const wanted = clean(sid);
   if (!wanted) return { found: false };
-  const ss = SpreadsheetApp.openById(SHEET_ID);
+  const ss = book();
   const sh = ss.getSheetByName(LOG_TAB);
   if (!sh || sh.getLastRow() < 2) return { found: false };
   const values = sh.getRange(1, 1, sh.getLastRow(), 4).getValues();
@@ -273,7 +287,7 @@ function doGet(e) {
 
 /** Read a tab into an array of objects keyed by its header row. */
 function readTab(name) {
-  const ss = SpreadsheetApp.openById(SHEET_ID);
+  const ss = book();
   const sh = ss.getSheetByName(name);
   if (!sh) return [];
   const values = sh.getDataRange().getValues();
@@ -294,7 +308,7 @@ function readTab(name) {
 
 /** Aggregates only — safe to expose publicly. Never returns personal rows. */
 function readStats() {
-  const ss = SpreadsheetApp.openById(SHEET_ID);
+  const ss = book();
   const out = {};
   if (ss.getSheetByName('Stats')) {
     readTab('Stats').forEach(function (r) {
