@@ -57,8 +57,18 @@
 
 /* ---------- Hero, rebuilt ----------
    The wordmark is the page's thesis, so it gets the room. */
-.hero-v2 { min-height: min(88vh, 760px); }
-.hero-v2 .hero-content { padding-bottom: clamp(2.5rem, 6vw, 4.5rem); }
+/* Was 88vh with the content pinned to the bottom, which left a field of
+   empty sky above it on a tall window. Shorter, and the content sits in the
+   middle so the space is shared instead of stacked on top. */
+.hero-v2 {
+  min-height: min(68vh, 580px);
+  align-items: center;
+}
+.hero-v2 .hero-content {
+  padding-top: clamp(2rem, 4vw, 3rem);
+  padding-bottom: clamp(2rem, 4vw, 3rem);
+}
+.hero-v2 .hero-meta { margin-bottom: 1.8rem; }
 /* Bold, and sized to be read rather than to fill the screen. The base rule
    runs to 9rem; this stops well short so the lead and the numbers below it
    stay part of the same first impression. */
