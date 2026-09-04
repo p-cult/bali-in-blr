@@ -9,6 +9,29 @@ Time: ~15 minutes. No cost.
 
 ---
 
+## The festival calendar (a separate sheet)
+
+The calendar does **not** come from the registration sheet or the bridge. It is
+read live from the **Event List** tab of the schedule spreadsheet, published to
+the web as TSV, so editing that tab updates the site with no code change.
+
+| Column | Notes |
+| --- | --- |
+| `title` | Required — a row without one is skipped |
+| `category` | Performance / Workshop / Talk. Anything else is folded into the nearest of those for the filter chips |
+| `date` | `2026-10-11`, `11/10/2026` (day first) or `October 11, 2026` all work. Unreadable dates show as "date to be announced" |
+| `venue` | Free text |
+| `start time`, `end time` | Free text, joined with an en dash |
+| `ticket link` | A link here flips the event to "On sale" and shows the booking button; empty means "Tickets coming soon" |
+
+The header row is found by name, so blank rows above it and reordered columns
+are both fine. While the tab has no rows, the site falls back to
+`data/events.json` so the calendar is never empty.
+
+The URL is `CONFIG.SCHEDULE_URL` in `main.js`.
+
+---
+
 ## Step 1 — Create the spreadsheet
 
 1. In the Foundation's Google Drive, create a new **Google Sheet** named

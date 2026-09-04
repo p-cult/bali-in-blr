@@ -14,7 +14,13 @@ const CONFIG = {
   // "https://script.google.com/macros/s/AKfy.../exec"
   BRIDGE_URL: "https://script.google.com/macros/s/AKfycbyKXzPHQLsHCoryx0aJVpVkP0Z0XrnPxjucaiUJtR1aXeux33ygq2Br2QcBNU_MAB7qDw/exec",
 
-  // Used only while BRIDGE_URL is empty.
+  // The festival calendar, read live from the "Event List" tab of the
+  // published schedule sheet. Columns: title, category, date, venue,
+  // start time, end time, ticket link. Edit the sheet and the site follows.
+  SCHEDULE_URL:
+    "https://docs.google.com/spreadsheets/d/e/2PACX-1vTji37D6cT7J9bLFptJdNaYrvZF_soZyiqIsX-rHYUj4H6rnfMCExu2hIyVjCk48j86rdaBhp_lthzb/pub?gid=289612903&single=true&output=tsv",
+
+  // Used when the sheet has no rows yet, or cannot be reached.
   LOCAL_EVENTS_URL: "data/events.json",
   LOCAL_PARTNERS_URL: "data/partners.json",
 };
@@ -26,8 +32,8 @@ function sourceFor(sheet, localUrl) {
     : localUrl;
 }
 const SOURCES = {
-  // The calendar is curated in data/events.json, not in the registration
-  // spreadsheet, so it does not follow BRIDGE_URL. See docs/BRIDGE-SETUP.md.
+  // The calendar comes from the schedule sheet, not the registration one,
+  // so it does not follow BRIDGE_URL. See docs/BRIDGE-SETUP.md.
   events: CONFIG.LOCAL_EVENTS_URL,
   partners: sourceFor("partners", CONFIG.LOCAL_PARTNERS_URL),
   stats: CONFIG.BRIDGE_URL ? sourceFor("stats", "") : "",
@@ -218,6 +224,91 @@ function formatDate(iso) {
   return d.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
 }
 
+/* ---------- The schedule sheet ----------
+   Reads the "Event List" tab, published as TSV. The header row is found by
+   name rather than position, so blank rows above it — or columns moved
+   around — do not break it. */
+function parseSchedule(tsv) {
+  const rows = tsv.split(/\r?\n/).map((line) => line.split("\t"));
+  const headerAt = rows.findIndex((cells) => {
+    const names = cells.map((c) => c.trim().toLowerCase());
+    return names.includes("title") && names.includes("date");
+  });
+  if (headerAt === -1) return [];
+
+  const header = rows[headerAt].map((c) => c.trim().toLowerCase());
+  const col = (name) => header.indexOf(name);
+  const at = (cells, name) => {
+    const i = col(name);
+    return i === -1 ? "" : String(cells[i] == null ? "" : cells[i]).trim();
+  };
+
+  return rows.slice(headerAt + 1)
+    .filter((cells) => at(cells, "title"))
+    .map((cells, i) => {
+      const start = at(cells, "start time");
+      const end = at(cells, "end time");
+      const ticketUrl = at(cells, "ticket link");
+      return {
+        id: "ev-" + i,
+        title: at(cells, "title"),
+        category: normaliseCategory(at(cells, "category")),
+        date: parseSheetDate(at(cells, "date")),
+        venue: at(cells, "venue"),
+        time: [start, end].filter(Boolean).join(" – "),
+        ticketUrl: ticketUrl,
+        status: ticketUrl ? "onsale" : "announced",
+        description: "",
+      };
+    });
+}
+
+/* The filters only know these three, so anything else is folded in. */
+function normaliseCategory(v) {
+  const s = String(v || "").toLowerCase();
+  if (/work|class|lab/.test(s)) return "Workshop";
+  if (/talk|lecture|demo|panel|screen|film|exhib/.test(s)) return "Talk";
+  if (/perform|dance|music|show|puppet|kecak|kechak/.test(s)) return "Performance";
+  return v ? v.trim() : "Performance";
+}
+
+/* Accepts what a spreadsheet is likely to hand us: an ISO date, a
+   day-first 4/10/2026, or something Date can read. Day-first because the
+   sheet is kept in India. */
+function parseSheetDate(v) {
+  const s = String(v || "").trim();
+  if (!s) return "";
+  if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0, 10);
+
+  const dmy = s.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/);
+  if (dmy) {
+    return dmy[3] + "-" + String(dmy[2]).padStart(2, "0") + "-" + String(dmy[1]).padStart(2, "0");
+  }
+  const d = new Date(s);
+  if (!isNaN(d)) {
+    return d.getFullYear() + "-" +
+      String(d.getMonth() + 1).padStart(2, "0") + "-" +
+      String(d.getDate()).padStart(2, "0");
+  }
+  return ""; // unreadable: treated as "date to be announced"
+}
+
+async function loadEvents() {
+  // The sheet is the source of truth once it has rows in it.
+  if (CONFIG.SCHEDULE_URL) {
+    try {
+      const res = await fetch(CONFIG.SCHEDULE_URL, { cache: "no-store" });
+      if (res.ok) {
+        const events = parseSchedule(await res.text());
+        if (events.length) return events;
+      }
+    } catch (err) {
+      /* fall through to the file below */
+    }
+  }
+  return loadJSON(SOURCES.events);
+}
+
 /* ---------- Calendar ---------- */
 async function loadCalendar() {
   const grid = document.getElementById("calendar-grid");
@@ -226,7 +317,7 @@ async function loadCalendar() {
 
   let events = [];
   try {
-    events = await loadJSON(SOURCES.events);
+    events = await loadEvents();
   } catch (e) {
     grid.innerHTML = '<p class="loading">The calendar will appear here soon.</p>';
     return;
