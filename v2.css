@@ -79,33 +79,6 @@
   content: ""; width: 14px; height: 1px; background: var(--copper); display: inline-block;
 }
 
-/* ---------- Programme, as a numbered run of strands ---------- */
-.strands { display: grid; gap: 1px; background: var(--line); margin-top: 2.6rem; }
-.strand {
-  display: grid; grid-template-columns: 3.4rem 1fr auto; gap: 1.4rem; align-items: baseline;
-  background: var(--bg); padding: 1.4rem 1.2rem;
-  transition: background 0.15s ease;
-}
-.strand:hover { background: var(--bg-3); }
-.strand .n {
-  font-family: var(--display); font-variation-settings: "wdth" 125; font-weight: 900;
-  font-size: 1.1rem; color: var(--copper); font-variant-numeric: tabular-nums;
-}
-.strand h3 {
-  font-family: var(--display); font-variation-settings: "wdth" 125; font-weight: 800;
-  text-transform: uppercase; font-size: 1.05rem; margin: 0 0 0.3rem; color: var(--ink);
-}
-.strand p { margin: 0; color: var(--muted); font-size: 0.92rem; max-width: 54ch; }
-.strand .count {
-  font-family: var(--display); font-variation-settings: "wdth" 125; font-weight: 700;
-  font-size: 0.66rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted-2);
-  white-space: nowrap;
-}
-@media (max-width: 700px) {
-  .strand { grid-template-columns: 2.4rem 1fr; gap: 0.9rem; }
-  .strand .count { grid-column: 2; }
-}
-
 /* ---------- A quieter partners row ---------- */
 .partners-note {
   display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; justify-content: space-between;
