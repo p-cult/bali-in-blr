@@ -267,6 +267,23 @@ function validateForm(form) {
   return "";
 }
 
+/* Confirm a submission landed, using only its random id — never any
+   personal data, which must not travel in a URL. Polls because the row is
+   written a moment before the receipt becomes readable. */
+async function confirmBySid(sid, tries = 5) {
+  const url = CONFIG.BRIDGE_URL + "?verify=" + encodeURIComponent(sid);
+  for (let i = 0; i < tries; i++) {
+    await new Promise((r) => setTimeout(r, 900 + i * 600));
+    try {
+      const receipt = await loadJSON(url);
+      if (receipt && receipt.found) return receipt;
+    } catch (err) {
+      /* keep trying — the next attempt may succeed */
+    }
+  }
+  return null;
+}
+
 function wireForm(formId, noteId, messages) {
   const form = document.getElementById(formId);
   const note = document.getElementById(noteId);
@@ -291,59 +308,94 @@ function wireForm(formId, noteId, messages) {
     const label = btn.textContent;
     btn.disabled = true;
     btn.textContent = "Submitting…";
-    say("", "");
+    say(messages.pending || "Checking your details…", "");
 
     const done = () => {
       btn.disabled = false;
       btn.textContent = label;
     };
 
-    // No bridge configured yet → front-end demo mode.
+    // No bridge configured yet → demo mode. Nothing is stored, so we must
+    // not tell anyone their response was recorded.
     if (!CONFIG.BRIDGE_URL) {
-      say(messages.demo, "ok");
-      form.reset();
+      say(messages.demo, "");
       done();
       return;
     }
 
+    // A random id lets us confirm this exact submission afterwards without
+    // sending name, email or phone through a URL.
+    data.sid =
+      (crypto.randomUUID && crypto.randomUUID()) ||
+      String(Date.now()) + Math.random().toString(36).slice(2);
+
     const body = new URLSearchParams(data).toString();
     const headers = { "Content-Type": "application/x-www-form-urlencoded" };
 
+    // Confirm from the reply when the browser lets us read it, and otherwise
+    // by looking the receipt up. Either way the message below is only shown
+    // once the bridge has actually confirmed the submission.
+    let outcome = null;
     try {
-      // Read the reply where we can, so duplicates get an honest message.
       const res = await fetch(CONFIG.BRIDGE_URL, { method: "POST", headers, body });
       const out = await res.json();
-      if (out.ok === false) throw new Error(out.error || "Rejected");
-      say(out.duplicate ? messages.duplicate : messages.success, "ok");
-      if (!out.duplicate) form.reset();
-    } catch (err) {
-      // Some browsers block reading a cross-origin Apps Script reply. Resend
-      // opaquely: the row still saves and the bridge still de-duplicates, we
-      // just cannot tell the user whether it was a duplicate.
-      try {
-        await fetch(CONFIG.BRIDGE_URL, { method: "POST", mode: "no-cors", headers, body });
-        say(messages.success, "ok");
-        form.reset();
-      } catch (err2) {
-        say(messages.failure, "err");
+      if (out.ok === false) {
+        say(out.error === "Consent is required" ? messages.consent || messages.failure : messages.failure, "err");
+        done();
+        return;
       }
-    } finally {
-      done();
+      outcome = out;
+    } catch (err) {
+      // The reply was unreadable — but the POST itself may well have landed,
+      // so look for its receipt BEFORE resending. Resending blind would file
+      // a first-time entry as a duplicate.
+      say(messages.verifying || "Verifying your details…", "");
+      outcome = await confirmBySid(data.sid, 3);
+
+      if (!outcome) {
+        // No receipt: it really did not arrive. Send it again, opaquely.
+        // The bridge keys on sid, so a resend cannot double-book.
+        try {
+          await fetch(CONFIG.BRIDGE_URL, { method: "POST", mode: "no-cors", headers, body });
+        } catch (err2) {
+          say(messages.failure, "err");
+          done();
+          return;
+        }
+        outcome = await confirmBySid(data.sid, 4);
+      }
     }
+
+    if (!outcome) {
+      // Sent, but never confirmed — say exactly that rather than claim success.
+      say(messages.unconfirmed, "err");
+      done();
+      return;
+    }
+
+    say(outcome.duplicate ? messages.duplicate : messages.success, "ok");
+    if (!outcome.duplicate) form.reset();
+    done();
   });
 }
 
 wireForm("signup-form", "form-note", {
+  pending: "Checking your details…",
+  verifying: "Verifying your registration…",
   success: "Thank you for registering — we'll be in touch with festival updates.",
   duplicate: "You're already on the list — we have your details and will keep you posted.",
-  demo: "Thanks! Your registration form is ready — it will start saving once the data bridge is connected.",
+  demo: "Your details look good. Registrations start saving once the data bridge is connected.",
+  unconfirmed: "We couldn't confirm your registration just now. Please try again in a moment, or call +91 90350 34725.",
   failure: "Sorry, something went wrong. Please try again, or call +91 90350 34725.",
 });
 
 wireForm("volunteer-form", "volunteer-note", {
+  pending: "Checking your details…",
+  verifying: "Verifying your details…",
   success: "Your response has been recorded. Our team will connect with you soon using the details you've shared.",
   duplicate: "You've already registered to volunteer — your response is with us and our team will connect with you soon.",
-  demo: "Your response has been recorded. Our team will connect with you soon using the details you've shared.",
+  demo: "Your details look good. Volunteer responses start saving once the data bridge is connected.",
+  unconfirmed: "We couldn't confirm your response just now. Please try again in a moment, or call +91 90350 34725.",
   failure: "Sorry, we couldn't record your response. Please try again, or call +91 90350 34725.",
 });
 

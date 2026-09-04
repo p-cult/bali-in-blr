@@ -31,6 +31,15 @@
 const SHEET_ID = 'PASTE_SPREADSHEET_ID_HERE';
 
 const MASTER_TAB = 'Master';
+
+/**
+ * Receipt log. Holds NO personal data — just the random submission id the
+ * browser generated, so a form can confirm its submission landed even when
+ * the browser refuses to read our reply. Never put PII in this tab: it is
+ * looked up over a URL.
+ */
+const LOG_TAB = 'Receipts';
+const LOG_HEADERS = ['Submission ID', 'Timestamp', 'Flavour', 'Result'];
 const MASTER_HEADERS = [
   'First seen', 'Full Name', 'Phone', 'Email', 'Sources', 'Submissions', 'Last seen', 'Consent'
 ];
@@ -84,8 +93,19 @@ function doPost(e) {
 
     const ss = SpreadsheetApp.openById(SHEET_ID);
 
+    const sid = clean(p.sid);
+
+    // 0. Idempotency: if this exact submission already has a receipt, the row
+    //    is already in — a resend after an unreadable reply must not become a
+    //    second row, nor be reported back as a duplicate registration.
+    if (sid) {
+      const seen = readReceipt(sid);
+      if (seen.found) return json({ ok: true, duplicate: seen.duplicate, replayed: true });
+    }
+
     // 1. Already registered for THIS flavour? Then it is a double entry.
     if (findPersonRow(tab(ss, flavour.tab, flavourHeaders(flavour)), name, phone, email, 2, 3, 4)) {
+      logReceipt(ss, sid, key, 'duplicate');
       return json({ ok: true, duplicate: true });
     }
 
@@ -99,12 +119,38 @@ function doPost(e) {
     // 3. Upsert the person into Master.
     upsertMaster(ss, name, phone, email, flavour.label, clean(p.consent));
 
+    // 4. Leave a receipt the browser can look up to confirm this landed.
+    logReceipt(ss, sid, key, 'saved');
+
     return json({ ok: true, duplicate: false });
   } catch (err) {
     return json({ ok: false, error: String(err) });
   } finally {
     try { lock.releaseLock(); } catch (ignored) {}
   }
+}
+
+/** Record the outcome against the submission id. No personal data here. */
+function logReceipt(ss, sid, flavourKey, result) {
+  if (!sid) return;
+  tab(ss, LOG_TAB, LOG_HEADERS).appendRow([sid, new Date(), flavourKey, result]);
+}
+
+/** Look up a receipt by submission id. Returns { found, result }. */
+function readReceipt(sid) {
+  const wanted = clean(sid);
+  if (!wanted) return { found: false };
+  const ss = SpreadsheetApp.openById(SHEET_ID);
+  const sh = ss.getSheetByName(LOG_TAB);
+  if (!sh || sh.getLastRow() < 2) return { found: false };
+  const values = sh.getRange(1, 1, sh.getLastRow(), 4).getValues();
+  // Newest first: a retry is far more likely to be recent.
+  for (let i = values.length - 1; i >= 1; i--) {
+    if (clean(values[i][0]) === wanted) {
+      return { found: true, result: clean(values[i][3]), duplicate: clean(values[i][3]) === 'duplicate' };
+    }
+  }
+  return { found: false };
 }
 
 function flavourHeaders(flavour) {
@@ -202,8 +248,10 @@ function tab(ss, name, headers) {
 function doGet(e) {
   const which = ((e && e.parameter && e.parameter.sheet) || '').toLowerCase();
   const callback = e && e.parameter && e.parameter.callback; // optional JSONP
+  const verify = e && e.parameter && e.parameter.verify;     // submission id
   let data;
-  if (which === 'events') data = readTab('Events');
+  if (verify) data = readReceipt(verify);
+  else if (which === 'events') data = readTab('Events');
   else if (which === 'partners') data = readTab('Partners');
   else if (which === 'stats') data = readStats();
   else data = { ok: true, service: 'Bali in Bengaluru bridge' };

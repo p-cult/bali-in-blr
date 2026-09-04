@@ -26,6 +26,7 @@ header rows — you do not need to make them:
 | `Master` | One row per **person**, deduplicated. `First seen, Full Name, Phone, Email, Sources, Submissions, Last seen, Consent` |
 | `Signups` | Every "register for updates" submission |
 | `Volunteers` | Every volunteering submission |
+| `Receipts` | Submission ids and their outcome. **No personal data** — it is looked up over a URL to confirm a submission landed |
 
 **`Sources`** is the column that records where a contact came from — a person who
 registers for updates and later volunteers stays **one row**, with
@@ -138,9 +139,17 @@ Bump the cache-busting version on the script tag in `index.html`
 ### If the calendar/partners don't load (CORS)
 Handled automatically — no action needed. Cross-origin `GET` to Apps Script
 normally works with `fetch`; if a browser blocks it, `main.js` retries the read
-over **JSONP** (`?callback=`), which `Code.gs` speaks. Form submissions likewise
-fall back to an opaque `no-cors` POST: the row still saves and the bridge still
-de-duplicates, we just can't tell the visitor it was a duplicate in that case.
+over **JSONP** (`?callback=`), which `Code.gs` speaks.
+
+### How a submission is confirmed
+The visitor is told their response was recorded **only after the bridge confirms
+it** — never on the strength of having clicked Submit. Each submission carries a
+random `sid`. Normally the reply is read directly. If the browser blocks that
+read, the site looks up the **receipt** for that `sid` instead (no personal data
+in the URL) and only resends if no receipt exists. `doPost` keys on `sid`, so a
+resend can never create a second row or be misreported as a duplicate. If nothing
+can be confirmed, the visitor is told so and asked to retry — we never claim a
+response was saved when we do not know that it was.
 
 ---
 
