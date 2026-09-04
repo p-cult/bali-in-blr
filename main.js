@@ -66,6 +66,84 @@ async function loadJSON(url) {
   }
 }
 
+/* ---------- In-page views ----------
+   The onboarding forms live on their own screen without being separate
+   pages. Opening one overlays the site; "back to main page" just hides it
+   again, so the main page is untouched underneath — same scroll position,
+   nothing reloaded. Routed off the hash, so existing #register /
+   #volunteer links work and the browser's own Back button closes a view. */
+(function views() {
+  const views = Array.from(document.querySelectorAll(".page-view"));
+  if (!views.length) return;
+
+  const KEYS = views.map((v) => v.id);
+  let restoreScrollTo = 0;
+  let pendingScroll = null; // captured on click, before the hash moves
+  let lastFocus = null;
+
+  function close({ silent = false } = {}) {
+    const open = views.find((v) => !v.hidden);
+    if (!open) return;
+    open.hidden = true;
+    document.body.classList.remove("view-open");
+    // Instant, not smooth: closing should put the page back where it was,
+    // not animate a scroll the visitor never asked for.
+    window.scrollTo({ top: restoreScrollTo, behavior: "instant" });
+    if (lastFocus && document.contains(lastFocus)) lastFocus.focus();
+    lastFocus = null;
+    if (!silent && KEYS.indexOf(location.hash.slice(1)) !== -1) {
+      history.replaceState(null, "", location.pathname + location.search);
+    }
+  }
+
+  function open(id) {
+    const view = views.find((v) => v.id === id);
+    if (!view) return close();
+    if (!view.hidden) return;
+
+    // Remember where the main page was, but not while another view is open.
+    if (!document.body.classList.contains("view-open")) {
+      // Prefer the position captured on click: by the time the hash has
+      // changed the browser may already have jumped the page.
+      restoreScrollTo = pendingScroll == null ? window.scrollY : pendingScroll;
+      lastFocus = document.activeElement;
+    }
+    pendingScroll = null;
+    views.forEach((v) => { v.hidden = v !== view; });
+    document.body.classList.add("view-open");
+    view.scrollTop = 0;
+    const heading = view.querySelector("h2, .view-back");
+    if (heading) heading.focus({ preventScroll: true });
+  }
+
+  function route() {
+    const id = location.hash.slice(1);
+    if (KEYS.indexOf(id) !== -1) open(id); else close({ silent: true });
+  }
+
+  document.addEventListener("click", (e) => {
+    // Any link to a view: note the scroll position before the hash moves.
+    const link = e.target.closest('a[href^="#"]');
+    if (link && KEYS.indexOf(link.getAttribute("href").slice(1)) !== -1) {
+      pendingScroll = window.scrollY;
+    }
+
+    const back = e.target.closest("[data-close-view]");
+    if (!back) return;
+    e.preventDefault();
+    // Prefer real Back so the view leaves no dead entry in history.
+    if (KEYS.indexOf(location.hash.slice(1)) !== -1 && history.length > 1) history.back();
+    else close();
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && document.body.classList.contains("view-open")) close();
+  });
+
+  window.addEventListener("hashchange", route);
+  route(); // honour a #register / #volunteer link arrived at directly
+})();
+
 /* ---------- Footer year ---------- */
 document.getElementById("year").textContent = new Date().getFullYear();
 
