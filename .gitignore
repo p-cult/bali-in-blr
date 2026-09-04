@@ -3,3 +3,9 @@ node_modules/
 *.log
 .env
 .env.*
+
+# Private notes: only the sealed file is committed. The key that opens it
+# lives on the external drive, outside this repository, and never online.
+secure/vault.json
+secure/*.plain
+.secrets/
