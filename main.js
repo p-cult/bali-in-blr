@@ -199,7 +199,7 @@ const CAMPAIGN_REF = readRef();
    Apps Script normally allows cross-origin GET, but some browsers/
    configurations block it. Code.gs also speaks JSONP (?callback=),
    so fall back to that rather than showing an empty calendar. */
-function jsonpLoad(url, timeoutMs = 10000) {
+function jsonpLoad(url, timeoutMs = 4000) {
   return new Promise((resolve, reject) => {
     const cb = "__baliCb" + Math.random().toString(36).slice(2);
     const script = document.createElement("script");
@@ -681,10 +681,15 @@ function showFieldError(form, fieldName, message) {
 /* Confirm a submission landed, using only its random id — never any
    personal data, which must not travel in a URL. Polls because the row is
    written a moment before the receipt becomes readable. */
-async function confirmBySid(sid, tries = 5) {
+async function confirmBySid(sid, tries = 5, budgetMs = 9000) {
   const url = CONFIG.BRIDGE_URL + "?verify=" + encodeURIComponent(sid);
-  for (let i = 0; i < tries; i++) {
+  // A budget as well as a count: each attempt can fall back to JSONP and wait
+  // on its own timeout, so without one a bad network left someone watching
+  // "Verifying…" for over a minute before being told anything.
+  const deadline = Date.now() + budgetMs;
+  for (let i = 0; i < tries && Date.now() < deadline; i++) {
     await new Promise((r) => setTimeout(r, 900 + i * 600));
+    if (Date.now() >= deadline) break;
     try {
       const receipt = await loadJSON(url);
       if (receipt && receipt.found) return receipt;
@@ -732,7 +737,7 @@ async function checkAlreadyRegistered(form) {
     } catch (err2) {
       return null;
     }
-    const receipt = await confirmBySid(submission, 3);
+    const receipt = await confirmBySid(submission, 3, 6000);
     if (receipt && receipt.found) return receipt.result === "exists";
   }
   return null; // unknown: never block someone on a failed check
@@ -765,6 +770,15 @@ function wireForm(formId, noteId, messages) {
   }
 
   idFields.forEach((f) => {
+    // Editing any identifying field makes the previous verdict stale. Without
+    // this, someone told "already registered" stays blocked even after
+    // correcting the typo that matched somebody else.
+    form.elements[f].addEventListener("input", () => {
+      if (alreadyRegistered) {
+        alreadyRegistered = false;
+        if (note.textContent === messages.alreadyRegistered) say("", "");
+      }
+    });
     form.elements[f].addEventListener("blur", () => {
       // Only worth asking once the field is plausibly complete.
       if (validateForm(form) === null || form.elements[f].value.trim()) runCheck();
@@ -855,7 +869,7 @@ function wireForm(formId, noteId, messages) {
       // so look for its receipt BEFORE resending. Resending blind would file
       // a first-time entry as a duplicate.
       say(messages.verifying || "Verifying your details…", "");
-      outcome = await confirmBySid(data.submission, 3);
+      outcome = await confirmBySid(data.submission, 3, 7000);
 
       if (!outcome) {
         // No receipt: it really did not arrive. Send it again, opaquely.
@@ -867,7 +881,7 @@ function wireForm(formId, noteId, messages) {
           done();
           return;
         }
-        outcome = await confirmBySid(data.submission, 4);
+        outcome = await confirmBySid(data.submission, 4, 9000);
       }
     }
 

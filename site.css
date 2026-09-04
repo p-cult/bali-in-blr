@@ -50,12 +50,6 @@
   background-color: var(--bg-2);
   opacity: 0.5;
 }
-.seam-wave {
-  height: 22px;
-  background: repeating-linear-gradient(90deg, var(--copper) 0 2px, transparent 2px 12px);
-  opacity: 0.35;
-}
-
 /* ---------- Hero, rebuilt ----------
    The wordmark is the page's thesis, so it gets the room. */
 /* Was 88vh with the content pinned to the bottom, which left a field of
@@ -92,22 +86,7 @@
 }
 
 /* ---------- A quieter partners row ---------- */
-.partners-note {
-  display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; justify-content: space-between;
-  padding: 1.4rem 1.5rem; background: var(--bg-3); border-left: 3px solid var(--copper);
-}
-.partners-note p { margin: 0; max-width: 46ch; }
-
 /* ---------- Footer seam ---------- */
-.v2-badge {
-  position: fixed; right: 12px; bottom: 12px; z-index: 300;
-  background: var(--copper); color: var(--bg);
-  font-family: var(--display); font-variation-settings: "wdth" 125; font-weight: 700;
-  font-size: 0.6rem; letter-spacing: 0.12em; text-transform: uppercase;
-  padding: 0.4rem 0.7rem; border-radius: 2px; text-decoration: none;
-}
-.v2-badge:hover { background: var(--accent); }
-
 /* ---------- Support, on maroon ----------
    The first attempt put translucent cards on the red, which went brown, and
    an orange button on red, which fought it. Maroon is a strong ground: it

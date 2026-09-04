@@ -1,4 +1,7 @@
 User-agent: *
 Allow: /
 
+# The previous design, kept only for reference
+Disallow: /v1.html
+
 Sitemap: https://bali-in-blr.paramfoundation.org/sitemap.xml
