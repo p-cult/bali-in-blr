@@ -26,7 +26,9 @@ function sourceFor(sheet, localUrl) {
     : localUrl;
 }
 const SOURCES = {
-  events: sourceFor("events", CONFIG.LOCAL_EVENTS_URL),
+  // The calendar is curated in data/events.json, not in the registration
+  // spreadsheet, so it does not follow BRIDGE_URL. See docs/BRIDGE-SETUP.md.
+  events: CONFIG.LOCAL_EVENTS_URL,
   partners: sourceFor("partners", CONFIG.LOCAL_PARTNERS_URL),
   stats: CONFIG.BRIDGE_URL ? sourceFor("stats", "") : "",
 };
@@ -282,23 +284,36 @@ async function loadCalendar() {
     return '<span class="cal-soon">Tickets coming soon</span>';
   }
 
+  /* One bar per event, stacked in date order — not a grid of cards. */
   function cardHTML(ev) {
-    const date = ev.date ? formatDate(ev.date) : "Date to be announced";
-    const meta = [ev.time, ev.venue].filter(Boolean).map(esc).join(" · ");
-    const img = ev.image
-      ? `<div class="cal-img"><img src="${esc(ev.image)}" alt="${esc(ev.title)}" loading="lazy" /></div>`
+    const d = ev.date ? new Date(ev.date + "T00:00:00") : null;
+    const day = d && !isNaN(d) ? String(d.getDate()).padStart(2, "0") : "--";
+    const mon = d && !isNaN(d)
+      ? d.toLocaleDateString("en-IN", { month: "short" }).toUpperCase()
+      : "TBA";
+    const weekday = d && !isNaN(d)
+      ? d.toLocaleDateString("en-IN", { weekday: "short" })
       : "";
+    const meta = [ev.time, ev.venue].filter(Boolean).map(esc).join(" · ");
+
     return `
-      <article class="cal-card">
-        ${img}
-        <div class="cal-body">
-          <div class="cal-top">${statusBadge(ev)}<span class="cal-cat">${esc(ev.category || "")}</span></div>
-          <p class="cal-date">${date}</p>
+      <article class="cal-bar" data-category="${esc(ev.category || "")}">
+        <div class="cal-when">
+          <span class="cal-day">${day}</span>
+          <span class="cal-mon">${mon}</span>
+          <span class="cal-weekday">${esc(weekday)}</span>
+        </div>
+        <div class="cal-what">
+          <div class="cal-tags">
+            <span class="cal-cat">${esc(ev.category || "")}</span>
+            ${ev.collab ? '<span class="cal-collab">Collaboration</span>' : ""}
+            ${statusBadge(ev)}
+          </div>
           <h4>${esc(ev.title)}</h4>
           ${meta ? `<p class="cal-meta">${meta}</p>` : ""}
           ${ev.description ? `<p class="cal-desc">${esc(ev.description)}</p>` : ""}
-          <div class="cal-action">${actionHTML(ev)}</div>
         </div>
+        <div class="cal-action">${actionHTML(ev)}</div>
       </article>`;
   }
 }

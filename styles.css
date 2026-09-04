@@ -429,6 +429,74 @@ em { font-style: italic; }
 .partners-empty p { color: var(--muted); margin: 0 0 1.3rem; }
 
 /* ===== Responsive ===== */
+/* ---------- Calendar: one bar per event, stacked in date order ---------- */
+.wrap-narrow { max-width: 860px; }
+
+.calendar-list { display: flex; flex-direction: column; gap: 0.7rem; margin-top: 2rem; }
+
+.cal-bar {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr) auto;
+  gap: 1.2rem;
+  align-items: center;
+  padding: 1rem 1.2rem;
+  background: var(--bg-3);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent);
+  border-radius: 8px;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+.section-tint .cal-bar { background: var(--bg); }
+.cal-bar:hover { border-color: var(--muted-2); border-left-color: var(--accent-2); }
+
+/* The date block reads as one unit at a glance. */
+.cal-when {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  padding-right: 1.1rem;
+  border-right: 1px solid var(--line);
+  line-height: 1;
+}
+.cal-day { font-family: var(--display); font-weight: 900; font-size: 1.7rem; color: var(--ink); }
+.cal-mon {
+  font-family: var(--display); font-weight: 700; font-size: 0.7rem;
+  letter-spacing: 0.12em; color: var(--accent-2); margin-top: 0.25rem;
+}
+.cal-weekday { font-size: 0.68rem; color: var(--muted-2); margin-top: 0.3rem; }
+
+.cal-what { min-width: 0; }
+.cal-what h4 {
+  font-family: var(--display); font-weight: 800; font-size: 1.05rem;
+  color: var(--ink); margin: 0.35rem 0 0.25rem; line-height: 1.2;
+}
+.cal-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; }
+.cal-cat, .cal-collab {
+  font-family: var(--display); font-size: 0.62rem; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 0.2rem 0.5rem; border-radius: 3px;
+}
+.cal-cat { background: rgba(255, 255, 255, 0.07); color: var(--muted); }
+.cal-collab { background: rgba(255, 210, 60, 0.14); color: var(--accent-2); }
+.cal-meta { color: var(--muted); font-size: 0.88rem; margin: 0; }
+.cal-desc { color: var(--muted-2); font-size: 0.85rem; margin: 0.3rem 0 0; }
+.cal-action { flex: none; }
+.cal-soon { font-size: 0.78rem; color: var(--muted-2); font-style: italic; white-space: nowrap; }
+
+@media (max-width: 620px) {
+  /* Stack the bar itself: date across the top, action full width beneath. */
+  .cal-bar {
+    grid-template-columns: 56px minmax(0, 1fr);
+    gap: 0.9rem;
+    padding: 0.9rem 1rem;
+  }
+  .cal-when { padding-right: 0.8rem; }
+  .cal-day { font-size: 1.4rem; }
+  .cal-action { grid-column: 1 / -1; }
+  .cal-action .btn { display: block; width: 100%; text-align: center; }
+  .cal-soon { display: block; text-align: center; }
+}
+
 /* ---------- Onboarding carousel ----------
    Mobile is the case that matters: progress, one question, and its
    buttons should sit in a single screen with no scrolling. */
