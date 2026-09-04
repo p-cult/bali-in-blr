@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Design direction — Bali in Bengaluru</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <!-- The live stylesheet, so this page cannot drift from the site -->
+  <link rel="stylesheet" href="styles.css?v=hub21" />
+  <style>
+    /* Preview-only scaffolding. Every colour below comes from the tokens. */
+    .pv { max-width: 1000px; margin: 0 auto; padding: 0 clamp(1.2rem, 4vw, 2.5rem); }
+    .pv section { padding: clamp(2.4rem, 6vw, 3.6rem) 0; border-top: 1px solid var(--line); }
+    .pv h2 {
+      font-family: var(--display); text-transform: uppercase;
+      font-size: clamp(1.4rem, 3.4vw, 2.1rem); line-height: 1; margin: 0 0 1.2rem; color: var(--ink);
+    }
+    .pv p { max-width: 62ch; }
+    .pv .head { padding: clamp(3rem, 8vw, 5rem) 0 1rem; }
+    .pv .head h1 {
+      font-family: var(--display); text-transform: uppercase;
+      font-size: clamp(2rem, 8vw, 4.6rem); line-height: 0.95; margin: 0; color: var(--ink);
+    }
+    .pv .head h1 em { font-style: normal; color: var(--accent); }
+
+    .sw-grid { display: grid; gap: 0.8rem; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+    .sw { background: var(--bg-3); }
+    .sw i { display: block; height: 72px; }
+    .sw span { display: block; padding: 0.6rem 0.7rem 0.75rem; }
+    .sw b { display: block; font-size: 0.82rem; color: var(--ink); font-weight: 500; }
+    .sw code {
+      display: block; font-size: 0.72rem; color: var(--muted);
+      font-variant-numeric: tabular-nums; letter-spacing: 0.03em;
+    }
+    .sw u { display: block; margin-top: 0.3rem; font-size: 0.66rem; color: var(--accent-2); text-decoration: none; }
+
+    .pv table { border-collapse: collapse; width: 100%; min-width: 400px; font-size: 0.85rem; }
+    .pv .scroll { overflow-x: auto; }
+    .pv th {
+      font-family: var(--display); text-transform: uppercase; font-size: 0.66rem;
+      letter-spacing: 0.12em; color: var(--accent-2); text-align: left;
+      padding: 0.5rem 0.7rem; border-bottom: 1px solid var(--line);
+    }
+    .pv td { padding: 0.5rem 0.7rem; border-bottom: 1px solid var(--line); color: var(--muted); }
+    .pv td.n { font-variant-numeric: tabular-nums; color: var(--ink); }
+    .pv .no { color: var(--oxblood); }
+
+    .spec { background: var(--bg-3); padding: 1.3rem 1.4rem; margin-bottom: 0.9rem; }
+    .spec .lab {
+      font-family: var(--display); text-transform: uppercase; font-size: 0.66rem;
+      letter-spacing: 0.14em; color: var(--accent-2); margin: 0 0 0.7rem;
+    }
+    .spec .big {
+      font-family: var(--display); text-transform: uppercase; line-height: 0.95;
+      font-size: clamp(1.5rem, 4.6vw, 2.4rem); margin: 0; color: var(--ink);
+    }
+
+    .motifs { display: grid; gap: 0.8rem; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); }
+    .motif { height: 120px; position: relative; overflow: hidden; background: var(--ink); }
+    .motif figcaption {
+      position: absolute; left: 0; bottom: 0; padding: 0.28rem 0.5rem; background: var(--bg);
+      color: var(--ink); font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase;
+    }
+    .scallop { background: radial-gradient(circle at 50% 100%, var(--bg) 46%, transparent 47%) 0 0/32px 16px, var(--ink); }
+    .harlequin { background: repeating-conic-gradient(from 45deg at 50% 50%, var(--bg) 0deg 90deg, transparent 90deg 180deg) 0 0/38px 38px, var(--ink); }
+    .wave svg { display: block; width: 100%; height: 100%; }
+
+    .grounds { display: grid; gap: 1.1rem; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+    .ground { padding: 1.3rem; border: 1px solid var(--line); }
+    .ground.dark { background: var(--bg); }
+    .ground.light { background: #F0EADF; border-color: #DCD3C4; }
+    .ground > h3 {
+      font-family: var(--display); text-transform: uppercase; font-size: 0.66rem;
+      letter-spacing: 0.14em; margin: 0 0 1rem;
+    }
+    .ground.dark > h3 { color: var(--accent-2); }
+    .ground.light > h3 { color: var(--copper-deep); }
+
+    .bar { display: grid; grid-template-columns: 54px 1fr; gap: 0.85rem; align-items: center; padding: 0.8rem 0.95rem; }
+    .ground.dark .bar { background: var(--bg-3); border-left: 3px solid var(--accent); }
+    .ground.light .bar { background: #E5DCCC; border-left: 3px solid var(--copper-deep); }
+    .bar .d { text-align: center; line-height: 1; }
+    .bar .d b { display: block; font-family: var(--display); font-size: 1.45rem; font-variant-numeric: tabular-nums; }
+    .bar .d i { display: block; margin-top: 0.2rem; font-style: normal; font-size: 0.6rem; letter-spacing: 0.14em; text-transform: uppercase; }
+    .ground.dark .bar .d b { color: var(--ink); } .ground.dark .bar .d i { color: var(--accent-2); }
+    .ground.light .bar .d b { color: #16110E; } .ground.light .bar .d i { color: var(--copper-deep); }
+    .bar h4 { font-family: var(--display); text-transform: uppercase; font-size: 0.9rem; margin: 0.25rem 0 0.15rem; }
+    .ground.dark .bar h4 { color: var(--ink); } .ground.light .bar h4 { color: #16110E; }
+    .bar p { font-size: 0.76rem; margin: 0; }
+    .ground.dark .bar p { color: var(--muted); } .ground.light .bar p { color: #6A6055; }
+    .tg { display: flex; gap: 0.3rem; flex-wrap: wrap; }
+    .tg span { font-size: 0.58rem; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.14rem 0.38rem; }
+    .ground.dark .tg span { background: rgba(245,240,230,0.07); color: var(--muted); }
+    .ground.dark .tg span.hi { background: rgba(200,121,65,0.2); color: var(--accent-2); }
+    .ground.light .tg span { background: rgba(22,17,14,0.08); color: #6A6055; }
+    .ground.light .tg span.hi { background: rgba(142,74,36,0.14); color: var(--copper-deep); }
+    .cta {
+      display: inline-block; margin-top: 0.9rem; padding: 0.65rem 1.4rem; border: 0;
+      font-family: var(--display); text-transform: uppercase; font-size: 0.74rem; letter-spacing: 0.05em;
+    }
+    .ground.dark .cta { background: var(--accent); color: var(--bg); }
+    .ground.light .cta { background: var(--copper-deep); color: #F0EADF; }
+    .fine { font-size: 0.7rem; line-height: 1.55; margin: 0.9rem 0 0; max-width: 44ch; }
+    .ground.dark .fine { color: #9C948A; } .ground.light .fine { color: #6A6055; }
+
+    .asks { display: grid; gap: 0.7rem; }
+    .ask { display: grid; grid-template-columns: 1.6rem 1fr; gap: 0.8rem; padding: 1rem 1.1rem; background: var(--bg-3); }
+    .ask b { font-family: var(--display); color: var(--accent-2); font-size: 0.95rem; }
+    .ask h4 { margin: 0 0 0.25rem; font-size: 0.92rem; color: var(--ink); font-weight: 600; }
+    .ask p { margin: 0; font-size: 0.86rem; }
+  </style>
+</head>
+<body>
+
+<div class="pv">
+
+  <header class="head">
+    <p class="eyebrow">Design direction · second pass</p>
+    <h1>Bali <em>in</em> Bengaluru</h1>
+    <p style="margin-top:1.4rem">
+      Set in <strong>Grvtrn mn</strong>, the licensed face — this is the real font
+      file, not a stand-in. Copper on charcoal, with the palette sampled from the
+      Design Language board rather than guessed from its title.
+    </p>
+  </header>
+
+  <section>
+    <h2>What changed since the first pass</h2>
+    <p>
+      I had taken the colours from the board's <em>description</em> — Pantone 871 C,
+      rose smoke — and proposed a muted gold. Sampling the ten pins directly gave a
+      different palette: <strong>black and charcoal, oxblood and deep maroon,
+      cream</strong>, with a warm metallic on top. Copper takes that metallic
+      position, and unlike the gold it survives as text: 5.5 against charcoal,
+      where saffron was decoration only.
+    </p>
+  </section>
+
+  <section>
+    <h2>Palette</h2>
+    <p>Sampled from the ten pins, then tuned to hold contrast on both grounds.</p>
+    <div class="sw-grid">
+      <div class="sw"><i style="background:#141414;box-shadow:inset 0 0 0 1px var(--line)"></i>
+        <span><b>Charcoal</b><code>#141414</code><u>Ground</u></span></div>
+      <div class="sw"><i style="background:#C87941"></i>
+        <span><b>Copper</b><code>#C87941</code><u>Accent</u></span></div>
+      <div class="sw"><i style="background:#E0A470"></i>
+        <span><b>Copper, polished</b><code>#E0A470</code><u>Labels</u></span></div>
+      <div class="sw"><i style="background:#8E4A24"></i>
+        <span><b>Copper, oxidised</b><code>#8E4A24</code><u>For cream</u></span></div>
+      <div class="sw"><i style="background:#782828"></i>
+        <span><b>Oxblood</b><code>#782828</code><u>Sampled — 10%</u></span></div>
+      <div class="sw"><i style="background:#500000"></i>
+        <span><b>Deep maroon</b><code>#500000</code><u>Sampled — 9%</u></span></div>
+      <div class="sw"><i style="background:#F0EADF"></i>
+        <span><b>Cream</b><code>#F0EADF</code><u>Paper</u></span></div>
+      <div class="sw"><i style="background:#C88C64"></i>
+        <span><b>Clay</b><code>#C88C64</code><u>Sampled</u></span></div>
+    </div>
+
+    <h3 style="font-family:var(--sans);font-size:0.95rem;margin:2rem 0 0.5rem;color:var(--ink)">Measured, not assumed</h3>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Colour</th><th>On charcoal</th><th>On cream</th><th>Where it may be used</th></tr></thead>
+        <tbody>
+          <tr><td>Cream #F5F0E6</td><td class="n">16.22</td><td>—</td><td>Body text on charcoal</td></tr>
+          <tr><td>Copper polished #E0A470</td><td class="n">8.52</td><td class="no">1.81</td><td>Labels, eyebrows</td></tr>
+          <tr><td>Copper #C87941</td><td class="n">5.50</td><td class="no">2.80</td><td>Buttons, links, rules</td></tr>
+          <tr><td>Copper oxidised #8E4A24</td><td class="no">2.77</td><td class="n">5.56</td><td>The cream ground's accent</td></tr>
+          <tr><td>Oxblood #782828</td><td class="no">1.87</td><td class="n">8.22</td><td>Surface on dark, text on cream</td></tr>
+          <tr><td>Charcoal #141414</td><td>—</td><td class="n">15.39</td><td>Body text on cream</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top:1rem">
+      Copper flips with the ground: the lit one carries the charcoal pages, the
+      oxidised one carries anything on cream. Oxblood behaves oppositely — a
+      surface in the dark, a text colour on paper.
+    </p>
+  </section>
+
+  <section>
+    <h2>Type</h2>
+    <div class="spec">
+      <p class="lab">Display — Grvtrn mn, licensed</p>
+      <p class="big">Kecak at the amphitheatre</p>
+      <p style="font-size:0.78rem;color:var(--muted);margin:0.8rem 0 0;max-width:62ch">
+        One weight only, so hierarchy comes from size, case and colour — never
+        from a bold that does not exist. It has no rupee glyph, so ticket prices
+        are set in the body face on purpose.
+      </p>
+    </div>
+    <div class="spec">
+      <p class="lab">Body — Instrument Sans</p>
+      <p style="font-size:1.02rem;margin:0;color:var(--muted);max-width:62ch">
+        Kecak, the vocal chant of Bali, is a complex form of performing arts
+        integrating three main elements: vocal chanting, dance, and storytelling.
+      </p>
+      <p style="font-size:0.78rem;color:var(--muted);margin:0.8rem 0 0">
+        Sans throughout, as you asked. Quiet on purpose: the character is in the
+        display face and the pattern.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Pattern</h2>
+    <p>Drawn in CSS and SVG — scales to any collateral, costs nothing to load.</p>
+    <div class="motifs">
+      <figure class="motif scallop" style="margin:0"><figcaption>Scallop</figcaption></figure>
+      <figure class="motif harlequin" style="margin:0"><figcaption>Harlequin</figcaption></figure>
+      <figure class="motif wave" style="margin:0;background:var(--ink)">
+        <svg viewBox="0 0 200 120" preserveAspectRatio="none" aria-hidden="true">
+          <g fill="none" stroke="#141414" stroke-width="7">
+            <path d="M-10 16 q 12 -14 24 0 t 24 0 t 24 0 t 24 0 t 24 0 t 24 0 t 24 0 t 24 0" />
+            <path d="M-10 44 q 12 -14 24 0 t 24 0 t 24 0 t 24 0 t 24 0 t 24 0 t 24 0 t 24 0" />
+            <path d="M-10 72 q 12 -14 24 0 t 24 0 t 24 0 t 24 0 t 24 0 t 24 0 t 24 0 t 24 0" />
+            <path d="M-10 100 q 12 -14 24 0 t 24 0 t 24 0 t 24 0 t 24 0 t 24 0 t 24 0 t 24 0" />
+          </g>
+        </svg>
+        <figcaption>Wave</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section>
+    <h2>Both grounds, real content</h2>
+    <p>
+      An actual event from the calendar and the actual consent sentence — the
+      charcoal one is what the site now looks like; the cream one is what it would
+      become.
+    </p>
+    <div class="grounds">
+      <div class="ground dark">
+        <h3>Charcoal — built</h3>
+        <div class="bar">
+          <div class="d"><b>11</b><i>Oct</i></div>
+          <div>
+            <div class="tg"><span>Performance</span><span class="hi">Collaboration</span></div>
+            <h4>Kecak performance</h4>
+            <p>Evening · PCPA Amphitheatre</p>
+          </div>
+        </div>
+        <button class="cta" type="button">Book passes</button>
+        <p class="fine">
+          I'm 18 or over, and I agree to be contacted by the Param Foundation team
+          about volunteering at Bali in Bengaluru. They're my own details, or I
+          have permission to share them.
+        </p>
+      </div>
+      <div class="ground light">
+        <h3>Cream — the alternative</h3>
+        <div class="bar">
+          <div class="d"><b>11</b><i>Oct</i></div>
+          <div>
+            <div class="tg"><span>Performance</span><span class="hi">Collaboration</span></div>
+            <h4>Kecak performance</h4>
+            <p>Evening · PCPA Amphitheatre</p>
+          </div>
+        </div>
+        <button class="cta" type="button">Book passes</button>
+        <p class="fine">
+          I'm 18 or over, and I agree to be contacted by the Param Foundation team
+          about volunteering at Bali in Bengaluru. They're my own details, or I
+          have permission to share them.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Settled, and still open</h2>
+    <div class="asks">
+      <div class="ask"><b>✓</b><div><h4>Charcoal ground, copper accent, sans throughout</h4>
+        <p>Live on the site now — this page and the festival site read the same stylesheet.</p></div></div>
+      <div class="ask"><b>✓</b><div><h4>Grvtrn mn, self-hosted</h4>
+        <p>Embedding is unrestricted in the file itself, so it is served from the site. Keep the licence with the Foundation's records — it is deliberately not in the repository.</p></div></div>
+      <div class="ask"><b>1</b><div><h4>The wordmark is still type, not artwork</h4>
+        <p>You asked for artwork, and the Drive folder needs a signed-in session I do not have. Sign in and I will swap it for the real lockup.</p></div></div>
+      <div class="ask"><b>2</b><div><h4>Oxblood and maroon are unused</h4>
+        <p>A fifth of the board, and currently nowhere on the site. They would suit section grounds and poster panels — say the word and I will work them in.</p></div></div>
+    </div>
+  </section>
+
+  <footer style="padding:2.5rem 0 3.5rem;border-top:1px solid var(--line)">
+    <p style="font-size:0.8rem;color:var(--muted)">
+      Colours sampled from ten pins on the Design Language board. Contrast figures
+      measured against each ground. <a class="text-link" href="index.html">Back to the festival site</a>
+    </p>
+  </footer>
+
+</div>
+</body>
+</html>
