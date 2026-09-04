@@ -72,6 +72,37 @@ To add a flavour later (say, `workshop-interest`), add one entry to the `FLAVOUR
 block at the top of `Code.gs` and give the new form a matching
 `<input type="hidden" name="flavour" value="…">`. Nothing else changes.
 
+### Questions (the card carousel)
+
+Before the signup card, each form asks a few questions one card at a time, with
+a progress bar and swipe-left to advance. They live in **`data/questions.json`**,
+so they can be reworded, reordered, added or removed without touching any code:
+
+```json
+{
+  "volunteer": [
+    { "id": "areas",
+      "title": "Where would you like to help?",
+      "hint": "Choose as many as you like.",
+      "multi": true,
+      "options": ["Front-of-house & audience", "Artist hospitality"] }
+  ]
+}
+```
+
+- `multi: true` allows several answers (checkboxes); `multi: false` allows one
+  (radio buttons, and picking moves straight to the next card).
+- At least one answer is required before a card will advance.
+- Answers post under the question's `id`, several joined by ", ".
+
+**If you add or remove a question, add or remove its `id` in the matching
+`fields` list in `Code.gs`** — that list is what gives the answer a column on
+the flavour's tab, in order. An id present in one and not the other means the
+answer is collected but never stored, or a blank column.
+
+An empty or missing `questions.json` is safe: the form then shows on its own,
+exactly as before.
+
 ### Share links (one per form, with campaign tracking)
 
 Every form has its own link. Share these directly — they open that form as its

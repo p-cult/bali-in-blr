@@ -1,0 +1,58 @@
+{
+  "updates": [
+    {
+      "id": "interest",
+      "title": "What would you like to hear about?",
+      "hint": "Choose as many as you like.",
+      "multi": true,
+      "options": [
+        "Performances",
+        "Workshops",
+        "Talks & lectures",
+        "The exhibition",
+        "Partnering or sponsoring"
+      ]
+    },
+    {
+      "id": "notify",
+      "title": "How should we reach you?",
+      "hint": "Choose as many as you like.",
+      "multi": true,
+      "options": ["Email", "WhatsApp", "SMS"]
+    }
+  ],
+  "volunteer": [
+    {
+      "id": "areas",
+      "title": "Where would you like to help?",
+      "hint": "Choose as many as you like — no experience needed.",
+      "multi": true,
+      "options": [
+        "Front-of-house & audience",
+        "Artist hospitality",
+        "Workshop support",
+        "Photography & documentation",
+        "Setup & pack-down"
+      ]
+    },
+    {
+      "id": "availability",
+      "title": "When are you free?",
+      "hint": "Choose as many as you like.",
+      "multi": true,
+      "options": [
+        "Weekday mornings",
+        "Weekday evenings",
+        "Weekends",
+        "Across the full eighteen days"
+      ]
+    },
+    {
+      "id": "experience",
+      "title": "Have you volunteered at an arts festival before?",
+      "hint": "Either answer is welcome.",
+      "multi": false,
+      "options": ["Yes, I have", "No — this would be my first"]
+    }
+  ]
+}

@@ -54,13 +54,14 @@ const FLAVOURS = {
     tab: 'Signups',
     label: 'Festival updates',
     required: ['name', 'email'],
-    fields: ['interest', 'notify_email', 'notify_phone']
+    // These must match the question ids in data/questions.json.
+    fields: ['interest', 'notify']
   },
   volunteer: {
     tab: 'Volunteers',
     label: 'Volunteering',
     required: ['name', 'email', 'phone'],
-    fields: []
+    fields: ['areas', 'availability', 'experience']
   }
 };
 

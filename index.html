@@ -49,7 +49,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800;900&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=hub3" />
+  <link rel="stylesheet" href="styles.css?v=hub5" />
 </head>
 <body>
 
@@ -306,8 +306,8 @@
     </div>
     <div class="view-body">
     <section class="section section-tint">
-      <div class="wrap grid-2">
-        <div class="col-text">
+      <div class="wrap onboard" data-flavour="updates">
+        <div class="col-text onboard-aside">
           <p class="eyebrow">Stay in the loop</p>
           <h2>Register for updates</h2>
           <p>
@@ -321,43 +321,40 @@
             <li><span>Behind the scenes</span> Workshops, artists, and archives</li>
           </ul>
         </div>
-        <div class="col-form">
-          <form class="signup-form" id="signup-form" data-require="name email" novalidate>
+
+        <div class="onboard-main">
+          <div class="onboard-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100"
+               aria-valuenow="0" aria-label="How far through the questions you are">
+            <span class="onboard-bar"></span>
+          </div>
+          <p class="onboard-step" aria-live="polite"></p>
+
+          <!-- Question cards are built from data/questions.json -->
+          <div class="onboard-stage" id="stage-updates"></div>
+
+          <div class="onboard-card onboard-signup" hidden>
+            <form class="signup-form" id="signup-form" data-require="name email" novalidate>
             <input type="hidden" name="flavour" value="updates" />
             <div class="field">
-              <label for="sf-name">Name <span class="req">*</span></label>
-              <input type="text" id="sf-name" name="name" autocomplete="name" required />
+            <label for="sf-name">Name <span class="req">*</span></label>
+            <input type="text" id="sf-name" name="name" autocomplete="name" required />
             </div>
             <div class="field">
-              <label for="sf-email">Email <span class="req">*</span></label>
-              <input type="email" id="sf-email" name="email" autocomplete="email" required />
+            <label for="sf-email">Email <span class="req">*</span></label>
+            <input type="email" id="sf-email" name="email" autocomplete="email" required />
             </div>
             <div class="field">
-              <label for="sf-phone">Phone (WhatsApp)</label>
-              <input type="tel" id="sf-phone" name="phone" autocomplete="tel" inputmode="tel" placeholder="+91" />
+            <label for="sf-phone">Phone (WhatsApp)</label>
+            <input type="tel" id="sf-phone" name="phone" autocomplete="tel" inputmode="tel" placeholder="+91" />
             </div>
-            <div class="field">
-              <label for="sf-interest">I'm interested in</label>
-              <select id="sf-interest" name="interest">
-                <option value="Everything">Everything</option>
-                <option value="Performances">Performances</option>
-                <option value="Workshops">Workshops</option>
-                <option value="Talks">Talks &amp; lectures</option>
-                <option value="Partnering">Partnering / sponsoring</option>
-              </select>
-            </div>
-            <fieldset class="field field-notify">
-              <legend>Notify me by</legend>
-              <label class="check"><input type="checkbox" name="notify_email" value="Email" checked /> Email</label>
-              <label class="check"><input type="checkbox" name="notify_phone" value="Phone" /> Phone / WhatsApp</label>
-            </fieldset>
             <label class="check check-consent">
-              <input type="checkbox" name="consent" value="Yes" required />
-              <span>I agree to Param Foundation contacting me about Bali in Bengaluru, and to my details being stored for this purpose. <a href="#" class="quiet">Privacy</a></span>
+            <input type="checkbox" name="consent" value="Yes" required />
+            <span>I agree to Param Foundation contacting me about Bali in Bengaluru, and to my details being stored for this purpose. <a href="#" class="quiet">Privacy</a></span>
             </label>
             <button type="submit" class="btn btn-primary btn-block">Register</button>
             <p class="form-note" id="form-note" role="status" aria-live="polite"></p>
-          </form>
+            </form>
+          </div>
         </div>
       </div>
     </section>
@@ -375,8 +372,8 @@
     </div>
     <div class="view-body">
     <section class="section">
-      <div class="wrap grid-2">
-        <div class="col-text">
+      <div class="wrap onboard" data-flavour="volunteer">
+        <div class="col-text onboard-aside">
           <p class="eyebrow">Get involved</p>
           <h2>Volunteer with us</h2>
           <p>
@@ -390,37 +387,49 @@
             <li><span>Next</span> Fill in the form — our team will call you with the details</li>
           </ul>
         </div>
-        <div class="col-form">
-          <form class="signup-form" id="volunteer-form"
-                data-require="name email phone" data-fullname="true" novalidate>
+
+        <div class="onboard-main">
+          <div class="onboard-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100"
+               aria-valuenow="0" aria-label="How far through the questions you are">
+            <span class="onboard-bar"></span>
+          </div>
+          <p class="onboard-step" aria-live="polite"></p>
+
+          <!-- Question cards are built from data/questions.json -->
+          <div class="onboard-stage" id="stage-volunteer"></div>
+
+          <div class="onboard-card onboard-signup" hidden>
+            <form class="signup-form" id="volunteer-form"
+            data-require="name email phone" data-fullname="true" novalidate>
             <input type="hidden" name="flavour" value="volunteer" />
             <div class="field">
-              <label for="vf-name">Full name <span class="req">*</span></label>
-              <input type="text" id="vf-name" name="name" autocomplete="name"
-                     placeholder="First and last name" required />
+            <label for="vf-name">Full name <span class="req">*</span></label>
+            <input type="text" id="vf-name" name="name" autocomplete="name"
+            placeholder="First and last name" required />
             </div>
             <div class="field">
-              <label for="vf-email">Email <span class="req">*</span></label>
-              <input type="email" id="vf-email" name="email" autocomplete="email"
-                     placeholder="you@example.com" required />
+            <label for="vf-email">Email <span class="req">*</span></label>
+            <input type="email" id="vf-email" name="email" autocomplete="email"
+            placeholder="you@example.com" required />
             </div>
             <div class="field">
-              <label for="vf-phone">Phone / WhatsApp <span class="req">*</span></label>
-              <input type="tel" id="vf-phone" name="phone" autocomplete="tel"
-                     inputmode="tel" placeholder="+91 98450 12345" required />
+            <label for="vf-phone">Phone / WhatsApp <span class="req">*</span></label>
+            <input type="tel" id="vf-phone" name="phone" autocomplete="tel"
+            inputmode="tel" placeholder="+91 98450 12345" required />
             </div>
             <label class="check check-consent">
-              <input type="checkbox" name="consent" value="Yes" required />
-              <span>
-                I agree to be contacted by the Param Foundation team about volunteering
-                at Bali in Bengaluru, and to my name, email, and phone number being stored
-                for this purpose. By clicking Submit I give my permission.
-                <a href="#" class="quiet">Privacy</a>
-              </span>
+            <input type="checkbox" name="consent" value="Yes" required />
+            <span>
+            I agree to be contacted by the Param Foundation team about volunteering
+            at Bali in Bengaluru, and to my name, email, and phone number being stored
+            for this purpose. By clicking Submit I give my permission.
+            <a href="#" class="quiet">Privacy</a>
+            </span>
             </label>
             <button type="submit" class="btn btn-primary btn-block">Submit</button>
             <p class="form-note" id="volunteer-note" role="status" aria-live="polite"></p>
-          </form>
+            </form>
+          </div>
         </div>
       </div>
     </section>
@@ -442,6 +451,6 @@
     <p class="footer-copy">&copy; <span id="year"></span> Param Foundation. All rights reserved.</p>
   </footer>
 
-  <script src="main.js?v=hub7"></script>
+  <script src="main.js?v=hub8"></script>
 </body>
 </html>

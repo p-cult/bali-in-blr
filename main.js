@@ -518,6 +518,186 @@ wireForm("volunteer-form", "volunteer-note", {
   failure: "Sorry, we couldn't record your response. Please try again, or call +91 90350 34725.",
 });
 
+/* ---------- Onboarding carousel ----------
+   Each signup component asks its questions one card at a time, then shows
+   the signup card. Questions come from data/questions.json so they can be
+   changed without touching this file. Swipe left for the next card (drag
+   with a mouse works too); the Back/Next buttons and the keyboard do the
+   same thing, so nothing depends on being able to swipe. */
+async function initOnboarding() {
+  const shells = Array.from(document.querySelectorAll(".onboard"));
+  if (!shells.length) return;
+
+  let sets = {};
+  try {
+    sets = await loadJSON("data/questions.json");
+  } catch (err) {
+    sets = {}; // questions are an enhancement: fall back to the plain form
+  }
+
+  shells.forEach((shell) => {
+    setupOnboarding(shell, Array.isArray(sets[shell.dataset.flavour]) ? sets[shell.dataset.flavour] : []);
+  });
+}
+
+function setupOnboarding(shell, questions) {
+  const stage = shell.querySelector(".onboard-stage");
+  const signup = shell.querySelector(".onboard-signup");
+  const bar = shell.querySelector(".onboard-bar");
+  const progress = shell.querySelector(".onboard-progress");
+  const stepLabel = shell.querySelector(".onboard-step");
+  const form = signup && signup.querySelector("form");
+  if (!stage || !signup || !form) return;
+
+  const answers = {};
+  const total = questions.length;
+  let index = 0; // 0..total-1 = questions, total = the signup card
+
+  // No questions configured → behave exactly as before.
+  if (!total) {
+    stage.hidden = true;
+    if (progress) progress.hidden = true;
+    signup.hidden = false;
+    return;
+  }
+
+  /* ----- build one card per question ----- */
+  questions.forEach((q, i) => {
+    const multi = q.multi !== false;
+    const card = document.createElement("fieldset");
+    card.className = "onboard-card onboard-question";
+    card.dataset.index = String(i);
+    card.hidden = i !== 0;
+
+    const options = (q.options || []).map((opt, n) => {
+      const id = "q-" + shell.dataset.flavour + "-" + i + "-" + n;
+      return (
+        '<label class="choice" for="' + id + '">' +
+        '<input type="' + (multi ? "checkbox" : "radio") + '"' +
+        ' id="' + id + '" name="' + esc(q.id) + '"' +
+        ' value="' + esc(opt) + '" />' +
+        "<span>" + esc(opt) + "</span>" +
+        "</label>"
+      );
+    }).join("");
+
+    card.innerHTML =
+      "<legend>" + esc(q.title || "") + "</legend>" +
+      (q.hint ? '<p class="onboard-hint">' + esc(q.hint) + "</p>" : "") +
+      '<div class="choices">' + options + "</div>" +
+      '<p class="onboard-error" role="alert" hidden>Please choose at least one to continue.</p>' +
+      '<div class="onboard-nav">' +
+        '<button type="button" class="btn btn-ghost btn-sm" data-onboard="back"' +
+        (i === 0 ? " hidden" : "") + ">Back</button>" +
+        '<button type="button" class="btn btn-primary btn-sm" data-onboard="next">' +
+        (i === total - 1 ? "Continue" : "Next") + "</button>" +
+      "</div>";
+
+    stage.appendChild(card);
+  });
+
+  const cards = Array.from(stage.querySelectorAll(".onboard-question"));
+
+  /* ----- a hidden input per question, so answers post with the form ----- */
+  questions.forEach((q) => {
+    if (form.elements[q.id]) return;
+    const input = document.createElement("input");
+    input.type = "hidden";
+    input.name = q.id;
+    form.appendChild(input);
+  });
+
+  /* ----- let people go back and change what they said ----- */
+  const change = document.createElement("button");
+  change.type = "button";
+  change.className = "onboard-change";
+  change.dataset.onboard = "restart";
+  change.innerHTML = '<span aria-hidden="true">&larr;</span> Change my answers';
+  signup.insertBefore(change, signup.firstChild);
+
+  function selected(i) {
+    return Array.from(cards[i].querySelectorAll("input:checked")).map((el) => el.value);
+  }
+
+  function show(next) {
+    index = Math.max(0, Math.min(total, next));
+    cards.forEach((c, i) => { c.hidden = i !== index; });
+    signup.hidden = index !== total;
+
+    // The bar tracks cards completed, so it is full only on the signup card.
+    const pct = Math.round((index / total) * 100);
+    if (bar) bar.style.width = pct + "%";
+    if (progress) progress.setAttribute("aria-valuenow", String(pct));
+    if (stepLabel) {
+      stepLabel.textContent = index === total
+        ? "Almost done — your details"
+        : "Question " + (index + 1) + " of " + total;
+    }
+
+    const card = index === total ? signup : cards[index];
+    const focusTarget = card.querySelector("legend, h2, input, button");
+    if (focusTarget && document.body.classList.contains("view-open")) {
+      focusTarget.focus({ preventScroll: true });
+    }
+    card.scrollIntoView({ block: "nearest", behavior: "instant" });
+  }
+
+  function advance() {
+    if (index >= total) return;
+    if (!selected(index).length) {
+      const err = cards[index].querySelector(".onboard-error");
+      if (err) err.hidden = false;
+      return;
+    }
+    answers[questions[index].id] = selected(index);
+    form.elements[questions[index].id].value = selected(index).join(", ");
+    show(index + 1);
+  }
+
+  stage.addEventListener("change", (e) => {
+    const err = cards[index] && cards[index].querySelector(".onboard-error");
+    if (err) err.hidden = true;
+    // A single-answer question has nothing more to say once picked.
+    const q = questions[index];
+    if (q && q.multi === false && e.target.checked) setTimeout(advance, 260);
+  });
+
+  shell.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-onboard]");
+    if (!btn) return;
+    const action = btn.dataset.onboard;
+    if (action === "next") advance();
+    if (action === "back") show(index - 1);
+    if (action === "restart") show(0);
+  });
+
+  /* ----- swipe: left for next, right for back ----- */
+  let startX = null;
+  let startY = null;
+  stage.addEventListener("touchstart", (e) => {
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+  }, { passive: true });
+
+  stage.addEventListener("touchend", (e) => {
+    if (startX == null) return;
+    const dx = e.changedTouches[0].clientX - startX;
+    const dy = e.changedTouches[0].clientY - startY;
+    startX = null;
+    // Ignore anything that was really a vertical scroll.
+    if (Math.abs(dx) < 55 || Math.abs(dx) < Math.abs(dy)) return;
+    if (dx < 0) advance(); else show(index - 1);
+  }, { passive: true });
+
+  stage.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowRight") advance();
+    if (e.key === "ArrowLeft" && index > 0) show(index - 1);
+  });
+
+  show(0);
+}
+
 /* ---------- Boot ---------- */
 loadCalendar();
 loadPartners();
+initOnboarding();
