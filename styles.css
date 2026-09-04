@@ -372,9 +372,21 @@ em { font-style: italic; }
 .field-notify legend { font-size: 0.8rem; font-weight: 600; color: var(--ink); padding: 0; margin-bottom: 0.5rem; }
 .check { display: flex; align-items: flex-start; gap: 0.55rem; font-size: 0.9rem; font-weight: 400; color: var(--muted); margin-bottom: 0.5rem; cursor: pointer; }
 .check input { margin-top: 0.2rem; accent-color: var(--accent); flex: none; }
+.check-consent input { margin-top: 0.1rem; width: 14px; height: 14px; }
 .field-notify .check { display: inline-flex; margin-right: 1.4rem; }
-.check-consent { margin: 0.6rem 0 1.2rem; }
-.check-consent .quiet { color: var(--muted); text-decoration: underline; }
+/* Consent wording: fine print, so set smaller and dimmer than the labels
+   above it — but with the line height opened up so it stays readable.
+   Two classes deep, to outrank ".signup-form label". */
+.signup-form .check-consent,
+.check-consent {
+  margin: 0.6rem 0 1.2rem;
+  font-size: 0.72rem;
+  line-height: 1.55;
+  /* Dimmer than the labels, but not below 4.5:1 against the card — this is
+     the text someone is agreeing to, so it has to stay readable. */
+  color: #8a8780;
+}
+.signup-form .check-consent .quiet { color: #8a8780; text-decoration: underline; }
 /* A validation message, shown at the control it is about. */
 /* Element + class, so it outranks the ".section p" body rule. */
 p.field-error {
@@ -709,7 +721,7 @@ p.field-error {
   .onboard-carousel.is-done { row-gap: 0; }
   .onboard-carousel.is-done .onboard-arrow { display: none; }
   .onboard-signup .field { margin-bottom: 0.85rem; }
-  .onboard-signup .check-consent { font-size: 0.82rem; margin-bottom: 0.9rem; }
+  .onboard-signup .check-consent { font-size: 0.7rem; margin-bottom: 0.9rem; }
   .onboard-change { margin-bottom: 0.9rem; }
   .onboard-card { padding: 1rem; }
   .onboard-question legend { font-size: 1.15rem; margin-bottom: 0.35rem; }
