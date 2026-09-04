@@ -429,6 +429,33 @@ em { font-style: italic; }
 .partners-empty p { color: var(--muted); margin: 0 0 1.3rem; }
 
 /* ===== Responsive ===== */
+/* ---------- Legal pages ---------- */
+.legal { padding-top: 1rem; }
+.legal h1 {
+  font-family: var(--display); font-weight: 900; text-transform: uppercase;
+  font-size: clamp(2rem, 5vw, 3.2rem); line-height: 1; color: var(--ink);
+  margin-bottom: 1.2rem;
+}
+.legal h2 {
+  font-family: var(--display); font-weight: 800; text-transform: uppercase;
+  font-size: 1.05rem; letter-spacing: 0.04em; color: var(--accent-2);
+  margin: 2.4rem 0 0.7rem;
+}
+.legal p { color: var(--muted); font-size: 1rem; line-height: 1.7; margin: 0 0 1rem; }
+.legal p strong { color: var(--ink); }
+/* The summary up top, for anyone who reads only one paragraph. */
+.legal-lead {
+  font-size: 1.1rem !important; color: var(--ink) !important;
+  border-left: 3px solid var(--accent); padding-left: 1.1rem; margin-bottom: 1.4rem !important;
+}
+.legal-updated { font-size: 0.82rem !important; color: var(--muted-2) !important; }
+.legal-list { color: var(--muted); line-height: 1.7; padding-left: 1.1rem; margin: 0 0 1.2rem; }
+.legal-list li { margin-bottom: 0.5rem; }
+.legal-list strong { color: var(--ink); }
+.legal-contact { display: flex; flex-wrap: wrap; gap: 0.8rem; margin: 1.2rem 0; }
+.legal-small { font-size: 0.85rem !important; color: var(--muted-2) !important; }
+.legal-back { margin-top: 2.6rem; }
+
 /* ---------- Calendar: one bar per event, stacked in date order ---------- */
 .wrap-narrow { max-width: 860px; }
 
