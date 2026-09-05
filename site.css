@@ -336,3 +336,17 @@
   background: var(--copper);
   flex: none;
 }
+
+/* ---------- The printable calendar ----------
+   Offered under the list, not above it: the page is the calendar, the PDF
+   is for taking away. */
+.calendar-print {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem 1rem;
+  margin-top: 1.6rem;
+  padding-top: 1.3rem;
+  border-top: 1px solid var(--line);
+}
+.calendar-print span { font-size: 0.8rem; color: var(--muted-2); }
