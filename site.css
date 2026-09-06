@@ -124,7 +124,7 @@
   background: var(--copper);
 }
 
-.hero h1 {
+.hero h1, .print-title {
   margin: 0 0 1.2rem;
   font-family: var(--display);
   font-size: clamp(1.9rem, 5vw, 3.6rem);
@@ -134,7 +134,7 @@
   text-transform: uppercase;
   text-shadow: 0 6px 40px rgba(0, 0, 0, 0.35);
 }
-.hero h1 em { font-style: normal; color: var(--accent); }
+.hero h1 em, .print-title em { font-style: normal; color: var(--accent); }
 
 .hero-lead {
   max-width: 42rem;
@@ -876,13 +876,13 @@ body.view-open { overflow: hidden; }
     margin-bottom: 3mm;
   }
   .hero-kicker span::before { background: var(--copper); }
-  .hero h1 {
+  .hero h1, .print-title {
     font-size: 30pt;
     line-height: 0.9;
     margin-bottom: 3mm;
     text-shadow: none;
   }
-  .hero h1 em { color: var(--copper) !important; }
+  .hero h1 em, .print-title em { color: var(--copper) !important; }
   .hero-lead {
     max-width: 120mm;
     font-size: 10pt;
@@ -974,14 +974,9 @@ body.view-open { overflow: hidden; }
   #calendar .view-body > .section > .wrap > h2,
   #calendar .section-intro { display: none; }
 
-  .print-head { text-align: center; margin: 0 0 9mm; padding-bottom: 5mm; border-bottom: 0.6pt solid var(--rule); }
-  .print-kicker { font-family: var(--display); text-transform: uppercase; letter-spacing: 0.3em;
-    font-size: 7.5pt; color: var(--copper) !important; margin: 0 0 2.5mm; }
-  .print-title { font-family: var(--display); font-weight: 900; font-size: 30pt; line-height: 1;
-    letter-spacing: -0.01em; color: var(--ink) !important; margin: 0; }
-  .print-title em { font-style: italic; font-weight: 400; }
-  .print-dates { font-family: var(--display); font-weight: 700; text-transform: uppercase;
-    letter-spacing: 0.14em; font-size: 9.5pt; color: var(--copper) !important; margin: 3mm 0 0; }
+  /* Masthead reuses the home hero's kicker + title styles (.hero-kicker and
+     .hero h1) — no bespoke print title. Just the spacing before the schedule. */
+  .print-head { margin: 0 0 9mm; padding-bottom: 5mm; border-bottom: 0.6pt solid var(--rule); }
 
   .print-foot { margin-top: 9mm; padding-top: 5mm; border-top: 0.6pt solid var(--rule);
     display: flex; align-items: center; justify-content: center; gap: 5mm; break-inside: avoid; }
