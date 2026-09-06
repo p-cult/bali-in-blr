@@ -57,8 +57,8 @@ const LOG_HEADERS = ['Submission ID', 'Timestamp', 'Flavour', 'Result'];
 
 /* Master store of minted campaign links. No personal data — campaign URLs and
    their tags only. Fed by the Campaign Link Builder (mode=link). */
-const LINK_TAB = 'links';
-const LINK_HEADERS = ['Code', 'Timestamp', 'Destination', 'Source', 'Medium', 'Campaign', 'Content', 'Programme', 'Ref', 'URL'];
+const LINK_TAB = 'Mint';
+const LINK_HEADERS = ['Code', 'Timestamp', 'Destination', 'Source', 'Medium', 'Campaign', 'Content', 'Programme', 'Ref', 'URL', 'QR SVG'];
 const MASTER_HEADERS = [
   'First seen', 'Full Name', 'Phone', 'Email', 'Sources', 'Submissions', 'Last seen', 'Consent'
 ];
@@ -341,7 +341,7 @@ function recordLink(p) {
   }
   sh.appendRow([
     clean(p.code), new Date(), clean(p.destination), clean(p.source), clean(p.medium),
-    clean(p.campaign), clean(p.content), clean(p.programme), clean(p.ref), url
+    clean(p.campaign), clean(p.content), clean(p.programme), clean(p.ref), url, clean(p.svg)
   ]);
   return json({ ok: true, duplicate: false });
 }
