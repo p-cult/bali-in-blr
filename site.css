@@ -380,8 +380,8 @@
 }
 .cal-cat { background: rgba(239, 231, 216, 0.07); color: var(--muted); }
 .cal-collab { background: rgba(200, 121, 65, 0.20); color: var(--accent-2); }
-.cal-meta { margin: 0; font-size: 0.86rem; color: var(--muted); }
-.cal-desc { margin: 0.3rem 0 0; font-size: 0.85rem; color: var(--muted-2); }
+p.cal-meta { margin: 0; font-size: 0.86rem; color: var(--muted); }
+p.cal-desc { margin: 0.3rem 0 0; font-size: 0.85rem; color: var(--muted-2); }
 
 .cal-action { align-self: center; padding: 1.1rem 1.3rem 1.1rem 0; }
 .cal-soon { font-size: 0.78rem; font-style: italic; color: var(--muted-2); white-space: nowrap; }
@@ -573,8 +573,8 @@
   text-transform: uppercase;
   color: var(--ink);
 }
-.onboard-hint { clear: both; margin: 0 0 1.1rem; font-size: 0.9rem; color: var(--muted); }
-.onboard-error { margin: 0.2rem 0 0; font-size: 0.85rem; color: var(--accent); }
+p.onboard-hint { clear: both; margin: 0 0 1.1rem; font-size: 0.9rem; color: var(--muted); }
+p.onboard-error { margin: 0.2rem 0 0; font-size: 0.85rem; color: var(--accent); }
 
 .choices { clear: both; display: grid; gap: 0.55rem; margin-bottom: 1.1rem; }
 .choice {
@@ -799,9 +799,9 @@ body.view-open { overflow: hidden; }
 }
 
 /* -------------------------------------------------------------- 12. Print */
-/* Every coloured ground goes to white paper. The calendar is the part people
-   actually print, so it is rebuilt as a clean list: a rule between events,
-   the date left, the detail beside it, nothing broken across a page. */
+/* The printed edition of this page. Every coloured ground goes to the cream
+   sheet set in styles.css, the harlequin seam survives as the festival's mark,
+   and the blocks that are a list on screen become columns on paper. */
 
 @media print {
   /* An open view is what the reader is looking at, so it is what prints: the
@@ -815,38 +815,9 @@ body.view-open { overflow: hidden; }
     animation: none !important;
   }
   body.view-open > *:not(.page-view) { display: none !important; }
-  .view-body > .section { padding-top: 0; }
+  .view-body > .section { padding-top: 0; border-top: 0; }
 
-  /* On screen the carousel shows one card at a time and "next" reveals the
-     rest. Paper has no next button, so every question and the details block
-     are unfolded onto the sheet — a form someone can fill in by hand. The
-     specificity here has to beat the global [hidden] rule. */
-  .page-view .onboard-question[hidden],
-  .page-view .onboard-signup[hidden] { display: block !important; }
-  .page-view .onboard-question + .onboard-question,
-  .page-view .onboard-signup { margin-top: 6mm; }
-
-  /* Paper has the room the phone did not, so the context comes back. */
-  .onboard-aside p,
-  .onboard-aside .fact-list { display: revert; }
-
-  .onboard { grid-template-columns: 1fr; gap: 6mm; }
-  .onboard-carousel { display: block; }
-  .onboard-card {
-    padding: 0;
-    border: 0 !important;
-    break-inside: avoid;
-  }
-  .choices { gap: 1.5mm; }
-  .choice {
-    padding: 1.5mm 2mm;
-    border: 0.5pt solid var(--line) !important;
-    color: var(--ink) !important;
-    break-inside: avoid;
-  }
-  .onboard-question legend { font-size: 13pt; }
-  .onboard-hint { color: var(--muted) !important; }
-
+  /* ----- grounds ----- */
   .section-tint,
   .section-cream,
   .section-oxblood,
@@ -860,69 +831,213 @@ body.view-open { overflow: hidden; }
     background: transparent !important;
     color: var(--ink) !important;
   }
-
   .section-cream p,
   .section-oxblood p,
   .support-v2 p,
   .support-v2 dd { color: var(--muted) !important; }
+  .section-oxblood .eyebrow,
+  .support-v2 .eyebrow,
+  .section-oxblood .lead-line { color: var(--copper) !important; }
+  .section-oxblood a:not(.btn),
+  .section-cream a:not(.btn) { box-shadow: none !important; }
 
-  /* The hero becomes a title block: the wordmark, the lead and the numbers. */
-  .hero { min-height: 0; display: block; overflow: visible; page-break-after: avoid; }
-  .hero-content { padding: 0 0 6mm; }
-  .hero h1 { font-size: 26pt; text-shadow: none; margin-bottom: 3mm; }
-  .hero h1 em { color: var(--ink) !important; }
-  .hero-lead { font-size: 11pt; max-width: none; margin-bottom: 4mm; color: var(--muted) !important; }
-  .hero-meta { border-color: var(--line); margin-bottom: 0; flex-wrap: nowrap; }
-  .hero-meta div { flex: 1 1 0; }
-  .hero-meta div { padding: 2mm 4mm 2mm 0; border-right: 0; }
-  .hero-kicker { color: var(--copper-ox) !important; margin-bottom: 3mm; }
+  /* The harlequin is the festival's mark. It costs 3mm of copper and it is the
+     one thing that says at a glance which festival the sheet belongs to, so it
+     is kept — as a rule between movements rather than a band. */
+  .seam { height: 3mm; opacity: 1; margin: 4mm 0 0; break-after: avoid; }
+  .seam-scallop { display: none; }
+  .seam-harlequin {
+    background: repeating-conic-gradient(from 45deg at 50% 50%,
+                var(--copper) 0deg 90deg, transparent 90deg 180deg) 0 0 / 3mm 3mm;
+    background-color: transparent;
+  }
+  /* The seam already divides, so the section beneath it does not need a rule. */
+  .seam + .section { border-top: 0; padding-top: 4mm; }
 
-  .group-title { margin: 6mm 0 3mm; color: var(--copper-ox) !important; break-after: avoid; }
+  /* ----- masthead ----- */
+  /* The hero is the title page: wordmark, dateline, the sentence that says
+     what this is, and the three numbers as a standing head. */
+  .hero {
+    display: block;
+    min-height: 0;
+    overflow: visible;
+    padding-bottom: 5mm;
+    border-bottom: 0.8pt solid var(--rule);
+    break-after: avoid;
+  }
+  /* Where a seam follows, it is the divider — two rules 3mm apart read as a
+     mistake rather than a device. */
+  .hero:has(+ .seam) { border-bottom: 0; padding-bottom: 2mm;
+  }
+  .hero-content { padding: 0; max-width: none; }
+  .hero-kicker {
+    color: var(--copper) !important;
+    font-size: 7pt;
+    letter-spacing: 0.18em;
+    margin-bottom: 3mm;
+  }
+  .hero-kicker span::before { background: var(--copper); }
+  .hero h1 {
+    font-size: 30pt;
+    line-height: 0.9;
+    margin-bottom: 3mm;
+    text-shadow: none;
+  }
+  .hero h1 em { color: var(--copper) !important; }
+  .hero-lead {
+    max-width: 120mm;
+    font-size: 10pt;
+    color: var(--muted) !important;
+    margin-bottom: 4mm;
+  }
+  .hero-meta {
+    max-width: none;
+    margin-bottom: 0;
+    flex-wrap: nowrap;
+    border-block: 0.6pt solid var(--rule);
+  }
+  .hero-meta div { flex: 1 1 0; padding: 2.5mm 4mm 2.5mm 0; border-right: 0; }
+  .hero-meta-num { color: var(--copper) !important; font-size: 12pt; }
+  .hero-meta-label { color: var(--muted) !important; font-size: 7.2pt; margin-top: 1mm; }
+  .hero-actions { display: none; }
 
-  /* Cards keep their picture but must not straddle a page break. */
-  .card,
-  .also-item,
-  .cal-bar { border: 0.5pt solid var(--line) !important; break-inside: avoid; }
+  /* ----- programme ----- */
+  .group-title {
+    color: var(--copper) !important;
+    font-size: 7pt;
+    margin: 5mm 0 2.5mm;
+    break-after: avoid;
+  }
+  .group-title::before { background: var(--copper); }
+
+  /* Three across rather than two: the pictures stay large enough to read and
+     a strand fits on one row instead of straddling a page break. */
+  .cards-2, .cards-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4mm; }
+  .card {
+    border: 0.5pt solid var(--line) !important;
+    border-radius: 0;
+    break-inside: avoid;
+  }
+  /* A card row cannot split across a page, so a tall row leaves a third of the
+     sheet blank. Shorter pictures and tighter copy fit two strands per page. */
   .card-img { aspect-ratio: 16 / 9; }
-  .cards-2, .cards-3 { grid-template-columns: 1fr 1fr; }
-  .also-grid { grid-template-columns: repeat(3, 1fr); }
+  .card-body { padding: 2.5mm; }
+  .card-body h4 { font-size: 8.4pt; margin-bottom: 1.2mm; }
+  .card-body p { font-size: 7pt; line-height: 1.35; color: var(--muted) !important; }
 
-  /* The calendar, as a printed list. */
-  .calendar-list { gap: 0; margin-top: 4mm; }
+  /* ----- also includes ----- */
+  .also-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4mm; max-width: none; margin-top: 4mm; }
+  .also-item {
+    padding: 3mm;
+    border: 0.5pt solid var(--line) !important;
+    border-radius: 0;
+    backdrop-filter: none;
+    break-inside: avoid;
+  }
+  .also-item h4 { color: var(--copper) !important; font-size: 8.4pt; min-height: 0; display: block; }
+  .also-item p { color: var(--muted) !important; font-size: 7.6pt; max-width: none; }
+  .feature-band { padding-block: 6mm 0; border-top: 0.6pt solid var(--rule); }
+
+  /* ----- calendar, two columns ----- */
+  /* Twelve events down one column is two thin pages; in two columns the whole
+     festival lands on one sheet, which is the form people actually pin up. */
+  .calendar-list {
+    display: block;
+    column-count: 2;
+    column-gap: 8mm;
+    margin-top: 4mm;
+  }
   .cal-bar,
   .cal-bar:not(:has(.cal-thumb)) {
-    grid-template-columns: 18mm minmax(0, 1fr);
-    gap: 4mm;
+    display: grid;
+    grid-template-columns: 13mm minmax(0, 1fr);
+    gap: 3mm;
+    padding: 2.2mm 0;
     border: 0 !important;
     border-top: 0.5pt solid var(--line) !important;
     border-radius: 0;
-    padding: 2.5mm 0;
     transform: none !important;
+    break-inside: avoid;
   }
-  .cal-thumb { display: none; }         /* the list reads faster without them */
+  .cal-thumb { display: none; }        /* the list reads faster without them */
   .cal-when {
     padding: 0;
     border: 0;
     justify-items: start;
+    align-content: start;
     text-align: left;
   }
-  .cal-day { font-size: 15pt; color: var(--ink) !important; }
-  .cal-mon, .cal-weekday { color: var(--muted-2) !important; }
+  .cal-day { font-size: 12pt; color: var(--ink) !important; }
+  .cal-mon { color: var(--copper) !important; font-size: 6pt; margin-top: 0.6mm; }
+  .cal-weekday { color: var(--muted-2) !important; font-size: 6pt; margin-top: 0.4mm; }
   .cal-what { padding: 0; }
-  .cal-what h4 { font-size: 11pt; margin: 0 0 1mm; }
+  .cal-what h4 { font-size: 8.6pt; margin: 0 0 0.8mm; line-height: 1.15; }
+  p.cal-meta { color: var(--muted) !important; font-size: 7.2pt; }
+  p.cal-desc { display: none; }
+  .cal-tags { gap: 1mm; }
   .cal-cat, .cal-collab {
-    padding: 0.3mm 1.2mm;
+    padding: 0.2mm 1mm;
     background: transparent !important;
     border: 0.4pt solid var(--line);
     color: var(--muted) !important;
+    font-size: 5.6pt;
+  }
+  .cal-bar[data-category] .cal-cat { color: var(--copper) !important; border-color: var(--rule); }
+
+  /* ----- partners ----- */
+  .partners-grid.has-partners { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 3mm; margin-top: 4mm; }
+  .partner {
+    min-height: 0;
+    padding: 2.5mm;
+    border: 0.5pt solid var(--line) !important;
+    border-radius: 0;
+    color: var(--muted) !important;
+    font-size: 7pt;
+    break-inside: avoid;
   }
 
-  /* Partners print as a name list, not as empty logo boxes. */
-  .partners-grid.has-partners { grid-template-columns: repeat(4, 1fr); gap: 3mm; }
-  .partner { min-height: 0; padding: 2mm; border: 0.5pt solid var(--line) !important; break-inside: avoid; }
+  /* ----- support ----- */
+  .support-points { column-count: 2; column-gap: 8mm; display: block; }
+  .support-points > div {
+    padding: 2mm 0;
+    border-top: 0.5pt solid var(--line) !important;
+    break-inside: avoid;
+  }
+  .support-points > div:first-child { padding-top: 2mm; border-top: 0.5pt solid var(--line) !important; }
+  .support-points dt { color: var(--ink) !important; font-size: 8pt; }
+  .support-points dd { font-size: 7.6pt; max-width: none; line-height: 1.4; }
+  .support-actions { display: none; }
 
-  .support-points > div { padding: 2mm 0; border-top: 0.5pt solid var(--line) !important; }
-  .support-points dt { color: var(--ink) !important; }
+  /* ----- the forms, unfolded ----- */
+  /* On screen the carousel shows one card at a time and "next" reveals the
+     rest. Paper has no next button, so every question and the details block
+     are laid onto the sheet. The specificity here has to beat [hidden]. */
+  .page-view .onboard-question[hidden],
+  .page-view .onboard-signup[hidden] { display: block !important; }
+  .page-view .onboard-question + .onboard-question,
+  .page-view .onboard-signup { margin-top: 5mm; }
 
-  .seam { display: none !important; }
+  /* Paper has the room the phone did not, so the context comes back. */
+  .onboard-aside p,
+  .onboard-aside .fact-list { display: revert; }
+  .onboard { grid-template-columns: 1fr; gap: 5mm; }
+  .onboard-carousel { display: block; }
+  .onboard-card { padding: 0; border: 0 !important; break-inside: avoid; }
+  .onboard-question legend { font-size: 11pt; margin-bottom: 1.5mm; }
+  p.onboard-hint { color: var(--muted) !important; font-size: 8pt; margin-bottom: 2.5mm; }
+
+  /* Seven options down one column is half a page of white; in two they sit
+     under the question they belong to. */
+  .choices { display: block; column-count: 2; column-gap: 6mm; margin-bottom: 0; }
+  .choice {
+    padding: 1.6mm 2mm;
+    margin-bottom: 1.5mm;
+    border: 0.5pt solid var(--line) !important;
+    border-radius: 0;
+    color: var(--ink) !important;
+    font-size: 8pt;
+    break-inside: avoid;
+  }
+  /* The name, email and phone boxes stay full width — they are written into. */
+  .onboard-signup .field { break-inside: avoid; }
 }

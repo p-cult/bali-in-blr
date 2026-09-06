@@ -145,7 +145,9 @@ h1, h2, h3, h4 {
 }
 .section p strong { color: var(--ink); font-weight: 600; }
 
-.section-intro { max-width: 44rem; color: var(--muted); font-size: 1.05rem; }
+/* Element + class, so these tie with ".section p" and win on order —
+   a bare class loses to it and silently inherits the body size. */
+p.section-intro { max-width: 44rem; color: var(--muted); font-size: 1.05rem; }
 .section-intro.center { margin-inline: auto; text-align: center; }
 
 /* An eyebrow labels the section above its heading. */
@@ -478,7 +480,7 @@ p.field-error {
 .check.is-invalid { color: var(--ink); }
 .check.is-invalid input { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-.form-note { margin: 0.9rem 0 0; min-height: 1.2em; font-size: 0.9rem; }
+p.form-note { margin: 0.9rem 0 0; min-height: 1.2em; font-size: 0.9rem; }
 .form-note.ok { color: var(--accent-2); }
 .form-note.err { color: var(--accent); }
 
@@ -568,38 +570,49 @@ p.legal-small { font-size: 0.85rem; color: var(--muted-2); }
 }
 
 /* --------------------------------------------------------------- 11. Print */
-/* The screen design is cream on charcoal. On paper that is a cartridge of ink
-   for no gain, so print inverts to charcoal on white: the same type, the same
-   hierarchy, none of the ground. Anything that only works on screen — the nav,
-   the scrims, every control — is dropped rather than printed as a dead box. */
+/* Paper is not a de-styled screen — it is its own edition of the same design.
+   The festival's printed palette is already set by the calendar sheet: cream
+   ground, charcoal type, oxidised copper for labels and rules. That palette
+   is carried here, with Archivo still setting the display type, so a printed
+   page and a printed calendar plainly belong to the same festival.
+
+   Charcoal cannot be the ground on paper — it is a cartridge per sheet and it
+   drowns the type — so the ink and the ground swap and the copper does the
+   accenting it already does on cream elsewhere in the site. */
 
 @media print {
-  @page { size: A4; margin: 16mm 14mm; }
+  @page { size: A4; margin: 13mm 12mm; }
 
   :root {
     --ink: #1B1D21;
-    --muted: #45403A;
-    --muted-2: #6B655C;
-    --accent: #8E4A24;      /* orange is unreadable on paper; copper reads */
+    --muted: #5F574C;
+    --muted-2: #7A7066;
+    /* Orange measures 2.6:1 on cream and cannot set type; the oxidised copper
+       is the accent this ground already uses on screen. */
+    --accent: #8E4A24;
     --accent-2: #8E4A24;
     --copper: #8E4A24;
-    --line: rgba(27, 29, 33, 0.22);
+    --line: rgba(27, 29, 33, 0.20);
+    --rule: rgba(142, 74, 36, 0.55);
   }
 
-  html, body {
-    background: #FFF !important;
-    color: var(--ink) !important;
-    font-size: 10.5pt;
-    line-height: 1.45;
+  html { background: var(--cream); }
+  body {
+    background: transparent;
+    color: var(--ink);
+    font-size: 9.4pt;
+    line-height: 1.5;
     overflow: visible !important;
   }
+  /* The grounds and rules are the design, not decoration, so they are printed
+     rather than left to the browser's "background graphics" default. */
+  *, *::before, *::after { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
 
   /* Screen furniture: nothing here survives onto paper. */
   .site-header,
   .nav-toggle,
   .hero-media,
   .hero-scrim,
-  .seam,
   .btn,
   .calendar-filters,
   .calendar-print,
@@ -616,10 +629,77 @@ p.legal-small { font-size: 0.85rem; color: var(--muted-2); }
   .view-bar,
   .legal-back { display: none !important; }
 
-  body.view-open { overflow: visible !important; }
+  /* ----- structure ----- */
+  .wrap { max-width: none; padding-inline: 0; }
+  .wrap-narrow { max-width: none; }
 
-  /* A form on paper is one to fill in by hand, so the controls become ruled
-     boxes rather than disappearing with the rest of the screen furniture. */
+  /* One copper hairline between sections, so the sheet reads as a sequence of
+     movements rather than a scroll that happened to stop. */
+  .section {
+    padding: 6mm 0 7mm;
+    border-top: 0.6pt solid var(--rule);
+    break-inside: auto;
+  }
+
+  h1, h2, h3, h4 { color: var(--ink) !important; break-after: avoid; }
+  .section h2 { font-size: 14pt; line-height: 1.05; margin-bottom: 3mm; }
+  .section h2.center { max-width: none; }
+  .section p, .legal p { color: var(--muted) !important; orphans: 3; widows: 3; }
+  .eyebrow {
+    color: var(--copper) !important;
+    font-size: 7pt;
+    letter-spacing: 0.18em;
+    margin-bottom: 2mm;
+  }
+  .lead-line { color: var(--copper) !important; font-size: 9pt; }
+  p.section-intro { max-width: none; font-size: 9.4pt; }
+
+  /* ----- multi-column ----- */
+  /* A4 gives a 186mm measure. Body prose at 9.4pt runs to ~105 characters
+     across it, well past comfortable, so the long-form blocks are set in two
+     columns at ~52 characters — the same measure the screen keeps with its
+     44rem cap. */
+  .section-intro.center {
+    column-count: 2;
+    column-gap: 9mm;
+    text-align: left;
+    margin-inline: 0;
+  }
+  .section-intro.center p:first-child { margin-top: 0; }
+
+  /* Term-and-detail pairs are short: two columns rather than a long ladder. */
+  .fact-list { column-count: 2; column-gap: 9mm; margin-top: 4mm; }
+  .fact-list li {
+    display: block;
+    break-inside: avoid;
+    padding: 1.6mm 0;
+    border-top: 0.4pt solid var(--line);
+  }
+  .fact-list li span {
+    display: block;
+    width: auto;
+    padding-top: 0;
+    color: var(--copper) !important;
+    font-size: 6.6pt;
+  }
+
+  /* Paper is ~700 CSS px wide, which trips the phone breakpoints. It is not a
+     phone: the side-by-side layouts are restored explicitly. */
+  .grid-2 { grid-template-columns: 1fr 1fr; gap: 9mm; align-items: start; }
+  .cards { gap: 5mm; margin-top: 4mm; }
+
+  /* ----- links ----- */
+  a { color: var(--ink) !important; text-decoration: none; box-shadow: none !important; }
+  a[href^="http"]::after {
+    content: " (" attr(href) ")";
+    font-size: 7pt;
+    color: var(--muted-2);
+    word-break: break-all;
+  }
+
+  img { max-width: 100% !important; break-inside: avoid; }
+
+  /* ----- forms, as something to fill in by hand ----- */
   .signup-form input[type="text"],
   .signup-form input[type="email"],
   .signup-form input[type="tel"],
@@ -627,38 +707,60 @@ p.legal-small { font-size: 0.85rem; color: var(--muted-2); }
     background: transparent !important;
     border: 0.5pt solid var(--line) !important;
     color: var(--ink) !important;
-    padding: 3mm 2mm;
+    padding: 3.5mm 2mm;
   }
-  .signup-form label { color: var(--ink) !important; }
-  .signup-form .field { margin-bottom: 4mm; break-inside: avoid; }
-  /* #928D85 is deliberate fine print on a dark card; on white it falls to
-     2.7:1, so consent text steps back up to the body colour. */
+  .signup-form label { color: var(--ink) !important; font-size: 7.4pt; }
+  .signup-form .field { margin-bottom: 3.5mm; break-inside: avoid; }
+  /* #928D85 is deliberate fine print on a dark card; on cream it falls to
+     2.6:1, so consent text steps back up to the body colour. */
   .signup-form .check-consent,
-  .check-consent { color: var(--muted) !important; font-size: 8pt; }
+  .check-consent { color: var(--muted) !important; font-size: 7pt; }
 
-  .section { padding: 0 0 10mm; break-inside: auto; }
-  .wrap { max-width: none; padding-inline: 0; }
-
-  h1, h2, h3, h4 { color: var(--ink) !important; break-after: avoid; }
-  .section h2 { font-size: 15pt; margin-bottom: 4mm; }
-  .section p, .legal p { color: var(--muted) !important; orphans: 3; widows: 3; }
-  .eyebrow, .lead-line, .fact-list li span { color: var(--copper-ox) !important; }
-
-  /* A reader cannot follow a link on paper, so print where it went — but only
-     for real destinations, not in-page anchors or mailto/tel that read fine. */
-  a { color: var(--ink) !important; text-decoration: none; box-shadow: none !important; }
-  a[href^="http"]::after {
-    content: " (" attr(href) ")";
-    font-size: 8pt;
-    color: var(--muted-2);
-    word-break: break-all;
+  /* ----- legal pages, set as a document ----- */
+  .legal { column-count: 2; column-gap: 9mm; padding-top: 0; }
+  .legal h1 {
+    column-span: all;
+    font-size: 22pt;
+    margin-bottom: 3mm;
+    padding-bottom: 3mm;
+    border-bottom: 0.8pt solid var(--rule);
   }
+  p.legal-lead {
+    column-span: all;
+    font-size: 10.5pt;
+    color: var(--ink) !important;
+    border-left: 2pt solid var(--copper);
+    margin-bottom: 4mm;
+  }
+  p.legal-updated { column-span: all; font-size: 7.4pt; margin-bottom: 4mm; }
+  .legal h2 {
+    color: var(--copper) !important;
+    font-size: 8.4pt;
+    margin: 4mm 0 1.5mm;
+  }
+  .legal h2:first-of-type { margin-top: 0; }
+  .legal p, .legal-list { font-size: 8.8pt; line-height: 1.45; break-inside: avoid; }
+  .legal-contact { display: block; }
 
-  img { max-width: 100% !important; break-inside: avoid; }
-
-  .grid-2 { grid-template-columns: 1fr 1fr; gap: 8mm; align-items: start; }
-  .cards { gap: 5mm; margin-top: 5mm; }
-
-  .site-footer { padding: 6mm 0 0; border-top: 0.5pt solid var(--line); break-inside: avoid; }
-  .footer-copy { margin-top: 4mm; padding-top: 3mm; }
+  /* ----- colophon ----- */
+  .site-footer {
+    padding: 4mm 0 0;
+    margin-top: 6mm;
+    background: transparent;
+    border-top: 0.8pt solid var(--rule);
+    break-inside: avoid;
+  }
+  .footer-inner { flex-wrap: nowrap; gap: 6mm; }
+  .footer-brand { font-size: 12pt; }
+  .footer-brand em { color: var(--copper) !important; }
+  .footer-sub, .footer-contact a { color: var(--muted) !important; font-size: 7.6pt; }
+  .footer-contact { text-align: right; }
+  .footer-contact a[href^="http"]::after { content: ""; }
+  .footer-copy {
+    margin: 3mm 0 0;
+    padding-top: 2mm;
+    border-top: 0.4pt solid var(--line);
+    font-size: 7pt;
+    color: var(--muted-2) !important;
+  }
 }
