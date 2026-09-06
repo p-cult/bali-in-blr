@@ -54,6 +54,11 @@ const MASTER_TAB = 'Master';
  */
 const LOG_TAB = 'Receipts';
 const LOG_HEADERS = ['Submission ID', 'Timestamp', 'Flavour', 'Result'];
+
+/* Master store of minted campaign links. No personal data — campaign URLs and
+   their tags only. Fed by the Campaign Link Builder (mode=link). */
+const LINK_TAB = 'links';
+const LINK_HEADERS = ['Code', 'Timestamp', 'Destination', 'Source', 'Medium', 'Campaign', 'Content', 'Programme', 'Ref', 'URL'];
 const MASTER_HEADERS = [
   'First seen', 'Full Name', 'Phone', 'Email', 'Sources', 'Submissions', 'Last seen', 'Consent'
 ];
@@ -90,6 +95,10 @@ function doPost(e) {
     lock.waitLock(20000);
 
     const p = (e && e.parameter) || {};
+
+    // Record a minted campaign link to the master 'links' tab. No PII.
+    if (clean(p.mode) === 'link') return recordLink(p);
+
     const key = String(p.flavour || 'updates').toLowerCase();
     const flavour = FLAVOURS[key];
     if (!flavour) return json({ ok: false, error: 'Unknown flavour: ' + key });
@@ -313,8 +322,28 @@ function doGet(e) {
   else if (which === 'events') data = readTab('Events');
   else if (which === 'partners') data = readTab('Partners');
   else if (which === 'stats') data = readStats();
+  else if (which === 'links') data = readTab(LINK_TAB);
   else data = { ok: true, service: 'Bali in Bengaluru bridge' };
   return callback ? jsonp(callback, data) : json(data);
+}
+
+/** Append a minted campaign link to the master 'links' tab, deduped by URL. */
+function recordLink(p) {
+  const url = clean(p.url);
+  if (!url) return json({ ok: false, error: 'A link needs a url' });
+  const sh = tab(book(), LINK_TAB, LINK_HEADERS);
+  // Skip if this exact URL is already recorded.
+  const existing = sh.getLastRow() > 1
+    ? sh.getRange(2, LINK_HEADERS.indexOf('URL') + 1, sh.getLastRow() - 1, 1).getValues()
+    : [];
+  for (var i = 0; i < existing.length; i++) {
+    if (clean(existing[i][0]) === url) return json({ ok: true, duplicate: true });
+  }
+  sh.appendRow([
+    clean(p.code), new Date(), clean(p.destination), clean(p.source), clean(p.medium),
+    clean(p.campaign), clean(p.content), clean(p.programme), clean(p.ref), url
+  ]);
+  return json({ ok: true, duplicate: false });
 }
 
 /** Read a tab into an array of objects keyed by its header row. */

@@ -53,7 +53,7 @@
 <div class="wrap">
   <p class="kick">Bali in Bengaluru · internal</p>
   <h1>Campaign Link Builder</h1>
-  <p class="sub">Mint trackable links for posters, posts and ads. Each link carries UTM tags (for the marketing analytics / performance marketer) and a <code>ref</code> tag (recorded in the sheet's Sources column). Build a link, add it to the list, then export the list to hand over.</p>
+  <p class="sub">Mint trackable links for posters, posts and ads. Each link carries UTM tags (for the marketing analytics / performance marketer) and a <code>ref</code> tag (recorded in the sheet's Sources column). “Add to list” saves the link to the <strong>links</strong> tab of the Registration Data sheet — the master store — and the list below reflects it. Export any time to hand over.</p>
 
   <div class="card">
     <div class="grid">
@@ -73,26 +73,38 @@
 
       <div class="field">
         <label for="source">Source <span class="opt">· utm_source</span></label>
-        <input id="source" list="sources" placeholder="instagram, whatsapp, google…" />
-        <datalist id="sources"><option>instagram</option><option>facebook</option><option>whatsapp</option><option>google</option><option>youtube</option><option>email</option><option>poster</option><option>newsletter</option></datalist>
+        <input id="source" placeholder="instagram, whatsapp, google…" autocomplete="off" />
       </div>
       <div class="field">
         <label for="medium">Medium <span class="opt">· utm_medium</span></label>
-        <input id="medium" list="mediums" placeholder="social, cpc, email, qr, print…" />
-        <datalist id="mediums"><option>social</option><option>cpc</option><option>email</option><option>qr</option><option>print</option><option>referral</option><option>bio</option></datalist>
+        <select id="medium">
+          <option value="">—</option>
+          <option value="social">social</option>
+          <option value="cpc">cpc</option>
+          <option value="email">email</option>
+          <option value="qr">qr</option>
+          <option value="print">print</option>
+          <option value="referral">referral</option>
+          <option value="bio">bio</option>
+        </select>
       </div>
       <div class="field">
         <label for="campaign">Campaign <span class="opt">· utm_campaign</span></label>
-        <input id="campaign" placeholder="oct-launch" />
+        <input id="campaign" placeholder="oct-launch" autocomplete="off" />
       </div>
       <div class="field">
         <label for="content">Content <span class="opt">· utm_content, optional</span></label>
-        <input id="content" placeholder="story-1, variant-a…" />
+        <input id="content" placeholder="story-1, variant-a…" autocomplete="off" />
       </div>
-      <div class="field full">
-        <label for="ref">Ref tag <span class="opt">· shown in the sheet's Sources column</span></label>
-        <input id="ref" placeholder="auto — e.g. instagram-oct-launch" />
-        <span class="hint">Leave blank to auto-build from source + campaign. Keep it short and unique per placement.</span>
+      <div class="field">
+        <label for="ref">Ref tag <span class="opt">· sheet Sources column</span></label>
+        <input id="ref" placeholder="auto — e.g. instagram-oct-launch" autocomplete="off" />
+        <span class="hint">Blank = auto from source + campaign.</span>
+      </div>
+      <div class="field">
+        <label for="code">Code <span class="opt">· short label in the links tab</span></label>
+        <input id="code" placeholder="auto — e.g. ig-oct" autocomplete="off" />
+        <span class="hint">Blank = same as the ref tag.</span>
       </div>
     </div>
 
@@ -112,7 +124,7 @@
     <div class="row" id="listActions" hidden>
       <button class="btn btn-primary" id="exportCsv">Export CSV</button>
       <button class="btn btn-ghost" id="copyAll">Copy all (TSV)</button>
-      <button class="btn btn-ghost" id="clear">Clear list</button>
+      <button class="btn btn-ghost" id="sync">Sync unsaved</button>
     </div>
   </div>
 </div>
@@ -120,8 +132,9 @@
 
 <script>
 const BASE = "https://bali-in-blr.paramfoundation.org/";
+const BRIDGE_URL = "https://script.google.com/macros/s/AKfycbyKXzPHQLsHCoryx0aJVpVkP0Z0XrnPxjucaiUJtR1aXeux33ygq2Br2QcBNU_MAB7qDw/exec";
 const SCHEDULE_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTji37D6cT7J9bLFptJdNaYrvZF_soZyiqIsX-rHYUj4H6rnfMCExu2hIyVjCk48j86rdaBhp_lthzb/pub?gid=289612903&single=true&output=tsv";
-const KEY = "bali-campaign-links";
+const KEY = "bali-campaign-links"; // local cache + queue; the sheet 'links' tab is the master
 const $ = (id) => document.getElementById(id);
 const slug = (s) => String(s||"").toLowerCase().trim().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
 
@@ -153,68 +166,106 @@ function refresh(){
 
 /* ---- minted list (localStorage) ---- */
 function load(){ try { return JSON.parse(localStorage.getItem(KEY)) || []; } catch(e){ return []; } }
-function save(list){ try { localStorage.setItem(KEY, JSON.stringify(list)); } catch(e){} }
-
-function render(){
-  const list = load();
-  const wrap = $("listWrap");
-  $("listActions").hidden = list.length === 0;
-  if (!list.length){ wrap.innerHTML = '<p class="empty">No links yet. Build one above and “Add to list”.</p>'; return; }
-  wrap.innerHTML =
-    '<div style="overflow-x:auto"><table><thead><tr>' +
-    '<th>Destination</th><th>Source</th><th>Medium</th><th>Campaign</th><th>Ref</th><th>Link</th><th></th>' +
-    '</tr></thead><tbody>' +
-    list.map((r,i) =>
-      '<tr><td>'+esc(r.dest||"home")+'</td><td>'+esc(r.source)+'</td><td>'+esc(r.medium)+'</td>'+
-      '<td>'+esc(r.campaign)+'</td><td>'+esc(r.ref)+'</td>'+
-      '<td class="u">'+esc(r.url)+'</td>'+
-      '<td><button class="btn btn-ghost mini" data-copy="'+i+'">Copy</button> '+
-      '<button class="btn btn-ghost mini" data-del="'+i+'">✕</button></td></tr>'
-    ).join("") + '</tbody></table></div>';
-}
+function save(){ try { localStorage.setItem(KEY, JSON.stringify(LINKS)); } catch(e){} }
 function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
 
-$("add").addEventListener("click", () => {
-  const dest = $("dest").options[$("dest").selectedIndex].text;
+// Local cache + queue; the sheet 'links' tab is the master (pulled on load).
+let LINKS = load();
+
+function render(){
+  const wrap = $("listWrap");
+  $("listActions").hidden = LINKS.length === 0;
+  $("sync").hidden = LINKS.every(r => r.synced);
+  if (!LINKS.length){ wrap.innerHTML = '<p class="empty">No links yet. Build one above and “Add to list” — it saves to the sheet.</p>'; return; }
+  wrap.innerHTML =
+    '<div style="overflow-x:auto"><table><thead><tr>' +
+    '<th>Code</th><th>Dest</th><th>Source</th><th>Campaign</th><th>Ref</th><th>Link</th><th>Sheet</th><th></th>' +
+    '</tr></thead><tbody>' +
+    LINKS.map((r,i) =>
+      '<tr><td>'+esc(r.code)+'</td><td>'+esc(r.dest||"home")+'</td><td>'+esc(r.source)+'</td>'+
+      '<td>'+esc(r.campaign)+'</td><td>'+esc(r.ref)+'</td>'+
+      '<td class="u">'+esc(r.url)+'</td>'+
+      '<td>'+(r.synced?'✓':'<span style="color:var(--accent)">pending</span>')+'</td>'+
+      '<td><button class="btn btn-ghost mini" data-copy="'+i+'">Copy</button></td></tr>'
+    ).join("") + '</tbody></table></div>';
+}
+
+/* POST one link to the master 'links' tab. Returns true on confirmed save. */
+async function postLink(r){
+  const body = new URLSearchParams({
+    mode:"link", code:r.code, destination:r.dest, source:r.source, medium:r.medium,
+    campaign:r.campaign, content:r.content, programme:r.programme, ref:r.ref, url:r.url
+  }).toString();
+  try {
+    const res = await fetch(BRIDGE_URL, {method:"POST", headers:{"Content-Type":"application/x-www-form-urlencoded"}, body});
+    const out = await res.json();
+    return !!(out && out.ok === true);
+  } catch(e){ return false; }
+}
+
+$("add").addEventListener("click", async () => {
+  const src=slug($("source").value), camp=slug($("campaign").value);
+  const ref = slug($("ref").value) || [src,camp].filter(Boolean).join("-");
   const row = {
-    dest, source: slug($("source").value), medium: slug($("medium").value),
-    campaign: slug($("campaign").value), content: slug($("content").value),
-    programme: $("programme").value,
-    ref: (slug($("ref").value) || [slug($("source").value), slug($("campaign").value)].filter(Boolean).join("-")),
-    url: buildUrl()
+    code: slug($("code").value) || ref,
+    dest: $("dest").options[$("dest").selectedIndex].text,
+    source: src, medium: slug($("medium").value), campaign: camp,
+    content: slug($("content").value), programme: $("programme").value,
+    ref, url: buildUrl(), synced:false
   };
-  const list = load(); list.push(row); save(list); render(); toast("Added to list");
+  if (LINKS.some(x => x.url === row.url)){ toast("Already in the list"); return; }
+  LINKS.push(row); save(); render(); toast("Saving to sheet…");
+  row.synced = await postLink(row); save(); render();
+  toast(row.synced ? "Saved to the links tab" : "Saved locally — sheet not reachable");
 });
 
 $("copy").addEventListener("click", async () => { await navigator.clipboard.writeText(buildUrl()); toast("Link copied"); });
 
 $("listWrap").addEventListener("click", async (e) => {
-  const c = e.target.closest("[data-copy]"); const d = e.target.closest("[data-del]");
-  if (c){ await navigator.clipboard.writeText(load()[+c.dataset.copy].url); toast("Link copied"); }
-  if (d){ const list = load(); list.splice(+d.dataset.del,1); save(list); render(); }
+  const c = e.target.closest("[data-copy]");
+  if (c){ await navigator.clipboard.writeText(LINKS[+c.dataset.copy].url); toast("Link copied"); }
 });
 
-$("clear").addEventListener("click", () => { if (confirm("Clear all minted links?")){ save([]); render(); } });
+$("sync").addEventListener("click", async () => {
+  let done=0;
+  for (const r of LINKS){ if(!r.synced){ r.synced = await postLink(r); if(r.synced) done++; } }
+  save(); render(); toast(done ? ("Synced "+done+" to the sheet") : "Sheet still not reachable");
+});
 
 function toCsv(){
-  const list = load();
-  const head = ["Destination","Source","Medium","Campaign","Content","Programme","Ref","URL"];
-  const esc2 = (v)=>'"'+String(v==null?"":v).replace(/"/g,'""')+'"';
-  const rows = list.map(r => [r.dest,r.source,r.medium,r.campaign,r.content,r.programme,r.ref,r.url].map(esc2).join(","));
-  return head.map(esc2).join(",") + "\n" + rows.join("\n");
+  const head = ["Code","Destination","Source","Medium","Campaign","Content","Programme","Ref","URL"];
+  const q = (v)=>'"'+String(v==null?"":v).replace(/"/g,'""')+'"';
+  const rows = LINKS.map(r => [r.code,r.dest,r.source,r.medium,r.campaign,r.content,r.programme,r.ref,r.url].map(q).join(","));
+  return head.map(q).join(",") + "\n" + rows.join("\n");
 }
 $("exportCsv").addEventListener("click", () => {
-  const blob = new Blob([toCsv()], {type:"text/csv"});
   const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = "bali-campaign-links.csv";
-  a.click(); URL.revokeObjectURL(a.href);
+  a.href = URL.createObjectURL(new Blob([toCsv()], {type:"text/csv"}));
+  a.download = "bali-campaign-links.csv"; a.click(); URL.revokeObjectURL(a.href);
 });
 $("copyAll").addEventListener("click", async () => {
-  const list = load();
-  const tsv = list.map(r => [r.dest,r.source,r.medium,r.campaign,r.ref,r.url].join("\t")).join("\n");
+  const tsv = LINKS.map(r => [r.code,r.dest,r.source,r.campaign,r.ref,r.url].join("\t")).join("\n");
   await navigator.clipboard.writeText(tsv); toast("Copied all as TSV");
 });
+
+/* Pull the master 'links' tab so the list reflects the sheet, not just this browser. */
+(async () => {
+  try {
+    const res = await fetch(BRIDGE_URL + "?sheet=links", {cache:"no-store"});
+    const rows = await res.json();
+    if (!Array.isArray(rows) || !rows.length) return;
+    const byUrl = new Map(LINKS.map(r => [r.url, r]));
+    rows.forEach(o => {
+      const url = o.URL || o.url || ""; if (!url) return;
+      byUrl.set(url, {
+        code:o.Code||"", dest:o.Destination||"", source:o.Source||"", medium:o.Medium||"",
+        campaign:o.Campaign||"", content:o.Content||"", programme:o.Programme||"", ref:o.Ref||"", url, synced:true
+      });
+    });
+    LINKS = Array.from(byUrl.values());
+    save(); render();
+  } catch(e){ /* offline: keep local cache */ }
+})();
 
 /* ---- populate programmes from the live schedule ---- */
 (async () => {
