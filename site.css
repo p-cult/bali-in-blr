@@ -305,108 +305,105 @@
 .chip:hover { color: var(--ink); border-color: var(--ink); }
 .chip.is-active { background: var(--accent); border-color: var(--accent); color: var(--bg); }
 
-.calendar-list { display: flex; flex-direction: column; gap: 0.9rem; margin-top: 2rem; }
+.calendar-list { display: flex; flex-direction: column; gap: 1rem; margin-top: 2rem; }
 
-.cal-bar {
+/* Event module: poster on the left, everything derived on the right. */
+.cal-event {
   display: grid;
-  grid-template-columns: 116px 74px minmax(0, 1fr) auto;
-  gap: 1.2rem;
-  align-items: stretch;
+  grid-template-columns: 236px minmax(0, 1fr);
   background: var(--bg-3);
   border: 1px solid var(--line);
-  border-left: 2px solid var(--copper);
   border-radius: var(--radius);
   overflow: hidden;
-  transition: border-color 0.18s ease, background 0.18s ease, transform 0.18s ease;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
 }
-.section-tint .cal-bar { background: var(--bg); }
-.cal-bar:hover {
-  transform: translateY(-2px);
-  background: var(--bg-2);
-  border-color: var(--copper);
-}
-/* Pictures are opt-in via <body data-calendar-images>. Without them the row
-   would keep a dead 116px column, so it drops back to three. */
-.cal-bar:not(:has(.cal-thumb)) { grid-template-columns: 74px minmax(0, 1fr) auto; }
+.section-tint .cal-event { background: var(--bg); }
+.cal-event:hover { transform: translateY(-3px); border-color: var(--copper); box-shadow: 0 18px 44px -24px rgba(0, 0, 0, 0.7); }
 
-.cal-thumb { overflow: hidden; background: var(--bg-2); }
-.cal-thumb img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.4s ease;
-}
-.cal-bar:hover .cal-thumb img { transform: scale(1.05); }
+/* poster */
+.cal-poster { position: relative; min-height: 200px; background: var(--bg-2); }
+.cal-poster img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease; }
+.cal-poster::after { content: ""; position: absolute; inset: 0; background: linear-gradient(100deg, transparent 52%, var(--bg-3)); }
+.section-tint .cal-poster::after { background: linear-gradient(100deg, transparent 52%, var(--bg)); }
+.cal-event:hover .cal-poster img { transform: scale(1.04); }
+/* no image: a category-tinted ground carrying the date, so the row never looks broken */
+.cal-poster--blank { display: grid; place-items: center; }
+.cal-poster--blank::after { display: none; }
+.cal-event[data-category="Performance"] .cal-poster--blank { background: rgba(255, 90, 60, 0.10); }
+.cal-event[data-category="Workshop"]   .cal-poster--blank { background: rgba(200, 121, 65, 0.12); }
+.cal-event[data-category="Talk"]       .cal-poster--blank { background: rgba(201, 169, 162, 0.10); }
 
-.cal-when {
-  display: grid;
-  justify-items: center;
-  align-content: center;
-  padding: 1.1rem 1rem 1.1rem 0;
-  border-right: 1px solid var(--line);
-  line-height: 1;
+/* date chip */
+.cal-date {
+  position: absolute; top: 0.85rem; left: 0.85rem; z-index: 2;
+  display: grid; justify-items: center; line-height: 1;
+  padding: 0.5rem 0.65rem; border-radius: 7px;
+  background: rgba(20, 21, 24, 0.82); backdrop-filter: blur(5px);
+  border: 1px solid var(--line-warm);
 }
-.cal-day { font-family: var(--display); font-size: 2.1rem; font-weight: 900; line-height: 0.9; color: var(--ink); }
-.cal-mon {
-  margin-top: 0.3rem;
-  font-family: var(--display);
-  font-size: 0.66rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  color: var(--accent-2);
-}
-.cal-weekday { margin-top: 0.3rem; font-size: 0.64rem; color: var(--muted-2); }
+.cal-date b { font-family: var(--display); font-weight: 900; font-style: normal; font-size: 1.55rem; color: var(--ink); }
+.cal-date i { font-family: var(--display); font-weight: 700; font-style: normal; font-size: 0.58rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--accent); margin-top: 0.15rem; }
+.cal-poster--blank .cal-date { position: static; background: transparent; border: 0; backdrop-filter: none; padding: 0; }
+.cal-poster--blank .cal-date b { font-size: 2.4rem; }
+.cal-poster--blank .cal-date i { font-size: 0.7rem; }
 
-.cal-what { min-width: 0; padding: 1.1rem 0; }
-.cal-what h4 {
-  margin: 0.4rem 0 0.3rem;
-  font-family: var(--display);
-  font-size: 1.15rem;
-  font-weight: 800;
-  line-height: 1.2;
-  color: var(--ink);
-}
-.cal-tags { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; }
-.cal-cat,
-.cal-collab {
-  padding: 0.2rem 0.5rem;
-  border-radius: 3px;
-  font-family: var(--display);
-  font-size: 0.62rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-.cal-cat { background: rgba(239, 231, 216, 0.07); color: var(--muted); }
-.cal-collab { background: rgba(200, 121, 65, 0.20); color: var(--accent-2); }
-p.cal-meta { margin: 0; font-size: 0.86rem; color: var(--muted); }
-p.cal-desc { margin: 0.3rem 0 0; font-size: 0.85rem; color: var(--muted-2); }
+/* body */
+.cal-body { min-width: 0; padding: 1.25rem 1.4rem 1.35rem; display: flex; flex-direction: column; gap: 0.5rem; }
+.cal-head { display: flex; align-items: center; gap: 0.7rem; flex-wrap: wrap; }
+.cal-cat { font-family: var(--display); font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; font-size: 0.64rem; color: var(--accent); }
+.cal-event[data-category="Workshop"] .cal-cat { color: var(--accent-2); }
+.cal-event[data-category="Talk"] .cal-cat { color: var(--rose); }
+.cal-collab { display: inline-flex; color: var(--accent-2); }
+.cal-collab svg { width: 15px; height: 15px; }
 
-.cal-action { align-self: center; padding: 1.1rem 1.3rem 1.1rem 0; }
-.cal-soon { font-size: 0.78rem; font-style: italic; color: var(--muted-2); white-space: nowrap; }
+/* status — quiet icon + label, colour-coded, never a loud badge */
+.cal-status { display: inline-flex; align-items: center; gap: 0.35rem; margin-left: auto;
+  font-size: 0.63rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted-2); }
+.cal-status svg { width: 13px; height: 13px; }
+.cal-status--live { color: var(--accent-2); }
+.cal-status--fast { color: var(--accent); }
+.cal-status .dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.cal-status--live .dot { animation: cal-pulse 1.8s ease-in-out infinite; }
+@keyframes cal-pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.35; transform: scale(0.7); } }
+.cal-flame { transform-origin: center bottom; animation: cal-flick 1.6s ease-in-out infinite; }
+@keyframes cal-flick { 0%, 100% { transform: scale(1) rotate(0); } 50% { transform: scale(1.14) rotate(-3deg); } }
 
-.badge {
-  padding: 0.25rem 0.55rem;
-  border-radius: 3px;
-  background: var(--line);
-  font-family: var(--display);
-  font-size: 0.62rem;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--ink);
-}
-.badge-live { background: var(--accent-2); color: var(--bg); }
-.badge-done { background: transparent; border: 1px solid var(--line); color: var(--muted-2); }
+.cal-title { font-family: var(--display); font-weight: 800; font-size: 1.42rem; line-height: 1.04; color: var(--ink); margin: 0; }
 
-/* Category as colour as well as a word. */
-.cal-bar[data-category="Performance"] { border-left-color: var(--accent); }
-.cal-bar[data-category="Workshop"] { border-left-color: var(--copper); }
-.cal-bar[data-category="Talk"] { border-left-color: var(--rose); }
-.cal-bar[data-category="Performance"] .cal-cat { background: rgba(255, 90, 60, 0.12); color: var(--accent); }
-.cal-bar[data-category="Workshop"] .cal-cat { background: rgba(200, 121, 65, 0.16); color: var(--accent-2); }
-.cal-bar[data-category="Talk"] .cal-cat { background: rgba(201, 169, 162, 0.14); color: var(--rose); }
+/* meta: date & time carry emphasis; venue is the map link */
+.cal-meta { display: flex; flex-wrap: wrap; gap: 0.25rem 1rem; margin: 0; font-size: 0.83rem; color: var(--muted); }
+.cal-meta > span { display: inline-flex; align-items: center; gap: 0.35rem; }
+.cal-meta svg { width: 14px; height: 14px; }
+.cal-date-txt, .cal-time { color: var(--ink); font-weight: 600; }
+.cal-time svg { color: var(--accent-2); }
+.cal-dur { color: var(--muted-2); font-weight: 400; font-style: normal; }
+.cal-map { display: inline-flex; align-items: center; gap: 0.35rem; color: var(--accent-2); text-decoration: none; cursor: pointer; transition: color 0.15s ease; }
+.cal-map .cal-venue-name { text-decoration: underline dotted rgba(224, 164, 112, 0.4); text-underline-offset: 3px; text-decoration-thickness: 1px; transition: text-decoration-color 0.15s ease; }
+.cal-map::after { content: "↗"; font-size: 1.05em; opacity: 0.7; line-height: 1; }
+.cal-map:hover { color: var(--ink); }
+.cal-map:hover .cal-venue-name { text-decoration-color: currentColor; }
+
+.cal-desc { margin: 0; font-size: 0.85rem; color: var(--muted-2); }
+
+/* occupancy — the FOMO visual */
+.cal-occ { margin-top: 0.15rem; }
+.cal-occ-bar { position: relative; height: 5px; border-radius: 3px; background: rgba(239, 231, 216, 0.09); overflow: hidden; }
+.cal-occ-fill { height: 100%; border-radius: 3px; background: var(--copper); }
+.cal-occ--fast .cal-occ-fill { background: linear-gradient(90deg, var(--copper), var(--accent)); }
+.cal-occ--fast .cal-occ-bar::after { content: ""; position: absolute; inset: 0; border-radius: 3px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+  transform: translateX(-100%); animation: cal-sweep 2.2s ease-in-out infinite; }
+@keyframes cal-sweep { 0% { transform: translateX(-100%); } 60%, 100% { transform: translateX(220%); } }
+.cal-occ-note { margin: 0.35rem 0 0; font-size: 0.72rem; color: var(--muted-2); text-align: right; }
+.cal-occ--fast .cal-occ-note { color: var(--accent); font-weight: 600; }
+
+/* action */
+.cal-act { margin-top: 0.45rem; display: flex; align-items: center; gap: 0.9rem; }
+.cal-soon { font-size: 0.78rem; font-style: italic; color: var(--muted-2); }
+
+/* sold out: the poster reads as "gone" so the live ones feel alive */
+.cal-event.is-full .cal-poster img { filter: grayscale(0.7) brightness(0.7); }
+.cal-event.is-full .cal-title { color: var(--muted); }
 
 /* Offered under the list, not above it: the page is the calendar, the PDF is
    the copy you take away. */
@@ -736,21 +733,12 @@ body.view-open { overflow: hidden; }
   .also-grid { grid-template-columns: 1fr; max-width: 420px; }
   .also-item h4 { min-height: 0; }
 
-  /* Photo down the left, date and detail stacked beside it. */
-  .cal-bar,
-  .cal-bar:not(:has(.cal-thumb)) { grid-template-columns: 92px minmax(0, 1fr); gap: 0.9rem; }
-  .cal-thumb { grid-row: span 2; }
-  .cal-bar:not(:has(.cal-thumb)) .cal-when { grid-column: 1 / -1; }
-  .cal-when {
-    justify-items: start;
-    padding: 0.9rem 0 0.5rem;
-    border-right: 0;
-    border-bottom: 1px solid var(--line);
-    text-align: left;
-  }
-  .cal-day { font-size: 1.6rem; }
-  .cal-what { padding: 0 0 0.9rem; }
-  .cal-action { grid-column: 2; padding: 0 0 1rem; }
+  /* Poster on top, body beneath. */
+  .cal-event { grid-template-columns: 1fr; }
+  .cal-poster { min-height: 168px; }
+  .cal-poster::after { background: linear-gradient(transparent 45%, var(--bg-3)); }
+  .section-tint .cal-poster::after { background: linear-gradient(transparent 45%, var(--bg)); }
+  .cal-status { margin-left: 0; }
 }
 
 @media (max-width: 560px) {
@@ -799,10 +787,10 @@ body.view-open { overflow: hidden; }
 
   .hero-meta div { flex: 1 0 100%; border-right: 0; }
 
-  /* The action goes full width beneath the row rather than squeezing the title. */
-  .cal-action { grid-column: 1 / -1; padding: 0 0.9rem 0.9rem; }
-  .cal-action .btn { display: block; width: 100%; }
-  .cal-soon { display: block; text-align: center; }
+  /* The action goes full width beneath the body on a phone. */
+  .cal-act { flex-direction: column; align-items: stretch; }
+  .cal-act .btn { display: block; width: 100%; text-align: center; }
+  .cal-soon { text-align: center; }
 }
 
 /* -------------------------------------------------------------- 12. Print */
@@ -948,48 +936,29 @@ body.view-open { overflow: hidden; }
   /* ----- calendar, two columns ----- */
   /* Twelve events down one column is two thin pages; in two columns the whole
      festival lands on one sheet, which is the form people actually pin up. */
-  .calendar-list {
+  .calendar-list { display: block; column-count: 2; column-gap: 8mm; margin-top: 4mm; }
+  .cal-event {
     display: block;
-    column-count: 2;
-    column-gap: 8mm;
-    margin-top: 4mm;
-  }
-  .cal-bar,
-  .cal-bar:not(:has(.cal-thumb)) {
-    display: grid;
-    grid-template-columns: 13mm minmax(0, 1fr);
-    gap: 3mm;
     padding: 2.2mm 0;
+    background: transparent !important;
     border: 0 !important;
     border-top: 0.5pt solid var(--line) !important;
     border-radius: 0;
     transform: none !important;
     break-inside: avoid;
   }
-  .cal-thumb { display: none; }        /* the list reads faster without them */
-  .cal-when {
-    padding: 0;
-    border: 0;
-    justify-items: start;
-    align-content: start;
-    text-align: left;
-  }
-  .cal-day { font-size: 12pt; color: var(--ink) !important; }
-  .cal-mon { color: var(--copper) !important; font-size: 6pt; margin-top: 0.6mm; }
-  .cal-weekday { color: var(--muted-2) !important; font-size: 6pt; margin-top: 0.4mm; }
-  .cal-what { padding: 0; }
-  .cal-what h4 { font-size: 8.6pt; margin: 0 0 0.8mm; line-height: 1.15; }
-  p.cal-meta { color: var(--muted) !important; font-size: 7.2pt; }
-  p.cal-desc { display: none; }
-  .cal-tags { gap: 1mm; }
-  .cal-cat, .cal-collab {
-    padding: 0.2mm 1mm;
-    background: transparent !important;
-    border: 0.4pt solid var(--line);
-    color: var(--muted) !important;
-    font-size: 5.6pt;
-  }
-  .cal-bar[data-category] .cal-cat { color: var(--copper) !important; border-color: var(--rule); }
+  .cal-poster { display: none; }        /* the printed list reads faster without them */
+  .cal-body { padding: 0; gap: 1mm; }
+  .cal-head { gap: 1mm; }
+  .cal-collab, .cal-status, .cal-occ, .cal-act, .cal-desc { display: none; }
+  .cal-cat { color: var(--copper) !important; font-size: 5.6pt; }
+  .cal-title { font-size: 8.6pt; margin: 0; line-height: 1.15; }
+  .cal-meta { color: var(--muted) !important; font-size: 7.2pt; gap: 0.5mm 3mm; }
+  .cal-date-txt, .cal-time { color: var(--ink) !important; }
+  .cal-meta svg { display: none; }
+  .cal-map { color: var(--muted) !important; }
+  .cal-map::after { content: ""; }
+  .cal-map .cal-venue-name { text-decoration: none; }
 
   /* ----- partners ----- */
   .partners-grid.has-partners { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 3mm; margin-top: 4mm; }

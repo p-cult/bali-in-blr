@@ -359,7 +359,7 @@ function parseSchedule(tsv) {
   const rows = tsv.split(/\r?\n/).map((line) => line.split("\t"));
   const headerAt = rows.findIndex((cells) => {
     const names = cells.map((c) => c.trim().toLowerCase());
-    return names.includes("title") && names.includes("date");
+    return names.includes("title") && (names.includes("date") || names.includes("start date"));
   });
   if (headerAt === -1) return [];
 
@@ -372,22 +372,27 @@ function parseSchedule(tsv) {
 
   return rows.slice(headerAt + 1)
     .filter((cells) => at(cells, "title"))
-    .map((cells, i) => {
-      const start = at(cells, "start time");
-      const end = at(cells, "end time");
-      const ticketUrl = at(cells, "ticket link");
-      return {
-        id: "ev-" + i,
-        title: at(cells, "title"),
-        category: normaliseCategory(at(cells, "category")),
-        date: parseSheetDate(at(cells, "date")),
-        venue: at(cells, "venue"),
-        time: [start, end].filter(Boolean).join(" – "),
-        ticketUrl: ticketUrl,
-        status: ticketUrl ? "onsale" : "announced",
-        description: "",
-      };
-    });
+    .map((cells, i) => ({
+      id: "ev-" + i,
+      title: at(cells, "title"),
+      category: at(cells, "category"),
+      collaboration: at(cells, "collaboration"),
+      startDate: at(cells, "start date") || at(cells, "date"),
+      endDate: at(cells, "end date"),
+      startTime: at(cells, "start time"),
+      endTime: at(cells, "end time"),
+      venue: at(cells, "venue"),
+      mapUrl: at(cells, "map link"),
+      description: at(cells, "description"),
+      image: at(cells, "image"),
+      ticketUrl: at(cells, "ticket link"),
+      passInfo: at(cells, "pass info"),
+      rsvpUrl: at(cells, "rsvp link"),
+      capacity: at(cells, "capacity"),
+      seatsLeft: at(cells, "seats left"),
+      showSeats: at(cells, "show seats"),
+      statusRaw: at(cells, "status"),
+    }));
 }
 
 /* The filters only know these three, so anything else is folded in. */
@@ -436,7 +441,202 @@ async function loadEvents() {
   return loadJSON(SOURCES.events);
 }
 
-/* ---------- Calendar ---------- */
+/* ---------- Calendar: the event module ----------
+   Every value is derived here from a normalised event — status, the occupancy
+   bar, duration, "onwards", date ranges, the map link. The markup pairs with
+   the .cal-event component in site.css. Sheet/file row order is preserved. */
+
+const CAL_ICONS = {
+  clock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+  pin: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-6-7-11a7 7 0 0114 0c0 5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>',
+  rings: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="8.5" cy="12" r="5"/><circle cx="15.5" cy="12" r="5"/></svg>',
+  flame: '<svg class="cal-flame" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3s5 4 5 9a5 5 0 01-10 0c0-1.5.6-2.8 1.3-3.8C9 10 10 11 10 11s-.3-3 2-8z"/></svg>',
+  ticketX: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8a2 2 0 012-2h14a2 2 0 012 2v2a2 2 0 000 4v2a2 2 0 01-2 2H5a2 2 0 01-2-2v-2a2 2 0 000-4z"/><path d="M5 5l14 14"/></svg>',
+  hour: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l2 2"/></svg>',
+};
+
+function calNum(v) { const n = parseInt(String(v).replace(/[^\d]/g, ""), 10); return isNaN(n) ? null : n; }
+function calYes(v) { return /^(y|yes|true|1|on)$/i.test(String(v || "").trim()); }
+function pad2(n) { return String(n).padStart(2, "0"); }
+function hasClock(t) { return /\d/.test(String(t || "")); }
+
+/* "7.30pm", "7:30 pm", "9.00am", "18.00" -> minutes since midnight, else null */
+function calClock(t) {
+  const m = String(t || "").trim().match(/^(\d{1,2})[.:]?(\d{2})?\s*(am|pm)?$/i);
+  if (!m) return null;
+  let h = parseInt(m[1], 10); const min = m[2] ? parseInt(m[2], 10) : 0;
+  const ap = (m[3] || "").toLowerCase();
+  if (ap === "pm" && h < 12) h += 12;
+  if (ap === "am" && h === 12) h = 0;
+  return h * 60 + min;
+}
+/* "1.5 hrs" / "2 hrs". Infers a missing start meridiem from the end time. */
+function calDuration(s, e) {
+  let a = calClock(s), b = calClock(e);
+  if (a == null || b == null) return "";
+  const sAP = /am|pm/i.test(s), eAP = /am|pm/i.test(e);
+  if (!sAP && eAP && (b - a <= 0 || b - a > 720)) { const alt = a + 720; if (alt < b && b - alt <= 720) a = alt; }
+  const mins = b - a;
+  if (mins <= 0) return "";
+  const h = mins / 60;
+  return (Number.isInteger(h) ? h : Math.round(h * 10) / 10) + (h === 1 ? " hr" : " hrs");
+}
+
+/* Normalise either the sheet shape or the local fallback JSON into one model. */
+function normaliseEvent(raw, i) {
+  const pick = (...keys) => {
+    for (const k of keys) { const v = raw[k]; if (v != null && String(v).trim() !== "") return String(v).trim(); }
+    return "";
+  };
+  const time = pick("time");
+  const parts = time ? time.split(/\s*[–-]\s*/) : [];
+  const ev = {
+    id: raw.id || "ev-" + i,
+    title: pick("title"),
+    category: normaliseCategory(pick("category")),
+    collab: calYes(pick("collaboration")) || raw.collab === true,
+    startDate: parseSheetDate(pick("startDate", "date")),
+    endDate: parseSheetDate(pick("endDate")),
+    startTime: pick("startTime") || (parts[0] || "").trim(),
+    endTime: pick("endTime") || (parts[1] || "").trim(),
+    venue: pick("venue"),
+    mapUrl: pick("mapUrl", "map link"),
+    description: pick("description"),
+    image: pick("image"),
+    ticketUrl: pick("ticketUrl", "ticket link", "ticketurl"),
+    passInfo: pick("passInfo"),
+    rsvpUrl: pick("rsvpUrl"),
+    capacity: calNum(pick("capacity")),
+    seatsLeft: pick("seatsLeft") === "" ? null : calNum(pick("seatsLeft")),
+    showSeats: calYes(pick("showSeats")),
+    statusRaw: pick("statusRaw", "status").toLowerCase(),
+  };
+  ev.status = deriveStatus(ev);
+  return ev;
+}
+
+/* live | fast | soldout | rsvp | waitlist | concluded */
+function deriveStatus(ev) {
+  const o = ev.statusRaw;
+  if (/conclud|past|over/.test(o)) return "concluded";
+  if (/sold|full/.test(o)) return "soldout";
+  if (/fast|filling/.test(o)) return "fast";
+  if (/rsvp/.test(o)) return "rsvp";
+  if (/wait|soon|announce/.test(o)) return "waitlist";
+  if (/live|onsale|on sale/.test(o)) return refineByOccupancy(ev, "live");
+  // auto, from the data present:
+  if (ev.ticketUrl) return refineByOccupancy(ev, "live");
+  if (ev.rsvpUrl || /free|rsvp|pass/i.test(ev.passInfo)) return "rsvp";
+  return "waitlist"; // tickets not live yet — the waitlist is open
+}
+function refineByOccupancy(ev, base) {
+  if (ev.capacity && ev.seatsLeft != null) {
+    if (ev.seatsLeft <= 0) return "soldout";
+    if (ev.seatsLeft / ev.capacity <= 0.2) return "fast";
+  }
+  return base;
+}
+
+function calDayChip(ev) {
+  const d1 = ev.startDate ? new Date(ev.startDate + "T00:00:00") : null;
+  if (!d1 || isNaN(d1)) return { day: "TBA", mon: "" };
+  const mon = d1.toLocaleDateString("en-IN", { month: "short" });
+  const d2 = ev.endDate ? new Date(ev.endDate + "T00:00:00") : null;
+  if (d2 && !isNaN(d2) && ev.endDate !== ev.startDate) return { day: d1.getDate() + "-" + d2.getDate(), mon };
+  return { day: pad2(d1.getDate()), mon };
+}
+function calDateText(ev) {
+  const d1 = ev.startDate ? new Date(ev.startDate + "T00:00:00") : null;
+  if (!d1 || isNaN(d1)) return "Date to be announced";
+  const wd = (d) => d.toLocaleDateString("en-IN", { weekday: "short", day: "numeric" });
+  const mon = d1.toLocaleDateString("en-IN", { month: "short" });
+  const d2 = ev.endDate ? new Date(ev.endDate + "T00:00:00") : null;
+  if (d2 && !isNaN(d2) && ev.endDate !== ev.startDate) return wd(d1) + " – " + wd(d2) + " " + mon;
+  return wd(d1) + " " + mon;
+}
+function calTimeText(ev) {
+  const s = ev.startTime, e = ev.endTime;
+  if (!s) return "";
+  if (!hasClock(s)) return esc(s);                       // "Evening", "Daytime"
+  if (e && hasClock(e)) {
+    const dur = calDuration(s, e);
+    return esc(s) + " – " + esc(e) + (dur ? ` <em class="cal-dur">· ${dur}</em>` : "");
+  }
+  return esc(s) + " onwards";
+}
+
+function calStatusChip(ev) {
+  switch (ev.status) {
+    case "fast": return `<span class="cal-status cal-status--fast">${CAL_ICONS.flame}Filling fast</span>`;
+    case "soldout": return `<span class="cal-status cal-status--full">${CAL_ICONS.ticketX}Sold out</span>`;
+    case "rsvp": return '<span class="cal-status cal-status--live"><span class="dot"></span>RSVP open</span>';
+    case "concluded": return '<span class="cal-status cal-status--full">Concluded</span>';
+    case "waitlist": return `<span class="cal-status cal-status--wait">${CAL_ICONS.hour}Opens soon</span>`;
+    default: return '<span class="cal-status cal-status--live"><span class="dot"></span>Tickets live</span>';
+  }
+}
+function calAction(ev) {
+  const wl = ev.rsvpUrl || "#register";
+  const btn = (url, cls, label) =>
+    `<a class="btn ${cls} btn-sm" href="${esc(url)}"${/^https?:/i.test(url) ? ' target="_blank" rel="noopener"' : ""}>${label}</a>`;
+  switch (ev.status) {
+    case "live":
+    case "fast": return btn(ev.ticketUrl || wl, "btn-primary", "Book / passes");
+    case "rsvp": return btn(wl, "btn-primary", "RSVP to attend") + (ev.passInfo ? `<span class="cal-soon">${esc(ev.passInfo)}</span>` : "");
+    case "soldout": return btn(wl, "btn-ghost", "Join the waitlist");
+    case "concluded": return ev.ticketUrl ? btn(ev.ticketUrl, "btn-ghost", "View media") : "";
+    default: return btn(wl, "btn-primary", "Join the waitlist") + '<span class="cal-soon">Be first when booking opens</span>';
+  }
+}
+/* The occupancy bar is the FOMO visual. Shown only when there is capacity to
+   report and the event is actually selling (live/fast) — never on sold out. */
+function calOcc(ev) {
+  if (!ev.capacity || ev.seatsLeft == null) return "";
+  if (ev.status !== "live" && ev.status !== "fast") return "";
+  const booked = Math.max(0, Math.min(100, Math.round((ev.capacity - ev.seatsLeft) / ev.capacity * 100)));
+  const fast = ev.status === "fast";
+  const note = ev.showSeats
+    ? `<p class="cal-occ-note">${fast ? "Only " : ""}${ev.seatsLeft} seats left</p>`
+    : "";
+  return `<div class="cal-occ${fast ? " cal-occ--fast" : ""}"><div class="cal-occ-bar"><div class="cal-occ-fill" style="width:${booked}%"></div></div>${note}</div>`;
+}
+
+function cardHTML(ev) {
+  const chip = calDayChip(ev);
+  const hasImg = !!ev.image;
+  const poster =
+    `<div class="cal-poster${hasImg ? "" : " cal-poster--blank"}">` +
+    (hasImg ? `<img src="${esc(ev.image)}" alt="" loading="lazy" />` : "") +
+    `<span class="cal-date"><b>${esc(chip.day)}</b><i>${esc(chip.mon)}</i></span></div>`;
+
+  const venue = !ev.venue ? "" : ev.mapUrl
+    ? `<span class="cal-venue"><a class="cal-map" href="${esc(ev.mapUrl)}" target="_blank" rel="noopener">${CAL_ICONS.pin}<span class="cal-venue-name">${esc(ev.venue)}</span></a></span>`
+    : `<span class="cal-venue">${CAL_ICONS.pin}<span>${esc(ev.venue)}</span></span>`;
+
+  const time = calTimeText(ev);
+  const meta =
+    `<p class="cal-meta"><span class="cal-date-txt">${esc(calDateText(ev))}</span>` +
+    (time ? `<span class="cal-time">${CAL_ICONS.clock}${time}</span>` : "") +
+    venue + `</p>`;
+
+  return `
+    <article class="cal-event${ev.status === "soldout" ? " is-full" : ""}" data-category="${esc(ev.category || "")}">
+      ${poster}
+      <div class="cal-body">
+        <div class="cal-head">
+          <span class="cal-cat">${esc(ev.category || "")}</span>
+          ${ev.collab ? `<span class="cal-collab" title="A collaboration">${CAL_ICONS.rings}</span>` : ""}
+          ${calStatusChip(ev)}
+        </div>
+        <h4 class="cal-title">${esc(ev.title)}</h4>
+        ${meta}
+        ${ev.description ? `<p class="cal-desc">${esc(ev.description)}</p>` : ""}
+        ${calOcc(ev)}
+        <div class="cal-act">${calAction(ev)}</div>
+      </div>
+    </article>`;
+}
+
 async function loadCalendar() {
   const grid = document.getElementById("calendar-grid");
   const filters = document.getElementById("calendar-filters");
@@ -457,13 +657,8 @@ async function loadCalendar() {
     return;
   }
 
-  // Sort: dated events first (chronological), then undated.
-  events.sort((a, b) => {
-    if (!a.date && !b.date) return 0;
-    if (!a.date) return 1;
-    if (!b.date) return -1;
-    return new Date(a.date) - new Date(b.date);
-  });
+  // Sheet/file row order is the display order — reordering rows reorders the site.
+  events = events.map(normaliseEvent);
 
   render(events);
   if (filters) {
@@ -486,62 +681,6 @@ async function loadCalendar() {
     grid.innerHTML = list.map(cardHTML).join("");
   }
 
-  function statusBadge(ev) {
-    const s = (ev.status || "announced").toLowerCase();
-    if (s === "concluded") return '<span class="badge badge-done">Concluded</span>';
-    if (s === "onsale") return '<span class="badge badge-live">On sale</span>';
-    return '<span class="badge">Announced</span>';
-  }
-
-  function actionHTML(ev) {
-    const s = (ev.status || "announced").toLowerCase();
-    if (s === "onsale" && ev.ticketUrl)
-      return `<a class="btn btn-primary btn-sm" href="${esc(ev.ticketUrl)}" target="_blank" rel="noopener">Book / passes</a>`;
-    if (s === "concluded" && ev.ticketUrl)
-      return `<a class="btn btn-ghost btn-sm" href="${esc(ev.ticketUrl)}" target="_blank" rel="noopener">View media</a>`;
-    return '<span class="cal-soon">Tickets coming soon</span>';
-  }
-
-  /* One bar per event, stacked in date order — not a grid of cards. */
-  function cardHTML(ev) {
-    const d = ev.date ? new Date(ev.date + "T00:00:00") : null;
-    const day = d && !isNaN(d) ? String(d.getDate()).padStart(2, "0") : "--";
-    const mon = d && !isNaN(d)
-      ? d.toLocaleDateString("en-IN", { month: "short" }).toUpperCase()
-      : "TBA";
-    const weekday = d && !isNaN(d)
-      ? d.toLocaleDateString("en-IN", { weekday: "short" })
-      : "";
-    const meta = [ev.time, ev.venue].filter(Boolean).map(esc).join(" · ");
-
-    // Thumbnails only where the page asks for them, so the original layout
-    // is untouched: index.html sets no flag and renders exactly as before.
-    const wantsThumb = document.body.dataset.calendarImages === "on";
-    const thumb = wantsThumb && ev.image
-      ? `<div class="cal-thumb"><img src="${esc(ev.image)}" alt="" loading="lazy" /></div>`
-      : "";
-
-    return `
-      <article class="cal-bar" data-category="${esc(ev.category || "")}">
-        ${thumb}
-        <div class="cal-when">
-          <span class="cal-day">${day}</span>
-          <span class="cal-mon">${mon}</span>
-          <span class="cal-weekday">${esc(weekday)}</span>
-        </div>
-        <div class="cal-what">
-          <div class="cal-tags">
-            <span class="cal-cat">${esc(ev.category || "")}</span>
-            ${ev.collab ? '<span class="cal-collab">Collaboration</span>' : ""}
-            ${statusBadge(ev)}
-          </div>
-          <h4>${esc(ev.title)}</h4>
-          ${meta ? `<p class="cal-meta">${meta}</p>` : ""}
-          ${ev.description ? `<p class="cal-desc">${esc(ev.description)}</p>` : ""}
-        </div>
-        <div class="cal-action">${actionHTML(ev)}</div>
-      </article>`;
-  }
 }
 
 /* ---------- Partners ---------- */
