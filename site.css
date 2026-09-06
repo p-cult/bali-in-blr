@@ -818,7 +818,7 @@ body.view-open { overflow: hidden; }
   .section-oxblood,
   .support-v2,
   .feature-band,
-  .cal-bar,
+  .cal-event,
   .card,
   .also-item,
   .partner,
@@ -957,7 +957,9 @@ body.view-open { overflow: hidden; }
   .cal-date-txt, .cal-time { color: var(--ink) !important; }
   .cal-meta svg { display: none; }
   .cal-map { color: var(--muted) !important; }
-  .cal-map::after { content: ""; }
+  /* beat the global a[href^="http"]::after URL-expansion (attribute selector
+     out-specifies a bare class), so the map URL never prints beside the venue */
+  .cal-map[href^="http"]::after { content: ""; }
   .cal-map .cal-venue-name { text-decoration: none; }
 
   /* ----- partners ----- */

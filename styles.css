@@ -61,7 +61,7 @@
 h1, h2, h3, h4,
 .eyebrow, .btn, .brand-main, .brand-sub, .nav-cta,
 .hero-meta-num, .lead-line, .fact-list li span,
-.chip, .cal-day, .cal-mon, .cal-cat, .cal-collab, .badge,
+.chip, .cal-cat, .cal-title, .cal-status, .cal-date b, .cal-date i,
 .view-back, .view-bar-title, .onboard-step, .onboard-question legend,
 .group-title, .support-points dt, .hero-kicker {
   font-variation-settings: "wdth" 125;
@@ -616,8 +616,7 @@ p.legal-small { font-size: 0.85rem; color: var(--muted-2); }
   .btn,
   .calendar-filters,
   .calendar-print,
-  .cal-action,
-  .badge,
+  .cal-act,
   .partners-empty,
   .form-note,
   .onboard-progress,
