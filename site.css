@@ -1,17 +1,25 @@
-/* ============================================================
-   site.css — the current design, layered over styles.css.
-   styles.css holds the tokens and the shared components;
-   this holds the layout and treatment specific to this design.
-   v1.html, the previous design, does not load this file.
-   ============================================================ */
+/* ============================================================================
+   Bali in Bengaluru — the festival page
+   ----------------------------------------------------------------------------
+   Layered over styles.css, which holds the tokens and the shared system. This
+   file holds what is particular to index.html: the coloured grounds and their
+   seams, the hero, the programme cards, the calendar, the partners row, the
+   support band, the onboarding carousel and the in-page form views.
 
-/* ---------- The cream ground ----------
-   Paper on screen. The lit copper falls to 2.73 here, so the oxidised
-   copper does the accent work and charcoal sets the type. */
-.section-cream {
-  background: var(--cream, #EFE7D8);
-  color: #1B1D21;
-}
+   privacy.html does not load this file; v1.html is frozen on v1-styles.css.
+   Same order as styles.css: components → responsive → print.
+   ========================================================================== */
+
+/* ------------------------------------------------------------- 1. Grounds */
+/* Each ground restates what its own text is allowed to be. They are not
+   interchangeable: on oxblood the orange measures 3.18 and lit copper 2.94,
+   so neither may set type there; on cream the lit copper falls to 2.73 and
+   the oxidised copper does the accent work instead. */
+
+.section-tint { background: var(--bg-2); }
+
+/* --- Cream: paper on screen. Charcoal sets the type. --- */
+.section-cream { background: var(--cream); color: #1B1D21; }
 .section-cream h2,
 .section-cream h3,
 .section-cream h4 { color: #1B1D21; }
@@ -19,327 +27,389 @@
 .section-cream p strong { color: #1B1D21; }
 .section-cream .eyebrow,
 .section-cream .lead-line { color: var(--copper-ox); }
-.section-cream .fact-list li { border-top-color: rgba(27, 29, 33, 0.14); }
+.section-cream .fact-list li { border-top-color: var(--line-cream); }
 .section-cream .fact-list li span { color: var(--copper-ox); }
-.section-cream .card-plain {
-  background: #E7DFD0;
-  border-color: rgba(27, 29, 33, 0.12);
-}
-.section-cream .card-idx { color: var(--copper-ox); }
+.section-cream .btn-primary { color: #2A1206; }
 .section-cream .btn-ghost { border-color: rgba(27, 29, 33, 0.28); color: #1B1D21; }
 .section-cream .btn-ghost:hover { border-color: #1B1D21; background: rgba(27, 29, 33, 0.05); }
-.section-cream .btn-primary { color: #2A1206; }
 .section-cream a:not(.btn) { color: #1B1D21; box-shadow: inset 0 -2px 0 var(--copper-ox); }
 
-:root { --cream: #EFE7D8; }
+/* --- Oxblood: cream type, copper accents, no orange. --- */
+.section-oxblood { background: var(--oxblood); }
+.section-oxblood h2,
+.section-oxblood h3,
+.section-oxblood h4 { color: var(--ink); }                 /* 8.01 */
+.section-oxblood p { color: var(--muted); }                /* 4.66 */
+.section-oxblood p strong,
+.section-oxblood .eyebrow,
+.section-oxblood .lead-line { color: var(--accent-2); }    /* 4.55 */
+/* Orange is unreadable here, so a link carries a copper underline instead. */
+.section-oxblood a:not(.btn) { color: var(--ink); box-shadow: inset 0 -2px 0 var(--accent-2); }
+.section-oxblood a:not(.btn):hover { color: var(--accent-2); box-shadow: inset 0 -2px 0 var(--ink); }
 
-/* ---------- Pattern dividers ----------
-   Scallop, harlequin and wave from the board, drawn rather than drawn on.
-   Each is one element, 26px tall, sitting between sections as a seam. */
-.seam { height: 26px; width: 100%; }
+/* --------------------------------------------------------------- 2. Seams */
+/* Scallop and harlequin from the elements board, drawn rather than drawn on.
+   Each is one element, 26px tall, sitting between two sections. */
+
+.seam { width: 100%; height: 26px; }
 .seam-scallop {
-  background: radial-gradient(circle at 50% 0%, var(--bg) 46%, transparent 47%) 0 0/28px 26px;
+  background: radial-gradient(circle at 50% 0%, var(--bg) 46%, transparent 47%) 0 0 / 28px 26px;
   background-color: var(--cream);
 }
 .seam-scallop.on-cream {
-  background: radial-gradient(circle at 50% 0%, var(--cream) 46%, transparent 47%) 0 0/28px 26px;
+  background: radial-gradient(circle at 50% 0%, var(--cream) 46%, transparent 47%) 0 0 / 28px 26px;
   background-color: var(--bg);
 }
 .seam-harlequin {
-  background: repeating-conic-gradient(from 45deg at 50% 50%, var(--copper) 0deg 90deg, transparent 90deg 180deg) 0 0/26px 26px;
+  background: repeating-conic-gradient(from 45deg at 50% 50%,
+              var(--copper) 0deg 90deg, transparent 90deg 180deg) 0 0 / 26px 26px;
   background-color: var(--bg-2);
   opacity: 0.5;
 }
-/* ---------- Hero, rebuilt ----------
-   The wordmark is the page's thesis, so it gets the room. */
-/* Was 88vh with the content pinned to the bottom, which left a field of
-   empty sky above it on a tall window. Shorter, and the content sits in the
-   middle so the space is shared instead of stacked on top. */
-.hero-v2 {
-  min-height: min(68vh, 580px);
+
+/* ---------------------------------------------------------------- 3. Hero */
+/* The wordmark is the page's thesis, so it gets the room — but sized to be
+   read rather than to fill the screen, and vertically centred so the space is
+   shared with the lead and the numbers instead of stacked above them. */
+
+.hero {
+  position: relative;
+  display: flex;
   align-items: center;
+  min-height: min(68vh, 580px);
+  overflow: hidden;
 }
-.hero-v2 .hero-content {
-  padding-top: clamp(2rem, 4vw, 3rem);
-  padding-bottom: clamp(2rem, 4vw, 3rem);
+.hero-media { position: absolute; inset: 0; z-index: 0; }
+.hero-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: contrast(1.05) saturate(1.08);
 }
-.hero-v2 .hero-meta { margin-bottom: 1.8rem; }
-/* Bold, and sized to be read rather than to fill the screen. The base rule
-   runs to 9rem; this stops well short so the lead and the numbers below it
-   stay part of the same first impression. */
-.hero-v2 h1 {
-  font-size: clamp(1.9rem, 5vw, 3.6rem);
-  font-weight: 900;
-  letter-spacing: -0.005em;
-  line-height: 0.92;   /* two lines, stacked tight */
-  margin-bottom: 1.2rem;
+.hero-scrim {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to top, var(--bg) 2%, rgba(27, 29, 33, 0.58) 40%, rgba(27, 29, 33, 0.4) 100%),
+    linear-gradient(to right, rgba(27, 29, 33, 0.78), rgba(27, 29, 33, 0.12));
 }
+.hero-content {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: var(--wrap);
+  margin-inline: auto;
+  padding: clamp(2rem, 4vw, 3rem) var(--gutter);
+}
+
 .hero-kicker {
-  display: flex; flex-wrap: wrap; gap: 0.5rem 1.4rem; align-items: baseline;
-  margin: 0 0 1.6rem; font-family: var(--display); font-variation-settings: "wdth" 125;
-  font-size: 0.68rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem 1.4rem;
+  margin: 0 0 1.6rem;
+  font-family: var(--display);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
   color: var(--accent-2);
 }
 .hero-kicker span { display: inline-flex; align-items: center; gap: 0.5rem; }
 .hero-kicker span::before {
-  content: ""; width: 14px; height: 1px; background: var(--copper); display: inline-block;
+  content: "";
+  display: inline-block;
+  width: 14px;
+  height: 1px;
+  background: var(--copper);
 }
 
-/* ---------- A quieter partners row ---------- */
-/* ---------- Footer seam ---------- */
-/* ---------- Support, on maroon ----------
-   The first attempt put translucent cards on the red, which went brown, and
-   an orange button on red, which fought it. Maroon is a strong ground: it
-   wants type and rules, not boxes, and a paper-coloured button rather than
-   another warm one. */
-.support-v2 { background: var(--maroon); }
-.support-v2 h2,
-.support-v2 dt { color: var(--ink); }                      /* 12.74 */
-.support-v2 p,
-.support-v2 dd { color: var(--muted); }                    /* 7.41 */
-.support-v2 .eyebrow { color: var(--accent-2); }           /* 7.24 */
-
-
-/* The three points as a list divided by hairlines, not floating cards. */
-.support-points { margin: 0; display: grid; align-content: start; }
-.support-points > div {
-  padding: 1.15rem 0;
-  border-top: 1px solid rgba(239, 231, 216, 0.16);
-}
-.support-points > div:last-child { border-bottom: 1px solid rgba(239, 231, 216, 0.16); }
-.support-points dt {
-  font-family: var(--display); font-variation-settings: "wdth" 125; font-weight: 800;
-  text-transform: uppercase; font-size: 0.9rem; letter-spacing: 0.02em; margin-bottom: 0.3rem;
-}
-.support-points dd { margin: 0; font-size: 0.92rem; line-height: 1.6; max-width: 46ch; }
-
-/* Paper against the red, rather than a second warm colour fighting it. */
-.btn-paper { background: var(--cream); color: var(--maroon); }
-.btn-paper:hover { background: #FFF; }
-.btn-outline { border: 1px solid rgba(239, 231, 216, 0.4); color: var(--ink); }
-.btn-outline:hover { border-color: var(--ink); background: rgba(239, 231, 216, 0.08); }
-
-/* ---------- Support: alignment and buttons ----------
-   Three faults in the first cut. The grid centres its columns, so the copy
-   floated against a list that started at the top. The ghost button carries a
-   1px border and the filled one does not, so they were different heights.
-   And the actions inherited a centred row, which put them out of line with
-   the text above. */
-.support-v2 .grid-2 {
-  align-items: start;
-  gap: clamp(2rem, 5vw, 3.6rem);
-}
-.support-v2 .support-actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-start;
-  align-items: stretch;
-  gap: 0.7rem;
-  margin-top: 1.7rem;
-}
-/* Same box for both: a transparent border on the filled one matches the
-   outlined one, so they end up the same height to the pixel. */
-.support-v2 .support-actions .btn {
-  border: 1px solid transparent;
-  display: inline-flex;
-  align-items: center;
-  padding: 0.85rem 1.6rem;
-}
-.support-v2 .btn-paper { border-color: var(--cream); }
-
-/* The list's first rule now lines up with the eyebrow, so the two columns
-   start on the same line. */
-.support-v2 .support-points > div:first-child { padding-top: 0.35rem; border-top: 0; }
-.support-v2 .support-points > div:last-child { border-bottom: 0; }
-.support-v2 .support-points > div + div { border-top: 1px solid rgba(239, 231, 216, 0.16); }
-.support-v2 h2 { margin-bottom: 1.1rem; }
-.support-v2 .col-text p { max-width: 44ch; }
-
-/* ---------- Consent, quieter still ----------
-   Scoped to v2 so index.html is unaffected. The wording was the bulk, not
-   the size — it is now one sentence — and the type steps down to 0.68rem at
-   #928D85, which measures 4.60 on the card. One step dimmer fails, so this
-   is the floor for text someone is agreeing to. */
-.check-consent,
-.signup-form .check-consent {
-  font-size: 0.68rem;
-  line-height: 1.5;
-  font-weight: 400;   /* the lightest Instrument Sans carries — it has no 300 */
-  color: #928D85;
-}
-.signup-form .check-consent span { font-weight: 400; }
-.signup-form .check-consent .quiet { color: #928D85; }
-
-/* ---------- Support buttons ----------
-   Equal width, on one row, and both plainly buttons — the outlined one was
-   reading as loose text against the red. */
-.support-v2 .support-actions { display: flex; gap: 0.7rem; flex-wrap: wrap; }
-.support-v2 .support-actions .btn {
-  flex: 1 1 0;
-  min-width: 12.5rem;
-  justify-content: center;
-  text-align: center;
-  padding: 0.85rem 1rem;
-  font-size: 0.72rem;
-  letter-spacing: 0.04em;
-  border: 1px solid transparent;
-}
-/* Three classes deep, or the base rule above wins on specificity and the
-   outlined button keeps a transparent border — which is what made it read
-   as loose text rather than a button. */
-.support-v2 .support-actions .btn-paper {
-  background: var(--cream); color: var(--maroon); border-color: var(--cream);
-}
-.support-v2 .support-actions .btn-outline {
-  background: transparent; color: var(--ink); border-color: rgba(239, 231, 216, 0.55);
-}
-.support-v2 .support-actions .btn-outline:hover {
-  border-color: var(--ink); background: rgba(239, 231, 216, 0.1);
-}
-
-/* ---------- Calendar, rebuilt ----------
-   The bars were a grey list of text. Each event now leads with its
-   photograph, the date reads as a block rather than a line, and the
-   category is carried in colour as well as words. Scoped to the page that
-   opts in, so the original calendar is untouched. */
-[data-calendar-images="on"] .calendar-list { gap: 0.9rem; }
-
-[data-calendar-images="on"] .cal-bar {
-  grid-template-columns: 116px 74px minmax(0, 1fr) auto;
-  gap: 1.2rem;
-  padding: 0;
-  overflow: hidden;
-  align-items: stretch;
-  border-left-width: 2px;
-  transition: border-color 0.18s ease, background 0.18s ease, transform 0.18s ease;
-}
-[data-calendar-images="on"] .cal-bar:hover {
-  transform: translateY(-2px);
-  background: var(--bg-2);
-}
-
-/* The photograph carries the row. */
-[data-calendar-images="on"] .cal-thumb { overflow: hidden; background: var(--bg-2); }
-[data-calendar-images="on"] .cal-thumb img {
-  width: 100%; height: 100%; object-fit: cover; display: block;
-  transition: transform 0.4s ease;
-}
-[data-calendar-images="on"] .cal-bar:hover .cal-thumb img { transform: scale(1.05); }
-
-/* Date as a block, aligned to the photo's top edge. */
-[data-calendar-images="on"] .cal-when {
-  border-right: 1px solid var(--line);
-  padding: 1.1rem 1rem 1.1rem 0;
-  align-content: center;
-}
-[data-calendar-images="on"] .cal-day { font-size: 2.1rem; line-height: 0.9; }
-[data-calendar-images="on"] .cal-mon { font-size: 0.66rem; margin-top: 0.3rem; }
-[data-calendar-images="on"] .cal-weekday { font-size: 0.64rem; }
-
-[data-calendar-images="on"] .cal-what { padding: 1.1rem 0; }
-[data-calendar-images="on"] .cal-what h4 { font-size: 1.15rem; margin: 0.4rem 0 0.3rem; }
-[data-calendar-images="on"] .cal-meta { font-size: 0.86rem; }
-[data-calendar-images="on"] .cal-action { padding: 1.1rem 1.3rem 1.1rem 0; align-self: center; }
-
-/* Category as colour as well as a word, so the strands read at a glance. */
-[data-calendar-images="on"] .cal-bar[data-category="Performance"] { border-left-color: var(--accent); }
-[data-calendar-images="on"] .cal-bar[data-category="Workshop"] { border-left-color: var(--copper); }
-[data-calendar-images="on"] .cal-bar[data-category="Talk"] { border-left-color: var(--rose); }
-[data-calendar-images="on"] .cal-bar[data-category="Performance"] .cal-cat { color: var(--accent); background: rgba(255, 90, 60, 0.12); }
-[data-calendar-images="on"] .cal-bar[data-category="Workshop"] .cal-cat { color: var(--accent-2); background: rgba(200, 121, 65, 0.16); }
-[data-calendar-images="on"] .cal-bar[data-category="Talk"] .cal-cat { color: var(--rose); background: rgba(201, 169, 162, 0.14); }
-
-@media (max-width: 760px) {
-  [data-calendar-images="on"] .cal-bar {
-    grid-template-columns: 92px minmax(0, 1fr);
-    gap: 0.9rem;
-  }
-  [data-calendar-images="on"] .cal-thumb { grid-row: span 2; }
-  [data-calendar-images="on"] .cal-when {
-    border-right: 0; border-bottom: 1px solid var(--line);
-    padding: 0.9rem 0 0.5rem; text-align: left; justify-items: start;
-  }
-  [data-calendar-images="on"] .cal-day { font-size: 1.6rem; }
-  [data-calendar-images="on"] .cal-what { padding: 0 0 0.9rem; }
-  [data-calendar-images="on"] .cal-action { grid-column: 2; padding: 0 0 1rem; }
-}
-
-/* ---------- "Also includes" band ----------
-   The grid was four columns holding three items, so they bunched left with
-   a dead column on the right. Three columns, centred, with the headings
-   given a fixed two-line box so every description starts on the same line
-   whatever the title length. */
-.feature-band .also-grid {
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
-  max-width: 880px;
-  margin-inline: auto;
-}
-.feature-band .also-item {
-  text-align: center;
-  padding: 1.7rem 1.3rem;
-  background: rgba(27, 29, 33, 0.66);
-  border-color: rgba(239, 231, 216, 0.14);
-  backdrop-filter: blur(3px);
-}
-.feature-band .also-item h4 {
-  min-height: 2.2em;          /* two lines' worth, so the rows align */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 0.5rem;
-}
-.feature-band .also-item p { max-width: 24ch; margin-inline: auto; }
-/* A touch more scrim: this photograph is busy behind small text. */
-.feature-band .feature-band-scrim {
-  background: linear-gradient(rgba(27, 29, 33, 0.92), rgba(27, 29, 33, 0.95));
-}
-
-@media (max-width: 760px) {
-  .feature-band .also-grid { grid-template-columns: 1fr; max-width: 420px; }
-  .feature-band .also-item h4 { min-height: 0; }
-}
-
-/* ---------- Heading scale ----------
-   The base runs section headings to 3.6rem, which is fine for two words and
-   a wall for a sentence like "Eighteen days of performances, learning and
-   making". Brought down, and given a measure so a long one breaks into two
-   readable lines rather than four shouted ones. */
-.section h2 {
-  font-size: clamp(1.45rem, 2.9vw, 2.15rem);
-  font-weight: 800;   /* 900 at this length reads as shouting */
-  line-height: 1.08;
-  letter-spacing: -0.004em;
-  margin-bottom: 1.1rem;
-  text-wrap: balance;
-}
-.section h2.center { max-width: 32ch; margin-inline: auto; }
-
-/* The strand headings were display type competing with the section heading
-   above them. They are labels — small, spaced, copper, with a rule. */
-.group-title {
+.hero h1 {
+  margin: 0 0 1.2rem;
   font-family: var(--display);
-  font-variation-settings: "wdth" 125;
-  font-weight: 700;
-  font-size: 0.7rem;
-  letter-spacing: 0.16em;
+  font-size: clamp(1.9rem, 5vw, 3.6rem);
+  font-weight: 900;
+  line-height: 0.92;              /* two lines, stacked tight */
+  letter-spacing: -0.005em;
+  text-transform: uppercase;
+  text-shadow: 0 6px 40px rgba(0, 0, 0, 0.35);
+}
+.hero h1 em { font-style: normal; color: var(--accent); }
+
+.hero-lead {
+  max-width: 42rem;
+  margin: 0 0 2.2rem;
+  font-size: clamp(1.05rem, 2vw, 1.28rem);
+  color: rgba(244, 242, 238, 0.88);
+}
+
+.hero-meta {
+  display: flex;
+  max-width: 780px;
+  margin-bottom: 1.8rem;
+  border-block: 1px solid var(--line);
+}
+.hero-meta div {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 1.1rem 1.4rem;
+  border-right: 1px solid var(--line);
+}
+.hero-meta div:first-child { padding-left: 0; }
+.hero-meta div:last-child { border-right: 0; }
+.hero-meta-num {
+  font-family: var(--display);
+  font-size: clamp(1rem, 1.6vw, 1.3rem);
+  font-weight: 900;
+  line-height: 1.05;
+  text-transform: uppercase;
   color: var(--accent-2);
+}
+.hero-meta-label { margin-top: 0.4rem; font-size: 0.76rem; color: var(--muted); }
+
+.hero-actions { display: flex; flex-wrap: wrap; gap: 1rem; }
+
+/* ---------------------------------------------------- 4. Programme cards */
+
+/* The strand headings are labels, not display type competing with the section
+   heading above them: small, spaced, copper, with a rule. */
+.group-title {
   display: flex;
   align-items: center;
   gap: 0.75rem;
   margin: 2.8rem 0 1.1rem;
+  font-family: var(--display);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent-2);
 }
 .group-title::before {
   content: "";
+  flex: none;
   width: 20px;
   height: 1px;
   background: var(--copper);
-  flex: none;
 }
 
-/* ---------- The printable calendar ----------
-   Offered under the list, not above it: the page is the calendar, the PDF
-   is for taking away. */
+.card {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+.section-tint .card { background: var(--bg); }
+.card:hover { transform: translateY(-4px); border-color: var(--accent); }
+
+.card-img { aspect-ratio: 3 / 2; overflow: hidden; }
+.card-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+.card:hover .card-img img { transform: scale(1.06); }
+
+.card-body { padding: 1.4rem 1.5rem 1.7rem; }
+.card-body h4 {
+  margin-bottom: 0.55rem;
+  font-family: var(--display);
+  font-size: 1.2rem;
+  font-weight: 800;
+  line-height: 1.05;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+.card-body p { margin: 0; font-size: 0.92rem; color: var(--muted); }
+
+/* -------------------------------------------------------- 5. Feature band */
+/* A photograph behind small text, so the scrim is heavier here. Three columns
+   holding three items, centred, with the headings given a fixed two-line box
+   so every description starts on the same line whatever the title length. */
+
+.feature-band {
+  position: relative;
+  padding-block: clamp(4rem, 9vw, 7rem);
+  overflow: hidden;
+}
+.feature-band-media { position: absolute; inset: 0; z-index: 0; }
+.feature-band-media img { width: 100%; height: 100%; object-fit: cover; }
+.feature-band-scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(rgba(27, 29, 33, 0.92), rgba(27, 29, 33, 0.95));
+}
+.feature-band-content { position: relative; z-index: 2; }
+.feature-band .eyebrow { display: block; text-align: center; }
+
+.also-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  max-width: 880px;
+  margin: 1.8rem auto 0;
+}
+.also-item {
+  padding: 1.7rem 1.3rem;
+  text-align: center;
+  background: rgba(27, 29, 33, 0.66);
+  border: 1px solid rgba(239, 231, 216, 0.14);
+  border-radius: var(--radius);
+  backdrop-filter: blur(3px);
+}
+.also-item h4 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.2em;          /* two lines' worth, so the rows align */
+  margin-bottom: 0.5rem;
+  font-family: var(--display);
+  font-size: 1.15rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--accent-2);
+}
+.also-item p { max-width: 24ch; margin: 0 auto; font-size: 0.9rem; color: var(--muted); }
+
+/* ------------------------------------------------------------ 6. Calendar */
+/* One bar per event, stacked in date order. Each leads with its photograph,
+   the date reads as a block rather than a line, and the category is carried in
+   colour as well as in words so the strands read at a glance. */
+
+.calendar-filters {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.6rem;
+  margin: 1.8rem 0 0.5rem;
+}
+.chip {
+  padding: 0.5rem 1rem;
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-family: var(--display);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+.chip:hover { color: var(--ink); border-color: var(--ink); }
+.chip.is-active { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+
+.calendar-list { display: flex; flex-direction: column; gap: 0.9rem; margin-top: 2rem; }
+
+.cal-bar {
+  display: grid;
+  grid-template-columns: 116px 74px minmax(0, 1fr) auto;
+  gap: 1.2rem;
+  align-items: stretch;
+  background: var(--bg-3);
+  border: 1px solid var(--line);
+  border-left: 2px solid var(--copper);
+  border-radius: var(--radius);
+  overflow: hidden;
+  transition: border-color 0.18s ease, background 0.18s ease, transform 0.18s ease;
+}
+.section-tint .cal-bar { background: var(--bg); }
+.cal-bar:hover {
+  transform: translateY(-2px);
+  background: var(--bg-2);
+  border-color: var(--copper);
+}
+/* Pictures are opt-in via <body data-calendar-images>. Without them the row
+   would keep a dead 116px column, so it drops back to three. */
+.cal-bar:not(:has(.cal-thumb)) { grid-template-columns: 74px minmax(0, 1fr) auto; }
+
+.cal-thumb { overflow: hidden; background: var(--bg-2); }
+.cal-thumb img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+.cal-bar:hover .cal-thumb img { transform: scale(1.05); }
+
+.cal-when {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  padding: 1.1rem 1rem 1.1rem 0;
+  border-right: 1px solid var(--line);
+  line-height: 1;
+}
+.cal-day { font-family: var(--display); font-size: 2.1rem; font-weight: 900; line-height: 0.9; color: var(--ink); }
+.cal-mon {
+  margin-top: 0.3rem;
+  font-family: var(--display);
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--accent-2);
+}
+.cal-weekday { margin-top: 0.3rem; font-size: 0.64rem; color: var(--muted-2); }
+
+.cal-what { min-width: 0; padding: 1.1rem 0; }
+.cal-what h4 {
+  margin: 0.4rem 0 0.3rem;
+  font-family: var(--display);
+  font-size: 1.15rem;
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--ink);
+}
+.cal-tags { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; }
+.cal-cat,
+.cal-collab {
+  padding: 0.2rem 0.5rem;
+  border-radius: 3px;
+  font-family: var(--display);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.cal-cat { background: rgba(239, 231, 216, 0.07); color: var(--muted); }
+.cal-collab { background: rgba(200, 121, 65, 0.20); color: var(--accent-2); }
+.cal-meta { margin: 0; font-size: 0.86rem; color: var(--muted); }
+.cal-desc { margin: 0.3rem 0 0; font-size: 0.85rem; color: var(--muted-2); }
+
+.cal-action { align-self: center; padding: 1.1rem 1.3rem 1.1rem 0; }
+.cal-soon { font-size: 0.78rem; font-style: italic; color: var(--muted-2); white-space: nowrap; }
+
+.badge {
+  padding: 0.25rem 0.55rem;
+  border-radius: 3px;
+  background: var(--line);
+  font-family: var(--display);
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+.badge-live { background: var(--accent-2); color: var(--bg); }
+.badge-done { background: transparent; border: 1px solid var(--line); color: var(--muted-2); }
+
+/* Category as colour as well as a word. */
+.cal-bar[data-category="Performance"] { border-left-color: var(--accent); }
+.cal-bar[data-category="Workshop"] { border-left-color: var(--copper); }
+.cal-bar[data-category="Talk"] { border-left-color: var(--rose); }
+.cal-bar[data-category="Performance"] .cal-cat { background: rgba(255, 90, 60, 0.12); color: var(--accent); }
+.cal-bar[data-category="Workshop"] .cal-cat { background: rgba(200, 121, 65, 0.16); color: var(--accent-2); }
+.cal-bar[data-category="Talk"] .cal-cat { background: rgba(201, 169, 162, 0.14); color: var(--rose); }
+
+/* Offered under the list, not above it: the page is the calendar, the PDF is
+   the copy you take away. */
 .calendar-print {
   display: flex;
   flex-wrap: wrap;
@@ -350,3 +420,466 @@
   border-top: 1px solid var(--line);
 }
 .calendar-print span { font-size: 0.8rem; color: var(--muted-2); }
+
+/* ------------------------------------------------------------ 7. Partners */
+
+.partners-grid { margin-top: 2.5rem; }
+.partners-grid.has-partners {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 1rem;
+}
+.partners-grid .loading { text-align: center; color: var(--muted-2); }
+
+.partner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 110px;
+  padding: 1.2rem;
+  background: var(--bg-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  font-family: var(--display);
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-align: center;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--muted);
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+.partner:hover { border-color: var(--accent); color: var(--ink); }
+.partner img { max-width: 100%; max-height: 60px; object-fit: contain; }
+
+.partners-empty {
+  padding: 2.5rem 1.5rem;
+  border: 1px dashed var(--line);
+  border-radius: 10px;
+  text-align: center;
+}
+.partners-empty p { margin: 0 0 1.3rem; color: var(--muted); }
+
+/* ------------------------------------------------------------- 8. Support */
+/* Maroon is a strong ground: it wants type and rules, not floating cards, and
+   a paper-coloured button rather than another warm one fighting it. */
+
+.support-v2 { background: var(--maroon); }
+.support-v2 h2,
+.support-v2 dt { color: var(--ink); }                      /* 12.74 */
+.support-v2 p,
+.support-v2 dd { color: var(--muted); }                    /* 7.41 */
+.support-v2 .eyebrow { color: var(--accent-2); }           /* 7.24 */
+.support-v2 h2 { margin-bottom: 1.1rem; }
+.support-v2 .col-text p { max-width: 44ch; }
+
+/* The grid centres its columns by default, which floats the copy against a
+   list that starts at the top. Both columns start on the same line instead. */
+.support-v2 .grid-2 {
+  align-items: start;
+  gap: clamp(2rem, 5vw, 3.6rem);
+}
+
+/* The three points as a list divided by hairlines. */
+.support-points { display: grid; align-content: start; margin: 0; }
+.support-points > div { padding: 1.15rem 0; border-top: 1px solid var(--line-warm); }
+/* The first rule would sit above the list's first line and out of step with
+   the eyebrow opposite, so it is dropped and the rules go between items. */
+.support-points > div:first-child { padding-top: 0.35rem; border-top: 0; }
+.support-points dt {
+  margin-bottom: 0.3rem;
+  font-family: var(--display);
+  font-size: 0.9rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+.support-points dd { max-width: 46ch; margin: 0; font-size: 0.92rem; line-height: 1.6; }
+
+/* Equal width, on one row, and both plainly buttons — the outlined one read as
+   loose text against the red until it kept a visible border. */
+.support-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+  margin-top: 1.7rem;
+}
+.support-actions .btn {
+  flex: 1 1 0;
+  min-width: 12.5rem;
+  padding: 0.85rem 1rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+}
+
+/* -------------------------------------------------------- 9. Onboarding */
+/* Mobile is the case that matters: progress, one question and its buttons
+   should sit in a single screen with no scrolling. */
+
+.onboard {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(2rem, 5vw, 4.5rem);
+  align-items: start;
+}
+.onboard-main { position: relative; }
+
+.onboard-progress {
+  height: 4px;
+  margin-bottom: 0.7rem;
+  background: var(--line);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.onboard-bar {
+  display: block;
+  width: 0;
+  height: 100%;
+  background: var(--accent);
+  border-radius: 999px;
+  transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.onboard-step {
+  margin: 0 0 1.1rem;
+  font-family: var(--display);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted-2);
+}
+
+.onboard-card {
+  padding: clamp(1.3rem, 4vw, 1.9rem);
+  background: var(--bg-3);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+.section-tint .onboard-card { background: var(--bg); }
+
+/* The card is a fieldset, so the legend labels the group. */
+.onboard-question { min-width: 0; margin: 0; }
+.onboard-question legend {
+  /* A legend normally straddles the top border; floating it makes it behave
+     as an ordinary block inside the card. */
+  float: left;
+  width: 100%;
+  margin-bottom: 0.5rem;
+  padding: 0;
+  font-family: var(--display);
+  font-size: clamp(1.25rem, 3.4vw, 1.7rem);
+  font-weight: 900;
+  line-height: 1.05;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+.onboard-hint { clear: both; margin: 0 0 1.1rem; font-size: 0.9rem; color: var(--muted); }
+.onboard-error { margin: 0.2rem 0 0; font-size: 0.85rem; color: var(--accent); }
+
+.choices { clear: both; display: grid; gap: 0.55rem; margin-bottom: 1.1rem; }
+.choice {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  font-size: 0.95rem;
+  color: var(--ink);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.choice:hover { border-color: var(--muted-2); }
+.choice input { flex: none; width: 18px; height: 18px; margin: 0; accent-color: var(--accent); }
+.choice:has(input:checked) { border-color: var(--accent); background: rgba(255, 90, 60, 0.08); }
+
+/* An arrow either side of the question block. */
+.onboard-carousel {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas: "prev stage next";
+  align-items: center;
+  gap: 0.8rem;
+}
+.onboard-stage { grid-area: stage; min-width: 0; }
+.onboard-arrow-prev { grid-area: prev; }
+.onboard-arrow-next { grid-area: next; }
+
+.onboard-arrow {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  padding: 0;
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  color: var(--ink);
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease, opacity 0.15s ease;
+}
+.onboard-arrow:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+.onboard-arrow:disabled { opacity: 0.25; cursor: default; }
+.onboard-arrow-next svg { transform: rotate(180deg); }
+/* Keeps its grid space, so the block does not shift when it goes away. */
+.onboard-arrow.is-gone { visibility: hidden; }
+
+/* The final submit sits centred, not stretched across the card. */
+.onboard-signup .btn-block {
+  display: block;
+  width: auto;
+  min-width: 220px;
+  margin-inline: auto;
+}
+
+.onboard-change {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 1.1rem;
+  padding: 0;
+  background: none;
+  border: 0;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+  cursor: pointer;
+}
+.onboard-change:hover { color: var(--accent); }
+
+/* ------------------------------------------------------- 10. In-page views */
+/* Not separate files: these overlay the page, and "back" simply hides them
+   again, leaving the main page exactly where it was. */
+
+.page-view {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: var(--bg);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  animation: view-in 0.22s ease both;
+}
+@keyframes view-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* The main page must not scroll behind an open view. */
+body.view-open { overflow: hidden; }
+
+.view-bar {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.9rem 1.6rem;
+  background: rgba(27, 29, 33, 0.92);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
+}
+.view-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0.9rem;
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink);
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+.view-back:hover { border-color: var(--accent); color: var(--accent); }
+.view-bar-title {
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.view-body > .section { padding-top: 2.6rem; }
+
+/* --------------------------------------------------------- 11. Responsive */
+/* Largest first, so a value is only ever overridden by a narrower screen. */
+
+@media (max-width: 900px) {
+  .partners-grid.has-partners { grid-template-columns: repeat(3, 1fr); }
+
+  .onboard { grid-template-columns: 1fr; gap: 1.4rem; }
+  /* On a phone the marketing copy would push the question off-screen; the
+     heading alone carries enough context. */
+  .onboard-aside p,
+  .onboard-aside .fact-list { display: none; }
+  .onboard-aside h2 { font-size: clamp(1.6rem, 7vw, 2.2rem); margin-bottom: 0; }
+  .page-view .section { padding-block: 1.6rem 2.4rem; }
+}
+
+@media (max-width: 760px) {
+  .hero-meta { flex-wrap: wrap; }
+  .hero-meta div { flex: 1 0 45%; border-bottom: 1px solid var(--line); }
+
+  .also-grid { grid-template-columns: 1fr; max-width: 420px; }
+  .also-item h4 { min-height: 0; }
+
+  /* Photo down the left, date and detail stacked beside it. */
+  .cal-bar,
+  .cal-bar:not(:has(.cal-thumb)) { grid-template-columns: 92px minmax(0, 1fr); gap: 0.9rem; }
+  .cal-thumb { grid-row: span 2; }
+  .cal-bar:not(:has(.cal-thumb)) .cal-when { grid-column: 1 / -1; }
+  .cal-when {
+    justify-items: start;
+    padding: 0.9rem 0 0.5rem;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+    text-align: left;
+  }
+  .cal-day { font-size: 1.6rem; }
+  .cal-what { padding: 0 0 0.9rem; }
+  .cal-action { grid-column: 2; padding: 0 0 1rem; }
+}
+
+@media (max-width: 560px) {
+  /* No room to flank the card on a phone: the arrows sit beneath it, still
+     one on each side. "auto" columns collapse here because the stage spans
+     both, so the two are given equal width and pushed to the outer edges. */
+  .onboard-carousel {
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+      "stage stage"
+      "prev  next";
+    row-gap: 0.7rem;
+  }
+  .onboard-arrow-prev { justify-self: start; }
+  .onboard-arrow-next { justify-self: end; }
+  .onboard-arrow { width: 48px; height: 48px; }
+  /* On the signup card the arrow row is dead weight — "Change my answers"
+     already goes back — and the space keeps the form on one screen. */
+  .onboard-carousel.is-done { row-gap: 0; }
+  .onboard-carousel.is-done .onboard-arrow { display: none; }
+
+  .onboard-card { padding: 1rem; }
+  .onboard-question legend { font-size: 1.15rem; margin-bottom: 0.35rem; }
+  .onboard-hint { margin-bottom: 0.75rem; font-size: 0.83rem; }
+  .onboard-progress { margin-bottom: 0.5rem; }
+  .onboard-step { margin-bottom: 0.6rem; font-size: 0.68rem; }
+  .onboard-change { margin-bottom: 0.9rem; }
+  .onboard-signup .field { margin-bottom: 0.85rem; }
+  .onboard-signup .check-consent { margin-bottom: 0.9rem; font-size: 0.7rem; }
+
+  .choices { gap: 0.4rem; margin-bottom: 0.4rem; }
+  .choice { gap: 0.6rem; padding: 0.6rem 0.8rem; font-size: 0.88rem; line-height: 1.35; }
+  .choice input { width: 17px; height: 17px; }
+
+  .page-view .section { padding-block: 1rem; }
+}
+
+@media (max-width: 520px) {
+  .view-bar { padding: 0.75rem 1rem; }
+  .view-bar-title { display: none; }
+
+  .partners-grid.has-partners { grid-template-columns: repeat(2, 1fr); }
+
+  .hero-meta div { flex: 1 0 100%; border-right: 0; }
+
+  /* The action goes full width beneath the row rather than squeezing the title. */
+  .cal-action { grid-column: 1 / -1; padding: 0 0.9rem 0.9rem; }
+  .cal-action .btn { display: block; width: 100%; }
+  .cal-soon { display: block; text-align: center; }
+}
+
+/* -------------------------------------------------------------- 12. Print */
+/* Every coloured ground goes to white paper. The calendar is the part people
+   actually print, so it is rebuilt as a clean list: a rule between events,
+   the date left, the detail beside it, nothing broken across a page. */
+
+@media print {
+  .section-tint,
+  .section-cream,
+  .section-oxblood,
+  .support-v2,
+  .feature-band,
+  .cal-bar,
+  .card,
+  .also-item,
+  .partner,
+  .onboard-card {
+    background: transparent !important;
+    color: var(--ink) !important;
+  }
+
+  .section-cream p,
+  .section-oxblood p,
+  .support-v2 p,
+  .support-v2 dd { color: var(--muted) !important; }
+
+  /* The hero becomes a title block: the wordmark, the lead and the numbers. */
+  .hero { min-height: 0; display: block; overflow: visible; page-break-after: avoid; }
+  .hero-content { padding: 0 0 6mm; }
+  .hero h1 { font-size: 26pt; text-shadow: none; margin-bottom: 3mm; }
+  .hero h1 em { color: var(--ink) !important; }
+  .hero-lead { font-size: 11pt; max-width: none; margin-bottom: 4mm; color: var(--muted) !important; }
+  .hero-meta { border-color: var(--line); margin-bottom: 0; flex-wrap: nowrap; }
+  .hero-meta div { flex: 1 1 0; }
+  .hero-meta div { padding: 2mm 4mm 2mm 0; border-right: 0; }
+  .hero-kicker { color: var(--copper-ox) !important; margin-bottom: 3mm; }
+
+  .group-title { margin: 6mm 0 3mm; color: var(--copper-ox) !important; break-after: avoid; }
+
+  /* Cards keep their picture but must not straddle a page break. */
+  .card,
+  .also-item,
+  .cal-bar { border: 0.5pt solid var(--line) !important; break-inside: avoid; }
+  .card-img { aspect-ratio: 16 / 9; }
+  .cards-2, .cards-3 { grid-template-columns: 1fr 1fr; }
+  .also-grid { grid-template-columns: repeat(3, 1fr); }
+
+  /* The calendar, as a printed list. */
+  .calendar-list { gap: 0; margin-top: 4mm; }
+  .cal-bar,
+  .cal-bar:not(:has(.cal-thumb)) {
+    grid-template-columns: 18mm minmax(0, 1fr);
+    gap: 4mm;
+    border: 0 !important;
+    border-top: 0.5pt solid var(--line) !important;
+    border-radius: 0;
+    padding: 2.5mm 0;
+    transform: none !important;
+  }
+  .cal-thumb { display: none; }         /* the list reads faster without them */
+  .cal-when {
+    padding: 0;
+    border: 0;
+    justify-items: start;
+    text-align: left;
+  }
+  .cal-day { font-size: 15pt; color: var(--ink) !important; }
+  .cal-mon, .cal-weekday { color: var(--muted-2) !important; }
+  .cal-what { padding: 0; }
+  .cal-what h4 { font-size: 11pt; margin: 0 0 1mm; }
+  .cal-cat, .cal-collab {
+    padding: 0.3mm 1.2mm;
+    background: transparent !important;
+    border: 0.4pt solid var(--line);
+    color: var(--muted) !important;
+  }
+
+  /* Partners print as a name list, not as empty logo boxes. */
+  .partners-grid.has-partners { grid-template-columns: repeat(4, 1fr); gap: 3mm; }
+  .partner { min-height: 0; padding: 2mm; border: 0.5pt solid var(--line) !important; break-inside: avoid; }
+
+  .support-points > div { padding: 2mm 0; border-top: 0.5pt solid var(--line) !important; }
+  .support-points dt { color: var(--ink) !important; }
+
+  .seam { display: none !important; }
+}
