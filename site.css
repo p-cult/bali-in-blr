@@ -804,6 +804,49 @@ body.view-open { overflow: hidden; }
    the date left, the detail beside it, nothing broken across a page. */
 
 @media print {
+  /* An open view is what the reader is looking at, so it is what prints: the
+     overlay stops being an overlay and becomes the document, and the page it
+     was covering steps aside. A closed view still carries [hidden], so only
+     ever one of them can be on the sheet. */
+  .page-view {
+    position: static !important;
+    overflow: visible !important;
+    background: transparent !important;
+    animation: none !important;
+  }
+  body.view-open > *:not(.page-view) { display: none !important; }
+  .view-body > .section { padding-top: 0; }
+
+  /* On screen the carousel shows one card at a time and "next" reveals the
+     rest. Paper has no next button, so every question and the details block
+     are unfolded onto the sheet — a form someone can fill in by hand. The
+     specificity here has to beat the global [hidden] rule. */
+  .page-view .onboard-question[hidden],
+  .page-view .onboard-signup[hidden] { display: block !important; }
+  .page-view .onboard-question + .onboard-question,
+  .page-view .onboard-signup { margin-top: 6mm; }
+
+  /* Paper has the room the phone did not, so the context comes back. */
+  .onboard-aside p,
+  .onboard-aside .fact-list { display: revert; }
+
+  .onboard { grid-template-columns: 1fr; gap: 6mm; }
+  .onboard-carousel { display: block; }
+  .onboard-card {
+    padding: 0;
+    border: 0 !important;
+    break-inside: avoid;
+  }
+  .choices { gap: 1.5mm; }
+  .choice {
+    padding: 1.5mm 2mm;
+    border: 0.5pt solid var(--line) !important;
+    color: var(--ink) !important;
+    break-inside: avoid;
+  }
+  .onboard-question legend { font-size: 13pt; }
+  .onboard-hint { color: var(--muted) !important; }
+
   .section-tint,
   .section-cream,
   .section-oxblood,
