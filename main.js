@@ -534,6 +534,10 @@ function normaliseEvent(raw, i) {
     showSeats: calYes(pick("showSeats")),
     statusRaw: pick("statusRaw", "status").toLowerCase(),
   };
+  // A status of none/hide/off/- means "show no status label" — the tickets,
+  // RSVP and seats bar still derive from the other columns as usual.
+  ev.hideStatus = /^(none|hide|hidden|off|nothing|na|n\/a|-|–|—)$/i.test(ev.statusRaw);
+  if (ev.hideStatus) ev.statusRaw = "";
   ev.status = deriveStatus(ev);
   return ev;
 }
@@ -589,6 +593,7 @@ function calTimeText(ev) {
 }
 
 function calStatusChip(ev) {
+  if (ev.hideStatus) return "";
   switch (ev.status) {
     case "fast": return `<span class="cal-status cal-status--fast">${CAL_ICONS.flame}Filling fast</span>`;
     case "soldout": return `<span class="cal-status cal-status--full">${CAL_ICONS.ticketX}Sold out</span>`;
