@@ -355,6 +355,18 @@ function safeUrl(u) {
   return "";
 }
 
+/* A booking/RSVP target from the sheet: either a URL or a phone number. A bare
+   phone number becomes a tel: link so the button dials it. */
+function toActionUrl(v) {
+  const s = String(v == null ? "" : v).trim();
+  if (!s) return "";
+  const safe = safeUrl(s);
+  if (safe) return safe;                       // already a URL / tel: / relative
+  const digits = s.replace(/[^\d+]/g, "");
+  if (/^\+?\d{7,15}$/.test(digits)) return "tel:" + digits;  // a phone number
+  return "";
+}
+
 /* fetch that gives up after a budget, so a hung response falls back to local
    data instead of leaving the page spinning. */
 async function fetchWithTimeout(url, opts = {}, ms = 6000) {
@@ -526,9 +538,9 @@ function normaliseEvent(raw, i) {
     mapUrl: pick("mapUrl", "map link"),
     description: pick("description"),
     image: pick("image"),
-    ticketUrl: pick("ticketUrl", "ticket link", "ticketurl"),
+    ticketUrl: toActionUrl(pick("ticketUrl", "ticket link", "ticketurl")),
     passInfo: pick("passInfo"),
-    rsvpUrl: pick("rsvpUrl"),
+    rsvpUrl: toActionUrl(pick("rsvpUrl", "rsvp link")),
     capacity: calNum(pick("capacity")),
     seatsLeft: pick("seatsLeft") === "" ? null : calNum(pick("seatsLeft")),
     showSeats: calYes(pick("showSeats")),
@@ -609,10 +621,14 @@ function calAction(ev) {
     const url = safeUrl(rawUrl) || "#register";
     return `<a class="btn ${cls} btn-sm" href="${esc(url)}"${/^https?:/i.test(url) ? ' target="_blank" rel="noopener"' : ""}>${label}</a>`;
   };
+  const isTel = (u) => /^tel:/i.test(u || "");
   switch (ev.status) {
     case "live":
-    case "fast": return btn(ev.ticketUrl || wl, "btn-primary", "Book / passes");
-    case "rsvp": return btn(wl, "btn-primary", "RSVP to attend") + (ev.passInfo ? `<span class="cal-soon">${esc(ev.passInfo)}</span>` : "");
+    case "fast": {
+      const u = ev.ticketUrl || wl;
+      return btn(u, "btn-primary", isTel(u) ? "Call to book" : "Book / passes");
+    }
+    case "rsvp": return btn(wl, "btn-primary", isTel(wl) ? "Call to RSVP" : "RSVP to attend") + (ev.passInfo ? `<span class="cal-soon">${esc(ev.passInfo)}</span>` : "");
     case "soldout": return btn(wl, "btn-ghost", "Join the waitlist");
     case "concluded": return ev.ticketUrl ? btn(ev.ticketUrl, "btn-ghost", "View media") : "";
     default: return btn(wl, "btn-primary", "Join the waitlist") + '<span class="cal-soon">Be first when booking opens</span>';
