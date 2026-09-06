@@ -1020,6 +1020,10 @@ function wireForm(formId, noteId, messages) {
     clearFieldErrors(form);
 
     const data = Object.fromEntries(new FormData(form).entries());
+    // Back-compat: an older bridge still requires 'interest'. Mirror the
+    // programme selection into it so submissions work whether the deployed
+    // Code.gs expects 'interest' or 'programmes'. A newer bridge ignores it.
+    if (data.programmes && !data.interest) data.interest = data.programmes;
     if (CAMPAIGN_REF) data.ref = CAMPAIGN_REF;
     const btn = form.querySelector('button[type="submit"]');
     const label = btn.textContent;
