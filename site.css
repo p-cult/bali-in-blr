@@ -728,6 +728,10 @@ body.view-open { overflow: hidden; }
 @media (max-width: 760px) {
   .hero-meta { flex-wrap: wrap; }
   .hero-meta div { flex: 1 0 45%; border-bottom: 1px solid var(--line); }
+  /* The left padding is a gutter between columns in a row. Once the row wraps,
+     whichever item starts a row must sit flush with the copy above it — with
+     only :first-child zeroed, the second row began 1.4rem in. */
+  .hero-meta div:nth-child(odd) { padding-left: 0; }
 
   .also-grid { grid-template-columns: 1fr; max-width: 420px; }
   .also-item h4 { min-height: 0; }
@@ -785,6 +789,9 @@ body.view-open { overflow: hidden; }
 }
 
 @media (max-width: 520px) {
+  /* Stacked full width: every item starts a row, so none of them is indented. */
+  .hero-meta div { padding-left: 0; }
+
   .view-bar { padding: 0.75rem 1rem; }
   .view-bar-title { display: none; }
 
