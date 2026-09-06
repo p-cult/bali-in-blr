@@ -584,7 +584,10 @@ p.legal-small { font-size: 0.85rem; color: var(--muted-2); }
    accenting it already does on cream elsewhere in the site. */
 
 @media print {
-  @page { size: A4; margin: 18mm 16mm; }
+  /* Margin kept at 0 so the printed breathing space comes from content padding
+     instead — that survives whatever the browser's own print-margin setting is
+     (Default / None), which @page cannot reliably override. */
+  @page { size: A4; margin: 0; }
 
   :root {
     --ink: #1B1D21;

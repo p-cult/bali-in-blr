@@ -810,7 +810,11 @@ body.view-open { overflow: hidden; }
     animation: none !important;
   }
   body.view-open > *:not(.page-view) { display: none !important; }
-  .view-body > .section { padding-top: 0; border-top: 0; }
+  /* The breathing space around the sheet, enforced as content padding so it
+     holds regardless of the browser's print-margin choice. */
+  .page-view .view-body { padding: 15mm 15mm 13mm !important; }
+  .page-view .view-body > .section { padding: 0 !important; border-top: 0; }
+  .page-view .wrap { max-width: none !important; margin: 0 !important; padding: 0 !important; }
 
   /* ----- grounds ----- */
   .section-tint,
