@@ -77,28 +77,17 @@ Spreadsheet:
   The page only ever receives **aggregates** (e.g. a registration count), never
   personal rows. This matters for **DPDP Act 2023** compliance (see §8).
 
-### Current state: Phase 1 (front-end first)
-The bridge is **not connected yet**. Right now:
-- The **calendar** and **partners** read from `data/events.json` /
-  `data/partners.json` (local files that mimic the future Sheet output).
-- The **signup form** runs in **demo mode** — it validates and shows a success
-  message but does **not** save anywhere yet.
+### Current state: live
+The bridge is connected. `CONFIG.BRIDGE_URL` in `main.js` points at the deployed
+Apps Script Web App: the signup and volunteer forms save (flavours → per-purpose
+tabs, upserted into a deduplicated `Master` contact registry), and aggregate stats
+read back. The **calendar reads real dates live** from the schedule sheet via
+`CONFIG.SCHEDULE_URL` (published TSV), falling back to `data/events.json` only
+when that tab is empty. Partners read `data/partners.json` until a Partners tab is
+populated.
 
-### Going live: flip the switch in `main.js`
-At the top of `main.js` there is a `CONFIG` object:
-
-```js
-const CONFIG = {
-  BRIDGE_URL: "",                    // ← paste the Apps Script Web App URL here
-  EVENTS_URL: "data/events.json",    // ← change to CONFIG.BRIDGE_URL + "?sheet=events"
-  PARTNERS_URL: "data/partners.json",// ← change to CONFIG.BRIDGE_URL + "?sheet=partners"
-  STATS_URL: "",                     // ← optional: CONFIG.BRIDGE_URL + "?sheet=stats"
-};
-```
-
-Once the Google side is deployed (see `docs/BRIDGE-SETUP.md`), set `BRIDGE_URL`
-and repoint the source URLs. The form will start saving and the calendar/partners
-will read live from Sheets. **No other code changes needed.**
+See `docs/BRIDGE-SETUP.md` for the full data model (flavours, questions carousel,
+dedupe, receipts, share links) and `docs/apps-script/Code.gs` for the bridge.
 
 ---
 
@@ -171,24 +160,25 @@ A server is required (not file://) because the page `fetch()`es the JSON in `dat
 
 ## 7. Roadmap / TODO (where to take it next)
 
-- [ ] **Connect the bridge** (biggest item): follow `docs/BRIDGE-SETUP.md`, deploy
-      the Apps Script, set `CONFIG.BRIDGE_URL` and the source URLs in `main.js`.
-      This makes signups save and the calendar/partners read from Sheets.
-- [ ] **Phase 2 — Calendar:** add real events/dates in the `Events` sheet as they
-      firm up. Set `status: onsale` + `ticketUrl` when tickets open.
+- [x] **Connect the bridge** — done. `CONFIG.BRIDGE_URL` is set; the signup and
+      volunteer forms save, and aggregate stats read back.
+- [x] **Calendar reads live** — done. Reads real dates from the schedule sheet via
+      `CONFIG.SCHEDULE_URL`, falling back to `data/events.json` when empty.
+- [x] **Analytics** — Google Tag Manager installed in `<head>`; forms announce
+      events to `dataLayer`. GA4/Meta/Ads can be added via GTM or the `ANALYTICS`
+      block in `main.js` when IDs are provided.
+- [x] **Custom domain** — live at https://bali-in-blr.paramfoundation.org
+      (`CNAME` set, absolute URLs repointed, HTTPS working).
+- [x] **Privacy policy** — `privacy.html` exists and is linked from the consent
+      lines and the footer.
+- [ ] **Calendar (ongoing):** keep adding events/dates in the schedule sheet as they
+      firm up; add a ticket link to flip an event to "On sale".
 - [ ] **Phase 3 — Ticketing:** external platform (TBD — e.g. Townscript / District).
-      Just paste each event's URL into `ticketUrl`; buttons appear automatically.
+      Paste each event's URL into the schedule sheet's ticket-link column; the
+      booking button appears automatically.
 - [ ] **Phase 4 — Post-event media:** build a Gallery section; set concluded events'
-      `ticketUrl` to a media/album link, or add a dedicated `Media` sheet + renderer.
+      link to a media/album, or add a dedicated `Media` sheet + renderer.
       Unused images `assets/carvings.jpg` and `assets/batik.jpg` are available.
-- [ ] **Analytics/marketing:** add GA4 and/or Meta Pixel snippets in `<head>`
-      (IDs not yet provided). UTM links from campaigns work out of the box.
-- [ ] **Custom domain**: moving to `bali-in-blr.paramfoundation.org`. The repo
-      side is done (`CNAME` file, and all absolute URLs repointed). Waiting on
-      one DNS record — send `docs/DOMAIN-SETUP.md` to whoever manages
-      paramfoundation.org, and push only after they confirm it is in place.
-- [ ] **Privacy policy:** the consent checkbox links to a `#` placeholder — point it
-      at a real privacy page.
 
 ---
 
