@@ -67,10 +67,12 @@ const FLAVOURS = {
   updates: {
     tab: 'Signups',
     label: 'Festival updates',
-    // Answers are required too: every question must be answered.
-    required: ['name', 'email', 'interest', 'notify'],
+    // name/email/notify are always required. 'programmes' is not hard-required
+    // server-side: if the calendar can't load, the front end drops that
+    // question, and a signup must still be able to go through.
+    required: ['name', 'email', 'notify'],
     // These must match the question ids in data/questions.json.
-    fields: ['interest', 'notify']
+    fields: ['programmes', 'notify']
   },
   volunteer: {
     tab: 'Volunteers',

@@ -594,6 +594,17 @@ p.onboard-error { margin: 0.2rem 0 0; font-size: 0.85rem; color: var(--accent); 
 .choice input { flex: none; width: 18px; height: 18px; margin: 0; accent-color: var(--accent); }
 .choice:has(input:checked) { border-color: var(--accent); background: rgba(255, 90, 60, 0.08); }
 
+/* Season pass: the master "all" option, set apart from the programme list. */
+.choice-all {
+  font-family: var(--display);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  font-size: 0.82rem;
+  border-color: var(--copper);
+  margin-bottom: 0.35rem;
+}
+
 /* An arrow either side of the question block. */
 .onboard-carousel {
   display: grid;

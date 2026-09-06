@@ -195,6 +195,15 @@ function readRef() {
 
 const CAMPAIGN_REF = readRef();
 
+/* Read a single param from the query or from a query tacked onto the hash
+   (e.g. #register?programme=Kecak%20performance). */
+function urlParam(name) {
+  const p = new URLSearchParams(location.search);
+  const h = location.hash.indexOf("?");
+  if (h !== -1) new URLSearchParams(location.hash.slice(h + 1)).forEach((v, k) => { if (!p.has(k)) p.set(k, v); });
+  return p.get(name) || "";
+}
+
 /* ---------- Data loading ----------
    Apps Script normally allows cross-origin GET, but some browsers/
    configurations block it. Code.gs also speaks JSONP (?callback=),
@@ -616,7 +625,10 @@ function calStatusChip(ev) {
   }
 }
 function calAction(ev) {
-  const wl = safeUrl(ev.rsvpUrl) || "#register";
+  // The internal waitlist/register link carries the programme so the
+  // registration form can pre-tick it. An external rsvp link is left as-is.
+  const reg = "#register?programme=" + encodeURIComponent(ev.title || "");
+  const wl = safeUrl(ev.rsvpUrl) || reg;
   const btn = (rawUrl, cls, label) => {
     const url = safeUrl(rawUrl) || "#register";
     return `<a class="btn ${cls} btn-sm" href="${esc(url)}"${/^https?:/i.test(url) ? ' target="_blank" rel="noopener"' : ""}>${label}</a>`;
@@ -1129,8 +1141,30 @@ async function initOnboarding() {
     sets = {}; // questions are an enhancement: fall back to the plain form
   }
 
+  // Build the programme list from the live calendar, so the "which programmes"
+  // question always matches the sheet. Deduplicated by title.
+  let programmeOptions = [];
+  try {
+    const seen = new Set();
+    (await loadEvents()).map(normaliseEvent).forEach((e) => {
+      if (!e.title || seen.has(e.title)) return;
+      seen.add(e.title);
+      const chip = calDayChip(e);
+      const when = chip.mon ? " · " + chip.day + " " + chip.mon : "";
+      programmeOptions.push({ value: e.title, label: e.title + when });
+    });
+  } catch (err) {
+    programmeOptions = [];
+  }
+
   shells.forEach((shell) => {
-    setupOnboarding(shell, Array.isArray(sets[shell.dataset.flavour]) ? sets[shell.dataset.flavour] : []);
+    let qs = Array.isArray(sets[shell.dataset.flavour]) ? sets[shell.dataset.flavour].slice() : [];
+    // Fill any dynamic (source:"events") question with the live programmes,
+    // and drop it entirely if there are none, so the form never stalls.
+    qs = qs
+      .map((q) => (q.source === "events" ? Object.assign({}, q, { options: programmeOptions, all: true }) : q))
+      .filter((q) => !(q.source === "events" && (!q.options || !q.options.length)));
+    setupOnboarding(shell, qs);
   });
 }
 
@@ -1164,21 +1198,30 @@ function setupOnboarding(shell, questions) {
     card.hidden = i !== 0;
 
     const options = (q.options || []).map((opt, n) => {
+      const value = typeof opt === "string" ? opt : opt.value;
+      const label = typeof opt === "string" ? opt : (opt.label || opt.value);
       const id = "q-" + shell.dataset.flavour + "-" + i + "-" + n;
       return (
         '<label class="choice" for="' + id + '">' +
         '<input type="' + (multi ? "checkbox" : "radio") + '"' +
         ' id="' + id + '" name="' + esc(q.id) + '"' +
-        ' value="' + esc(opt) + '" />' +
-        "<span>" + esc(opt) + "</span>" +
+        ' value="' + esc(value) + '" />' +
+        "<span>" + esc(label) + "</span>" +
         "</label>"
       );
     }).join("");
 
+    // Season pass: one box that ticks every programme. No name, so it never
+    // posts and never counts as an answer of its own.
+    const allBox = q.all
+      ? '<label class="choice choice-all"><input type="checkbox" data-onboard-all />' +
+        "<span>Season pass &mdash; all programmes</span></label>"
+      : "";
+
     card.innerHTML =
       "<legend>" + esc(q.title || "") + "</legend>" +
       (q.hint ? '<p class="onboard-hint">' + esc(q.hint) + "</p>" : "") +
-      '<div class="choices">' + options + "</div>" +
+      '<div class="choices">' + allBox + options + "</div>" +
       '<p class="onboard-error" role="alert" hidden>Please choose at least one to continue.</p>';
 
     stage.appendChild(card);
@@ -1234,7 +1277,8 @@ function setupOnboarding(shell, questions) {
   signup.insertBefore(change, signup.firstChild);
 
   function selected(i) {
-    return Array.from(cards[i].querySelectorAll("input:checked")).map((el) => el.value);
+    // input[name] excludes the nameless season-pass "all" box.
+    return Array.from(cards[i].querySelectorAll("input[name]:checked")).map((el) => el.value);
   }
 
   function show(to) {
@@ -1286,6 +1330,21 @@ function setupOnboarding(shell, questions) {
   stage.addEventListener("change", (e) => {
     const err = cards[index] && cards[index].querySelector(".onboard-error");
     if (err) err.hidden = true;
+
+    // Season pass: the master box ticks/unticks every programme; ticking any
+    // programme keeps the master box in sync.
+    const card0 = cards[index];
+    if (card0) {
+      if (e.target.matches("[data-onboard-all]")) {
+        card0.querySelectorAll("input[name]").forEach((cb) => { cb.checked = e.target.checked; });
+      } else {
+        const all = card0.querySelector("[data-onboard-all]");
+        if (all) {
+          const boxes = Array.from(card0.querySelectorAll("input[name]"));
+          all.checked = boxes.length > 0 && boxes.every((b) => b.checked);
+        }
+      }
+    }
 
     // Unticking the last box clears the recorded answer, so a stale one can
     // never travel with the form.
@@ -1345,7 +1404,27 @@ function setupOnboarding(shell, questions) {
     return true;
   };
 
+  /* Arriving from an event's "Join the waitlist" pre-ticks that programme and
+     brings its card up. Runs on load and whenever the hash changes. */
+  function preselectProgramme() {
+    const want = urlParam("programme");
+    if (!want) return;
+    const qi = questions.findIndex((q) => q.source === "events");
+    if (qi === -1 || !cards[qi]) return;
+    const box = Array.from(cards[qi].querySelectorAll("input[name]"))
+      .find((b) => b.value.toLowerCase() === want.toLowerCase());
+    if (!box || box.checked) return;
+    box.checked = true;
+    const all = cards[qi].querySelector("[data-onboard-all]");
+    if (all) all.checked = Array.from(cards[qi].querySelectorAll("input[name]")).every((b) => b.checked);
+    answers[questions[qi].id] = selected(qi);
+    form.elements[questions[qi].id].value = selected(qi).join(", ");
+    show(qi);
+  }
+  window.addEventListener("hashchange", preselectProgramme);
+
   show(0);
+  preselectProgramme();
 }
 
 /* ---------- Boot ---------- */

@@ -1,17 +1,11 @@
 {
   "updates": [
     {
-      "id": "interest",
-      "title": "What would you like to hear about?",
-      "hint": "Choose as many as you like.",
+      "id": "programmes",
+      "title": "Which programmes would you like to attend?",
+      "hint": "Pick any — or choose the season pass for all.",
       "multi": true,
-      "options": [
-        "Performances",
-        "Workshops",
-        "Talks & lectures",
-        "The exhibition",
-        "Partnering or sponsoring"
-      ]
+      "source": "events"
     },
     {
       "id": "notify",
