@@ -224,7 +224,7 @@ function jsonpLoad(url, timeoutMs = 4000) {
 async function loadJSON(url) {
   if (!url) throw new Error("No source configured");
   try {
-    const res = await fetch(url, { cache: "no-store" });
+    const res = await fetchWithTimeout(url, { cache: "no-store" });
     if (!res.ok) throw new Error("HTTP " + res.status);
     return await res.json();
   } catch (err) {
@@ -344,6 +344,29 @@ function esc(s) {
   }[c]));
 }
 
+/* A URL safe to drop into href/src. Sheet-sourced links are untrusted, so only
+   let through same-page/relative links and known-safe schemes — never
+   javascript:, data:, and the like. Returns "" for anything else. */
+function safeUrl(u) {
+  const s = String(u == null ? "" : u).trim();
+  if (!s) return "";
+  if (/^(#|\/|\.\/|\.\.\/|assets\/|data\/)/.test(s)) return s; // relative / same-page
+  if (/^(https?:|mailto:|tel:)/i.test(s)) return s;            // safe schemes
+  return "";
+}
+
+/* fetch that gives up after a budget, so a hung response falls back to local
+   data instead of leaving the page spinning. */
+async function fetchWithTimeout(url, opts = {}, ms = 6000) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), ms);
+  try {
+    return await fetch(url, { ...opts, signal: ctrl.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 function formatDate(iso) {
   if (!iso) return "";
   const d = new Date(iso + (iso.length <= 10 ? "T00:00:00" : ""));
@@ -429,7 +452,7 @@ async function loadEvents() {
   // The sheet is the source of truth once it has rows in it.
   if (CONFIG.SCHEDULE_URL) {
     try {
-      const res = await fetch(CONFIG.SCHEDULE_URL, { cache: "no-store" });
+      const res = await fetchWithTimeout(CONFIG.SCHEDULE_URL, { cache: "no-store" });
       if (res.ok) {
         const events = parseSchedule(await res.text());
         if (events.length) return events;
@@ -576,9 +599,11 @@ function calStatusChip(ev) {
   }
 }
 function calAction(ev) {
-  const wl = ev.rsvpUrl || "#register";
-  const btn = (url, cls, label) =>
-    `<a class="btn ${cls} btn-sm" href="${esc(url)}"${/^https?:/i.test(url) ? ' target="_blank" rel="noopener"' : ""}>${label}</a>`;
+  const wl = safeUrl(ev.rsvpUrl) || "#register";
+  const btn = (rawUrl, cls, label) => {
+    const url = safeUrl(rawUrl) || "#register";
+    return `<a class="btn ${cls} btn-sm" href="${esc(url)}"${/^https?:/i.test(url) ? ' target="_blank" rel="noopener"' : ""}>${label}</a>`;
+  };
   switch (ev.status) {
     case "live":
     case "fast": return btn(ev.ticketUrl || wl, "btn-primary", "Book / passes");
@@ -609,8 +634,9 @@ function cardHTML(ev) {
     (hasImg ? `<img src="${esc(ev.image)}" alt="" loading="lazy" />` : "") +
     `<span class="cal-date"><b>${esc(chip.day)}</b><i>${esc(chip.mon)}</i></span></div>`;
 
-  const venue = !ev.venue ? "" : ev.mapUrl
-    ? `<span class="cal-venue"><a class="cal-map" href="${esc(ev.mapUrl)}" target="_blank" rel="noopener">${CAL_ICONS.pin}<span class="cal-venue-name">${esc(ev.venue)}</span></a></span>`
+  const mapUrl = safeUrl(ev.mapUrl);
+  const venue = !ev.venue ? "" : mapUrl
+    ? `<span class="cal-venue"><a class="cal-map" href="${esc(mapUrl)}" target="_blank" rel="noopener">${CAL_ICONS.pin}<span class="cal-venue-name">${esc(ev.venue)}</span></a></span>`
     : `<span class="cal-venue">${CAL_ICONS.pin}<span>${esc(ev.venue)}</span></span>`;
 
   const time = calTimeText(ev);
@@ -706,11 +732,13 @@ async function loadPartners() {
 
   grid.classList.add("has-partners");
   grid.innerHTML = partners.map((p) => {
-    const inner = p.logo
-      ? `<img src="${esc(p.logo)}" alt="${esc(p.name)}" loading="lazy" />`
+    const logo = safeUrl(p.logo);
+    const url = safeUrl(p.url);
+    const inner = logo
+      ? `<img src="${esc(logo)}" alt="${esc(p.name)}" loading="lazy" />`
       : `<span>${esc(p.name)}</span>`;
-    return p.url
-      ? `<a class="partner" href="${esc(p.url)}" target="_blank" rel="noopener" title="${esc(p.name)}">${inner}</a>`
+    return url
+      ? `<a class="partner" href="${esc(url)}" target="_blank" rel="noopener" title="${esc(p.name)}">${inner}</a>`
       : `<div class="partner" title="${esc(p.name)}">${inner}</div>`;
   }).join("");
 }
@@ -984,7 +1012,7 @@ function wireForm(formId, noteId, messages) {
     // Named "submission", not "sid": Google rejects requests carrying a
     // parameter called sid with a 400 before the script ever runs.
     data.submission =
-      (crypto.randomUUID && crypto.randomUUID()) ||
+      (window.crypto && crypto.randomUUID && crypto.randomUUID()) ||
       String(Date.now()) + Math.random().toString(36).slice(2);
 
     const body = new URLSearchParams(data).toString();
