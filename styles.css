@@ -186,9 +186,11 @@ p.section-intro { max-width: 44rem; color: var(--muted); font-size: 1.05rem; }
 .legal-list a:not(.btn) {
   color: var(--ink);
   font-weight: 600;
-  text-decoration: none;
-  box-shadow: inset 0 -2px 0 var(--accent);
-  transition: color 0.15s ease, box-shadow 0.15s ease;
+  text-decoration: underline dashed;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  text-decoration-color: rgba(200, 121, 65, 0.55); /* copper, subtle */
+  transition: color 0.15s ease, text-decoration-color 0.15s ease;
 }
 .text-link:hover,
 .section-intro a:not(.btn):hover,
@@ -197,7 +199,7 @@ p.section-intro { max-width: 44rem; color: var(--muted); font-size: 1.05rem; }
 .legal p a:not(.btn):hover,
 .legal-list a:not(.btn):hover {
   color: var(--accent);
-  box-shadow: inset 0 -2px 0 var(--accent-2);
+  text-decoration-color: var(--accent);
 }
 
 /* --------------------------------------------------------------- 4. Layout */
