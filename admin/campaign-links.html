@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex, nofollow" />
+<title>Campaign Link Builder — Bali in Bengaluru</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@125,600;125,700;125,900&family=Instrument+Sans:wght@400;500;600&family=Space+Mono&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#1B1D21; --bg2:#202329; --bg3:#23262B; --ink:#EFE7D8; --muted:#B6B2AA; --muted2:#8C8E92;
+    --accent:#ff5a3c; --copper:#C87941; --line:#2C3036; --radius:8px;
+    --display:"Archivo","Arial Narrow",sans-serif; --sans:"Instrument Sans",system-ui,sans-serif; --mono:"Space Mono",monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.6;padding:2.5rem 1.5rem 5rem}
+  .wrap{max-width:980px;margin:0 auto}
+  .kick{font-family:var(--display);font-weight:700;text-transform:uppercase;letter-spacing:.2em;font-size:.7rem;color:var(--copper);margin:0 0 .4rem}
+  h1{font-family:var(--display);font-weight:900;text-transform:uppercase;font-size:1.9rem;letter-spacing:-.01em;margin:0 0 .3rem}
+  .sub{color:var(--muted2);margin:0 0 2rem;font-size:.95rem;max-width:60ch}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:1.1rem 1.4rem}
+  .field{display:flex;flex-direction:column;gap:.35rem;min-width:0}
+  .field.full{grid-column:1 / -1}
+  label{font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--copper)}
+  label .opt{color:var(--muted2);font-weight:400;text-transform:none;letter-spacing:0}
+  input,select{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:6px;color:var(--ink);font-family:var(--sans);font-size:.95rem;padding:.6rem .7rem}
+  input:focus,select:focus{outline:none;border-color:var(--accent)}
+  .hint{font-size:.72rem;color:var(--muted2)}
+  .card{background:var(--bg3);border:1px solid var(--line);border-radius:var(--radius);padding:1.5rem;margin-bottom:1.6rem}
+  .out{margin-top:1.4rem}
+  .url{font-family:var(--mono);font-size:.82rem;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:.8rem .9rem;word-break:break-all;color:var(--copper)}
+  .row{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:.9rem}
+  .btn{font-family:var(--display);font-weight:700;text-transform:uppercase;letter-spacing:.03em;font-size:.8rem;border:0;border-radius:5px;padding:.7rem 1.2rem;cursor:pointer;transition:.15s}
+  .btn-primary{background:var(--accent);color:#111}
+  .btn-primary:hover{background:var(--copper)}
+  .btn-ghost{background:transparent;border:1px solid var(--line);color:var(--ink)}
+  .btn-ghost:hover{border-color:var(--ink)}
+  h2{font-family:var(--display);font-weight:700;text-transform:uppercase;font-size:1rem;letter-spacing:.04em;margin:0 0 .9rem}
+  table{width:100%;border-collapse:collapse;font-size:.82rem}
+  th,td{text-align:left;padding:.55rem .6rem;border-bottom:1px solid var(--line);vertical-align:top}
+  th{font-family:var(--display);font-weight:700;text-transform:uppercase;font-size:.64rem;letter-spacing:.06em;color:var(--muted2)}
+  td.u{font-family:var(--mono);font-size:.72rem;color:var(--copper);word-break:break-all;max-width:340px}
+  .mini{font-size:.7rem;padding:.35rem .6rem}
+  .empty{color:var(--muted2);font-size:.9rem;padding:1rem 0}
+  .toast{position:fixed;left:50%;bottom:1.5rem;transform:translateX(-50%);background:var(--accent);color:#111;font-weight:600;padding:.6rem 1rem;border-radius:6px;opacity:0;transition:opacity .2s;pointer-events:none;font-size:.85rem}
+  .toast.show{opacity:1}
+  @media(max-width:640px){.grid{grid-template-columns:1fr}td.u{max-width:160px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="kick">Bali in Bengaluru · internal</p>
+  <h1>Campaign Link Builder</h1>
+  <p class="sub">Mint trackable links for posters, posts and ads. Each link carries UTM tags (for the marketing analytics / performance marketer) and a <code>ref</code> tag (recorded in the sheet's Sources column). Build a link, add it to the list, then export the list to hand over.</p>
+
+  <div class="card">
+    <div class="grid">
+      <div class="field">
+        <label for="dest">Destination</label>
+        <select id="dest">
+          <option value="">Home page</option>
+          <option value="register">Register for updates</option>
+          <option value="volunteer">Volunteer</option>
+          <option value="calendar">Calendar</option>
+        </select>
+      </div>
+      <div class="field" id="progField" hidden>
+        <label for="programme">Pre-select programme <span class="opt">(optional)</span></label>
+        <select id="programme"><option value="">— none —</option></select>
+      </div>
+
+      <div class="field">
+        <label for="source">Source <span class="opt">· utm_source</span></label>
+        <input id="source" list="sources" placeholder="instagram, whatsapp, google…" />
+        <datalist id="sources"><option>instagram</option><option>facebook</option><option>whatsapp</option><option>google</option><option>youtube</option><option>email</option><option>poster</option><option>newsletter</option></datalist>
+      </div>
+      <div class="field">
+        <label for="medium">Medium <span class="opt">· utm_medium</span></label>
+        <input id="medium" list="mediums" placeholder="social, cpc, email, qr, print…" />
+        <datalist id="mediums"><option>social</option><option>cpc</option><option>email</option><option>qr</option><option>print</option><option>referral</option><option>bio</option></datalist>
+      </div>
+      <div class="field">
+        <label for="campaign">Campaign <span class="opt">· utm_campaign</span></label>
+        <input id="campaign" placeholder="oct-launch" />
+      </div>
+      <div class="field">
+        <label for="content">Content <span class="opt">· utm_content, optional</span></label>
+        <input id="content" placeholder="story-1, variant-a…" />
+      </div>
+      <div class="field full">
+        <label for="ref">Ref tag <span class="opt">· shown in the sheet's Sources column</span></label>
+        <input id="ref" placeholder="auto — e.g. instagram-oct-launch" />
+        <span class="hint">Leave blank to auto-build from source + campaign. Keep it short and unique per placement.</span>
+      </div>
+    </div>
+
+    <div class="out">
+      <label>Generated link</label>
+      <div class="url" id="url">—</div>
+      <div class="row">
+        <button class="btn btn-primary" id="copy">Copy link</button>
+        <button class="btn btn-ghost" id="add">Add to list</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Minted links</h2>
+    <div id="listWrap"><p class="empty">No links yet. Build one above and “Add to list”.</p></div>
+    <div class="row" id="listActions" hidden>
+      <button class="btn btn-primary" id="exportCsv">Export CSV</button>
+      <button class="btn btn-ghost" id="copyAll">Copy all (TSV)</button>
+      <button class="btn btn-ghost" id="clear">Clear list</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const BASE = "https://bali-in-blr.paramfoundation.org/";
+const SCHEDULE_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTji37D6cT7J9bLFptJdNaYrvZF_soZyiqIsX-rHYUj4H6rnfMCExu2hIyVjCk48j86rdaBhp_lthzb/pub?gid=289612903&single=true&output=tsv";
+const KEY = "bali-campaign-links";
+const $ = (id) => document.getElementById(id);
+const slug = (s) => String(s||"").toLowerCase().trim().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
+
+function toast(msg){ const t=$("toast"); t.textContent=msg; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),1400); }
+
+function buildUrl(){
+  const dest = $("dest").value;
+  const programme = $("programme").value;
+  const params = new URLSearchParams();
+  const src = slug($("source").value), med = slug($("medium").value), camp = slug($("campaign").value), cont = slug($("content").value);
+  if (src) params.set("utm_source", src);
+  if (med) params.set("utm_medium", med);
+  if (camp) params.set("utm_campaign", camp);
+  if (cont) params.set("utm_content", cont);
+  let ref = slug($("ref").value);
+  if (!ref) ref = [src, camp].filter(Boolean).join("-");
+  if (ref) params.set("ref", ref);
+  if (dest === "register" && programme) params.set("programme", programme);
+  const q = params.toString();
+  const hash = dest ? "#" + dest : "";
+  return BASE + (q ? "?" + q : "") + hash;
+}
+
+function refresh(){
+  $("progField").hidden = $("dest").value !== "register";
+  $("url").textContent = buildUrl();
+}
+["dest","programme","source","medium","campaign","content","ref"].forEach(id => $(id).addEventListener("input", refresh));
+
+/* ---- minted list (localStorage) ---- */
+function load(){ try { return JSON.parse(localStorage.getItem(KEY)) || []; } catch(e){ return []; } }
+function save(list){ try { localStorage.setItem(KEY, JSON.stringify(list)); } catch(e){} }
+
+function render(){
+  const list = load();
+  const wrap = $("listWrap");
+  $("listActions").hidden = list.length === 0;
+  if (!list.length){ wrap.innerHTML = '<p class="empty">No links yet. Build one above and “Add to list”.</p>'; return; }
+  wrap.innerHTML =
+    '<div style="overflow-x:auto"><table><thead><tr>' +
+    '<th>Destination</th><th>Source</th><th>Medium</th><th>Campaign</th><th>Ref</th><th>Link</th><th></th>' +
+    '</tr></thead><tbody>' +
+    list.map((r,i) =>
+      '<tr><td>'+esc(r.dest||"home")+'</td><td>'+esc(r.source)+'</td><td>'+esc(r.medium)+'</td>'+
+      '<td>'+esc(r.campaign)+'</td><td>'+esc(r.ref)+'</td>'+
+      '<td class="u">'+esc(r.url)+'</td>'+
+      '<td><button class="btn btn-ghost mini" data-copy="'+i+'">Copy</button> '+
+      '<button class="btn btn-ghost mini" data-del="'+i+'">✕</button></td></tr>'
+    ).join("") + '</tbody></table></div>';
+}
+function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+
+$("add").addEventListener("click", () => {
+  const dest = $("dest").options[$("dest").selectedIndex].text;
+  const row = {
+    dest, source: slug($("source").value), medium: slug($("medium").value),
+    campaign: slug($("campaign").value), content: slug($("content").value),
+    programme: $("programme").value,
+    ref: (slug($("ref").value) || [slug($("source").value), slug($("campaign").value)].filter(Boolean).join("-")),
+    url: buildUrl()
+  };
+  const list = load(); list.push(row); save(list); render(); toast("Added to list");
+});
+
+$("copy").addEventListener("click", async () => { await navigator.clipboard.writeText(buildUrl()); toast("Link copied"); });
+
+$("listWrap").addEventListener("click", async (e) => {
+  const c = e.target.closest("[data-copy]"); const d = e.target.closest("[data-del]");
+  if (c){ await navigator.clipboard.writeText(load()[+c.dataset.copy].url); toast("Link copied"); }
+  if (d){ const list = load(); list.splice(+d.dataset.del,1); save(list); render(); }
+});
+
+$("clear").addEventListener("click", () => { if (confirm("Clear all minted links?")){ save([]); render(); } });
+
+function toCsv(){
+  const list = load();
+  const head = ["Destination","Source","Medium","Campaign","Content","Programme","Ref","URL"];
+  const esc2 = (v)=>'"'+String(v==null?"":v).replace(/"/g,'""')+'"';
+  const rows = list.map(r => [r.dest,r.source,r.medium,r.campaign,r.content,r.programme,r.ref,r.url].map(esc2).join(","));
+  return head.map(esc2).join(",") + "\n" + rows.join("\n");
+}
+$("exportCsv").addEventListener("click", () => {
+  const blob = new Blob([toCsv()], {type:"text/csv"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "bali-campaign-links.csv";
+  a.click(); URL.revokeObjectURL(a.href);
+});
+$("copyAll").addEventListener("click", async () => {
+  const list = load();
+  const tsv = list.map(r => [r.dest,r.source,r.medium,r.campaign,r.ref,r.url].join("\t")).join("\n");
+  await navigator.clipboard.writeText(tsv); toast("Copied all as TSV");
+});
+
+/* ---- populate programmes from the live schedule ---- */
+(async () => {
+  try {
+    const t = await (await fetch(SCHEDULE_URL, {cache:"no-store"})).text();
+    const rows = t.split(/\r?\n/).map(l => l.split("\t"));
+    const hi = rows.findIndex(c => c.map(x=>x.trim().toLowerCase()).includes("title"));
+    if (hi === -1) return;
+    const ti = rows[hi].map(x=>x.trim().toLowerCase()).indexOf("title");
+    const seen = new Set(); const sel = $("programme");
+    rows.slice(hi+1).forEach(c => { const name=(c[ti]||"").trim(); if(name && !seen.has(name)){ seen.add(name); const o=document.createElement("option"); o.value=name; o.textContent=name; sel.appendChild(o); } });
+  } catch(e){ /* programmes optional */ }
+})();
+
+render();
+refresh();
+</script>
+</body>
+</html>

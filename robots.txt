@@ -4,4 +4,7 @@ Allow: /
 # The previous design, kept only for reference
 Disallow: /v1.html
 
+# Internal admin tools — not for search
+Disallow: /admin/
+
 Sitemap: https://bali-in-blr.paramfoundation.org/sitemap.xml
