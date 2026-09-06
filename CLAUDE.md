@@ -4,13 +4,22 @@ You are continuing an existing project. **Do not start from scratch.** GitHub is
 the single source of truth; always build forward from the latest `main`.
 
 ## First actions in any new session / machine / account
-1. Make sure you're on the latest code before doing anything:
+1. **On a computer you have not worked on before**, check it can carry on —
+   this only reads, and it names anything still missing:
+   ```bash
+   bash tools/doctor.sh
+   ```
+   The project travels on the external drive (files, full `.git` history, commit
+   identity, and the vault key). The one thing that does not travel is GitHub
+   credentials: `brew install gh && gh auth login`. See
+   **`docs/ANOTHER-MACHINE.md`**.
+2. Make sure you're on the latest code before doing anything:
    ```bash
    git checkout main && git pull --ff-only origin main
    ```
-2. Read **`HANDOVER.md`** (the complete brief: architecture, data schemas, design
+3. Read **`HANDOVER.md`** (the complete brief: architecture, data schemas, design
    system, roadmap, compliance). This CLAUDE.md is only the quick summary.
-3. When you finish a change: commit and push so the next session (anywhere) has it:
+4. When you finish a change: commit and push so the next session (anywhere) has it:
    ```bash
    git add -A && git commit -m "…" && git push
    ```
@@ -29,6 +38,8 @@ dependencies. Hosted on **GitHub Pages**, auto-deploys on push to `main`.
 - `main.js` — behaviour + the `CONFIG` data-bridge block at the top
 - `data/events.json`, `data/partners.json` — local stand-ins for Google Sheets
 - `docs/BRIDGE-SETUP.md` + `docs/apps-script/Code.gs` — the backend bridge (see below)
+- `docs/ANOTHER-MACHINE.md` — working from the drive on a new computer
+- `tools/doctor.sh` — checks a machine can carry on (reads only)
 - `HANDOVER.md` — full brief · `.cursor/rules/` — same rules for Cursor
 
 ## Architecture (short)

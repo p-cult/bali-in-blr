@@ -12,14 +12,37 @@ the oxidised copper, because the lit copper drops to 2.73 on cream and
 cannot be read. Re-run this whenever the calendar changes — the PDF is a
 snapshot, not a live view.
 """
-import base64, json, re, subprocess, sys, tempfile, os
+import base64, json, re, shutil, subprocess, sys, tempfile, os
 from datetime import datetime
 from html import escape
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "assets" / "bali-in-bengaluru-calendar.pdf"
-CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+
+
+def find_chrome():
+    """Locate a headless-capable Chrome. The project moves between machines on
+    an external drive, so the browser is looked up rather than assumed; set
+    CHROME to override."""
+    env = os.environ.get("CHROME")
+    candidates = [env] if env else []
+    candidates += [
+        "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+        "/Applications/Chromium.app/Contents/MacOS/Chromium",
+        "/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge",
+        "/Applications/Brave Browser.app/Contents/MacOS/Brave Browser",
+    ]
+    candidates += [shutil.which(n) for n in
+                   ("google-chrome", "chromium", "chromium-browser", "microsoft-edge")]
+    for c in candidates:
+        if c and Path(c).exists():
+            return c
+    sys.exit("No Chrome found. Install Google Chrome, or set CHROME to its "
+             "executable:\n  CHROME=/path/to/chrome python3 tools/build-calendar-pdf.py")
+
+
+CHROME = find_chrome()
 
 MONTHS = ["January","February","March","April","May","June",
           "July","August","September","October","November","December"]
