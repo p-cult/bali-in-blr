@@ -962,6 +962,35 @@ body.view-open { overflow: hidden; }
   .cal-map[href^="http"]::after { content: ""; }
   .cal-map .cal-venue-name { text-decoration: none; }
 
+  /* ----- printable calendar: masthead, footer, no links ----- */
+  .print-only { display: block; }
+
+  /* The screen heading gives way to the festival masthead on paper. */
+  #calendar .eyebrow,
+  #calendar .view-body > .section > .wrap > h2,
+  #calendar .section-intro { display: none; }
+
+  .print-head { text-align: center; margin: 0 0 9mm; padding-bottom: 5mm; border-bottom: 0.6pt solid var(--rule); }
+  .print-kicker { font-family: var(--display); text-transform: uppercase; letter-spacing: 0.3em;
+    font-size: 7.5pt; color: var(--copper) !important; margin: 0 0 2.5mm; }
+  .print-title { font-family: var(--display); font-weight: 900; font-size: 30pt; line-height: 1;
+    letter-spacing: -0.01em; color: var(--ink) !important; margin: 0; }
+  .print-title em { font-style: italic; font-weight: 400; }
+  .print-dates { font-family: var(--display); font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.14em; font-size: 9.5pt; color: var(--copper) !important; margin: 3mm 0 0; }
+
+  .print-foot { margin-top: 9mm; padding-top: 5mm; border-top: 0.6pt solid var(--rule);
+    display: flex; align-items: center; justify-content: center; gap: 5mm; break-inside: avoid; }
+  .print-qr { width: 24mm; height: 24mm; }
+  .print-foot-text { text-align: left; }
+  .print-foot-lead { font-family: var(--display); font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.08em; font-size: 8.5pt; color: var(--ink) !important; margin: 0; }
+  .print-foot-url { font-size: 7.5pt; color: var(--copper) !important; margin: 1.5mm 0 0; }
+
+  /* No live affordances on paper: links read as plain text, no URLs. */
+  #calendar a { color: var(--ink) !important; text-decoration: none !important; }
+  #calendar a[href]::after { content: "" !important; }
+
   /* ----- partners ----- */
   .partners-grid.has-partners { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 3mm; margin-top: 4mm; }
   .partner {

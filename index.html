@@ -20,8 +20,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@125,500;125,600;125,700;125,800;125,900&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=hub27" />
-  <link rel="stylesheet" href="site.css?v=11" />
+  <link rel="stylesheet" href="styles.css?v=hub28" />
+  <link rel="stylesheet" href="site.css?v=12" />
 </head>
 <body data-calendar-images="on">
   <!-- Google Tag Manager (noscript) -->
@@ -277,6 +277,12 @@
     <div class="view-body">
       <section class="section">
         <div class="wrap wrap-narrow">
+          <!-- Print/PDF only: festival masthead -->
+          <div class="print-only print-head" aria-hidden="true">
+            <p class="print-kicker">Param Foundation presents</p>
+            <h1 class="print-title">Bali <em>in</em> Bengaluru</h1>
+            <p class="print-dates">1 Oct &ndash; 18 Oct 2026</p>
+          </div>
           <p class="eyebrow">Festival calendar</p>
           <h2>What&#39;s on</h2>
           <p class="section-intro">
@@ -301,6 +307,15 @@
             </a>
             <span>One page, printed on paper &mdash; dates as confirmed today.</span>
           </p>
+
+          <!-- Print/PDF only: scan-to-open footer -->
+          <div class="print-only print-foot" aria-hidden="true">
+            <img class="print-qr" src="assets/calendar-qr.svg" alt="" />
+            <div class="print-foot-text">
+              <p class="print-foot-lead">Scan for the live calendar</p>
+              <p class="print-foot-url">bali-in-blr.paramfoundation.org</p>
+            </div>
+          </div>
         </div>
       </section>
     </div>

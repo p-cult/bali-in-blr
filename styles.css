@@ -75,6 +75,9 @@ h1, h2, h3, h4,
    own [hidden] rule, leaving "hidden" elements on screen. */
 [hidden] { display: none !important; }
 
+/* Shown only on paper (print/PDF); the @media print block reveals these. */
+.print-only { display: none; }
+
 html {
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
@@ -581,7 +584,7 @@ p.legal-small { font-size: 0.85rem; color: var(--muted-2); }
    accenting it already does on cream elsewhere in the site. */
 
 @media print {
-  @page { size: A4; margin: 13mm 12mm; }
+  @page { size: A4; margin: 18mm 16mm; }
 
   :root {
     --ink: #1B1D21;
