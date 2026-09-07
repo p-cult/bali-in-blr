@@ -23,6 +23,14 @@ const CONFIG = {
   // Used when the sheet has no rows yet, or cannot be reached.
   LOCAL_EVENTS_URL: "data/events.json",
   LOCAL_PARTNERS_URL: "data/partners.json",
+
+  // Master switch for per-event booking. While false, every calendar event's
+  // button routes to the ONE internal registration module (#register, with the
+  // programme pre-selected) — never to ticket/RSVP links from the sheet. So
+  // stray or placeholder sheet links (e.g. forms.gle/…) can never fire, and all
+  // registration funnels through a single page. Flip to true only when
+  // real per-event booking/ticketing is live.
+  BOOKING_OPEN: false,
 };
 
 /* ---------- Analytics ----------
@@ -614,6 +622,8 @@ function calTimeText(ev) {
 }
 
 function calStatusChip(ev) {
+  // Booking closed: don't advertise "Tickets live"/"RSVP open"/"Sold out".
+  if (!CONFIG.BOOKING_OPEN) return "";
   if (ev.hideStatus) return "";
   switch (ev.status) {
     case "fast": return `<span class="cal-status cal-status--fast">${CAL_ICONS.flame}Filling fast</span>`;
@@ -628,6 +638,13 @@ function calAction(ev) {
   // The internal waitlist/register link carries the programme so the
   // registration form can pre-tick it. An external rsvp link is left as-is.
   const reg = "#register?programme=" + encodeURIComponent(ev.title || "");
+
+  // Until booking opens, ignore every sheet ticket/rsvp link (including junk or
+  // placeholder ones) and send all events to the single registration section.
+  if (!CONFIG.BOOKING_OPEN) {
+    return `<a class="btn btn-primary btn-sm" href="${esc(reg)}">Register</a>`;
+  }
+
   const wl = safeUrl(ev.rsvpUrl) || reg;
   const btn = (rawUrl, cls, label) => {
     const url = safeUrl(rawUrl) || "#register";
@@ -649,6 +666,7 @@ function calAction(ev) {
 /* The occupancy bar is the FOMO visual. Shown only when there is capacity to
    report and the event is actually selling (live/fast) — never on sold out. */
 function calOcc(ev) {
+  if (!CONFIG.BOOKING_OPEN) return ""; // no seats/FOMO bar until booking opens
   if (!ev.capacity || ev.seatsLeft == null) return "";
   if (ev.status !== "live" && ev.status !== "fast") return "";
   const booked = Math.max(0, Math.min(100, Math.round((ev.capacity - ev.seatsLeft) / ev.capacity * 100)));
