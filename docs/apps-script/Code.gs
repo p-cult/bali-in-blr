@@ -84,6 +84,17 @@ const FLAVOURS = {
     label: 'Volunteering',
     required: ['name', 'email', 'phone', 'areas', 'availability'],
     fields: ['areas', 'availability']
+  },
+  // Per-event RSVP. One row per RSVP, on its own RSVPs tab, plus a Master
+  // upsert. `allowMultiple` because one person may RSVP to several events —
+  // so the per-person duplicate block is skipped (idempotency by submission id
+  // still stops a resend of the SAME click becoming two rows).
+  rsvp: {
+    tab: 'RSVPs',
+    label: 'Event RSVP',
+    required: ['name', 'email', 'event'],
+    fields: ['event', 'notify'],
+    allowMultiple: true
   }
 };
 
@@ -114,6 +125,10 @@ function doPost(e) {
     if (clean(p.mode) === 'check') {
       if (!name || (!phone && !email)) {
         return json({ ok: false, error: 'A check needs a name and a phone or email' });
+      }
+      // Flavours that allow multiple entries per person are never "already in".
+      if (flavour.allowMultiple) {
+        return json({ ok: true, check: true, exists: false });
       }
       const ss0 = book();
       const found = !!findPersonRow(
@@ -150,8 +165,11 @@ function doPost(e) {
       if (seen.found) return json({ ok: true, duplicate: seen.duplicate, replayed: true });
     }
 
-    // 1. Already registered for THIS flavour? Then it is a double entry.
-    if (findPersonRow(tab(ss, flavour.tab, flavourHeaders(flavour)), name, phone, email, 2, 3, 4)) {
+    // 1. Already registered for THIS flavour? Then it is a double entry —
+    //    unless the flavour allows multiple entries per person (e.g. RSVP, one
+    //    per event), where only the submission-id idempotency above applies.
+    if (!flavour.allowMultiple &&
+        findPersonRow(tab(ss, flavour.tab, flavourHeaders(flavour)), name, phone, email, 2, 3, 4)) {
       logReceipt(ss, sid, key, 'duplicate');
       return json({ ok: true, duplicate: true });
     }

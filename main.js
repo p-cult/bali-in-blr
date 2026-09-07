@@ -31,6 +31,14 @@ const CONFIG = {
   // registration funnels through a single page. Flip to true only when
   // real per-event booking/ticketing is live.
   BOOKING_OPEN: false,
+
+  // Per-event RSVP, routed through the Apps Script bridge into the sheet's
+  // "RSVPs" tab (never an external form). WIRED BUT OFF: while false, event
+  // buttons just lead to the Register section as now. Flip to true — and
+  // redeploy the Apps Script (docs/apps-script/Code.gs adds the 'rsvp'
+  // flavour) — to turn RSVP capture on. Ignored while BOOKING_OPEN is true
+  // (real ticketing takes precedence).
+  RSVP_ENABLED: false,
 };
 
 /* ---------- Analytics ----------
@@ -643,8 +651,15 @@ function calAction(ev) {
   const reg = "#register?programme=" + encodeURIComponent(ev.title || "");
 
   // Until booking opens, ignore every sheet ticket/rsvp link (including junk or
-  // placeholder ones) and send all events to the single registration section.
+  // placeholder ones). Either capture an RSVP through the bridge (when enabled)
+  // or send the event to the single registration section.
   if (!CONFIG.BOOKING_OPEN) {
+    if (CONFIG.RSVP_ENABLED) {
+      // Routes into the Register module in RSVP mode; the submission posts to
+      // the bridge with flavour=rsvp and lands in the sheet's RSVPs tab.
+      const rsvp = "#register?rsvp=1&programme=" + encodeURIComponent(ev.title || "");
+      return `<a class="btn btn-primary btn-sm" href="${esc(rsvp)}">RSVP</a>`;
+    }
     return `<a class="btn btn-primary btn-sm" href="${esc(reg)}">Register</a>`;
   }
 
@@ -1448,8 +1463,37 @@ function setupOnboarding(shell, questions) {
   }
   window.addEventListener("hashchange", preselectProgramme);
 
+  /* RSVP mode. An event's RSVP button links to #register?rsvp=1&programme=<event>.
+     When RSVP is enabled, this reuses the very same capture + bridge plumbing,
+     but tags the submission as flavour=rsvp with the event name, so it lands in
+     the sheet's RSVPs tab instead of the general updates signup. Only the
+     registration module (flavour "updates") is eligible. */
+  function applyRsvpContext() {
+    const flav = form.elements["flavour"];
+    if (!flav) return;
+    const isRsvp =
+      CONFIG.RSVP_ENABLED &&
+      urlParam("rsvp") === "1" &&
+      (shell.dataset.flavour || "") === "updates";
+    flav.value = isRsvp ? "rsvp" : (shell.dataset.flavour || "updates");
+    let ev = form.elements["event"];
+    if (isRsvp) {
+      if (!ev) {
+        ev = document.createElement("input");
+        ev.type = "hidden";
+        ev.name = "event";
+        form.appendChild(ev);
+      }
+      ev.value = urlParam("programme") || "";
+    } else if (ev) {
+      ev.value = "";
+    }
+  }
+  window.addEventListener("hashchange", applyRsvpContext);
+
   show(0);
   preselectProgramme();
+  applyRsvpContext();
 }
 
 /* ---------- Boot ---------- */
