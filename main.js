@@ -377,6 +377,9 @@ function safeUrl(u) {
 function toActionUrl(v) {
   const s = String(v == null ? "" : v).trim();
   if (!s) return "";
+  // Drop placeholder / dummy links (e.g. forms.gle/EXAMPLE-rsvp). Whatever
+  // sits in the sheet, these must never reach the page.
+  if (/example/i.test(s)) return "";
   const safe = safeUrl(s);
   if (safe) return safe;                       // already a URL / tel: / relative
   const digits = s.replace(/[^\d+]/g, "");
