@@ -40,7 +40,7 @@
   --line-cream: rgba(27, 29, 33, 0.14);   /* the same hairline, on paper */
   --line-warm: rgba(239, 231, 216, 0.16); /* and on a coloured ground */
 
-  --display: "Archivo Black", "Arial Black", system-ui, sans-serif;
+  --display: "Archivo", "Arial", system-ui, sans-serif;
   --sans: "Instrument Sans", system-ui, -apple-system, sans-serif;
 
   /* One spacing scale, so gutters and rhythm stay related. */
@@ -56,10 +56,9 @@
   --radius-sm: 5px;
 }
 
-/* Display face is Archivo Black — a single heavy weight at normal width, so
-   there is no width axis to set here (the old Archivo "wdth" 125 expansion is
-   gone). Archivo Black ships one weight; heading font-weight values all render
-   as that same black. */
+/* Display face is Archivo at normal width (no "wdth" 125 expansion). Only the
+   ExtraBold (800) instance is loaded, so every heading renders at 800 whatever
+   weight it declares — one step lighter than Archivo Black, still not extended. */
 
 /* ------------------------------------------------------------ 2. Base/reset */
 
