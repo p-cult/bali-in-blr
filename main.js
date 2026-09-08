@@ -381,15 +381,17 @@ function safeUrl(u) {
 }
 
 /* An image value from the sheet. A Google Drive share link points at a viewer
-   PAGE, not the image file, so it never loads in <img>. Staff paste those from
-   Drive by habit (the "…/file/d/<id>/view" or "open?id=<id>" form), so rewrite
-   any Drive link to a direct, embeddable thumbnail URL. Anything else (a local
-   assets/ path, or a normal image URL) is returned unchanged. */
+   PAGE, not the image file, and Drive images can't be hotlinked in a browser.
+   Staff paste those from Drive by habit, so map any Drive link to the local,
+   optimised copy that tools/sync-images.sh downloads to assets/drive/<id>.jpg.
+   Run that script whenever a Drive image is added or changed. Anything else (a
+   local assets/ path or a normal image URL) is returned unchanged; if the
+   synced copy isn't there yet, the <img> onerror falls back to a blank poster. */
 function toImageUrl(v) {
   const s = String(v == null ? "" : v).trim();
   if (!s) return "";
   const m = s.match(/drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?(?:[^#]*&)?id=)([A-Za-z0-9_-]+)/);
-  if (m) return "https://drive.google.com/thumbnail?id=" + m[1] + "&sz=w1600";
+  if (m) return "assets/drive/" + m[1] + ".jpg";
   return s;
 }
 

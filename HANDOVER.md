@@ -59,6 +59,9 @@ sitemap.xml         SEO.
 docs/
   BRIDGE-SETUP.md   Step-by-step Google Sheets + Apps Script setup (the backend).
   apps-script/Code.gs  The Apps Script "bridge" code, ready to paste & deploy.
+tools/
+  sync-images.sh    Pull Google Drive event images → optimise → assets/drive/.
+                    Run when a Drive image link in the sheet is added/changed.
 README.md           Short version of this doc for casual contributors.
 HANDOVER.md         This file.
 .cursor/rules/      Cursor project rules.
@@ -146,6 +149,14 @@ names** so the bridge returns matching keys:
 Rendering logic (in `main.js` `loadCalendar`): dated events sort chronologically
 and appear before undated ones; `onsale` shows a **Book / passes** button,
 `concluded` shows a **View media** button, otherwise "Tickets coming soon".
+
+**Event images:** put an `assets/…` path in the image column. A Google Drive
+share link also works — Drive images can't be embedded directly, so
+`tools/sync-images.sh` downloads and optimises each one into
+`assets/drive/<fileId>.jpg`, and `toImageUrl()` in `main.js` maps the link to
+that local copy. Run the script (and commit `assets/drive/`) whenever a Drive
+image is added or changed. A missing/failed image collapses to a clean no-image
+poster rather than a broken icon.
 
 ### `data/partners.json` (and the future `Partners` sheet)
 Array of `{ name, logo, url, tier }`. Empty array → the section shows a
