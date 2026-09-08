@@ -380,6 +380,19 @@ function safeUrl(u) {
   return "";
 }
 
+/* An image value from the sheet. A Google Drive share link points at a viewer
+   PAGE, not the image file, so it never loads in <img>. Staff paste those from
+   Drive by habit (the "…/file/d/<id>/view" or "open?id=<id>" form), so rewrite
+   any Drive link to a direct, embeddable thumbnail URL. Anything else (a local
+   assets/ path, or a normal image URL) is returned unchanged. */
+function toImageUrl(v) {
+  const s = String(v == null ? "" : v).trim();
+  if (!s) return "";
+  const m = s.match(/drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?(?:[^#]*&)?id=)([A-Za-z0-9_-]+)/);
+  if (m) return "https://drive.google.com/thumbnail?id=" + m[1] + "&sz=w1600";
+  return s;
+}
+
 /* A booking/RSVP target from the sheet: either a URL or a phone number. A bare
    phone number becomes a tel: link so the button dials it. */
 function toActionUrl(v) {
@@ -568,7 +581,7 @@ function normaliseEvent(raw, i) {
     venue: pick("venue"),
     mapUrl: pick("mapUrl", "map link"),
     description: pick("description"),
-    image: pick("image"),
+    image: toImageUrl(pick("image")),
     ticketUrl: toActionUrl(pick("ticketUrl", "ticket link", "ticketurl")),
     passInfo: pick("passInfo"),
     rsvpUrl: toActionUrl(pick("rsvpUrl", "rsvp link")),
@@ -703,7 +716,7 @@ function cardHTML(ev) {
   const hasImg = !!ev.image;
   const poster =
     `<div class="cal-poster${hasImg ? "" : " cal-poster--blank"}">` +
-    (hasImg ? `<img src="${esc(ev.image)}" alt="" loading="lazy" />` : "") +
+    (hasImg ? `<img src="${esc(ev.image)}" alt="" loading="lazy" onerror="this.parentNode.classList.add('cal-poster--blank');this.remove();" />` : "") +
     `<span class="cal-date"><b>${esc(chip.day)}</b><i>${esc(chip.mon)}</i></span></div>`;
 
   const mapUrl = safeUrl(ev.mapUrl);
