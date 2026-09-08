@@ -51,28 +51,14 @@
   .toast{position:fixed;left:50%;bottom:1.5rem;transform:translateX(-50%);background:var(--accent);color:#111;font-weight:600;padding:.6rem 1rem;border-radius:6px;opacity:0;transition:opacity .2s;pointer-events:none;font-size:.85rem}
   .toast.show{opacity:1}
   @media(max-width:640px){.grid{grid-template-columns:1fr}td.u{max-width:160px}}
-  .gate{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:1.5rem;z-index:10}
-  .gate[hidden]{display:none}
-  .gate-box{width:100%;max-width:380px;background:var(--bg3);border:1px solid var(--line);border-radius:var(--radius);padding:2rem;display:flex;flex-direction:column;gap:.7rem}
-  .gate-box h1{margin:0 0 .2rem}
-  .gate-box .sub{margin:0 0 1rem}
-  .gate-box .btn{margin-top:.3rem}
-  .gate-err{color:var(--accent);font-size:.85rem;margin:.2rem 0 0}
+  .admin-nav{margin:0 0 1.2rem;font-size:.8rem}
+  .admin-nav a{color:var(--copper);text-decoration:none}
+  .admin-nav a:hover{text-decoration:underline}
 </style>
 </head>
 <body>
-<div class="gate" id="gate">
-  <form class="gate-box" id="gateForm" autocomplete="off">
-    <p class="kick">Bali in Bengaluru · internal</p>
-    <h1>Sign in</h1>
-    <p class="sub">This page is for Param Foundation staff.</p>
-    <input id="gateUser" type="text" placeholder="Username" autocomplete="username" autocapitalize="none" spellcheck="false" />
-    <input id="gatePass" type="password" placeholder="Password" autocomplete="current-password" />
-    <button class="btn btn-primary" type="submit" id="gateBtn">Sign in</button>
-    <p class="gate-err" id="gateErr" hidden>Wrong username or password.</p>
-  </form>
-</div>
-<div class="wrap" id="app" hidden>
+<div class="wrap" id="admin-app" hidden>
+  <p class="admin-nav"><a href="./">&larr; Admin</a></p>
   <p class="kick">Bali in Bengaluru · internal</p>
   <h1>Campaign Link Builder</h1>
   <p class="sub">Mint trackable links for posters, posts and ads. Each link carries UTM tags (for the marketing analytics / performance marketer) and a <code>ref</code> tag (recorded in the sheet's Sources column). “Add to list” saves the link to the <strong>links</strong> tab of the Registration Data sheet — the master store — and the list below reflects it. Export any time to hand over.</p>
@@ -164,6 +150,7 @@
 </div>
 <div class="toast" id="toast"></div>
 
+<script src="auth.js"></script>
 <script>
 const BASE = "https://bali-in-blr.paramfoundation.org/";
 const BRIDGE_URL = "https://script.google.com/macros/s/AKfycbyKXzPHQLsHCoryx0aJVpVkP0Z0XrnPxjucaiUJtR1aXeux33ygq2Br2QcBNU_MAB7qDw/exec";
@@ -173,52 +160,18 @@ const $ = (id) => document.getElementById(id);
 const slug = (s) => String(s||"").toLowerCase().trim().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
 
 /* ---------- Sign-in gate ----------
-   Deliberately lightweight (this is an internal link builder, not a secret store):
-   it keeps the page out of casual/accidental reach. Passwords are stored as
-   SHA-256 hashes, never plaintext. To add or change an admin, run
-     printf '%s' 'their-password' | shasum -a 256
-   and set the hash below. The username+password is also sent to the bridge (as
-   `user`/`key`) so the Apps Script can enforce it server-side later. */
-const USERS = {
-  jois:  "ee9d41e56dce85563d3e14b0a37eb48dde121c27539a2f4f9884e56b2ea1e0c7", // jois-7aade8
-  vinod: "df6fcc5c1774a5292e5b8c61bb0e9cc57034b3b4f25b439231fe7c9cd726c820", // vinod-98860
-};
-const AUTH_FLAG = "bali-admin-auth";
-let ADMIN_USER = "", ADMIN_KEY = ""; // held in memory this session for the bridge
-
-async function sha256(s){
-  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s));
-  return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,"0")).join("");
-}
-async function checkCreds(user, pass){
-  const u = String(user||"").trim().toLowerCase();
-  if (!USERS[u]) return false;
-  return (await sha256(pass)) === USERS[u] ? u : false;
-}
-function unlock(){ $("gate").hidden = true; $("app").hidden = false; boot(); }
-
-document.addEventListener("DOMContentLoaded", () => {
-  // Restore this session's sign-in, re-verifying the password hash — never a bare flag.
-  let saved = null;
-  try { saved = JSON.parse(sessionStorage.getItem(AUTH_FLAG) || "null"); } catch(e){}
-  if (saved && saved.user && saved.pass) {
-    checkCreds(saved.user, saved.pass).then(u => {
-      if (u){ ADMIN_USER = u; ADMIN_KEY = saved.pass; unlock(); } else { $("gateUser").focus(); }
-    });
-  } else { $("gateUser").focus(); }
-
-  $("gateForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const user = $("gateUser").value, pass = $("gatePass").value;
-    const u = await checkCreds(user, pass);
-    if (u){
-      ADMIN_USER = u; ADMIN_KEY = pass;
-      try { sessionStorage.setItem(AUTH_FLAG, JSON.stringify({user:u, pass})); } catch(e){}
-      unlock();
-    } else {
-      $("gateErr").hidden = false; $("gatePass").value = ""; $("gatePass").focus();
-    }
-  });
+   Shared across all /admin pages via auth.js — one source of truth for the
+   admin list. ADMIN_USER/ADMIN_KEY hold the signed-in identity; they are also
+   sent to the bridge (user/key) so the Apps Script can enforce them later.
+   boot() runs only once the gate is cleared. */
+let ADMIN_USER = "", ADMIN_KEY = "";
+AdminAuth.protect({
+  onUnlock: (user) => {
+    const c = AdminAuth.creds() || {};
+    ADMIN_USER = user;
+    ADMIN_KEY = c.pass || "";
+    boot();
+  },
 });
 
 function toast(msg){ const t=$("toast"); t.textContent=msg; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),1400); }

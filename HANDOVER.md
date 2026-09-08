@@ -10,20 +10,23 @@ editor). It assumes no prior context. Read it top to bottom once.
 A **campaign hub website** for the **Bali in Bengaluru** cultural festival,
 presented by **Param Foundation** (a Bengaluru non-profit in science & culture).
 
-- **Live site:** https://p-cult.github.io/bali-in-blr/
+- **Live site:** https://bali-in-blr.paramfoundation.org
+  (GitHub Pages mirror: https://p-cult.github.io/bali-in-blr/)
 - **Repo:** https://github.com/p-cult/bali-in-blr  (branch: `main`)
 - **Hosting:** GitHub Pages (static, auto-deploys on push to `main`)
 - **Stack:** plain **HTML + CSS + vanilla JS**. No framework, no build step, no
   dependencies, no package.json. Open `index.html` and it runs.
 
-The festival runs ~18 days in **September 2026** in Bengaluru: performances,
+The festival runs **1–18 October 2026** in Bengaluru: performances,
 workshops, and talks blending Indonesian (Balinese) and Indian traditions.
 Headliner: **Dr. I Wayan Dibia** (Padma Shri).
+(Dates are the source of truth in the schedule sheet — see §3/§4. Ignore any
+older "September" wording elsewhere.)
 
 ### The product vision (what it must grow into)
 A single evolving destination that:
 1. Captures interested people (signup → email/phone, with consent).
-2. Shows a **calendar** that fills in as dates are confirmed through September.
+2. Shows a **calendar** that fills in as dates are confirmed through October.
 3. Sends people to **buy tickets / collect passes** (external ticketing).
 4. After each show, features **photos, clippings, media**.
 5. Displays a **growing** wall of partners/sponsors/supporters.
@@ -35,13 +38,23 @@ A single evolving destination that:
 
 ```
 index.html          Page content & structure. Sections are marked with HTML comments.
-styles.css          All styling. Design tokens live in :root at the top.
-main.js             Behaviour + the DATA BRIDGE config (CONFIG object at top).
+styles.css          Main styling. Design tokens live in :root at the top.
+site.css            Supplementary styles (loaded after styles.css).
+main.js             Behaviour + the CONFIG block at the top. CONFIG holds the
+                    bridge/schedule URLs AND two feature switches (see §3):
+                    BOOKING_OPEN and RSVP_ENABLED (both false).
+privacy.html        Privacy policy (linked from consent lines and the footer).
+v1.html             Previous design, kept for reference. noindex + robots-blocked.
+admin/              Internal, login-gated tools (not for the public):
+  index.html          Admin hub at /admin — lists the tools.
+  campaign-links.html Campaign Link Builder (UTM links + QR → 'links' sheet tab).
+  auth.js             Shared sign-in gate (username+password, SHA-256 hashes).
 assets/             Photos (extracted & optimised from the festival brochure PDF).
 data/
-  events.json       Calendar data — LOCAL STAND-IN for the Google Sheet (see §4).
+  events.json       Calendar FALLBACK when the schedule sheet is unreachable (§4).
   partners.json     Partners data — LOCAL STAND-IN for the Google Sheet (see §4).
-robots.txt          SEO.
+  questions.json    The signup/volunteer onboarding questions (carousel).
+robots.txt          SEO. Disallows /admin/ and /v1.html.
 sitemap.xml         SEO.
 docs/
   BRIDGE-SETUP.md   Step-by-step Google Sheets + Apps Script setup (the backend).
@@ -50,6 +63,13 @@ README.md           Short version of this doc for casual contributors.
 HANDOVER.md         This file.
 .cursor/rules/      Cursor project rules.
 ```
+
+### Feature switches & admin (quick pointers)
+- **`CONFIG.BOOKING_OPEN`** / **`CONFIG.RSVP_ENABLED`** in `main.js` gate the
+  calendar buttons — see §3. Both are currently `false`.
+- **Admin** lives at `/admin` (login-gated; users are defined as SHA-256 hashes
+  in `admin/auth.js`). Add a new admin tool by dropping a page under `admin/`
+  that includes `auth.js` and wraps its content in `<div id="admin-app" hidden>`.
 
 ### Page section order (in `index.html`)
 Header/nav → Hero → **Register** → **Calendar** → Programme → Featuring
@@ -88,6 +108,19 @@ populated.
 
 See `docs/BRIDGE-SETUP.md` for the full data model (flavours, questions carousel,
 dedupe, receipts, share links) and `docs/apps-script/Code.gs` for the bridge.
+
+### Calendar feature switches (`CONFIG` in `main.js`)
+Two flags gate what the calendar's event buttons do. **Both are `false`.**
+- **`BOOKING_OPEN`** — while `false`, event buttons never use ticket/RSVP links
+  from the sheet (placeholder links containing an `EXAMPLE-` marker or an
+  `example.com/net/org` domain are stripped by `toActionUrl` regardless), the
+  "Tickets live / Sold out" chips and the seats bar are hidden, and every button
+  routes to the single Register section. Flip to `true` for real ticketing.
+- **`RSVP_ENABLED`** — while `false`, buttons read "Register". When `true`,
+  buttons read "RSVP" and route to `#register?rsvp=1&programme=<event>`; the
+  register module then posts `flavour=rsvp` (event name included), landing in a
+  dedicated **RSVPs** tab. Turning it on needs BOTH this flag AND an Apps Script
+  redeploy (the `rsvp` flavour already exists in `Code.gs`).
 
 ---
 

@@ -361,6 +361,11 @@
           <div class="onboard-card onboard-signup" hidden>
             <form class="signup-form" id="signup-form" data-require="name email" novalidate>
             <input type="hidden" name="flavour" value="updates" />
+            <!-- Fallback default for the bridge's required 'notify' field. The
+                 onboarding "How should we reach you?" question overwrites this
+                 with the visitor's choice; if that enhancement can't load, this
+                 keeps registration working (email is always collected). -->
+            <input type="hidden" name="notify" value="Email" />
             <div class="field">
             <label for="sf-name">Name <span class="req">*</span></label>
             <input type="text" id="sf-name" name="name" autocomplete="name" required />
@@ -477,6 +482,6 @@
     </div>
     <p class="footer-copy">&copy; <span id="year"></span> Param Foundation. All rights reserved.</p>
   </footer>
-  <script src="main.js?v=hub43"></script>
+  <script src="main.js?v=hub44"></script>
 </body>
 </html>
