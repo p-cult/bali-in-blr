@@ -40,7 +40,7 @@
   --line-cream: rgba(27, 29, 33, 0.14);   /* the same hairline, on paper */
   --line-warm: rgba(239, 231, 216, 0.16); /* and on a coloured ground */
 
-  --display: "Archivo", "Arial Narrow", system-ui, sans-serif;
+  --display: "Space Grotesk", system-ui, -apple-system, sans-serif;
   --sans: "Instrument Sans", system-ui, -apple-system, sans-serif;
 
   /* One spacing scale, so gutters and rhythm stay related. */
@@ -56,16 +56,8 @@
   --radius-sm: 5px;
 }
 
-/* Archivo carries a width axis and the display face runs expanded throughout.
-   Instrument Sans has no such axis and simply ignores this. */
-h1, h2, h3, h4,
-.eyebrow, .btn, .brand-main, .brand-sub, .nav-cta,
-.hero-meta-num, .lead-line, .fact-list li span,
-.chip, .cal-cat, .cal-title, .cal-status, .cal-date b, .cal-date i,
-.view-back, .view-bar-title, .onboard-step, .onboard-question legend,
-.group-title, .support-points dt, .hero-kicker {
-  font-variation-settings: "wdth" 125;
-}
+/* Display face is Space Grotesk — a normal-width grotesque, so there is no
+   width axis to set here (the old Archivo "wdth" 125 expansion is gone). */
 
 /* ------------------------------------------------------------ 2. Base/reset */
 
@@ -578,7 +570,7 @@ p.legal-small { font-size: 0.85rem; color: var(--muted-2); }
 /* Paper is not a de-styled screen — it is its own edition of the same design.
    The festival's printed palette is already set by the calendar sheet: cream
    ground, charcoal type, oxidised copper for labels and rules. That palette
-   is carried here, with Archivo still setting the display type, so a printed
+   is carried here, with Space Grotesk setting the display type, so a printed
    page and a printed calendar plainly belong to the same festival.
 
    Charcoal cannot be the ground on paper — it is a cartridge per sheet and it
