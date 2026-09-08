@@ -40,7 +40,7 @@
   --line-cream: rgba(27, 29, 33, 0.14);   /* the same hairline, on paper */
   --line-warm: rgba(239, 231, 216, 0.16); /* and on a coloured ground */
 
-  --display: "Archivo", "Arial Narrow", system-ui, sans-serif;
+  --display: "Archivo Black", "Arial Black", system-ui, sans-serif;
   --sans: "Instrument Sans", system-ui, -apple-system, sans-serif;
 
   /* One spacing scale, so gutters and rhythm stay related. */
@@ -56,16 +56,10 @@
   --radius-sm: 5px;
 }
 
-/* Archivo carries a width axis and the display face runs expanded throughout.
-   Instrument Sans has no such axis and simply ignores this. */
-h1, h2, h3, h4,
-.eyebrow, .btn, .brand-main, .brand-sub, .nav-cta,
-.hero-meta-num, .lead-line, .fact-list li span,
-.chip, .cal-cat, .cal-title, .cal-status, .cal-date b, .cal-date i,
-.view-back, .view-bar-title, .onboard-step, .onboard-question legend,
-.group-title, .support-points dt, .hero-kicker {
-  font-variation-settings: "wdth" 125;
-}
+/* Display face is Archivo Black — a single heavy weight at normal width, so
+   there is no width axis to set here (the old Archivo "wdth" 125 expansion is
+   gone). Archivo Black ships one weight; heading font-weight values all render
+   as that same black. */
 
 /* ------------------------------------------------------------ 2. Base/reset */
 
