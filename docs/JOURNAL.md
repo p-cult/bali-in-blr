@@ -201,6 +201,15 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
 - This journal and `AGENTS.md` written so every tool and machine starts with
   the same memory. The private half of that memory (what cannot be public)
   added to the vault under `memory`, so it travels with the drive too.
+- **Festival logo arrives** (Illustrator SVG: "Param" in brown over "BALI IN
+  BENGALURU" in yellow and orange). Inlined as one `.logo` component in the
+  master stylesheet, sized by context, and it replaces the phrase wherever it
+  is a heading or brand mark: site header, hero `h1`, print masthead, footer,
+  every in-page view bar, the privacy header, and the admin pages and sign-in
+  card. Paragraph mentions stay as text. Each replaced heading keeps an
+  `.sr-only` "Bali in Bengaluru" so assistive tech and SEO see the name.
+  The viewBox was tightened to the artwork bounds; the source file is kept at
+  `assets/logo.svg`. `v1.html` (the frozen backup) is untouched.
 
 ---
 

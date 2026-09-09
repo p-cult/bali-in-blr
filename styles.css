@@ -302,24 +302,22 @@ p.section-intro { max-width: 44rem; color: var(--muted); font-size: 1.05rem; }
   padding: 1.1rem var(--gutter);
 }
 
-.brand { display: flex; flex-direction: column; line-height: 1; text-decoration: none; }
-.brand-main {
-  font-family: var(--display);
-  font-size: 1.1rem;
-  font-weight: 900;
-  letter-spacing: -0.02em;
-  text-transform: uppercase;
-  color: var(--ink);
+/* ----- Festival logo (inline SVG, one component, sized by context) -----
+   The wordmark is artwork, not type: it replaces "Bali in Bengaluru" wherever
+   that phrase is a heading or brand mark. Colours come from the logo itself;
+   --logo-* lets a ground (print, cream) restate them in one place. */
+.logo { display: block; height: auto; overflow: visible; }
+.logo-gold   { fill: var(--logo-gold,   #e4ab0e); }
+.logo-orange { fill: var(--logo-orange, #ff5a3d); }
+.logo-brown  { fill: var(--logo-brown,  #b68367); }
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
 }
-.brand-main em { font-style: normal; color: var(--accent); }
-.brand-sub {
-  margin-top: 5px;
-  font-size: 0.6rem;
-  font-weight: 500;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: var(--muted-2);
-}
+
+.brand { display: block; line-height: 0; text-decoration: none; }
+.brand .logo { height: 52px; width: auto; }
 
 .nav-links {
   display: flex;
@@ -374,15 +372,8 @@ p.section-intro { max-width: 44rem; color: var(--muted); font-size: 1.05rem; }
   justify-content: space-between;
   gap: 1.5rem;
 }
-.footer-brand {
-  margin: 0;
-  font-family: var(--display);
-  font-size: 1.5rem;
-  font-weight: 900;
-  letter-spacing: -0.02em;
-  text-transform: uppercase;
-}
-.footer-brand em { font-style: normal; color: var(--accent); }
+.footer-brand { margin: 0; line-height: 0; }
+.footer-brand .logo { height: 64px; width: auto; }
 .footer-sub { margin: 0.3rem 0 0; font-size: 0.85rem; color: var(--muted-2); }
 
 .footer-contact {
@@ -751,8 +742,7 @@ p.legal-small { font-size: 0.85rem; color: var(--muted-2); }
     break-inside: avoid;
   }
   .footer-inner { flex-wrap: nowrap; gap: 6mm; }
-  .footer-brand { font-size: 12pt; }
-  .footer-brand em { color: var(--copper) !important; }
+  .footer-brand .logo { height: 14mm; }
   .footer-sub, .footer-contact a { color: var(--muted) !important; font-size: 7.6pt; }
   .footer-contact { text-align: right; }
   .footer-contact a[href^="http"]::after { content: ""; }

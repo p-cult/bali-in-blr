@@ -124,17 +124,12 @@
   background: var(--copper);
 }
 
-.hero h1, .print-title {
-  margin: 0 0 1.2rem;
-  font-family: var(--display);
-  font-size: clamp(1.9rem, 5vw, 3.6rem);
-  font-weight: 900;
-  line-height: 0.92;              /* two lines, stacked tight */
-  letter-spacing: -0.005em;
-  text-transform: uppercase;
-  text-shadow: 0 6px 40px rgba(0, 0, 0, 0.35);
+.hero h1, .print-title { margin: 0 0 1.2rem; line-height: 0; }
+.hero h1 .logo, .print-title .logo {
+  width: clamp(220px, 34vw, 420px);
+  height: auto;
+  filter: drop-shadow(0 6px 24px rgba(0, 0, 0, 0.45));
 }
-.hero h1 em, .print-title em { font-style: normal; color: var(--accent); }
 
 .hero-lead {
   max-width: 42rem;
@@ -720,6 +715,8 @@ body.view-open { overflow: hidden; }
   text-transform: uppercase;
   color: var(--muted);
 }
+.view-bar-logo { margin-left: auto; line-height: 0; }
+.view-bar-logo .logo { height: 40px; width: auto; }
 .view-body > .section { padding-top: 2.6rem; }
 
 /* --------------------------------------------------------- 11. Responsive */
@@ -891,13 +888,8 @@ body.view-open { overflow: hidden; }
     margin-bottom: 3mm;
   }
   .hero-kicker span::before { background: var(--copper); }
-  .hero h1, .print-title {
-    font-size: 30pt;
-    line-height: 0.9;
-    margin-bottom: 3mm;
-    text-shadow: none;
-  }
-  .hero h1 em, .print-title em { color: var(--copper) !important; }
+  .hero h1, .print-title { margin-bottom: 3mm; }
+  .hero h1 .logo, .print-title .logo { width: 62mm; filter: none; }
   .hero-lead {
     max-width: 120mm;
     font-size: 10pt;
