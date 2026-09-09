@@ -213,6 +213,9 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
 - In the in-page views the mark first sat at the right of the sticky bar;
   moved on review to a `.view-head` row beside the eyebrow and title. Print
   hides that row on the calendar, whose masthead already carries the mark.
+- The hero `h1` switched to a second mark, the title without "Param"
+  (`assets/title.svg`), since the kicker above it already says "Param
+  Foundation presents". Everywhere else keeps the full logo.
 - **Portability pass.** `tools/sync-images.sh` depended on macOS `sips`; it
   now picks whichever optimiser the machine has (sips, ImageMagick, Python
   Pillow) and otherwise keeps the download full size. `doctor.sh` reports

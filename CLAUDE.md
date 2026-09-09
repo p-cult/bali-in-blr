@@ -43,7 +43,8 @@ dependencies. Hosted on **GitHub Pages**, auto-deploys on push to `main`.
 - `styles.css` — all styling; **design tokens in `:root` at the top**; `@media` at the bottom
 - `main.js` — behaviour + the `CONFIG` data-bridge block at the top
 - `data/events.json`, `data/partners.json` — local stand-ins for Google Sheets
-- `assets/logo.svg` — the festival logo; inlined as the `.logo` component wherever
+- `assets/logo.svg` — the festival logo (`assets/title.svg` is the wordmark alone, used
+  by the hero `h1` only); inlined as the `.logo` component wherever
   the name is a heading or brand mark (see HANDOVER §5)
 - `docs/BRIDGE-SETUP.md` + `docs/apps-script/Code.gs` — the backend bridge (see below)
 - `docs/ANOTHER-MACHINE.md` — working from the drive on a new computer

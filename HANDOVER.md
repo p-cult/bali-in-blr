@@ -62,6 +62,7 @@ docs/
 tools/
   JOURNAL.md        (docs/) Decisions, problems solved, lessons — the project memory.
   assets/logo.svg   The festival logo (source). Inlined in every page; see §5.
+  assets/title.svg  The wordmark alone (no "Param"); the hero h1 uses this one.
   sync-images.sh    Pull Google Drive event images → optimise → assets/drive/.
                     Run when a Drive image link in the sheet is added/changed.
 README.md           Short version of this doc for casual contributors.
@@ -199,7 +200,9 @@ component (see `docs/JOURNAL.md` §2, "Solve at the master stylesheet level").
   site header, hero `h1`, print masthead, footer, the heading row of every
   in-page view (`.view-head`), the privacy header, the admin pages and their
   sign-in card. Sized by its container; fills exposed as `--logo-gold`,
-  `--logo-orange`, `--logo-brown`. Each placement keeps a visually hidden
+  `--logo-orange`, `--logo-brown`. **The hero `h1` alone uses the title mark**
+  (`assets/title.svg`, the wordmark without "Param", class `.logo-title`) since
+  the kicker above it already says who presents. Each placement keeps a visually hidden
   "Bali in Bengaluru" (`.sr-only`) for assistive tech and search. The name
   stays as text inside sentences. To change the artwork, replace the paths in
   every inline copy (they are identical) and in `assets/logo.svg`.

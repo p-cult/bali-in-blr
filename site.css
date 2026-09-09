@@ -125,6 +125,7 @@
 }
 
 .hero h1, .print-title { margin: 0 0 1.2rem; line-height: 0; }
+/* The hero carries the title mark alone (no "Param"); print keeps the full logo. */
 .hero h1 .logo, .print-title .logo {
   width: clamp(220px, 34vw, 420px);
   height: auto;
