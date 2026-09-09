@@ -216,6 +216,14 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
 - The hero `h1` switched to a second mark, the title without "Param"
   (`assets/title.svg`), since the kicker above it already says "Param
   Foundation presents". Everywhere else keeps the full logo.
+- **Programme photos from the client** (Drive folder "Main Page"): three
+  cards re-imaged by the file names' own instructions — Shadow Puppetry
+  (performances), Mask-Making Workshop, and Lecture-Demonstration Sessions,
+  which had carried a flat placeholder since 4 Sep. Saved as site assets
+  (`shadow-puppetry.jpg`, `mask-making.jpg`, `lecture-dibia.jpg`), kept at
+  native size where the source was under 1600px so nothing is upscaled. The
+  old files stay: the masks wall is still the feature band, and the Indian
+  shadow photo is still the calendar fallback.
 - **Portability pass.** `tools/sync-images.sh` depended on macOS `sips`; it
   now picks whichever optimiser the machine has (sips, ImageMagick, Python
   Pillow) and otherwise keeps the download full size. `doctor.sh` reports
