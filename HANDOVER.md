@@ -60,6 +60,7 @@ docs/
   BRIDGE-SETUP.md   Step-by-step Google Sheets + Apps Script setup (the backend).
   apps-script/Code.gs  The Apps Script "bridge" code, ready to paste & deploy.
 tools/
+  JOURNAL.md        (docs/) Decisions, problems solved, lessons — the project memory.
   sync-images.sh    Pull Google Drive event images → optimise → assets/drive/.
                     Run when a Drive image link in the sheet is added/changed.
 README.md           Short version of this doc for casual contributors.
@@ -263,6 +264,10 @@ Param Foundation operates under organisation rules — honour these:
 ---
 
 ## 9. History (how we got here, briefly)
+
+**The full story — every decision, problem solved and lesson learned, in
+order — is in `docs/JOURNAL.md`. Read it; this section is only the opening.**
+
 
 Scaffolded a starter page → built a brochure-style landing page from the festival
 PDF (extracted/optimised 14 photos) → applied a client corrections doc (wording,

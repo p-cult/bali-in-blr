@@ -5,8 +5,11 @@ alwaysApply: true
 
 # Bali in Bengaluru — project rules for AI assistants
 
-**Read `HANDOVER.md` in the repo root first** — it is the complete brief. This file
-is the quick-reference version.
+**Read `HANDOVER.md` in the repo root first** — it is the complete brief — and then
+**`docs/JOURNAL.md`**, the project's memory: every decision, problem solved and
+lesson learned, in order. Do not undo a decision recorded there without raising it.
+This file is the quick-reference version. `AGENTS.md` is the same entry point for
+any other AI tool.
 
 ## What this is
 A campaign hub website for the "Bali in Bengaluru" cultural festival by Param
@@ -48,6 +51,8 @@ real dates from the schedule sheet (`CONFIG.SCHEDULE_URL`), falling back to
   the page `fetch()`es `data/*.json`.
 - Event images: staff paste a Google Drive link in the sheet's image column. Run
   `bash tools/sync-images.sh` and commit `assets/drive/` whenever one is added or changed.
+- When a change solves a real problem or reverses a decision, add an entry to
+  `docs/JOURNAL.md` so the next session inherits it.
 - Commit and push at the end of every change. If a push fails with `HTTP 400` /
   `the remote end hung up unexpectedly`, run `git config http.postBuffer 157286400`
   once (the repo's `.git/config` already sets it on the drive). Newly pushed files

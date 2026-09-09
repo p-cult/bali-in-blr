@@ -19,10 +19,15 @@ the single source of truth; always build forward from the latest `main`.
    ```
 3. Read **`HANDOVER.md`** (the complete brief: architecture, data schemas, design
    system, roadmap, compliance). This CLAUDE.md is only the quick summary.
-4. When you finish a change: commit and push so the next session (anywhere) has it:
+4. Read **`docs/JOURNAL.md`** — the project's memory: every decision, problem
+   solved and lesson learned, in order. Anything odd in the code is explained
+   there. Do not undo a recorded decision without raising it first.
+5. When you finish a change: commit and push so the next session (anywhere) has it:
    ```bash
    git add -A && git commit -m "…" && git push
    ```
+   If the change solved a real problem or reversed a decision, add an entry to
+   `docs/JOURNAL.md` so the next session inherits it.
 
 ## What this is
 Campaign hub website for the **"Bali in Bengaluru"** festival by **Param
@@ -40,7 +45,9 @@ dependencies. Hosted on **GitHub Pages**, auto-deploys on push to `main`.
 - `docs/BRIDGE-SETUP.md` + `docs/apps-script/Code.gs` — the backend bridge (see below)
 - `docs/ANOTHER-MACHINE.md` — working from the drive on a new computer
 - `tools/doctor.sh` — checks a machine can carry on (reads only)
-- `HANDOVER.md` — full brief · `.cursor/rules/` — same rules for Cursor
+- `docs/JOURNAL.md` — decisions, problems solved, lessons (the project's memory)
+- `HANDOVER.md` — full brief · `AGENTS.md` — entry point for any AI tool ·
+  `.cursor/rules/` — same rules for Cursor
 
 ## Architecture (short)
 Data is designed to come from **Google Sheets via a Google Apps Script Web App**
