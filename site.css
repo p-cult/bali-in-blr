@@ -715,8 +715,12 @@ body.view-open { overflow: hidden; }
   text-transform: uppercase;
   color: var(--muted);
 }
-.view-bar-logo { margin-left: auto; line-height: 0; }
-.view-bar-logo .logo { height: 40px; width: auto; }
+/* View heading: the festival mark sits beside the eyebrow + title. */
+.view-head { display: flex; align-items: center; gap: 1.6rem; margin-bottom: 1rem; }
+.view-head-logo { flex: none; line-height: 0; }
+.view-head .logo { height: 76px; width: auto; }
+.view-head .eyebrow { margin-bottom: 0.4rem; }
+.view-head h2 { margin: 0; }
 .view-body > .section { padding-top: 2.6rem; }
 
 /* --------------------------------------------------------- 11. Responsive */
@@ -794,6 +798,8 @@ body.view-open { overflow: hidden; }
 
   .view-bar { padding: 0.75rem 1rem; }
   .view-bar-title { display: none; }
+  .view-head { gap: 1rem; }
+  .view-head .logo { height: 56px; }
 
   .partners-grid.has-partners { grid-template-columns: repeat(2, 1fr); }
 
@@ -978,7 +984,7 @@ body.view-open { overflow: hidden; }
 
   /* The screen heading gives way to the festival masthead on paper. */
   #calendar .eyebrow,
-  #calendar .view-body > .section > .wrap > h2,
+  #calendar .view-head,
   #calendar .section-intro { display: none; }
 
   /* Masthead reuses the home hero's kicker + title styles (.hero-kicker and
