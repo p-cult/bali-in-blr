@@ -196,6 +196,13 @@ python3 -m http.server 8000   # then open http://localhost:8000
 A server is required (not file://) because the page `fetch()`es the JSON in `data/`.
 
 **Deploy:** commit and push to `main`. GitHub Pages rebuilds in ~1–2 min. No CI.
+The CDN can serve a 404 for brand-new files for a minute or so after the build
+reports success — reload before assuming a file is missing.
+
+> **Push fails with `HTTP 400` / `the remote end hung up unexpectedly`:** the
+> payload (usually images) exceeds Git's default HTTP buffer. The repo's
+> `.git/config` already sets `http.postBuffer = 157286400`; on a fresh clone run
+> `git config http.postBuffer 157286400` once.
 
 > **Cache note:** `index.html` links `styles.css?v=hub1` and `main.js?v=hub1`.
 > Bump the `?v=` query when you change CSS/JS so browsers fetch the new version.
