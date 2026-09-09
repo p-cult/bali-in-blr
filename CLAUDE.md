@@ -21,7 +21,8 @@ the single source of truth; always build forward from the latest `main`.
    system, roadmap, compliance). This CLAUDE.md is only the quick summary.
 4. Read **`docs/JOURNAL.md`** — the project's memory: every decision, problem
    solved and lesson learned, in order. Anything odd in the code is explained
-   there. Do not undo a recorded decision without raising it first.
+   there. Do not undo a recorded decision without raising it first. Its
+   private half is in the vault: `bash tools/vault.sh show` → `memory`.
 5. When you finish a change: commit and push so the next session (anywhere) has it:
    ```bash
    git add -A && git commit -m "…" && git push

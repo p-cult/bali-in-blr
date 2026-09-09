@@ -13,7 +13,10 @@ Read, in this order:
 3. **`docs/JOURNAL.md`** — decisions, problems solved and lessons learned,
    in order. This is *why* things are the way they are. Anything that looks
    odd in the code is probably explained here.
-4. **`docs/ANOTHER-MACHINE.md`** — if this is a computer the project has not
+4. **The vault's `memory` section** — the private half of the journal (sheet
+   ids, design board links, people, constraints that cannot be public):
+   `bash tools/vault.sh show`. Needs the key on the external drive.
+5. **`docs/ANOTHER-MACHINE.md`** — if this is a computer the project has not
    been worked on before. Run `bash tools/doctor.sh` (reads only).
 
 Then:

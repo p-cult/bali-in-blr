@@ -11,6 +11,13 @@ or reveals a constraint, add an entry to §1 (chronology) and, if it is a rule
 worth keeping, to §2 (lessons). Full detail is always in `git log` — commit
 messages on this project are written as explanations, not labels.
 
+**Two halves.** This file is the public half. Context that must not sit in a
+public repo — sheet ids, the state of the planning sheet, design board and
+asset links, people, the admin gate — lives in the sealed vault under a
+`memory` key: `bash tools/vault.sh show` (needs the drive's key; see
+`docs/SECURITY.md`). Read both at the start of a session. Private lessons go
+there, then `tools/vault.sh seal` and commit the `.enc`.
+
 ---
 
 ## 0. Where things stand (update this block when the status changes)
@@ -192,7 +199,8 @@ messages on this project are written as explanations, not labels.
   `.git/config` (travels with the drive). Newly pushed files can 404 on the
   CDN for about a minute after the Pages build reports success.
 - This journal and `AGENTS.md` written so every tool and machine starts with
-  the same memory.
+  the same memory. The private half of that memory (what cannot be public)
+  added to the vault under `memory`, so it travels with the drive too.
 
 ---
 

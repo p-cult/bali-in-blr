@@ -8,6 +8,7 @@ alwaysApply: true
 **Read `HANDOVER.md` in the repo root first** — it is the complete brief — and then
 **`docs/JOURNAL.md`**, the project's memory: every decision, problem solved and
 lesson learned, in order. Do not undo a decision recorded there without raising it.
+Its private half is in the sealed vault (`bash tools/vault.sh show`, key `memory`).
 This file is the quick-reference version. `AGENTS.md` is the same entry point for
 any other AI tool.
 
