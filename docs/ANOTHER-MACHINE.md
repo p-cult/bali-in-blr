@@ -75,6 +75,15 @@ on a fresh clone set it once:
 git config http.postBuffer 157286400
 ```
 
+## Not a Mac?
+
+The site and the git workflow need nothing platform-specific. Two tools
+adapt themselves: `tools/sync-images.sh` optimises photos with `sips` on
+macOS, or ImageMagick or Python Pillow elsewhere (without any, it keeps
+photos full size); `tools/build-calendar-pdf.py` finds Chrome, Chromium,
+Edge or Brave, or takes `CHROME=/path`. On Windows, run the scripts from Git
+Bash or WSL. `bash tools/doctor.sh` tells you what it found.
+
 ## If the drive mounts somewhere else
 
 macOS appends a suffix when the name is taken — `/Volumes/bkp-01 1`. The repo

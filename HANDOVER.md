@@ -61,6 +61,7 @@ docs/
   apps-script/Code.gs  The Apps Script "bridge" code, ready to paste & deploy.
 tools/
   JOURNAL.md        (docs/) Decisions, problems solved, lessons — the project memory.
+  assets/logo.svg   The festival logo (source). Inlined in every page; see §5.
   sync-images.sh    Pull Google Drive event images → optimise → assets/drive/.
                     Run when a Drive image link in the sheet is added/changed.
 README.md           Short version of this doc for casual contributors.
@@ -171,20 +172,49 @@ Rows of `{ key, value }` returning only aggregates (e.g. `attended = 540`).
 
 ## 5. Design system
 
-Bold, modern, dark festival aesthetic. **All theme values are CSS custom
-properties in `:root` at the top of `styles.css`** — change them there, not
-inline.
+Charcoal ground, cream ink, festival orange for every action, copper for
+structure. **All theme values are CSS custom properties in `:root` at the top
+of `styles.css`** — change them there, never inline, never component by
+component (see `docs/JOURNAL.md` §2, "Solve at the master stylesheet level").
 
-- Colours: `--bg #0e0f12`, `--accent #ff5a3c` (coral), `--accent-2 #ffd23c`
-  (yellow), text `--ink #f4f2ee`.
-- Type: `--display "Archivo"` (heavy, uppercase headings), `--sans "Space Grotesk"`
-  (body). Loaded from Google Fonts in `<head>`.
-- Reusable patterns (act like components): `.card` (image tile), `.card-plain`
-  (text tile), `.cards-2/.cards-3` (grid wrappers), `.btn`/`.btn-primary`/
-  `.btn-ghost`/`.btn-sm`, `.cal-card` (calendar), `.badge*`, `.chip` (filters),
-  `.signup-form`, `.partner`.
-- Responsive breakpoints are consolidated at the **bottom** of `styles.css`
-  (`@media` 900 / 760 / 520). Mobile nav becomes a hamburger under 760px.
+- **Two stylesheets, two jobs.** `styles.css` is the system: tokens, reset,
+  type, layout, buttons, header, footer, forms, legal page, print base. It
+  stands alone (it is all `privacy.html` loads). `site.css` is this page's
+  treatment: grounds, seams, hero, programme cards, feature band, calendar,
+  partners, support, onboarding carousel, in-page views, and its own
+  responsive and print ladders. One breakpoint ladder per file, widest first.
+- **Colours:** `--bg #1B1D21` charcoal, `--ink #EFE7D8` cream, `--accent
+  #ff5a3c` festival orange (actions only), `--accent-2 #E0A470` polished
+  copper (labels, eyebrows), `--copper #C87941` (rules, edges), `--copper-ox
+  #8E4A24` (cream grounds), `--rose #C9A9A2`, `--oxblood #782828` and
+  `--maroon #500000` (section grounds). Every colour on every ground is
+  measured; 4.5:1 is the floor.
+- **Type:** `--display "Archivo"` at weight 800, normal width, uppercase for
+  headings (the briefed face, Monument Extended, is unlicensed — see the
+  journal); `--sans "Instrument Sans"` for body. Google Fonts, loaded in
+  `<head>`.
+- **The festival logo** (`assets/logo.svg`, by the Foundation: "Param" in
+  brown over "BALI IN BENGALURU" in yellow and orange) is **inlined** as a
+  `.logo` component wherever the festival name is a heading or brand mark:
+  site header, hero `h1`, print masthead, footer, the heading row of every
+  in-page view (`.view-head`), the privacy header, the admin pages and their
+  sign-in card. Sized by its container; fills exposed as `--logo-gold`,
+  `--logo-orange`, `--logo-brown`. Each placement keeps a visually hidden
+  "Bali in Bengaluru" (`.sr-only`) for assistive tech and search. The name
+  stays as text inside sentences. To change the artwork, replace the paths in
+  every inline copy (they are identical) and in `assets/logo.svg`.
+- **Components:** `.btn`/`.btn-primary`/`.btn-ghost`/`.btn-sm`, `.eyebrow`,
+  `.card` (programme tile), `.cal-event` (calendar row: poster, date chip,
+  status, occupancy), `.chip` (filters), `.signup-form` + `.field` +
+  `.check`, `.onboard-*` (question carousel), `.page-view` / `.view-bar` /
+  `.view-head` / `.view-body` (in-page views), `.partner`, `.seam-*`
+  (pattern joins), `.print-only`.
+- **Print** is its own edition: cream sheet, charcoal type, oxidised copper
+  rules, columns where they earn it; the open view prints, not the page
+  behind it. Breathing space is content padding, not `@page` margins (the
+  browser dialog overrides those).
+- Responsive: `styles.css` ladder 900 / 760 / 520; `site.css` has its own.
+  Mobile nav is a hamburger under 760px.
 
 ---
 

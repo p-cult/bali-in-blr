@@ -210,6 +210,14 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
   `.sr-only` "Bali in Bengaluru" so assistive tech and SEO see the name.
   The viewBox was tightened to the artwork bounds; the source file is kept at
   `assets/logo.svg`. `v1.html` (the frozen backup) is untouched.
+- In the in-page views the mark first sat at the right of the sticky bar;
+  moved on review to a `.view-head` row beside the eyebrow and title. Print
+  hides that row on the calendar, whose masthead already carries the mark.
+- **Portability pass.** `tools/sync-images.sh` depended on macOS `sips`; it
+  now picks whichever optimiser the machine has (sips, ImageMagick, Python
+  Pillow) and otherwise keeps the download full size. `doctor.sh` reports
+  which one it found. HANDOVER §5 rewritten to match the real tokens and
+  components (it still described the coral/yellow, Space Grotesk era).
 
 ---
 
@@ -234,6 +242,10 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
   reads 6 s. Duplicate checks are fail-open.
 
 **Deploy and infrastructure**
+- Nothing in `tools/` may assume macOS. Prefer a chain of fallbacks (as the
+  image sync does) over a hard dependency, and let `doctor.sh` say what it
+  found. The site itself is static HTML/CSS/JS and runs anywhere a browser
+  does; only the tooling can drift.
 - Never push a `CNAME` before its DNS record resolves.
 - Image-heavy pushes need `git config http.postBuffer 157286400`.
 - The CDN lags the Pages build by up to a minute; reload before debugging.

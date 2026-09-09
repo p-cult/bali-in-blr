@@ -16,8 +16,11 @@
 # (see toImageUrl). So the sheet keeps the Drive link; the site serves the
 # local optimised copy. Re-running picks up any changed photo.
 #
-# Dependency-free: uses curl + macOS `sips`. Drive files must be shared
-# "Anyone with the link".
+# Dependency-free on macOS (curl + `sips`). Elsewhere it uses whichever of
+# these is present, in order: ImageMagick (`magick` / `convert`), Python 3
+# with Pillow, or — with none of them — it keeps the download as-is, full
+# size, so the site still works and you can optimise later. Drive files must
+# be shared "Anyone with the link".
 # ============================================================================
 set -euo pipefail
 
@@ -28,8 +31,52 @@ OUTDIR="assets/drive"
 
 cd "$(dirname "$0")/.."
 
-command -v sips >/dev/null || { echo "Error: sips not found (this script needs macOS)."; exit 1; }
+command -v curl >/dev/null || { echo "Error: curl not found."; exit 1; }
 mkdir -p "$OUTDIR"
+
+# Pick an image tool for this machine. Each optimise_* takes (in, out) and
+# writes a JPEG no larger than MAXDIM on its long side at QUALITY.
+TOOL=""
+if command -v sips >/dev/null 2>&1; then TOOL="sips"
+elif command -v magick >/dev/null 2>&1; then TOOL="magick"
+elif command -v convert >/dev/null 2>&1 && convert -version 2>/dev/null | grep -q ImageMagick; then TOOL="convert"
+elif python3 -c 'import PIL' >/dev/null 2>&1; then TOOL="pillow"
+fi
+[ -n "$TOOL" ] && echo "Optimising with: $TOOL" || echo "No image tool found (sips / ImageMagick / Pillow): images will be kept full size."
+
+is_image() {
+  case "$TOOL" in
+    sips)    sips -g pixelWidth "$1" >/dev/null 2>&1 ;;
+    magick)  magick identify "$1" >/dev/null 2>&1 ;;
+    convert) identify "$1" >/dev/null 2>&1 ;;
+    pillow)  python3 -c 'import sys; from PIL import Image; Image.open(sys.argv[1]).verify()' "$1" >/dev/null 2>&1 ;;
+    *)       head -c 4 "$1" | grep -q $'\xff\xd8\|\x89PNG\|RIFF\|GIF8' ;;
+  esac
+}
+optimise() {  # in out
+  case "$TOOL" in
+    sips)    cp "$1" "$2" && sips -Z "$MAXDIM" -s format jpeg -s formatOptions "$QUALITY" "$2" >/dev/null ;;
+    magick)  magick "$1" -auto-orient -resize "${MAXDIM}x${MAXDIM}>" -quality "$QUALITY" "jpg:$2" ;;
+    convert) convert "$1" -auto-orient -resize "${MAXDIM}x${MAXDIM}>" -quality "$QUALITY" "jpg:$2" ;;
+    pillow)  python3 - "$1" "$2" "$MAXDIM" "$QUALITY" <<'PY'
+import sys; from PIL import Image, ImageOps
+im=ImageOps.exif_transpose(Image.open(sys.argv[1])).convert("RGB")
+im.thumbnail((int(sys.argv[3]),int(sys.argv[3])))
+im.save(sys.argv[2],"JPEG",quality=int(sys.argv[4]),optimize=True)
+PY
+    ;;
+    *)       cp "$1" "$2" ;;
+  esac
+}
+dims() {
+  case "$TOOL" in
+    sips)    sips -g pixelWidth -g pixelHeight "$1" | awk '/pixelWidth/{w=$2}/pixelHeight/{h=$2}END{print w"x"h}' ;;
+    magick)  magick identify -format '%wx%h' "$1" ;;
+    convert) identify -format '%wx%h' "$1" ;;
+    pillow)  python3 -c 'import sys; from PIL import Image; print("%dx%d"%Image.open(sys.argv[1]).size)' "$1" ;;
+    *)       echo "as downloaded" ;;
+  esac
+}
 
 echo "Reading schedule sheet…"
 tmp="$(mktemp)"
@@ -53,13 +100,11 @@ for id in $ids; do
   if ! curl -fsSL --max-time 60 "https://drive.google.com/thumbnail?id=${id}&sz=w2000" -o "$raw"; then
     echo "  ✗ ${id}  — download failed (is it shared 'Anyone with the link'?)"; rm -f "$raw"; fail=$((fail+1)); continue
   fi
-  if ! sips -g pixelWidth "$raw" >/dev/null 2>&1; then
+  if ! is_image "$raw"; then
     echo "  ✗ ${id}  — not a readable image (private, or needs manual export)"; rm -f "$raw"; fail=$((fail+1)); continue
   fi
-  cp "$raw" "$out"; rm -f "$raw"
-  sips -Z "$MAXDIM" -s format jpeg -s formatOptions "$QUALITY" "$out" >/dev/null
-  dim="$(sips -g pixelWidth -g pixelHeight "$out" | awk '/pixelWidth/{w=$2}/pixelHeight/{h=$2}END{print w"x"h}')"
-  echo "  ✓ ${id}  → ${out}  (${dim}, $(du -h "$out" | cut -f1))"
+  optimise "$raw" "$out"; rm -f "$raw"
+  echo "  ✓ ${id}  → ${out}  ($(dims "$out"), $(du -h "$out" | cut -f1))"
   ok=$((ok+1))
 done
 

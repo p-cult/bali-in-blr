@@ -23,6 +23,8 @@ Live: https://bali-in-blr.paramfoundation.org
 - `styles.css` — all styling; **design tokens are in `:root` at the top**; responsive `@media` at the bottom
 - `main.js` — behaviour + the `CONFIG` data-bridge object at the very top
 - `data/events.json`, `data/partners.json` — local stand-ins for Google Sheets
+- `assets/logo.svg` — the festival logo; inlined as the `.logo` component wherever the
+  name is a heading or brand mark (HANDOVER §5)
 - `docs/BRIDGE-SETUP.md`, `docs/apps-script/Code.gs` — the backend bridge
 - `tools/sync-images.sh` — pulls Google Drive event images from the sheet into `assets/drive/`
 - `docs/ANOTHER-MACHINE.md`, `tools/doctor.sh` — working from the drive on a new computer
@@ -45,7 +47,8 @@ real dates from the schedule sheet (`CONFIG.SCHEDULE_URL`), falling back to
   page — aggregates only. Keep the signup consent checkbox and purpose text (DPDP Act 2023).
 - Prefer the Google + Zoho stack for any new integrations.
 - Conventions: dates `DD MMM YYYY`, currency INR (₹), Indian English. Festival title
-  is exactly "Bali in Bengaluru".
+  is exactly "Bali in Bengaluru". As a heading or brand mark it is the inline logo
+  with `.sr-only` text; inside a sentence it stays text.
 - After changing CSS/JS, bump the `?v=` query on their `<link>`/`<script>` tags in
   `index.html` for cache-busting.
 - Run locally with a server (`python3 -m http.server 8000`), not `file://`, because

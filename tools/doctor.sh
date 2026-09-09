@@ -58,6 +58,13 @@ if [ -n "$CHROME" ]; then ok "Chrome — $CHROME"
 else note "No Chrome found" \
       "Only needed to rebuild the calendar PDF. Install Chrome, or set CHROME=/path/to/chrome."; fi
 
+IMG=""
+for c in sips magick convert; do command -v "$c" >/dev/null 2>&1 && { IMG="$c"; break; }; done
+[ -z "$IMG" ] && python3 -c 'import PIL' >/dev/null 2>&1 && IMG="python3 + Pillow"
+if [ -n "$IMG" ]; then ok "Image optimiser — $IMG"
+else note "No image optimiser (sips / ImageMagick / Pillow)" \
+      "Only needed by tools/sync-images.sh. Without one, synced Drive photos stay full size. Install ImageMagick, or: pip3 install Pillow"; fi
+
 # ----------------------------------------------------------------- the repo
 head_ "Repository"
 if git rev-parse --git-dir >/dev/null 2>&1; then ok "Git history is present on the drive"

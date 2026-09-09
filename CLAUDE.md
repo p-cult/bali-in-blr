@@ -43,6 +43,8 @@ dependencies. Hosted on **GitHub Pages**, auto-deploys on push to `main`.
 - `styles.css` — all styling; **design tokens in `:root` at the top**; `@media` at the bottom
 - `main.js` — behaviour + the `CONFIG` data-bridge block at the top
 - `data/events.json`, `data/partners.json` — local stand-ins for Google Sheets
+- `assets/logo.svg` — the festival logo; inlined as the `.logo` component wherever
+  the name is a heading or brand mark (see HANDOVER §5)
 - `docs/BRIDGE-SETUP.md` + `docs/apps-script/Code.gs` — the backend bridge (see below)
 - `docs/ANOTHER-MACHINE.md` — working from the drive on a new computer
 - `tools/doctor.sh` — checks a machine can carry on (reads only)
@@ -69,7 +71,8 @@ the signup form is in demo mode. To go live, set `CONFIG.BRIDGE_URL` and repoint
   aggregates only. Keep the signup consent + purpose text (DPDP Act 2023).
 - Prefer the Google + Zoho stack for new integrations.
 - Conventions: dates `DD MMM YYYY`, INR (₹), Indian English. Title is exactly
-  "Bali in Bengaluru".
+  "Bali in Bengaluru". Where that name is a heading or brand mark it is the
+  inline logo with `.sr-only` text, not typed text; inside a sentence it is text.
 - After editing CSS/JS, bump the `?v=` query on their tags in `index.html`.
 
 ## Run locally
