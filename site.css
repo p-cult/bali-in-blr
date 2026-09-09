@@ -138,6 +138,16 @@
   font-size: clamp(1.05rem, 2vw, 1.28rem);
   color: rgba(244, 242, 238, 0.88);
 }
+.hero-lead + .hero-tagline { margin-top: -1.3rem; }
+.hero-tagline {
+  margin: 0 0 1.8rem;
+  font-family: var(--display);
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent-2);
+}
 
 .hero-meta {
   display: flex;
