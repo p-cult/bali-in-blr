@@ -35,7 +35,12 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
 - **Admin:** `/admin` hub with a staff sign-in gate and the Campaign Link
   Builder (UTM + ref links, QR minting, recorded to the sheet's `Mint` tab).
 - **Images:** event photos come from Google Drive links in the sheet, synced
-  to `assets/drive/` by `tools/sync-images.sh`.
+  to `assets/drive/` by `tools/sync-images.sh`. Programme cards carry the
+  client's own photos (all seven have real images; no placeholder remains).
+- **Brand:** the festival logo (`assets/logo.svg`) is inlined wherever the
+  name is a heading or brand mark; the hero uses the title mark
+  (`assets/title.svg`). Hero copy and numbers (18 days, 18 events, 15
+  venues) are the client's, applied 9 Sep from their corrections document.
 - **Open:** ticketing platform not chosen (Phase 3); post-event media/gallery
   (Phase 4); an internal project-report page (see §3); the Monument display
   font is not licensed (see §2).
@@ -227,6 +232,17 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
   shadow photo is still the calendar fallback. Lesson: when reading a Drive
   folder page, names are HTML-escaped (`&amp;`); the fourth file was missed
   on the first pass for exactly that reason.
+- **Client copy corrections** arrived as an RTF with the old text struck
+  through and the new text beside it (`site-change-01`). Applied verbatim,
+  nothing invented: new hero lead ("Bringing Balinese traditions and
+  conversation to Bengaluru…"), a tagline line "Sharing Stories | Connecting
+  Cultures" (new `.hero-tagline`, small uppercase copper), hero numbers 18
+  days / 18 events / 15 venues, and "Founded on Culture, Science, History and
+  Technology together". The print masthead's own lead was not struck, so it
+  stayed.
+- The logo rule was then written into every instruction surface (CLAUDE.md,
+  AGENTS.md, HANDOVER §5 and §8, Cursor rules, journal §2) so any tool reads
+  the same instruction.
 - **Portability pass.** `tools/sync-images.sh` depended on macOS `sips`; it
   now picks whichever optimiser the machine has (sips, ImageMagick, Python
   Pillow) and otherwise keeps the download full size. `doctor.sh` reports
@@ -294,6 +310,14 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
   palette without showing a preview first.
 
 **Working practice**
+- Client changes arrive as documents with strikethrough (old) beside new
+  text. Apply them verbatim and only where struck; do not improve, extend or
+  invent copy around them. Anything not struck stays.
+- Client photos arrive in a Drive folder, named for where they go ("… -
+  under workshops"). Follow the name. When reading a folder page, count file
+  ids against names: names are HTML-escaped and a `&` in one hid a file once.
+- Never upscale a client photo; keep sources under the 1600px cap at native
+  size.
 - GitHub `main` is the source of truth; the drive is how the working copy
   and the vault key travel. Pull first, push last, always.
 - Commit messages explain the reasoning. They are the audit trail this
