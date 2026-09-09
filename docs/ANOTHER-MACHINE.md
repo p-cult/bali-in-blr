@@ -66,6 +66,15 @@ Push at the end of a session. GitHub, not the drive, is the source of truth: if
 the drive and GitHub ever disagree, GitHub wins. The drive is how the working
 copy and the key travel, not a substitute for pushing.
 
+If a push with images fails with `HTTP 400` / `the remote end hung up
+unexpectedly`, Git's default HTTP buffer is too small for the payload. The
+repo's own `.git/config` already raises it (and travels with the drive), but
+on a fresh clone set it once:
+
+```bash
+git config http.postBuffer 157286400
+```
+
 ## If the drive mounts somewhere else
 
 macOS appends a suffix when the name is taken — `/Volumes/bkp-01 1`. The repo
