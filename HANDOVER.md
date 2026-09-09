@@ -282,6 +282,9 @@ Param Foundation operates under organisation rules — honour these:
 - **Formatting:** dates `DD MMM YYYY`; currency INR (₹); Indian English.
 - **Branding:** the org is "Param Foundation" (PFT internally); galleries are
   "PARSEC". Festival title is **"Bali in Bengaluru"** (the brochure spelling).
+  As a heading or brand mark the title is the inline logo (`assets/logo.svg`;
+  the hero `h1` uses `assets/title.svg`) with `.sr-only` text; in a sentence
+  it is text. See §5.
 - **Content source of truth:** the festival brochure PDF (`Bali in Bengaluru.pdf`,
   held by the client) and a client "corrections" RTF already applied. Current copy
   reflects the latest corrections.

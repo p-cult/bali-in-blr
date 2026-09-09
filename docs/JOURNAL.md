@@ -267,6 +267,14 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
   single-class rules; use element+class and tie-break on order. `.btn`
   setting `display` overrides `[hidden]`. Grid tracks should be
   `minmax(0, 1fr)` so a long word cannot push a card off the sheet.
+- **The festival name as a mark.** Wherever "Bali in Bengaluru" stands as a
+  heading or brand mark it is the inline SVG logo (`assets/logo.svg`) with a
+  visually hidden `.sr-only` "Bali in Bengaluru" beside it; the hero `h1`
+  alone uses the title mark (`assets/title.svg`, no "Param") because the
+  kicker above it already names the presenter. Inside a sentence the name
+  stays as text. Never type the name as display type again, never load the
+  SVG as an `<img>`, and change the artwork in every inline copy and the
+  asset together (they are identical).
 - Monument Extended is the briefed display face but is **commercial and
   unlicensed**; it cannot be self-hosted on a public site or sit in a public
   repo. Archivo ExtraBold is the stand-in. When licensed: files to

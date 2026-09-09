@@ -73,7 +73,9 @@ the signup form is in demo mode. To go live, set `CONFIG.BRIDGE_URL` and repoint
 - Prefer the Google + Zoho stack for new integrations.
 - Conventions: dates `DD MMM YYYY`, INR (₹), Indian English. Title is exactly
   "Bali in Bengaluru". Where that name is a heading or brand mark it is the
-  inline logo with `.sr-only` text, not typed text; inside a sentence it is text.
+  inline logo (`assets/logo.svg`; the hero `h1` alone uses `assets/title.svg`)
+  with `.sr-only` text, never typed display text or an `<img>`; inside a
+  sentence it is text.
 - After editing CSS/JS, bump the `?v=` query on their tags in `index.html`.
 
 ## Run locally

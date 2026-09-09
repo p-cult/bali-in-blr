@@ -49,7 +49,9 @@ real dates from the schedule sheet (`CONFIG.SCHEDULE_URL`), falling back to
 - Prefer the Google + Zoho stack for any new integrations.
 - Conventions: dates `DD MMM YYYY`, currency INR (₹), Indian English. Festival title
   is exactly "Bali in Bengaluru". As a heading or brand mark it is the inline logo
-  with `.sr-only` text; inside a sentence it stays text.
+  (`assets/logo.svg`; the hero `h1` alone uses `assets/title.svg`) with `.sr-only`
+  text; inside a sentence it stays text. Never type it as display type or load it
+  as an `<img>`.
 - After changing CSS/JS, bump the `?v=` query on their `<link>`/`<script>` tags in
   `index.html` for cache-busting.
 - Run locally with a server (`python3 -m http.server 8000`), not `file://`, because

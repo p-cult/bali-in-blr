@@ -29,6 +29,16 @@ GitHub `main` is the single source of truth. Do not start from scratch, do not
 rebuild what exists, and do not "fix" a decision the journal records as
 deliberate without raising it first.
 
+Rules that every tool must keep (the full set is in `CLAUDE.md`):
+
+- Vanilla HTML/CSS/JS, no dependencies, no build step. Styling through the
+  tokens and components in `styles.css` / `site.css`, never inline or patched.
+- PII only in approved Google Workspace systems; aggregates only on the site.
+- The festival name as a heading or brand mark is the inline logo
+  (`assets/logo.svg`; the hero `h1` uses `assets/title.svg`) with `.sr-only`
+  text. In a sentence it is text.
+- Bump the `?v=` cache tags after touching CSS/JS. Pull first, push last.
+
 When you finish a change, commit with a message that explains the reasoning,
 push, and — if the change solved a real problem or reversed a decision — add
 an entry to `docs/JOURNAL.md` so the next tool inherits it.
