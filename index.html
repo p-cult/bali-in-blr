@@ -20,7 +20,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@800&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=hub34" />
+  <link rel="stylesheet" href="styles.css?v=hub35" />
   <link rel="stylesheet" href="site.css?v=20" />
 </head>
 <body>
@@ -497,6 +497,20 @@
     </div>
     <p class="footer-copy">&copy; <span id="year"></span> Param Foundation. All rights reserved.</p>
   </footer>
-  <script src="main.js?v=hub46"></script>
+  <!-- Browsers too old to run main.js get a plain notice instead of dead buttons.
+       Written in ES5 on purpose. Tests the newest syntax main.js relies on. -->
+  <script>
+    (function () {
+      try { new Function("async function f(){ var o={...{}}; await 0; }"); }
+      catch (e) {
+        var n = document.createElement("div");
+        n.className = "old-browser";
+        n.innerHTML = "This browser is too old to run this site. Please update Chrome, or call us on " +
+          "<a href='tel:+919035034725'>+91 90350 34725</a> to register.";
+        document.body.insertBefore(n, document.body.firstChild);
+      }
+    })();
+  </script>
+  <script src="main.js?v=hub47"></script>
 </body>
 </html>

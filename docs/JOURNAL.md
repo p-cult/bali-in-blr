@@ -249,6 +249,31 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
   which one it found. HANDOVER §5 rewritten to match the real tokens and
   components (it still described the coral/yellow, Space Grotesk era).
 
+### 10 Sep 2026 — Android reports: weak networks, www, old browsers
+- Two screenshots from Android phones. One showed the calendar view with
+  "The calendar will appear here soon" on weak LTE: that text only appeared
+  when *both* the sheet and the local file failed, and they were fetched one
+  after the other with 6 s each, so a stalled connection left nothing. Fixed
+  in code: the two sources are now requested together (sheet wins if usable),
+  the last successfully loaded schedule is kept in `localStorage`
+  (`bib.events.v1`) and shown when the network fails, and the failure state
+  is an honest "check your connection" with a working **Try again** link.
+  Verified offline with and without the cache.
+- The other showed `DNS_PROBE_FINISHED_NXDOMAIN` for
+  `www.bali-in-blr.paramfoundation.org`. There is no www record; Chrome tries
+  a www variant only after the bare host fails to resolve, so this was most
+  likely a flaky lookup on mobile data surfacing as a www error. The fix is
+  in DNS (Cloudflare holds the zone: CNAME `www.bali-in-blr` + redirect rule,
+  and proxying the bare host would also cure the old-Android certificate
+  issue), which the client chose **not** to do for now. Nothing in the repo
+  ever uses www.
+- Browser-support audit: `main.js` needs ES2018 (object spread; Chrome 60+),
+  `admin/auth.js` ES2017. Old Chrome/WebView would reject the whole file and
+  leave dead buttons. Added an ES5 inline check before `main.js` that shows a
+  plain "browser too old, update Chrome or call us" bar instead. The HTTPS
+  chain (Let's Encrypt via ISRG Root X1) is not trusted by Android ≤ 7.0; only
+  a proxy in front of GitHub Pages can change that.
+
 ---
 
 ## 2. Lessons and standing rules (the "why" behind the rules)
@@ -272,6 +297,12 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
   reads 6 s. Duplicate checks are fail-open.
 
 **Deploy and infrastructure**
+- Assume mobile data is bad. Every remote read needs a bounded timeout, a
+  parallel local fallback, a cached last-good copy, and a retry the visitor
+  can press. "Will appear soon" is never an acceptable failure state.
+- Do not publish or type a `www.` form of the site address; it does not
+  exist in DNS. If a www error appears on a phone, the bare lookup failed
+  first.
 - Nothing in `tools/` may assume macOS. Prefer a chain of fallbacks (as the
   image sync does) over a hard dependency, and let `doctor.sh` say what it
   found. The site itself is static HTML/CSS/JS and runs anywhere a browser
@@ -340,3 +371,9 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
   Must be private or access-controlled, never a section of the public hub.
 - **Calendar PDF download** is hidden on the site for now.
 - **Monument licence** purchase, then the one-token font switch.
+- **DNS hardening (client deferred, 10 Sep 2026):** on Cloudflare, add
+  `www.bali-in-blr` CNAME + redirect to the bare host, and proxy the bare
+  host so old Android trusts the certificate. Needs the domain admin.
+- **Legacy JS build:** if old Android browsers keep appearing in reports, add
+  a tool script that emits an ES2015 `main.legacy.js` and load it via the
+  `nomodule` pattern. Not done; the old-browser notice covers it for now.

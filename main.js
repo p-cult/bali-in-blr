@@ -506,20 +506,39 @@ function parseSheetDate(v) {
   return ""; // unreadable: treated as "date to be announced"
 }
 
+/* The last schedule this browser managed to load. On a weak mobile connection
+   both live sources can stall; showing yesterday's dates beats showing nothing. */
+const EVENTS_CACHE_KEY = "bib.events.v1";
+function cacheEvents(events) {
+  try { localStorage.setItem(EVENTS_CACHE_KEY, JSON.stringify(events)); } catch (e) { /* private mode, quota */ }
+}
+function cachedEvents() {
+  try {
+    const raw = localStorage.getItem(EVENTS_CACHE_KEY);
+    const events = raw ? JSON.parse(raw) : null;
+    return Array.isArray(events) && events.length ? events : null;
+  } catch (e) { return null; }
+}
+
 async function loadEvents() {
-  // The sheet is the source of truth once it has rows in it.
-  if (CONFIG.SCHEDULE_URL) {
-    try {
-      const res = await fetchWithTimeout(CONFIG.SCHEDULE_URL, { cache: "no-store" });
-      if (res.ok) {
-        const events = parseSchedule(await res.text());
-        if (events.length) return events;
-      }
-    } catch (err) {
-      /* fall through to the file below */
-    }
-  }
-  return loadJSON(SOURCES.events);
+  // The sheet is the source of truth once it has rows in it. The sheet and the
+  // local file are requested together, so the fallback never queues behind a
+  // stalled request to Google; whichever is usable wins, sheet first.
+  const fromSheet = CONFIG.SCHEDULE_URL
+    ? fetchWithTimeout(CONFIG.SCHEDULE_URL, { cache: "no-store" }, 9000)
+        .then((res) => (res.ok ? res.text() : Promise.reject(new Error("HTTP " + res.status))))
+        .then((text) => { const ev = parseSchedule(text); if (!ev.length) throw new Error("empty"); return ev; })
+    : Promise.reject(new Error("no sheet"));
+  const fromFile = loadJSON(SOURCES.events);
+
+  let events = null;
+  try { events = await fromSheet; } catch (e) { /* try the file */ }
+  if (!events) { try { events = await fromFile; } catch (e) { /* try the cache */ } }
+  if (events && events.length) { cacheEvents(events); return events; }
+
+  const cached = cachedEvents();
+  if (cached) return cached;
+  throw new Error("No schedule available");
 }
 
 /* ---------- Calendar: the event module ----------
@@ -759,7 +778,16 @@ async function loadCalendar() {
   try {
     events = await loadEvents();
   } catch (e) {
-    grid.innerHTML = '<p class="loading">The calendar will appear here soon.</p>';
+    // Every source failed — almost always the connection, not the data.
+    grid.innerHTML =
+      '<p class="loading">The calendar could not load — please check your connection. ' +
+      '<a class="text-link" href="#calendar" data-cal-retry>Try again</a></p>';
+    const retry = grid.querySelector("[data-cal-retry]");
+    if (retry) retry.addEventListener("click", (ev) => {
+      ev.preventDefault();
+      grid.innerHTML = '<p class="loading">Loading the calendar…</p>';
+      loadCalendar();
+    });
     return;
   }
 

@@ -311,6 +311,15 @@ p.section-intro { max-width: 44rem; color: var(--muted); font-size: 1.05rem; }
 .logo-orange { fill: var(--logo-orange, #ff5a3d); }
 .logo-brown  { fill: var(--logo-brown,  #b68367); }
 
+.old-browser {
+  padding: 0.9rem var(--gutter);
+  background: var(--accent);
+  color: var(--bg);
+  font-size: 0.95rem;
+  text-align: center;
+}
+.old-browser a { color: inherit; font-weight: 700; }
+
 .sr-only {
   position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
   overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
