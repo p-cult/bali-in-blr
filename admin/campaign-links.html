@@ -258,7 +258,21 @@ function render(){
     ).join("") + '</tbody></table></div>';
 }
 
-/* POST one link to the master 'links' tab. Returns true on confirmed save. */
+/* Ask the sheet whether a URL is already recorded. GET is readable in every
+   browser even when the POST reply is not, so this is the source of truth. */
+async function sheetHas(url){
+  try {
+    const res = await fetch(BRIDGE_URL + "?sheet=links", {cache:"no-store"});
+    const rows = await res.json();
+    return Array.isArray(rows) && rows.some(o => (o.URL || o.url || "") === url);
+  } catch(e){ return false; }
+}
+
+/* POST one link to the master 'links' tab. Returns true on confirmed save.
+   Some browsers cannot read Google's redirected reply to a cross-origin POST
+   even though the row was written — the signup form hit the same thing. So a
+   reply we cannot read is followed by a check against the sheet, and the
+   link is only left "pending" if it is genuinely not there. */
 async function postLink(r){
   const body = new URLSearchParams({
     mode:"link", user:ADMIN_USER, key:ADMIN_KEY, code:r.code, destination:r.dest, source:r.source, medium:r.medium,
@@ -267,8 +281,9 @@ async function postLink(r){
   try {
     const res = await fetch(BRIDGE_URL, {method:"POST", headers:{"Content-Type":"application/x-www-form-urlencoded"}, body});
     const out = await res.json();
-    return !!(out && out.ok === true);
-  } catch(e){ return false; }
+    if (out && out.ok === true) return true;
+  } catch(e){ /* reply unreadable or network down — verify below */ }
+  return sheetHas(r.url);
 }
 
 $("add").addEventListener("click", async () => {
@@ -296,9 +311,12 @@ $("listWrap").addEventListener("click", async (e) => {
 });
 
 $("sync").addEventListener("click", async () => {
-  let done=0;
-  for (const r of LINKS){ if(!r.synced){ r.synced = await postLink(r); if(r.synced) done++; } }
-  save(); render(); toast(done ? ("Synced "+done+" to the sheet") : "Sheet still not reachable");
+  toast("Checking the sheet…");
+  await pullLinks();                       // anything already there is marked synced
+  let done=0, left=0;
+  for (const r of LINKS){ if(!r.synced){ r.synced = await postLink(r); r.synced ? done++ : left++; } }
+  save(); render();
+  toast(left ? ("Synced "+done+"; "+left+" still not reachable") : (done ? "Synced "+done+" to the sheet" : "Everything is already in the sheet"));
 });
 
 function toCsv(){

@@ -274,6 +274,20 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
   chain (Let's Encrypt via ISRG Root X1) is not trusted by Android ≤ 7.0; only
   a proxy in front of GitHub Pages can change that.
 
+- **"Generated link not syncing."** Checked the bridge: a POST from the live
+  origin saves and answers `ok:true`, and the Mint tab already held the
+  staff's links, including one minted that morning. So rows land; what fails
+  is *reading the reply* in some browsers (Google answers a cross-origin
+  POST with a redirect, and not every browser lets the page read the
+  result), which left links marked "pending". Same shape as the signup
+  false-duplicate of 4 Sep. Fix in the admin page: an unreadable reply is
+  followed by a GET of the Mint tab, and the link is marked synced if its
+  URL is there; **Sync unsaved** now pulls the sheet first, then posts only
+  what is genuinely missing. Note: `curl -L` turns Google's 302 into a 405,
+  so never diagnose the bridge with curl alone — POST from a browser.
+  Diagnostic rows (codes starting `zz-`, one with a blank code, URLs with
+  `zzdiag`) were left in the Mint tab and should be deleted by hand.
+
 ---
 
 ## 2. Lessons and standing rules (the "why" behind the rules)
@@ -289,6 +303,10 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
 - Never let the form claim a save that the bridge has not confirmed.
 
 **Bridge and Apps Script**
+- A POST reply from Apps Script may be unreadable in the browser even
+  though the row was written. Never leave a record "pending" on that alone:
+  confirm with a GET (Receipts for signups, the Mint tab for links). And do
+  not diagnose POSTs with `curl -L`; it turns Google's redirect into a 405.
 - Do not name a request parameter `sid`. Google rejects it before your code
   runs, with a misleading error and no execution log.
 - Any new field the bridge requires needs a **redeploy**; ship the front end
