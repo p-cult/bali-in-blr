@@ -55,6 +55,27 @@ const MASTER_TAB = 'Master';
 const LOG_TAB = 'Receipts';
 const LOG_HEADERS = ['Submission ID', 'Timestamp', 'Flavour', 'Result'];
 
+// One display format for every date/time the bridge writes. Without it each
+// cell takes whatever formatting that row happened to carry, so a column could
+// switch style part-way down. Google Sheets syntax; shows "11 Sep 2026, 2:05 PM".
+const STAMP_FORMAT = 'dd mmm yyyy, h:mm am/pm';
+
+/** Apply STAMP_FORMAT to whole columns (1-based), header row excluded. Also
+ *  repairs rows written before this existed. */
+function stamp(sh, cols) {
+  const rows = sh.getMaxRows() - 1;
+  if (rows < 1) return;
+  cols.forEach(function (c) { sh.getRange(2, c, rows, 1).setNumberFormat(STAMP_FORMAT); });
+}
+
+/** Run once from the Apps Script editor to fix every existing date column now. */
+function fixDateFormats() {
+  const ss = book();
+  const plan = [[MASTER_TAB, [1, 7]], [LOG_TAB, [2]], [LINK_TAB, [2]]];
+  Object.keys(FLAVOURS).forEach(function (k) { plan.push([FLAVOURS[k].tab, [1]]); });
+  plan.forEach(function (p) { const sh = ss.getSheetByName(p[0]); if (sh) stamp(sh, p[1]); });
+}
+
 /* Master store of minted campaign links. No personal data — campaign URLs and
    their tags only. Fed by the Campaign Link Builder (mode=link). */
 const LINK_TAB = 'Mint';
@@ -181,6 +202,7 @@ function doPost(e) {
     flavour.fields.forEach(function (f) { row.push(clean(p[f])); });
     row.push(ref, clean(p.consent), clean(p.age18));
     sh.appendRow(row);
+    stamp(sh, [1]);
 
     // 3. Upsert the person into Master.
     // Source reads "Volunteering (instagram-bio)" when a campaign link was used.
@@ -201,7 +223,9 @@ function doPost(e) {
 /** Record the outcome against the submission id. No personal data here. */
 function logReceipt(ss, sid, flavourKey, result) {
   if (!sid) return;
-  tab(ss, LOG_TAB, LOG_HEADERS).appendRow([sid, new Date(), flavourKey, result]);
+  const sh = tab(ss, LOG_TAB, LOG_HEADERS);
+  sh.appendRow([sid, new Date(), flavourKey, result]);
+  stamp(sh, [2]);
 }
 
 /** Look up a receipt by submission id. Returns { found, result }. */
@@ -242,6 +266,7 @@ function upsertMaster(ss, name, phone, email, source, consent) {
 
   if (!hit) {
     sh.appendRow([new Date(), name, phone, email, source, 1, new Date(), consent]);
+    stamp(sh, [1, 7]);
     return;
   }
 
@@ -258,6 +283,7 @@ function upsertMaster(ss, name, phone, email, source, consent) {
   sh.getRange(hit.row, 5).setValue(sources.join(', '));
   sh.getRange(hit.row, 6).setValue((Number(hit.values[5]) || 0) + 1);
   sh.getRange(hit.row, 7).setValue(new Date());
+  stamp(sh, [1, 7]);
 }
 
 /**
@@ -361,6 +387,7 @@ function recordLink(p) {
     clean(p.code), new Date(), clean(p.destination), clean(p.source), clean(p.medium),
     clean(p.campaign), clean(p.content), clean(p.programme), clean(p.ref), url, clean(p.svg)
   ]);
+  stamp(sh, [2]);
   return json({ ok: true, duplicate: false });
 }
 

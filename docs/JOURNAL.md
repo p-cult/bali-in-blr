@@ -288,6 +288,17 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
   Diagnostic rows (codes starting `zz-`, one with a blank code, URLs with
   `zzdiag`) were left in the Mint tab and should be deleted by hand.
 
+### 11 Sep 2026 — "First seen" changing format part-way down
+- The registration sheet's date columns showed two display styles. The
+  bridge always wrote a real `Date`, but never a number format, so each cell
+  took whatever formatting its row already carried: rows inside a range once
+  formatted by hand looked one way, rows below it fell back to Sheets'
+  automatic style. Fixed in `Code.gs`: a single `STAMP_FORMAT`
+  (`dd mmm yyyy, h:mm am/pm`) applied to the whole date column on every write
+  (Master First/Last seen, each flavour's Timestamp, Receipts, Mint), plus a
+  one-off `fixDateFormats()` to repair every tab at once. Needs an Apps
+  Script redeploy by the owner.
+
 ---
 
 ## 2. Lessons and standing rules (the "why" behind the rules)
@@ -303,6 +314,8 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
 - Never let the form claim a save that the bridge has not confirmed.
 
 **Bridge and Apps Script**
+- Every value the bridge writes to a sheet must carry its own format. A
+  value without one inherits the row's formatting, and the column drifts.
 - A POST reply from Apps Script may be unreadable in the browser even
   though the row was written. Never leave a record "pending" on that alone:
   confirm with a GET (Receipts for signups, the Mint tab for links). And do
