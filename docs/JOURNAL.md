@@ -296,8 +296,16 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
   automatic style. Fixed in `Code.gs`: a single `STAMP_FORMAT`
   (`dd mmm yyyy, h:mm am/pm`) applied to the whole date column on every write
   (Master First/Last seen, each flavour's Timestamp, Receipts, Mint), plus a
-  one-off `fixDateFormats()` to repair every tab at once. Needs an Apps
-  Script redeploy by the owner.
+  one-off `fixDateFormats()` to repair every tab at once. **Deployed the same
+  day as version 8** of the existing web-app deployment (same URL), after
+  `fixDateFormats()` was run once; every date column now reads e.g.
+  "06 Sep 2026, 6:52 pm".
+- Found while deploying: the live bridge was **behind the repo**. It still
+  lacked the 7 Sep RSVP flavour (`rsvp`, `allowMultiple`), which was never
+  deployed. Only the date fix was patched into the live code, so behaviour
+  is otherwise unchanged; the RSVP flavour goes live whenever the repo's
+  `Code.gs` is next deployed in full. The live copy also has `SHEET_ID` set,
+  which the public repo deliberately leaves blank — keep it when pasting.
 
 ---
 
