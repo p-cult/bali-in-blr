@@ -307,6 +307,19 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
   `Code.gs` is next deployed in full. The live copy also has `SHEET_ID` set,
   which the public repo deliberately leaves blank — keep it when pasting.
 
+### 12 Sep 2026 — events that are listed but not bookable
+- "A Day in Manipal" (16 Oct) is a campus performance at Manipal University,
+  Udupi. The planning sheet's Event Brief marks it **Open to public: No**, yet
+  the calendar showed it with a Register button. Added a sheet-driven state:
+  a `status` of `internal` / `private` / `invite` / `invite only` / `closed` /
+  `not public` / `not open` / `no button` lists the event normally but shows
+  no status chip and no action, only a quiet "Not open to the public". Set
+  that cell to `not public` for the 16 Oct row.
+- Still missing for that row: start time, end time and description. The
+  planning sheet has none ("16th - Full day", time "-"), so nothing was
+  invented; the calendar accepts a plain phrase such as "Full day" in the
+  time column if that is what is wanted.
+
 ---
 
 ## 2. Lessons and standing rules (the "why" behind the rules)
@@ -380,6 +393,9 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
   palette without showing a preview first.
 
 **Working practice**
+- Cross-check the public calendar against the planning sheet's Event Brief.
+  An event can be confirmed and dated yet not open to the public; listing it
+  with a Register button invites people to something they cannot attend.
 - Client changes arrive as documents with strikethrough (old) beside new
   text. Apply them verbatim and only where struck; do not improve, extend or
   invent copy around them. Anything not struck stays.

@@ -615,6 +615,11 @@ function normaliseEvent(raw, i) {
   // RSVP and seats bar still derive from the other columns as usual.
   ev.hideStatus = /^(none|hide|hidden|off|nothing|na|n\/a|-|–|—)$/i.test(ev.statusRaw);
   if (ev.hideStatus) ev.statusRaw = "";
+  // A status of internal/private/invite/closed/"not public" lists the event on
+  // the calendar but offers no action: it is not something a visitor can book,
+  // RSVP to or register for (e.g. a campus performance on a partner's invite).
+  ev.notPublic = /^(internal|private|invite|invite only|invitation|invitation only|closed|not public|not open|no button)$/i.test(ev.statusRaw);
+  if (ev.notPublic) { ev.hideStatus = true; ev.statusRaw = ""; }
   ev.status = deriveStatus(ev);
   return ev;
 }
@@ -683,6 +688,9 @@ function calStatusChip(ev) {
   }
 }
 function calAction(ev) {
+  // Listed for information only — no booking, RSVP or registration.
+  if (ev.notPublic) return '<span class="cal-soon">Not open to the public</span>';
+
   // The internal waitlist/register link carries the programme so the
   // registration form can pre-tick it. An external rsvp link is left as-is.
   const reg = "#register?programme=" + encodeURIComponent(ev.title || "");
