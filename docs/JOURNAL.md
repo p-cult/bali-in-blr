@@ -27,6 +27,10 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
 - **Bridge connected.** Register and Volunteer forms save via the Apps Script
   bridge into a deduplicated `Master` registry with per-flavour tabs and
   receipts. Calendar reads the schedule sheet's `Event List` tab live.
+  Live counts: `BRIDGE_URL?sheet=stats` (85 registered on 13 Sep 2026).
+- **Measurement.** Views, every call-to-action click, phone and email taps,
+  outbound links and confirmed registrations all reach `dataLayer`. The GTM
+  container still needs its tags: see `docs/ANALYTICS-SETUP.md`.
 - **Switches currently OFF** in `main.js` `CONFIG`: `BOOKING_OPEN` (per-event
   ticket/RSVP links from the sheet) and `RSVP_ENABLED` (per-event RSVP
   capture). All event buttons funnel to the single Register module.
@@ -429,6 +433,21 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
   many stale rows were cleared.
 - A saved link is still deleted in the Mint tab, not from the admin page. The
   page never removes anything the sheet holds.
+
+### 13 Sep 2026 (end of day) — full check of the live site
+- Everything green. Pages: home, privacy, `/brand/`, both admin pages,
+  robots, sitemap and the v1 backup all serve; `assets/title.svg` 404s as
+  intended. Home renders 7 programme cards and 27 images with none broken.
+  Calendar shows all 15 sheet events with photos, 14 with a Register button
+  and Manipal correctly reading "Not open to the public". Both forms open
+  with their question cards, the live 19-item programme checklist and the
+  consent tick. Brand kit intact. Mobile at 375px has no overflow. No console
+  errors anywhere.
+- **Registrations are at 85** (29 updates, 57 volunteers), up from 32 on
+  11 Sep. The volunteer poster is clearly working.
+- Calendar photos load lazily, so an image only downloads when scrolled to.
+  A first pass flagged four as "missing" before they were reached — correct
+  behaviour, and worth remembering before chasing it again.
 
 ---
 
