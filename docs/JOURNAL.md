@@ -388,6 +388,14 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
 - Verified live: 10 sections, 19 copyable colours, both wordmarks, fonts
   loading, no console errors, and `Disallow: /brand/` serving in robots.txt.
 
+### 13 Sep 2026 (fix) — the admin logo was painting black
+- The `/admin` hub and Campaign Link Builder showed the lockup in solid
+  black on the dark ground. Cause: those pages carry their own inline CSS and
+  never load `styles.css`, so `.logo-gold` / `.logo-orange` / `.logo-brown`
+  were undefined and the SVG fell back to the default black fill. The
+  sign-in card was fine because `auth.js` defines its own copies.
+- Fixed by giving both admin pages the three fills, scoped to `.kick`.
+
 ---
 
 ## 2. Lessons and standing rules (the "why" behind the rules)
@@ -436,6 +444,10 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
   and commit the copies.
 
 **Design**
+- The inline logo needs its fill rules wherever it is used. A page that does
+  not load `styles.css` (the admin pages, any standalone tool) must carry
+  `.logo-gold` / `.logo-orange` / `.logo-brown` itself, or the mark paints
+  black.
 - The full lockup (with Param) is the distributable mark. The title mark is
   display-only: never ship it as a file, never link it for download.
 - Solve design problems at the **master stylesheet level** (tokens in
