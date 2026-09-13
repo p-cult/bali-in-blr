@@ -396,6 +396,19 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
   sign-in card was fine because `auth.js` defines its own copies.
 - Fixed by giving both admin pages the three fills, scoped to `.kick`.
 
+### 13 Sep 2026 (fix) — the link builder asked for too much
+- Eight fields, most of them UTM jargon, to mint one link. Now it asks two
+  questions: **where should it open** and **where are you sharing it**. That
+  second choice sets `utm_source` and `utm_medium` from a plain-English list
+  (Instagram post, WhatsApp, Poster or standee, Paid ads…), the campaign
+  defaults to the month, and the ref tag and code derive from those. QR still
+  appears on its own when the choice is a poster.
+- Everything that was there is still there, in an **Advanced** block that is
+  closed by default and only needed for something unusual.
+- A line under the generated link says in words what the link records, so the
+  admin can see the tagging without understanding UTM.
+- Cleared three diagnostic rows I had left in the sheet's Mint tab.
+
 ---
 
 ## 2. Lessons and standing rules (the "why" behind the rules)
