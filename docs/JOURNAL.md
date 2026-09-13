@@ -42,9 +42,12 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
   `index.html` and deliberately not shipped as a file (source in the vault).
   Hero copy and numbers (18 days, 18 events, 15 venues) are the client's,
   applied 9 Sep from their corrections document.
-- **Brand kit:** a published artifact holds colour, pairings, the reference
-  boards, the block motif, seams and edges, both wordmarks and type. It is
-  the thing to hand a designer; the stylesheets remain the exact reference.
+- **Brand kit:** colour, pairings, the reference boards, the block motif,
+  seams and edges, both wordmarks and type. Shared with the team at
+  **/brand/** (link-only: noindex, robots-disallowed, unlinked). It is the
+  thing to hand a designer; the stylesheets remain the exact reference.
+- **Print:** `tools/build-event-posters.py` renders the event listing at
+  500&#215;1000&#160;mm and 1000&#215;500&#160;mm into `assets/print/`.
 - **Open:** ticketing platform not chosen (Phase 3); post-event media/gallery
   (Phase 4); an internal project-report page (see §3); the Monument display
   font is not licensed (see §2).
@@ -382,6 +385,8 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
   home page, and the kit still offers only the full lockup for download.
 - The artifact stays as the working copy. When the kit changes, republish the
   artifact and copy the same HTML into `brand/index.html` so the two agree.
+- Verified live: 10 sections, 19 copyable colours, both wordmarks, fonts
+  loading, no console errors, and `Disallow: /brand/` serving in robots.txt.
 
 ---
 
