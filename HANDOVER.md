@@ -62,6 +62,7 @@ docs/
 tools/
   JOURNAL.md        (docs/) Decisions, problems solved, lessons — the project memory.
   assets/logo.svg   The festival logo (source). Inlined in every page; see §5.
+  build-event-posters.py  Print-ready event listing, 1:2 and 2:1, into assets/print/.
   sync-images.sh    Pull Google Drive event images → optimise → assets/drive/.
                     Run when a Drive image link in the sheet is added/changed.
 README.md           Short version of this doc for casual contributors.

@@ -353,6 +353,20 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
   harlequin, scallop both ways, the hairline, the copper hover edge and the
   copper rule.
 
+### 13 Sep 2026 (later) — print-ready event posters
+- `tools/build-event-posters.py` renders the whole listing in two shapes:
+  1:2 at 500&#215;1000&#160;mm (one column, 15 rows) and 2:1 at
+  1000&#215;500&#160;mm (four columns). Reads the live schedule sheet, falls
+  back to `data/events.json`, inlines the lockup and every thumbnail so the
+  PDF is self-contained, and prints through headless Chrome.
+- One scale factor drives each sheet, with a second, smaller factor for the
+  masthead and type on the wide one, so both shapes share a system rather
+  than being two separate designs.
+- 3&#160;mm bleed on every edge, artwork running into it, no crop marks.
+  Chrome writes RGB; a press wanting CMYK converts on their side.
+- Output lives in `assets/print/` and is a snapshot: re-run it whenever the
+  schedule changes.
+
 ---
 
 ## 2. Lessons and standing rules (the "why" behind the rules)
