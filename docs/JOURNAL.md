@@ -409,6 +409,18 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
   admin can see the tagging without understanding UTM.
 - Cleared three diagnostic rows I had left in the sheet's Mint tab.
 
+### 13 Sep 2026 (fix) — track the four things that matter, ask for two
+- The question was: who arrived, when, which screen, and what did they do.
+  Views and confirmed registrations were already reported; the middle was
+  missing. One delegated click listener now reports `cta_click` (with the
+  destination and, from a calendar row, the programme), `call_click`,
+  `email_click` and `outbound_click`, each carrying the screen it happened on
+  and the campaign ref. Nothing is tagged by hand and no personal data moves.
+- The link builder is down to the two things only a person can know: the
+  call to action, and where the link will be used. Source, medium, campaign,
+  ref and code all derive from those; the programme picker moved into
+  Advanced and appears only for the Register destination.
+
 ---
 
 ## 2. Lessons and standing rules (the "why" behind the rules)

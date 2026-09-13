@@ -137,6 +137,44 @@ function trackView(path, title) {
   if (window.fbq) fbq("track", "PageView");
 }
 
+/* What someone did, short of registering. One delegated listener covers every
+   button and link on the site, so nothing has to be tagged by hand: it reports
+   the action, the words on the control, and which screen they were on. No
+   personal data — this is behaviour, not identity. */
+function trackAction(kind, label, extra) {
+  (window.dataLayer = window.dataLayer || []).push(Object.assign({
+    event: kind,                       // cta_click | call_click | email_click | outbound_click
+    label: (label || "").slice(0, 80),
+    from: location.hash || "/",        // the screen it was clicked on
+    campaign_ref: CAMPAIGN_REF || "(direct)",
+  }, extra || {}));
+  if (window.gtag && ANALYTICS.GA4_ID) {
+    gtag("event", kind, Object.assign({ label: label, from: location.hash || "/" }, extra || {}));
+  }
+}
+
+document.addEventListener("click", (e) => {
+  const el = e.target.closest("a[href], button");
+  if (!el) return;
+  const href = el.getAttribute("href") || "";
+  const text = (el.textContent || "").replace(/\s+/g, " ").trim();
+
+  if (/^tel:/i.test(href)) return trackAction("call_click", text, { number: href.slice(4) });
+  if (/^mailto:/i.test(href)) return trackAction("email_click", text);
+  if (/^#(register|volunteer|calendar)/.test(href)) {
+    const dest = href.slice(1).split("?")[0];
+    const prog = (href.match(/programme=([^&]*)/) || [])[1];
+    return trackAction("cta_click", text, {
+      destination: dest,
+      programme: prog ? decodeURIComponent(prog) : undefined,
+    });
+  }
+  if (/^https?:/i.test(href) && !href.startsWith(location.origin)) {
+    let host = ""; try { host = new URL(href).hostname; } catch (err) {}
+    return trackAction("outbound_click", text, { host: host });
+  }
+});
+
 /* A registration the bridge has confirmed. Never called for a duplicate and
    never in demo mode — a conversion has to mean a real row. Carries no
    personal data: the flavour, the campaign ref, and the submission id, which
