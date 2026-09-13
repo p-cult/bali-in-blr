@@ -421,6 +421,15 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
   ref and code all derive from those; the programme picker moved into
   Advanced and appears only for the Register destination.
 
+### 13 Sep 2026 (fix) — the minted list now mirrors the sheet
+- The list merged sheet rows over a local cache but never dropped anything, so
+  a link deleted in the Mint tab lived on in the browser forever. On every
+  pull the list is now rebuilt from the sheet, keeping only links that never
+  reached it; those show as pending and can be discarded. A toast says how
+  many stale rows were cleared.
+- A saved link is still deleted in the Mint tab, not from the admin page. The
+  page never removes anything the sheet holds.
+
 ---
 
 ## 2. Lessons and standing rules (the "why" behind the rules)

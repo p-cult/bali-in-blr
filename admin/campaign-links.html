@@ -317,14 +317,15 @@ function render(){
   if (!LINKS.length){ wrap.innerHTML = '<p class="empty">No links yet. Build one above and “Add to list” — it saves to the sheet.</p>'; return; }
   wrap.innerHTML =
     '<div style="overflow-x:auto"><table><thead><tr>' +
-    '<th>Code</th><th>Dest</th><th>Source</th><th>Campaign</th><th>Ref</th><th>Link</th><th>Sheet</th><th></th>' +
+    '<th>Code</th><th>Dest</th><th>Source</th><th>Campaign</th><th>Ref</th><th>Link</th><th>In sheet</th><th></th>' +
     '</tr></thead><tbody>' +
     LINKS.map((r,i) =>
       '<tr><td>'+esc(r.code)+'</td><td>'+esc(r.dest||"home")+'</td><td>'+esc(r.source)+'</td>'+
       '<td>'+esc(r.campaign)+'</td><td>'+esc(r.ref)+'</td>'+
       '<td class="u">'+esc(r.url)+'</td>'+
       '<td>'+(r.synced?'✓':'<span style="color:var(--accent)">pending</span>')+'</td>'+
-      '<td><button class="btn btn-ghost mini" data-copy="'+i+'">Copy</button></td></tr>'
+      '<td><button class="btn btn-ghost mini" data-copy="'+i+'">Copy</button>' +
+      (r.synced ? '' : ' <button class="btn btn-ghost mini" data-drop="'+i+'">Discard</button>') + '</td></tr>'
     ).join("") + '</tbody></table></div>';
 }
 
@@ -378,6 +379,14 @@ $("copy").addEventListener("click", async () => { await navigator.clipboard.writ
 $("listWrap").addEventListener("click", async (e) => {
   const c = e.target.closest("[data-copy]");
   if (c){ await navigator.clipboard.writeText(LINKS[+c.dataset.copy].url); toast("Link copied"); }
+
+  /* Only ever offered for a row the sheet does not have, so nothing recorded
+     can be lost from here. Deleting a saved link is done in the Mint tab. */
+  const d = e.target.closest("[data-drop]");
+  if (d){
+    const row = LINKS[+d.dataset.drop];
+    if (row && !row.synced){ LINKS.splice(+d.dataset.drop, 1); save(); render(); toast("Discarded"); }
+  }
 });
 
 $("sync").addEventListener("click", async () => {
@@ -422,17 +431,24 @@ async function pullLinks(){
   try {
     const res = await fetch(BRIDGE_URL + "?sheet=links", {cache:"no-store"});
     const rows = await res.json();
-    if (!Array.isArray(rows) || !rows.length) return;
-    const byUrl = new Map(LINKS.map(r => [r.url, r]));
+    if (!Array.isArray(rows)) return;
+    /* The Mint tab is the record. A link deleted there disappears here too,
+       so the list cannot drift. Only links that never reached the sheet stay
+       locally, and they show as pending. */
+    const fromSheet = [];
     rows.forEach(o => {
       const url = o.URL || o.url || ""; if (!url) return;
-      byUrl.set(url, {
+      fromSheet.push({
         code:o.Code||"", dest:o.Destination||"", source:o.Source||"", medium:o.Medium||"",
         campaign:o.Campaign||"", content:o.Content||"", programme:o.Programme||"", ref:o.Ref||"", url, svg:o["QR SVG"]||"", synced:true
       });
     });
-    LINKS = Array.from(byUrl.values());
+    const inSheet = new Set(fromSheet.map(r => r.url));
+    const kept = LINKS.filter(r => !r.synced && !inSheet.has(r.url));
+    const gone = LINKS.filter(r => r.synced && !inSheet.has(r.url)).length;
+    LINKS = fromSheet.concat(kept);
     save(); render();
+    if (gone) toast(gone + (gone > 1 ? " links" : " link") + " cleared — deleted from the sheet");
   } catch(e){ /* offline: keep local cache */ }
 }
 
