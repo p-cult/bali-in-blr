@@ -207,13 +207,20 @@ AdminAuth.protect({
   },
 });
 
+/* Plain English, not tag names: what the marketer will see for this link. */
+const MONTH_FULL = ["January","February","March","April","May","June","July",
+                    "August","September","October","November","December"];
 function describe(){
-  const src = slug($("source").value) || "direct";
-  const med = slug($("medium").value) || "none";
-  const camp = slug($("campaign").value) || autoCampaign();
   const el = $("tagline");
-  if (el) el.innerHTML = "Recorded as <b>" + src + "</b> &middot; <b>" + med +
-    "</b> &middot; <b>" + camp + "</b>. Signups from this link show that in the sheet's Sources column.";
+  if (!el) return;
+  const place = $("place").selectedOptions[0] ? $("place").selectedOptions[0].textContent.trim() : "";
+  const dest = $("dest").selectedOptions[0] ? $("dest").selectedOptions[0].textContent.trim() : "the home page";
+  const typed = slug($("campaign").value);
+  const d = new Date();
+  const when = typed ? typed : MONTH_FULL[d.getMonth()] + " " + d.getFullYear();
+  el.innerHTML = "Anyone who taps this is counted as coming from <b>" + place +
+    "</b> in <b>" + when + "</b>, and lands on <b>" + dest.toLowerCase() +
+    "</b>. If they sign up, that shows beside their name in the sheet.";
 }
 
 function toast(msg){ const t=$("toast"); t.textContent=msg; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),1400); }
