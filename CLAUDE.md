@@ -43,9 +43,10 @@ dependencies. Hosted on **GitHub Pages**, auto-deploys on push to `main`.
 - `styles.css` — all styling; **design tokens in `:root` at the top**; `@media` at the bottom
 - `main.js` — behaviour + the `CONFIG` data-bridge block at the top
 - `data/events.json`, `data/partners.json` — local stand-ins for Google Sheets
-- `assets/logo.svg` — the festival logo (`assets/title.svg` is the wordmark alone, used
-  by the hero `h1` only); inlined as the `.logo` component wherever
-  the name is a heading or brand mark (see HANDOVER §5)
+- `assets/logo.svg` — the festival logo; inlined as the `.logo` component wherever the
+  name is a heading or brand mark (see HANDOVER §5). The hero uses the title mark (no
+  "Param"), which is inlined in `index.html` only — its source file is **not** in the repo,
+  it lives in the vault under `memory.brand_assets`
 - `docs/BRIDGE-SETUP.md` + `docs/apps-script/Code.gs` — the backend bridge (see below)
 - `docs/ANOTHER-MACHINE.md` — working from the drive on a new computer
 - `tools/doctor.sh` — checks a machine can carry on (reads only)
@@ -73,9 +74,9 @@ the signup form is in demo mode. To go live, set `CONFIG.BRIDGE_URL` and repoint
 - Prefer the Google + Zoho stack for new integrations.
 - Conventions: dates `DD MMM YYYY`, INR (₹), Indian English. Title is exactly
   "Bali in Bengaluru". Where that name is a heading or brand mark it is the
-  inline logo (`assets/logo.svg`; the hero `h1` alone uses `assets/title.svg`)
+  inline logo (`assets/logo.svg`; the hero `h1` alone uses the title mark, inlined)
   with `.sr-only` text, never typed display text or an `<img>`; inside a
-  sentence it is text.
+  sentence it is text. Never publish the title mark as a downloadable file.
 - After editing CSS/JS, bump the `?v=` query on their tags in `index.html`.
 
 ## Run locally

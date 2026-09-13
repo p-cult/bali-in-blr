@@ -320,6 +320,21 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
   invented; the calendar accepts a plain phrase such as "Full day" in the
   time column if that is what is wanted.
 
+### 13 Sep 2026 — brand kit, and the title mark taken out of the repo
+- Compiled a **brand kit** (published artifact): colour with measured contrast,
+  the poster palette, the block motif and its orientations, seams and edges,
+  both wordmarks, and type. Built from the tokens and the poster set rather
+  than sampled by eye.
+- The motif is **three squares on a four-square footprint**, one raised centre
+  with two below and the fourth corner empty, rotated to four orientations. I
+  first drew it as four blocks, which was wrong; the client's reference
+  corrected it.
+- **`assets/title.svg` deleted.** The wordmark without "Param" must not be
+  downloadable. The hero still shows it because `index.html` inlines the
+  paths, and the source now lives in the vault under `memory.brand_assets`.
+  Anyone reading page source can still extract the inlined copy; no static
+  site can prevent that, and the kit simply never offers the file.
+
 ---
 
 ## 2. Lessons and standing rules (the "why" behind the rules)
@@ -368,6 +383,8 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
   and commit the copies.
 
 **Design**
+- The full lockup (with Param) is the distributable mark. The title mark is
+  display-only: never ship it as a file, never link it for download.
 - Solve design problems at the **master stylesheet level** (tokens in
   `styles.css`, components in `site.css`), never with one-off patches.
   Mockups decide direction; the fix is promoted into the token system.

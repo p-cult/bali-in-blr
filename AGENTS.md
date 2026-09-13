@@ -35,8 +35,8 @@ Rules that every tool must keep (the full set is in `CLAUDE.md`):
   tokens and components in `styles.css` / `site.css`, never inline or patched.
 - PII only in approved Google Workspace systems; aggregates only on the site.
 - The festival name as a heading or brand mark is the inline logo
-  (`assets/logo.svg`; the hero `h1` uses `assets/title.svg`) with `.sr-only`
-  text. In a sentence it is text.
+  (`assets/logo.svg`; the hero `h1` uses the title mark, inlined in index.html and
+  deliberately not shipped as a file) with `.sr-only` text. In a sentence it is text.
 - Bump the `?v=` cache tags after touching CSS/JS. Pull first, push last.
 
 When you finish a change, commit with a message that explains the reasoning,
