@@ -31,8 +31,8 @@ BLEED = 3  # mm on every edge
 
 SIZES = {
     # cols/thumb are tuned so every event lands on ONE sheet in each shape.
-    "1x2": {"trim": (500, 1000), "cols": 1, "thumb": 36, "label": "500 x 1000 mm"},
-    "2x1": {"trim": (1000, 500), "cols": 4, "thumb": 22, "label": "1000 x 500 mm"},
+    "1x2": {"trim": (500, 1000), "cols": 2, "thumb": 56, "type": 1.32, "label": "500 x 1000 mm"},
+    "2x1": {"trim": (1000, 500), "cols": 4, "thumb": 21, "type": 0.62, "label": "1000 x 500 mm"},
 }
 
 
@@ -184,10 +184,9 @@ def build_html(events, key):
     pw, ph = tw + BLEED * 2, th + BLEED * 2
     tall = key == "1x2"
     cols, tmm = spec["cols"], spec["thumb"]
-    # One scale factor drives the whole sheet, so both shapes share a system.
-    u = tw / 500       # 1 on the tall sheet, 2 on the wide one
-    hu = u if tall else u * 0.62   # masthead + type run smaller on the wide sheet
-    px = 900 if tall else 620
+    u = tw / 500                 # 1 on the tall sheet, 2 on the wide one
+    ts = u * spec["type"]        # type runs smaller on the wide sheet
+    px = 700 if tall else 520
 
     cards = []
     for e in events:
@@ -195,7 +194,8 @@ def build_html(events, key):
         img = thumb(local_image(e["image"]), px)
         pic = f'<img src="{img}" alt="">' if img else '<span class="noimg"></span>'
         t = time_label(e)
-        meta = " &#183; ".join(x for x in (t, escape(e["venue"])) if x)
+        bits = [x for x in (t, escape(e["venue"])) if x]
+        meta = "<br>".join(bits) if tall else " &#183; ".join(bits)
         cards.append(f"""
       <article class="ev">
         <div class="ev-pic">{pic}</div>
@@ -215,64 +215,79 @@ def build_html(events, key):
   html, body {{ margin: 0; padding: 0; }}
   body {{
     width: {pw}mm; height: {ph}mm;
-    background: radial-gradient(circle at center, rgba(27,29,33,.42) 42%, transparent 44%) 0 0 / {2.4*u}mm {2.4*u}mm, #A32B14;
-    color: #EFE7D8; font-family: "Archivo", Arial, sans-serif;
+    /* Paper ground with the screen barely there — a texture, not a tint. */
+    background: radial-gradient(circle at center, rgba(142,74,36,.10) 30%, transparent 32%)
+                0 0 / {3.2*u}mm {3.2*u}mm, #EFE7D8;
+    color: #1B1D21; font-family: "Archivo", Arial, sans-serif;
     -webkit-print-color-adjust: exact; print-color-adjust: exact;
   }}
   .sheet {{
-    position: absolute; inset: {BLEED}mm; padding: {26*hu}mm {24*u}mm {18*hu}mm;
+    position: absolute; inset: {BLEED}mm; padding: {24*ts}mm {22*u}mm {16*ts}mm;
     display: flex; flex-direction: column; overflow: hidden;
   }}
+
   /* masthead */
   .top {{ display: flex; align-items: flex-start; justify-content: space-between; gap: {14*u}mm; }}
-  .lock {{ background: #000; padding: {9*hu}mm {11*hu}mm; }}
-  .lock svg {{ display: block; width: {132*hu}mm; height: auto; }}
+  .lock {{ background: #1B1D21; padding: {9*ts}mm {11*ts}mm; }}
+  .lock svg {{ display: block; width: {124*ts}mm; height: auto; }}
   .logo-gold {{ fill: #E4AB0E; }} .logo-orange {{ fill: #FF5A3D; }} .logo-brown {{ fill: #B68367; }}
   .dates {{ text-align: right; }}
   .dates b {{
     display: block; font-weight: 800; text-transform: uppercase; letter-spacing: -.01em;
-    font-size: {13*hu}mm; line-height: .95; color: #E4AB0E;
+    font-size: {14*ts}mm; line-height: .95; color: #A32B14;
   }}
   .dates span {{
-    display: block; margin-top: {2.5*u}mm; font-weight: 600; text-transform: uppercase;
-    letter-spacing: {.9*u}mm; font-size: {4.4*u}mm; color: #EFE7D8;
+    display: block; margin-top: {2.5*ts}mm; font-weight: 600; text-transform: uppercase;
+    letter-spacing: {.9*ts}mm; font-size: {4.6*ts}mm; color: #5F574C;
   }}
-  /* the block motif: three squares, fourth corner empty */
-  .motif {{ display: grid; grid-template-columns: repeat(3, {7*u}mm); grid-template-rows: repeat(2, {7*u}mm);
-            margin-top: {6*u}mm; margin-left: auto; width: max-content; }}
+  .motif {{ display: grid; grid-template-columns: repeat(3, {6.5*ts}mm);
+            grid-template-rows: repeat(2, {6.5*ts}mm);
+            margin-top: {6*ts}mm; margin-left: auto; width: max-content; }}
   .motif i {{ display: block; }}
-  .m1 {{ grid-column: 2; grid-row: 1; background: #FF5A3C; }}
+  .m1 {{ grid-column: 2; grid-row: 1; background: #A32B14; }}
   .m2 {{ grid-column: 1; grid-row: 2; background: #E4AB0E; }}
-  .m3 {{ grid-column: 3; grid-row: 2; background: #FF5A3C; }}
+  .m3 {{ grid-column: 3; grid-row: 2; background: #A32B14; }}
 
   .strap {{
-    margin: {12*hu}mm 0 {9*hu}mm; font-family: "Instrument Serif", Georgia, serif;
-    font-size: {6.4*hu}mm; line-height: 1.25; color: #F7E9CE; max-width: {200*u}mm;
+    margin: {11*ts}mm 0 {9*ts}mm; font-family: "Instrument Serif", Georgia, serif;
+    font-size: {7.4*ts}mm; line-height: 1.3; color: #3A342D; max-width: {230*u}mm;
   }}
-  .rule {{ height: {.7*u}mm; background: rgba(239,231,216,.34); margin-bottom: {8*hu}mm; }}
+  .rule {{ height: {.8*ts}mm; background: #8E4A24; margin-bottom: {9*ts}mm; }}
 
   /* listing */
-  .list {{ flex: 1; display: grid; grid-template-columns: repeat({cols}, 1fr);
-           gap: {7*u}mm {10*u}mm; align-content: start; }}
-  .ev {{ display: grid; grid-template-columns: {tmm*u}mm 1fr; gap: {7*u}mm; align-items: center;
-         border-top: {.5*u}mm solid rgba(239,231,216,.28); padding-top: {6*u}mm; break-inside: avoid; }}
-  .ev-pic {{ width: {tmm*u}mm; height: {tmm*u}mm; overflow: hidden; background: #8E2A12; }}
+  .list {{
+    flex: 1; display: grid; grid-template-columns: repeat({cols}, 1fr);
+    gap: {9*ts}mm {11*u}mm; align-content: space-between;
+  }}
+  .ev {{
+    display: grid; grid-template-columns: {tmm*u}mm 1fr; gap: {6*ts}mm; align-items: start;
+    border-top: {.4*ts}mm solid rgba(27,29,33,.20); padding-top: {6*ts}mm; break-inside: avoid;
+  }}
+  .ev-pic {{ width: {tmm*u}mm; height: {tmm*u*1.2}mm; overflow: hidden; background: #E0D6C2; }}
   .ev-pic img {{ width: 100%; height: 100%; object-fit: cover; display: block; }}
-  .noimg {{ display: block; width: 100%; height: 100%; background: #8E2A12; }}
+  .noimg {{ display: block; width: 100%; height: 100%; background: #E0D6C2; }}
   .ev-body {{ min-width: 0; }}
-  .ev-date {{ margin: 0 0 {1.6*u}mm; display: flex; align-items: baseline; gap: {2.2*u}mm; }}
-  .ev-date b {{ font-weight: 800; font-size: {6.4*hu}mm; line-height: 1; color: #E4AB0E; }}
-  .ev-date span {{ font-weight: 600; text-transform: uppercase; letter-spacing: {.6*u}mm;
-                   font-size: {3.4*hu}mm; color: #F7E9CE; }}
-  .ev h2 {{ margin: 0 0 {1.8*u}mm; font-weight: 800; text-transform: uppercase;
-            font-size: {5.6*hu}mm; line-height: 1.02; letter-spacing: -.01em; color: #FFFFFF; }}
-  .ev-meta {{ margin: 0; font-family: "Instrument Serif", Georgia, serif;
-              font-size: {4.3*hu}mm; line-height: 1.3; color: #F7E9CE; }}
+  .ev-date {{ margin: 0 0 {2*ts}mm; display: flex; align-items: baseline; gap: {2.4*ts}mm; }}
+  .ev-date b {{ font-weight: 800; font-size: {9*ts}mm; line-height: 1; color: #A32B14; }}
+  .ev-date span {{
+    font-weight: 600; text-transform: uppercase; letter-spacing: {.55*ts}mm;
+    font-size: {4*ts}mm; color: #8E4A24;
+  }}
+  .ev h2 {{
+    margin: 0 0 {2.4*ts}mm; font-weight: 800; text-transform: uppercase;
+    font-size: {7*ts}mm; line-height: 1.04; letter-spacing: -.01em; color: #1B1D21;
+  }}
+  .ev-meta {{
+    margin: 0; font-family: "Instrument Serif", Georgia, serif;
+    font-size: {5.6*ts}mm; line-height: 1.32; color: #5F574C;
+  }}
 
-  footer {{ margin-top: {9*hu}mm; display: flex; align-items: flex-end; justify-content: space-between;
-            gap: {10*u}mm; border-top: {.7*u}mm solid rgba(239,231,216,.34); padding-top: {6*hu}mm; }}
-  footer p {{ margin: 0; font-size: {4.2*hu}mm; color: #F7E9CE; }}
-  footer .url {{ font-weight: 800; text-transform: lowercase; font-size: {5.6*hu}mm; color: #E4AB0E; }}
+  footer {{
+    margin-top: {10*ts}mm; display: flex; align-items: flex-end; justify-content: space-between;
+    gap: {10*u}mm; border-top: {.8*ts}mm solid #8E4A24; padding-top: {6*ts}mm;
+  }}
+  footer p {{ margin: 0; font-size: {4.6*ts}mm; color: #5F574C; }}
+  footer .url {{ font-weight: 800; text-transform: lowercase; font-size: {6.2*ts}mm; color: #A32B14; }}
 </style></head><body>
   <div class="sheet">
     <div class="top">

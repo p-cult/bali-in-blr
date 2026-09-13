@@ -366,6 +366,12 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
   Chrome writes RGB; a press wanting CMYK converts on their side.
 - Output lives in `assets/print/` and is a snapshot: re-run it whenever the
   schedule changes.
+- **Reworked on review.** The brick ground with a strong halftone was too
+  heavy for a listing, so both sheets moved to the print palette: cream
+  ground, charcoal type, brick for dates and oxidised copper for rules, with
+  the screen dropped to a faint 10% dot. The tall sheet went from one column
+  of small rows to **two columns** with much larger thumbnails and type, rows
+  distributed to fill the sheet.
 
 ---
 
