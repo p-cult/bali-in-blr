@@ -373,6 +373,16 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
   of small rows to **two columns** with much larger thumbnails and type, rows
   distributed to fill the sheet.
 
+### 13 Sep 2026 (later still) — the brand kit gets a public link
+- The kit was a private artifact, so only its owner could open it. It now
+  also lives on the site at **/brand/**, link-only: `noindex` on the page and
+  `Disallow: /brand/` in robots.txt, and nothing on the site links to it. The
+  team and collaborators need no account.
+- Nothing new is exposed by this: the title mark was already inlined on the
+  home page, and the kit still offers only the full lockup for download.
+- The artifact stays as the working copy. When the kit changes, republish the
+  artifact and copy the same HTML into `brand/index.html` so the two agree.
+
 ---
 
 ## 2. Lessons and standing rules (the "why" behind the rules)

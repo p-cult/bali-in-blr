@@ -7,4 +7,7 @@ Disallow: /v1.html
 # Internal admin tools — not for search
 Disallow: /admin/
 
+# Brand kit — shared with the team by link, not indexed
+Disallow: /brand/
+
 Sitemap: https://bali-in-blr.paramfoundation.org/sitemap.xml
