@@ -38,9 +38,13 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
   to `assets/drive/` by `tools/sync-images.sh`. Programme cards carry the
   client's own photos (all seven have real images; no placeholder remains).
 - **Brand:** the festival logo (`assets/logo.svg`) is inlined wherever the
-  name is a heading or brand mark; the hero uses the title mark
-  (`assets/title.svg`). Hero copy and numbers (18 days, 18 events, 15
-  venues) are the client's, applied 9 Sep from their corrections document.
+  name is a heading or brand mark; the hero uses the title mark, inlined in
+  `index.html` and deliberately not shipped as a file (source in the vault).
+  Hero copy and numbers (18 days, 18 events, 15 venues) are the client's,
+  applied 9 Sep from their corrections document.
+- **Brand kit:** a published artifact holds colour, pairings, the reference
+  boards, the block motif, seams and edges, both wordmarks and type. It is
+  the thing to hand a designer; the stylesheets remain the exact reference.
 - **Open:** ticketing platform not chosen (Phase 3); post-event media/gallery
   (Phase 4); an internal project-report page (see §3); the Monument display
   font is not licensed (see §2).
@@ -333,7 +337,21 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
   downloadable. The hero still shows it because `index.html` inlines the
   paths, and the source now lives in the vault under `memory.brand_assets`.
   Anyone reading page source can still extract the inlined copy; no static
-  site can prevent that, and the kit simply never offers the file.
+  site can prevent that, and the kit simply never offers the file. Verified:
+  the file 404s live, `logo.svg` still serves, and the hero renders unchanged.
+- **Kit iterations, all client-led.** It began as a colour reference and was
+  wrong three times before it was right: too text-heavy and exhaustive
+  (rebuilt visual-first, broad not intricate); layout diagrams that used
+  gradients and invented compositions (redrawn flat, on the module); and a
+  motif I had invented rather than read. Corrected each time from the
+  client's own reference images.
+- **Wordmarks in the kit.** The full lockup offers Copy SVG and a link to the
+  hosted file. The title mark is shown for reference only, badged "Never use
+  this as the logo", because without Param it is a headline treatment rather
+  than the logo.
+- **Seams and edges** added to the kit, drawn with the site's real values:
+  harlequin, scallop both ways, the hairline, the copper hover edge and the
+  copper rule.
 
 ---
 
