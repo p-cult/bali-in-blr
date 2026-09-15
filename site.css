@@ -176,17 +176,15 @@
   text-transform: uppercase;
   color: var(--accent-2);
 }
-/* The label sits under the number and is held to the number's width — width:0
-   keeps it from widening the column, min-width:100% makes it fill the number
-   and wrap beneath it. */
+/* The label sits under the number on a single line (a short one aligns to the
+   number's width; a longer one keeps its own width rather than being squeezed
+   under the number into an ugly stack). */
 .hero-meta-label {
-  width: 0;
-  min-width: 100%;
   margin-top: 0.45rem;
   font-size: 0.82rem;
   line-height: 1.2;
   color: var(--muted);
-  overflow-wrap: anywhere;
+  white-space: nowrap;
 }
 
 .hero-actions { display: flex; flex-wrap: wrap; gap: 1rem; }
@@ -769,7 +767,7 @@ body.view-open { overflow: hidden; }
   .hero-meta { flex-wrap: nowrap; gap: 0.8rem; }
   .hero-meta div { flex: 1 1 0; width: auto; min-width: 0; }
   .hero-meta-num { font-size: clamp(1.7rem, 9vw, 2.6rem); }
-  .hero-meta-label { width: auto; min-width: 0; }
+  .hero-meta-label { width: auto; min-width: 0; white-space: normal; }
 
   .also-grid { grid-template-columns: 1fr; max-width: 420px; }
   .also-item h4 { min-height: 0; }
