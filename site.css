@@ -152,9 +152,10 @@
 .hero-meta {
   display: flex;
   flex-wrap: wrap;
+  justify-content: space-between;   /* spread the stats across the full width */
   gap: 1.2rem 2.6rem;
   align-items: flex-start;
-  max-width: 780px;
+  width: 100%;
   margin-bottom: 1.8rem;
   padding-block: 1.2rem;
   border-block: 1px solid var(--line);
