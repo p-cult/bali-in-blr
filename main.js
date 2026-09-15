@@ -819,7 +819,6 @@ function cardHTML(ev) {
         <h4 class="cal-title">${esc(ev.title)}</h4>
         ${meta}
         ${ev.description ? `<p class="cal-desc">${esc(ev.description)}</p>` : ""}
-        ${calCollaborators(ev)}
         ${calOcc(ev)}
         <div class="cal-act">${calAction(ev)}</div>
       </div>
@@ -1036,8 +1035,11 @@ async function loadPartners() {
   if (!grid) return;
 
   const partners = await loadCollaborators();
+  // Only show collaborators that actually have a logo — dummy monogram chips are
+  // disabled for now; a collaborator appears here as soon as its logo exists.
+  const withLogos = (Array.isArray(partners) ? partners : []).filter((p) => safeUrl(toImageUrl(p.logo)));
 
-  if (!Array.isArray(partners) || partners.length === 0) {
+  if (withLogos.length === 0) {
     grid.innerHTML = `
       <div class="partners-empty">
         <p>We're building our circle of partners, sponsors, and supporters.</p>
@@ -1047,7 +1049,9 @@ async function loadPartners() {
   }
 
   grid.classList.add("has-partners");
-  grid.innerHTML = partners.map((p) => {
+  const sorted = withLogos.slice().sort((a, b) =>
+    String(a.name || "").localeCompare(String(b.name || ""), undefined, { sensitivity: "base" }));
+  grid.innerHTML = sorted.map((p) => {
     const url = safeUrl(p.url);
     const inner = collabMark(p, "partner-logo");
     return url
