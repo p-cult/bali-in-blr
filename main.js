@@ -815,11 +815,10 @@ function cardHTML(ev) {
     </article>`;
 }
 
-/* Keep the hero's Days/Events figures in sync with the calendar, so they are
-   never hand-maintained. Events = how many are listed; Days = the festival's
-   span, first event date to last, inclusive. Venues stays a manual figure
-   ("across the city" is a claim about the city, not a row count). If no event
-   is dated yet, the Days fallback already in the HTML is left as-is. */
+/* Keep the hero's Days/Events/Venues figures in sync with the calendar, so they
+   are never hand-maintained. Events = how many are listed; Days = the festival's
+   span, first event date to last, inclusive; Venues = distinct venues used. Each
+   number in the HTML is a fallback, left as-is if the calendar yields nothing. */
 function updateHeroStats(events) {
   const setNum = (key, val) => {
     const el = document.querySelector('.hero-meta-num[data-stat="' + key + '"]');
@@ -839,6 +838,15 @@ function updateHeroStats(events) {
     const span = Math.round((Math.max(...times) - Math.min(...times)) / 86400000) + 1;
     setNum("days", span);
   }
+
+  // Distinct venues, matched case/space-insensitively so "Jagriti Theatre" and
+  // "jagriti theatre " count once.
+  const venues = new Set();
+  events.forEach((ev) => {
+    const v = (ev.venue || "").trim().toLowerCase();
+    if (v) venues.add(v);
+  });
+  if (venues.size) setNum("venues", venues.size);
 }
 
 async function loadCalendar() {

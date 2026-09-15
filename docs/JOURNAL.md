@@ -456,12 +456,13 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
   an earlier attempt held the label to the number's width, which stacked
   "Venues across the city" into an ugly three-line block under 15; letting the
   label keep its own width fixed it. On phones all three stay on one row.
-- **Days and Events now auto-sync with the calendar** (`updateHeroStats` in
-  `main.js`, run when the calendar loads). Events = number of listed events;
-  Days = the span from the first event date to the last, inclusive. The
-  numbers in `index.html` are only a fallback shown if the calendar can't
-  load. Venues is left manual — "across the city" is a claim about the city,
-  not a row count. Currently reads 16 days / 15 events from 15 sheet rows.
+- **Days, Events and Venues now auto-sync with the calendar** (`updateHeroStats`
+  in `main.js`, run when the calendar loads). Events = number of listed events;
+  Days = the span from the first event date to the last, inclusive; Venues =
+  distinct venues (matched case/space-insensitively). The numbers in
+  `index.html` are only a fallback shown if the calendar can't load. Currently
+  reads 16 days / 15 events / 14 venues from 15 sheet rows. (Venues was manual
+  for a few hours the same day, then wired up on request.)
 
 ---
 
