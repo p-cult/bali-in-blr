@@ -954,19 +954,47 @@ function parseCollaborators(tsv) {
   return out;
 }
 
-async function loadCollaborators() {
-  if (COLLAB_LIST) return COLLAB_LIST;
-  COLLAB_LIST = [];
-  try {
-    const res = await fetchWithTimeout(CONFIG.COLLAB_URL, { cache: "no-store" });
-    COLLAB_LIST = parseCollaborators(await res.text());
-  } catch (e) {
-    COLLAB_LIST = [];
-  }
-  COLLAB_BY_NAME = new Map(
-    COLLAB_LIST.filter((p) => p && p.name).map((p) => [p.name.trim().toLowerCase(), p])
-  );
-  return COLLAB_LIST;
+let COLLAB_PROMISE = null;
+/* Cache the PROMISE, not the array — otherwise a second concurrent caller sees
+   the (truthy) empty array before the fetch resolves and renders with no data. */
+function loadCollaborators() {
+  if (COLLAB_PROMISE) return COLLAB_PROMISE;
+  COLLAB_PROMISE = (async () => {
+    // Local logo registry (collaborator name → optimised asset). Used when the
+    // sheet's Files column has no Drive link of its own.
+    let logos = {};
+    try { logos = await loadJSON("data/collab-logos.json"); } catch (e) { logos = {}; }
+    let list = [];
+    try {
+      const res = await fetchWithTimeout(CONFIG.COLLAB_URL, { cache: "no-store" });
+      list = parseCollaborators(await res.text());
+    } catch (e) {
+      list = [];
+    }
+    list.forEach((p) => {
+      const k = p.name && p.name.trim().toLowerCase();
+      if (!p.logo && k && logos[k]) p.logo = logos[k];
+    });
+    COLLAB_LIST = list;
+    COLLAB_BY_NAME = new Map(
+      list.filter((p) => p && p.name).map((p) => [p.name.trim().toLowerCase(), p])
+    );
+    return COLLAB_LIST;
+  })();
+  return COLLAB_PROMISE;
+}
+
+/* Auto-match an event's venue to a collaborator/venue in the registry, by
+   name (a name contained in the venue, or the venue in a name). */
+function collabForVenue(venue) {
+  const v = String(venue || "").trim().toLowerCase();
+  if (!v) return null;
+  let found = null;
+  COLLAB_BY_NAME.forEach((p, key) => {
+    if (found || !key) return;
+    if (v === key || v.includes(key) || key.includes(v)) found = p;
+  });
+  return found;
 }
 
 /* A collaborator's mark: their real logo when the Files column holds one,
@@ -989,9 +1017,17 @@ function collabMark(p, cls) {
    sheet), shown as their logos — or a dummy monogram when no logo yet. Empty
    when the event names none. */
 function calCollaborators(ev) {
-  const names = String(ev.collaborators || "").split(",").map((s) => s.trim()).filter(Boolean);
-  if (!names.length) return "";
-  const items = names.map((n) => collabMark(COLLAB_BY_NAME.get(n.toLowerCase()) || { name: n }, "cal-collab-logo")).join("");
+  // Explicit names in a `collaborators` column win; otherwise auto-match by venue.
+  const explicit = String(ev.collaborators || "").split(",").map((s) => s.trim()).filter(Boolean);
+  let entries = [];
+  if (explicit.length) {
+    entries = explicit.map((n) => COLLAB_BY_NAME.get(n.toLowerCase()) || { name: n });
+  } else {
+    const v = collabForVenue(ev.venue);
+    if (v) entries = [v];
+  }
+  if (!entries.length) return "";
+  const items = entries.map((p) => collabMark(p, "cal-collab-logo")).join("");
   return `<div class="cal-collabs"><span class="cal-collabs-label">In collaboration with</span><span class="cal-collab-logos">${items}</span></div>`;
 }
 

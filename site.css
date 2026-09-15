@@ -427,7 +427,7 @@
   width: auto;
   max-width: 120px;
   object-fit: contain;
-  background: #fff;
+  background: var(--cream);
   border-radius: 4px;
   padding: 3px 6px;
 }
@@ -445,14 +445,13 @@
   align-items: center;
   height: 30px;
   padding: 0 10px;
-  background: var(--bg-2);
-  border: 1px dashed var(--line);
+  background: var(--cream);
   border-radius: 4px;
   font-family: var(--display);
   font-weight: 800;
   font-size: 0.8rem;
   letter-spacing: 0.04em;
-  color: var(--accent-2);
+  color: var(--copper-ox);
 }
 
 /* occupancy — the FOMO visual */
@@ -504,7 +503,7 @@
   justify-content: center;
   min-height: 110px;
   padding: 1.2rem;
-  background: var(--bg-3);
+  background: var(--cream);
   border: 1px solid var(--line);
   border-radius: var(--radius);
   font-family: var(--display);
@@ -513,25 +512,24 @@
   text-align: center;
   text-transform: uppercase;
   text-decoration: none;
-  color: var(--muted);
-  transition: border-color 0.2s ease, color 0.2s ease;
+  color: var(--copper-ox);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
-.partner:hover { border-color: var(--accent); color: var(--ink); }
+.partner:hover { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
 .partner img, .partner-logo { max-width: 100%; max-height: 60px; object-fit: contain; }
-/* Dummy monogram stand-in until a real logo lands in the Files column. */
+/* Dummy monogram stand-in until a real logo lands. On the cream tile. */
 .partner-logo--dummy {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   min-width: 64px;
   padding: 0.5rem 0.9rem;
-  background: var(--bg-2);
-  border: 1px dashed var(--line);
+  border: 1px dashed var(--copper);
   border-radius: 6px;
   font-family: var(--display);
   font-weight: 800;
   letter-spacing: 0.04em;
-  color: var(--accent-2);
+  color: var(--copper-ox);
 }
 
 .partners-empty {

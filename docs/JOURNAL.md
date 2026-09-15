@@ -482,6 +482,20 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
   Collab/venues tab directly because that is where the team already tracks the
   logos. Lesson: read a private planning sheet through its **published /pub URL
   and gid**, not the raw spreadsheet id (that 401s).
+- **Logos + cream + auto-by-venue (later same day):** logo files came from a
+  Drive folder; downloaded 11 as PNG (transparency kept) to `assets/collab/`,
+  mapped name→file in `data/collab-logos.json` (merged into the live list when
+  the sheet's Files column is empty). Chowdiah's file is named "Music Academy".
+  Per-event logos **auto-match the event's venue** to a collaborator name
+  (substring), so no per-event data entry — `collabForVenue()`. Logos sit on a
+  **cream** tile (the grid tiles and the card chips), per request.
+- **Bug:** `loadCollaborators` cached the array; a second concurrent caller saw
+  the truthy empty `[]` before the fetch resolved and rendered with no logos.
+  Fixed by caching the **promise** instead.
+- **Open (blocking):** the "Event List" tab publish is OFF (401) — the live
+  calendar can't read the schedule and falls back to `data/events.json`; the
+  per-event logos are verified only against that fallback until it is
+  re-published (File → Share → Publish to web → Entire document).
 
 ---
 
