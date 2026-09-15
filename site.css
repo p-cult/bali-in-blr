@@ -163,8 +163,9 @@
 .hero-meta div {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  width: fit-content;      /* column is as wide as the big number */
+  align-items: center;     /* number and label share a centre line */
+  text-align: center;
+  width: fit-content;      /* column is as wide as its widest line */
   padding: 0;
   border: 0;
 }
