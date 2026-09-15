@@ -25,9 +25,11 @@
 set -euo pipefail
 
 SCHEDULE_URL="https://docs.google.com/spreadsheets/d/e/2PACX-1vTji37D6cT7J9bLFptJdNaYrvZF_soZyiqIsX-rHYUj4H6rnfMCExu2hIyVjCk48j86rdaBhp_lthzb/pub?gid=289612903&single=true&output=tsv"
-# The Partners tab (via the bridge) holds collaborator logos, often as Drive
-# links; scan it too so those logos are synced alongside event images.
+# The Partners tab (via the bridge) may hold collaborator logos as Drive links.
 PARTNERS_URL="https://script.google.com/macros/s/AKfycbyKXzPHQLsHCoryx0aJVpVkP0Z0XrnPxjucaiUJtR1aXeux33ygq2Br2QcBNU_MAB7qDw/exec?sheet=partners"
+# The "Collab / venues" tab's Files column holds collaborator logos as Drive
+# links; scan it so those logos are synced alongside event images.
+COLLAB_URL="https://docs.google.com/spreadsheets/d/e/2PACX-1vTji37D6cT7J9bLFptJdNaYrvZF_soZyiqIsX-rHYUj4H6rnfMCExu2hIyVjCk48j86rdaBhp_lthzb/pub?gid=7166598&single=true&output=tsv"
 MAXDIM=1600          # longest side, px
 QUALITY=70           # JPEG quality
 OUTDIR="assets/drive"
@@ -85,9 +87,11 @@ echo "Reading schedule sheet…"
 tmp="$(mktemp)"
 curl -fsSL --max-time 30 "$SCHEDULE_URL" -o "$tmp" || { echo "Error: could not fetch the schedule sheet."; exit 1; }
 
-# Also read the Partners tab (collaborator logos). Non-fatal if it can't load.
+# Also read the Partners tab and the Collab/venues tab (collaborator logos).
+# Non-fatal if either can't load.
 echo "Reading partners/collaborators…"
-if curl -fsSL --max-time 30 "$PARTNERS_URL" >> "$tmp" 2>/dev/null; then :; else echo "  (partners feed unavailable — skipping)"; fi
+curl -fsSL --max-time 30 "$PARTNERS_URL" >> "$tmp" 2>/dev/null || echo "  (partners feed unavailable — skipping)"
+curl -fsSL --max-time 30 "$COLLAB_URL" >> "$tmp" 2>/dev/null || echo "  (collab feed unavailable — skipping)"
 
 # Pull every Google Drive file-id that appears in the schedule or partners feed.
 ids="$(tr '\r' '\n' < "$tmp" \

@@ -439,6 +439,21 @@
   border-radius: 4px;
   padding: 2px 8px;
 }
+/* Dummy monogram on a card, until the real logo lands. */
+.cal-collab-logo--dummy {
+  display: inline-flex;
+  align-items: center;
+  height: 30px;
+  padding: 0 10px;
+  background: var(--bg-2);
+  border: 1px dashed var(--line);
+  border-radius: 4px;
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  color: var(--accent-2);
+}
 
 /* occupancy — the FOMO visual */
 .cal-occ { margin-top: 0.15rem; }
@@ -502,7 +517,22 @@
   transition: border-color 0.2s ease, color 0.2s ease;
 }
 .partner:hover { border-color: var(--accent); color: var(--ink); }
-.partner img { max-width: 100%; max-height: 60px; object-fit: contain; }
+.partner img, .partner-logo { max-width: 100%; max-height: 60px; object-fit: contain; }
+/* Dummy monogram stand-in until a real logo lands in the Files column. */
+.partner-logo--dummy {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 64px;
+  padding: 0.5rem 0.9rem;
+  background: var(--bg-2);
+  border: 1px dashed var(--line);
+  border-radius: 6px;
+  font-family: var(--display);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: var(--accent-2);
+}
 
 .partners-empty {
   padding: 2.5rem 1.5rem;

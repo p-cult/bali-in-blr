@@ -464,22 +464,24 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
   reads 16 days / 15 events / 14 venues from 15 sheet rows. (Venues was manual
   for a few hours the same day, then wired up on request.)
 
-### 15 Sep 2026 — collaborators: logos in Partners, and per-event on the calendar
-- One registry feeds both: the **Partners data** (`{name, logo, url}`, read from
-  the Partners tab via the bridge). `loadCollaborators()` loads it once and
-  builds a name→row map. The Partners grid shows every logo (as before); the
-  calendar now shows each event's collaborators.
-- Per event: a new **`collaborators`** column in the schedule sheet, a
-  comma-separated list of names. On the card, each name is shown as its logo
-  when it matches a Partners row (case/space-insensitive), otherwise as a name
-  chip ("In collaboration with …"). The generic rings icon now only shows when
-  an event is flagged a collaboration but names none.
-- Logos are pasted as Google Drive links (in the Partners tab), so
-  `sync-images.sh` now also scans the Partners feed and pulls those into
-  `assets/drive/`; `toImageUrl()` maps the links on both the grid and the cards.
-- **Setup needed to see anything:** populate the Partners tab (name, logo link,
-  url), add a `collaborators` column to the schedule sheet, and run
-  `sync-images.sh`. Until then it degrades to nothing shown.
+### 15 Sep 2026 — collaborators: live from the Collab/venues tab, with dummy logos
+- Collaborators are read **live from the "Collab / venues" tab** of the same
+  published workbook as the schedule (`CONFIG.COLLAB_URL`, gid 7166598) — same
+  method as the calendar. `parseCollaborators()` pulls the **"Logos" block**
+  (name / status / Files) out of that multi-block tab; `loadCollaborators()`
+  caches it and builds a name→row map.
+- One registry feeds both the **Partners grid** (all collaborator logos) and the
+  **per-event** logos on the calendar (a `collaborators` column in the schedule
+  sheet, comma-separated names matched to the block).
+- **Dummy logos:** the Files column is empty for now, so `collabMark()` renders
+  a monogram tile (dashed border) as a stand-in. The moment a **Drive link** is
+  put in the Files column, `sync-images.sh` (which now also scans the Collab
+  tab) pulls it into `assets/drive/` and `toImageUrl()` swaps the real logo in —
+  no code change.
+- First try used the Partners tab via the bridge; switched to reading the
+  Collab/venues tab directly because that is where the team already tracks the
+  logos. Lesson: read a private planning sheet through its **published /pub URL
+  and gid**, not the raw spreadsheet id (that 401s).
 
 ---
 

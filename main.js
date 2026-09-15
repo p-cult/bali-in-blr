@@ -20,6 +20,14 @@ const CONFIG = {
   SCHEDULE_URL:
     "https://docs.google.com/spreadsheets/d/e/2PACX-1vTji37D6cT7J9bLFptJdNaYrvZF_soZyiqIsX-rHYUj4H6rnfMCExu2hIyVjCk48j86rdaBhp_lthzb/pub?gid=289612903&single=true&output=tsv",
 
+  // Collaborators, read live from the "Collab / venues" tab of the same
+  // published workbook. Its "Logos" block (name / status / Files) drives the
+  // Partners grid and the per-event collaborator logos. A Drive link in the
+  // Files column becomes that collaborator's logo (via sync-images.sh); until
+  // then a dummy monogram tile stands in.
+  COLLAB_URL:
+    "https://docs.google.com/spreadsheets/d/e/2PACX-1vTji37D6cT7J9bLFptJdNaYrvZF_soZyiqIsX-rHYUj4H6rnfMCExu2hIyVjCk48j86rdaBhp_lthzb/pub?gid=7166598&single=true&output=tsv",
+
   // Used when the sheet has no rows yet, or cannot be reached.
   LOCAL_EVENTS_URL: "data/events.json",
   LOCAL_PARTNERS_URL: "data/partners.json",
@@ -916,34 +924,74 @@ async function loadCalendar() {
    names to their logos. */
 let COLLAB_LIST = null;
 let COLLAB_BY_NAME = new Map();
+
+/* Parse the "Logos" block out of the Collab/venues tab (TSV). The block is a
+   sub-table headed by a "Logos" cell; the name is in that column, its status in
+   the next, and the logo file/link in the one after ("Files"). A blank name row
+   sits between the header and the first entry, so skip blanks until the first
+   name, then stop at the next blank. */
+function parseCollaborators(tsv) {
+  const rows = String(tsv || "").replace(/\r/g, "").split("\n").map((r) => r.split("\t"));
+  let col = -1, start = -1;
+  for (let i = 0; i < rows.length && col === -1; i++) {
+    const c = rows[i].findIndex((cell) => String(cell).trim().toLowerCase() === "logos");
+    if (c !== -1) { col = c; start = i + 1; }
+  }
+  if (col === -1) return [];
+  const out = [];
+  let started = false;
+  for (let i = start; i < rows.length; i++) {
+    const name = String(rows[i][col] || "").trim();
+    if (!name) { if (started) break; else continue; }
+    started = true;
+    out.push({
+      name: name,
+      status: String(rows[i][col + 1] || "").trim(),
+      logo: String(rows[i][col + 2] || "").trim(),
+      url: "",
+    });
+  }
+  return out;
+}
+
 async function loadCollaborators() {
   if (COLLAB_LIST) return COLLAB_LIST;
+  COLLAB_LIST = [];
   try {
-    const list = await loadJSON(SOURCES.partners);
-    COLLAB_LIST = Array.isArray(list) ? list : [];
+    const res = await fetchWithTimeout(CONFIG.COLLAB_URL, { cache: "no-store" });
+    COLLAB_LIST = parseCollaborators(await res.text());
   } catch (e) {
     COLLAB_LIST = [];
   }
   COLLAB_BY_NAME = new Map(
-    COLLAB_LIST.filter((p) => p && p.name).map((p) => [String(p.name).trim().toLowerCase(), p])
+    COLLAB_LIST.filter((p) => p && p.name).map((p) => [p.name.trim().toLowerCase(), p])
   );
   return COLLAB_LIST;
 }
 
-/* An event's collaborators (a comma-separated list of names in the sheet),
-   shown as their logos where the name matches a Partners row, otherwise as the
-   name. Empty when the event names none. */
+/* A collaborator's mark: their real logo when the Files column holds one,
+   otherwise a dummy monogram tile so the layout reads as logos meanwhile. */
+function collabMonogram(name) {
+  const w = String(name || "").trim().split(/\s+/).filter(Boolean);
+  if (!w.length) return "?";
+  return (w.length === 1 ? w[0].slice(0, 4) : w.map((x) => x[0]).join("").slice(0, 3)).toUpperCase();
+}
+function collabMark(p, cls) {
+  const logo = p && safeUrl(toImageUrl(p.logo));
+  const name = (p && p.name) || "";
+  if (logo) {
+    return `<img class="${cls}" src="${esc(logo)}" alt="${esc(name)}" title="${esc(name)}" loading="lazy" onerror="this.remove();" />`;
+  }
+  return `<span class="${cls} ${cls}--dummy" title="${esc(name)}">${esc(collabMonogram(name))}</span>`;
+}
+
+/* An event's collaborators (a comma-separated list of names in the schedule
+   sheet), shown as their logos — or a dummy monogram when no logo yet. Empty
+   when the event names none. */
 function calCollaborators(ev) {
   const names = String(ev.collaborators || "").split(",").map((s) => s.trim()).filter(Boolean);
   if (!names.length) return "";
-  const items = names.map((n) => {
-    const p = COLLAB_BY_NAME.get(n.toLowerCase());
-    const logo = p && safeUrl(toImageUrl(p.logo));
-    if (logo) {
-      return `<img class="cal-collab-logo" src="${esc(logo)}" alt="${esc(n)}" title="${esc(n)}" loading="lazy" onerror="this.remove();" />`;
-    }
-    return `<span class="cal-collab-name">${esc(n)}</span>`;
-  }).join("");
+  const items = names.map((n) => collabMark(COLLAB_BY_NAME.get(n.toLowerCase()) || { name: n }, "cal-collab-logo")).join("");
   return `<div class="cal-collabs"><span class="cal-collabs-label">In collaboration with</span><span class="cal-collab-logos">${items}</span></div>`;
 }
 
@@ -964,11 +1012,8 @@ async function loadPartners() {
 
   grid.classList.add("has-partners");
   grid.innerHTML = partners.map((p) => {
-    const logo = safeUrl(toImageUrl(p.logo));
     const url = safeUrl(p.url);
-    const inner = logo
-      ? `<img src="${esc(logo)}" alt="${esc(p.name)}" loading="lazy" />`
-      : `<span>${esc(p.name)}</span>`;
+    const inner = collabMark(p, "partner-logo");
     return url
       ? `<a class="partner" href="${esc(url)}" target="_blank" rel="noopener" title="${esc(p.name)}">${inner}</a>`
       : `<div class="partner" title="${esc(p.name)}">${inner}</div>`;
