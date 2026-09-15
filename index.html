@@ -66,8 +66,10 @@
       </p>
       <p class="hero-tagline">Sharing Stories | Connecting Cultures</p>
       <div class="hero-meta">
-        <div><span class="hero-meta-num">18</span><span class="hero-meta-label">Days</span></div>
-        <div><span class="hero-meta-num">18</span><span class="hero-meta-label">Events</span></div>
+        <!-- Days and Events auto-sync from the calendar (main.js updateHeroStats);
+             the numbers here are the fallback shown if the calendar can't load. -->
+        <div><span class="hero-meta-num" data-stat="days">16</span><span class="hero-meta-label">Days</span></div>
+        <div><span class="hero-meta-num" data-stat="events">15</span><span class="hero-meta-label">Events</span></div>
         <div><span class="hero-meta-num">15</span><span class="hero-meta-label">Venues across the city</span></div>
       </div>
       <div class="hero-actions">
@@ -511,6 +513,6 @@
       }
     })();
   </script>
-  <script src="main.js?v=hub49"></script>
+  <script src="main.js?v=hub50"></script>
 </body>
 </html>

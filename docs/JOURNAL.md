@@ -449,6 +449,20 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
   A first pass flagged four as "missing" before they were reached — correct
   behaviour, and worth remembering before chasing it again.
 
+### 15 Sep 2026 — hero stats: bigger, spread, and self-syncing
+- Reworked the hero stat row. Numbers are now large (clamp 2.6–3.8rem) and
+  spread across the full content width (`justify-content: space-between`,
+  the old 780px cap dropped). Each label sits on one line under its number —
+  an earlier attempt held the label to the number's width, which stacked
+  "Venues across the city" into an ugly three-line block under 15; letting the
+  label keep its own width fixed it. On phones all three stay on one row.
+- **Days and Events now auto-sync with the calendar** (`updateHeroStats` in
+  `main.js`, run when the calendar loads). Events = number of listed events;
+  Days = the span from the first event date to the last, inclusive. The
+  numbers in `index.html` are only a fallback shown if the calendar can't
+  load. Venues is left manual — "across the city" is a claim about the city,
+  not a row count. Currently reads 16 days / 15 events from 15 sheet rows.
+
 ---
 
 ## 2. Lessons and standing rules (the "why" behind the rules)

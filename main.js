@@ -815,6 +815,32 @@ function cardHTML(ev) {
     </article>`;
 }
 
+/* Keep the hero's Days/Events figures in sync with the calendar, so they are
+   never hand-maintained. Events = how many are listed; Days = the festival's
+   span, first event date to last, inclusive. Venues stays a manual figure
+   ("across the city" is a claim about the city, not a row count). If no event
+   is dated yet, the Days fallback already in the HTML is left as-is. */
+function updateHeroStats(events) {
+  const setNum = (key, val) => {
+    const el = document.querySelector('.hero-meta-num[data-stat="' + key + '"]');
+    if (el && val != null) el.textContent = val;
+  };
+  setNum("events", events.length);
+
+  const times = [];
+  events.forEach((ev) => {
+    [ev.startDate, ev.endDate].forEach((d) => {
+      if (!d) return;
+      const t = new Date(d + "T00:00:00").getTime();
+      if (!isNaN(t)) times.push(t);
+    });
+  });
+  if (times.length) {
+    const span = Math.round((Math.max(...times) - Math.min(...times)) / 86400000) + 1;
+    setNum("days", span);
+  }
+}
+
 async function loadCalendar() {
   const grid = document.getElementById("calendar-grid");
   const filters = document.getElementById("calendar-filters");
@@ -847,6 +873,7 @@ async function loadCalendar() {
   // Sheet/file row order is the display order — reordering rows reorders the site.
   events = events.map(normaliseEvent);
 
+  updateHeroStats(events);
   render(events);
   if (filters) {
     filters.hidden = false;
