@@ -25,6 +25,9 @@
 set -euo pipefail
 
 SCHEDULE_URL="https://docs.google.com/spreadsheets/d/e/2PACX-1vTji37D6cT7J9bLFptJdNaYrvZF_soZyiqIsX-rHYUj4H6rnfMCExu2hIyVjCk48j86rdaBhp_lthzb/pub?gid=289612903&single=true&output=tsv"
+# The Partners tab (via the bridge) holds collaborator logos, often as Drive
+# links; scan it too so those logos are synced alongside event images.
+PARTNERS_URL="https://script.google.com/macros/s/AKfycbyKXzPHQLsHCoryx0aJVpVkP0Z0XrnPxjucaiUJtR1aXeux33ygq2Br2QcBNU_MAB7qDw/exec?sheet=partners"
 MAXDIM=1600          # longest side, px
 QUALITY=70           # JPEG quality
 OUTDIR="assets/drive"
@@ -82,13 +85,17 @@ echo "Reading schedule sheet…"
 tmp="$(mktemp)"
 curl -fsSL --max-time 30 "$SCHEDULE_URL" -o "$tmp" || { echo "Error: could not fetch the schedule sheet."; exit 1; }
 
-# Pull every Google Drive file-id that appears anywhere in the sheet.
+# Also read the Partners tab (collaborator logos). Non-fatal if it can't load.
+echo "Reading partners/collaborators…"
+if curl -fsSL --max-time 30 "$PARTNERS_URL" >> "$tmp" 2>/dev/null; then :; else echo "  (partners feed unavailable — skipping)"; fi
+
+# Pull every Google Drive file-id that appears in the schedule or partners feed.
 ids="$(tr '\r' '\n' < "$tmp" \
   | grep -oE 'drive\.google\.com/(file/d/|open\?id=|uc\?[^[:space:]]*id=)[A-Za-z0-9_-]+' \
   | grep -oE '[A-Za-z0-9_-]{20,}' | sort -u || true)"
 rm -f "$tmp"
 
-if [ -z "$ids" ]; then echo "No Google Drive image links in the sheet. Nothing to do."; exit 0; fi
+if [ -z "$ids" ]; then echo "No Google Drive image links found. Nothing to do."; exit 0; fi
 
 count=0; ok=0; fail=0
 for id in $ids; do

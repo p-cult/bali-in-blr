@@ -464,6 +464,23 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
   reads 16 days / 15 events / 14 venues from 15 sheet rows. (Venues was manual
   for a few hours the same day, then wired up on request.)
 
+### 15 Sep 2026 — collaborators: logos in Partners, and per-event on the calendar
+- One registry feeds both: the **Partners data** (`{name, logo, url}`, read from
+  the Partners tab via the bridge). `loadCollaborators()` loads it once and
+  builds a name→row map. The Partners grid shows every logo (as before); the
+  calendar now shows each event's collaborators.
+- Per event: a new **`collaborators`** column in the schedule sheet, a
+  comma-separated list of names. On the card, each name is shown as its logo
+  when it matches a Partners row (case/space-insensitive), otherwise as a name
+  chip ("In collaboration with …"). The generic rings icon now only shows when
+  an event is flagged a collaboration but names none.
+- Logos are pasted as Google Drive links (in the Partners tab), so
+  `sync-images.sh` now also scans the Partners feed and pulls those into
+  `assets/drive/`; `toImageUrl()` maps the links on both the grid and the cards.
+- **Setup needed to see anything:** populate the Partners tab (name, logo link,
+  url), add a `collaborators` column to the schedule sheet, and run
+  `sync-images.sh`. Until then it degrades to nothing shown.
+
 ---
 
 ## 2. Lessons and standing rules (the "why" behind the rules)

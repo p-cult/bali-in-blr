@@ -409,6 +409,37 @@
 
 .cal-desc { margin: 0; font-size: 0.85rem; color: var(--muted-2); }
 
+/* Per-event collaborators: their logos (or names) under the description. */
+.cal-collabs { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.7rem; margin-top: 0.9rem; }
+.cal-collabs-label {
+  font-family: var(--display);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted-2);
+}
+.cal-collab-logos { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
+/* Logos sit on a light chip so a dark or colour logo stays legible on the
+   dark card. */
+.cal-collab-logo {
+  height: 30px;
+  width: auto;
+  max-width: 120px;
+  object-fit: contain;
+  background: #fff;
+  border-radius: 4px;
+  padding: 3px 6px;
+}
+.cal-collab-name {
+  font-size: 0.8rem;
+  color: var(--ink);
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 2px 8px;
+}
+
 /* occupancy — the FOMO visual */
 .cal-occ { margin-top: 0.15rem; }
 .cal-occ-bar { position: relative; height: 5px; border-radius: 3px; background: rgba(239, 231, 216, 0.09); overflow: hidden; }

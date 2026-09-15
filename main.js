@@ -496,6 +496,7 @@ function parseSchedule(tsv) {
       title: at(cells, "title"),
       category: at(cells, "category"),
       collaboration: at(cells, "collaboration"),
+      collaborators: at(cells, "collaborators"),
       startDate: at(cells, "start date") || at(cells, "date"),
       endDate: at(cells, "end date"),
       startTime: at(cells, "start time"),
@@ -633,6 +634,7 @@ function normaliseEvent(raw, i) {
     title: pick("title"),
     category: normaliseCategory(pick("category")),
     collab: calYes(pick("collaboration")) || raw.collab === true,
+    collaborators: pick("collaborators"),
     startDate: parseSheetDate(pick("startDate", "date")),
     endDate: parseSheetDate(pick("endDate")),
     startTime: pick("startTime") || (parts[0] || "").trim(),
@@ -803,12 +805,13 @@ function cardHTML(ev) {
       <div class="cal-body">
         <div class="cal-head">
           <span class="cal-cat">${esc(ev.category || "")}</span>
-          ${ev.collab ? `<span class="cal-collab" title="A collaboration">${CAL_ICONS.rings}</span>` : ""}
+          ${ev.collab && !String(ev.collaborators || "").trim() ? `<span class="cal-collab" title="A collaboration">${CAL_ICONS.rings}</span>` : ""}
           ${calStatusChip(ev)}
         </div>
         <h4 class="cal-title">${esc(ev.title)}</h4>
         ${meta}
         ${ev.description ? `<p class="cal-desc">${esc(ev.description)}</p>` : ""}
+        ${calCollaborators(ev)}
         ${calOcc(ev)}
         <div class="cal-act">${calAction(ev)}</div>
       </div>
@@ -882,6 +885,7 @@ async function loadCalendar() {
   events = events.map(normaliseEvent);
 
   updateHeroStats(events);
+  await loadCollaborators(); // so cards can show each event's collaborator logos
   render(events);
   if (filters) {
     filters.hidden = false;
@@ -905,17 +909,49 @@ async function loadCalendar() {
 
 }
 
-/* ---------- Partners ---------- */
+/* ---------- Partners / collaborators ----------
+   One registry (the Partners data: {name, logo, url}) feeds both the Partners
+   logo grid and the per-event collaborator logos on the calendar. Loaded once
+   and cached; COLLAB_BY_NAME lets the calendar match an event's collaborator
+   names to their logos. */
+let COLLAB_LIST = null;
+let COLLAB_BY_NAME = new Map();
+async function loadCollaborators() {
+  if (COLLAB_LIST) return COLLAB_LIST;
+  try {
+    const list = await loadJSON(SOURCES.partners);
+    COLLAB_LIST = Array.isArray(list) ? list : [];
+  } catch (e) {
+    COLLAB_LIST = [];
+  }
+  COLLAB_BY_NAME = new Map(
+    COLLAB_LIST.filter((p) => p && p.name).map((p) => [String(p.name).trim().toLowerCase(), p])
+  );
+  return COLLAB_LIST;
+}
+
+/* An event's collaborators (a comma-separated list of names in the sheet),
+   shown as their logos where the name matches a Partners row, otherwise as the
+   name. Empty when the event names none. */
+function calCollaborators(ev) {
+  const names = String(ev.collaborators || "").split(",").map((s) => s.trim()).filter(Boolean);
+  if (!names.length) return "";
+  const items = names.map((n) => {
+    const p = COLLAB_BY_NAME.get(n.toLowerCase());
+    const logo = p && safeUrl(toImageUrl(p.logo));
+    if (logo) {
+      return `<img class="cal-collab-logo" src="${esc(logo)}" alt="${esc(n)}" title="${esc(n)}" loading="lazy" onerror="this.remove();" />`;
+    }
+    return `<span class="cal-collab-name">${esc(n)}</span>`;
+  }).join("");
+  return `<div class="cal-collabs"><span class="cal-collabs-label">In collaboration with</span><span class="cal-collab-logos">${items}</span></div>`;
+}
+
 async function loadPartners() {
   const grid = document.getElementById("partners-grid");
   if (!grid) return;
 
-  let partners = [];
-  try {
-    partners = await loadJSON(SOURCES.partners);
-  } catch (e) {
-    partners = [];
-  }
+  const partners = await loadCollaborators();
 
   if (!Array.isArray(partners) || partners.length === 0) {
     grid.innerHTML = `
@@ -928,7 +964,7 @@ async function loadPartners() {
 
   grid.classList.add("has-partners");
   grid.innerHTML = partners.map((p) => {
-    const logo = safeUrl(p.logo);
+    const logo = safeUrl(toImageUrl(p.logo));
     const url = safeUrl(p.url);
     const inner = logo
       ? `<img src="${esc(logo)}" alt="${esc(p.name)}" loading="lazy" />`
