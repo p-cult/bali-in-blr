@@ -930,7 +930,7 @@ function calAction(ev) {
   if (ev.status !== "soldout") {
     const btns = [];
     if (a.bms) btns.push(logoBtn(a.bms, "btn-bms", "assets/bms-btn.svg", "Book on BookMyShow"));
-    if (a.district) btns.push(btn(a.district, "btn-district", "Book on District"));
+    if (a.district) btns.push(logoBtn(a.district, "btn-district", "assets/dstrct-btn.svg", "Book on District"));
     // A generic ticket link is a fallback only when no named provider is set.
     if (!a.bms && !a.district && a.ticket) {
       btns.push(btn(a.ticket, "btn-primary", isTel(a.ticket) ? "Call to book" : "Book / passes"));

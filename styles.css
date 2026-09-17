@@ -287,14 +287,16 @@ p.section-intro { max-width: 44rem; color: var(--muted); font-size: 1.05rem; }
    recognisable, with white text for contrast. */
 .btn-bms { background: #C4242C; color: #FFF; border-color: #C4242C; }
 .btn-bms:hover { background: #A61C23; border-color: #A61C23; }
-.btn-district { background: #1B1D21; color: #FFF; border-color: #1B1D21; }
-.btn-district:hover { background: #000; border-color: #000; }
-.section-cream .btn-district { border-color: #1B1D21; }
+/* District by Zomato brand purple. */
+.btn-district { background: #8B15F0; color: #FFF; border-color: #8B15F0; }
+.btn-district:hover { background: #7410C9; border-color: #7410C9; }
+.section-cream .btn-district { border-color: #8B15F0; }
 
 /* A button whose label is the brand's own logo (an <img>) rather than text.
-   The logo keeps its own aspect ratio; the button's padding sets its size. */
-.btn-logo { display: inline-flex; align-items: center; justify-content: center; }
-.btn-logo-img { height: 1.2rem; width: auto; display: block; }
+   The logo keeps its own aspect ratio; a shared min-width + fixed logo height
+   make every provider button (BookMyShow, District) the same size. */
+.btn-logo { display: inline-flex; align-items: center; justify-content: center; min-width: 10.5rem; }
+.btn-logo-img { height: 1.25rem; width: auto; display: block; }
 
 /* --------------------------------------------------------------- 6. Header */
 
