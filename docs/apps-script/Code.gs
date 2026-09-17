@@ -37,11 +37,30 @@
  */
 const SHEET_ID = '';
 
+/* The planning workbook ("All things - Bali in Bengaluru") that holds the
+   Event List and Collab/venues tabs. The script's owner must have access to it;
+   reads go through this by id so they never depend on Publish-to-web. */
+const PLANNING_ID = '1DLvEugQc1YvtXN428pR2b5d71vFRCkq1tnZpYPkEdmY';
+
 /** The spreadsheet this script works on. */
 function book() {
   return SHEET_ID
     ? SpreadsheetApp.openById(SHEET_ID)
     : SpreadsheetApp.getActiveSpreadsheet();
+}
+
+/** A tab of any accessible spreadsheet, serialised as TSV (display values). */
+function sheetTsv(spreadsheetId, tabName) {
+  const ss = SpreadsheetApp.openById(spreadsheetId);
+  const sh = ss.getSheetByName(tabName);
+  if (!sh || sh.getLastRow() < 1) return '';
+  return sh.getDataRange().getDisplayValues()
+    .map(function (row) { return row.join('\t'); }).join('\n');
+}
+
+/** Plain-text (TSV) response, with the same permissive access as json(). */
+function tsvOut(s) {
+  return ContentService.createTextOutput(s).setMimeType(ContentService.MimeType.TEXT);
 }
 
 const MASTER_TAB = 'Master';
@@ -361,6 +380,16 @@ function doGet(e) {
   const which = ((e && e.parameter && e.parameter.sheet) || '').toLowerCase();
   const callback = e && e.parameter && e.parameter.callback; // optional JSONP
   const verify = e && e.parameter && e.parameter.verify;     // submission id
+
+  // Reliable, publish-independent reads of the planning workbook. The script
+  // runs as the owner, so it can read those tabs whether or not they are
+  // "published to web" — the site uses these so the sheet is a single source
+  // of truth that a publish toggle can't break. Returned as TSV to match the
+  // site's existing parsers.
+  const feed = ((e && e.parameter && e.parameter.feed) || '').toLowerCase();
+  if (feed === 'schedule') return tsvOut(sheetTsv(PLANNING_ID, 'Event List'));
+  if (feed === 'collab') return tsvOut(sheetTsv(PLANNING_ID, 'Collab / venues'));
+
   let data;
   if (verify) data = readReceipt(verify);
   else if (which === 'events') data = readTab('Events');

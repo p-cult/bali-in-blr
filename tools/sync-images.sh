@@ -25,6 +25,8 @@
 set -euo pipefail
 
 SCHEDULE_URL="https://docs.google.com/spreadsheets/d/e/2PACX-1vTji37D6cT7J9bLFptJdNaYrvZF_soZyiqIsX-rHYUj4H6rnfMCExu2hIyVjCk48j86rdaBhp_lthzb/pub?gid=289612903&single=true&output=tsv"
+# Bridge feed fallback (owner-read; works even if the tab isn't published).
+SCHEDULE_ALT="https://script.google.com/macros/s/AKfycbyKXzPHQLsHCoryx0aJVpVkP0Z0XrnPxjucaiUJtR1aXeux33ygq2Br2QcBNU_MAB7qDw/exec?feed=schedule"
 # The Partners tab (via the bridge) may hold collaborator logos as Drive links.
 PARTNERS_URL="https://script.google.com/macros/s/AKfycbyKXzPHQLsHCoryx0aJVpVkP0Z0XrnPxjucaiUJtR1aXeux33ygq2Br2QcBNU_MAB7qDw/exec?sheet=partners"
 # The "Collab / venues" tab's Files column holds collaborator logos as Drive
@@ -85,7 +87,9 @@ dims() {
 
 echo "Reading schedule sheet…"
 tmp="$(mktemp)"
-curl -fsSL --max-time 30 "$SCHEDULE_URL" -o "$tmp" || { echo "Error: could not fetch the schedule sheet."; exit 1; }
+curl -fsSL --max-time 30 "$SCHEDULE_URL" -o "$tmp" \
+  || curl -fsSL --max-time 30 "$SCHEDULE_ALT" -o "$tmp" \
+  || { echo "Error: could not fetch the schedule (published feed and bridge feed both failed)."; exit 1; }
 
 # Also read the Partners tab and the Collab/venues tab (collaborator logos).
 # Non-fatal if either can't load.

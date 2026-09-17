@@ -28,6 +28,16 @@ const CONFIG = {
   COLLAB_URL:
     "https://docs.google.com/spreadsheets/d/e/2PACX-1vTji37D6cT7J9bLFptJdNaYrvZF_soZyiqIsX-rHYUj4H6rnfMCExu2hIyVjCk48j86rdaBhp_lthzb/pub?gid=7166598&single=true&output=tsv",
 
+  // Reliable fallbacks, read through the bridge (which runs as the sheet owner,
+  // so it works whether or not the tabs are "published to web"). The site tries
+  // the published feed above first, then these — so a publish toggle can no
+  // longer break the calendar/collaborators. Needs the Apps Script redeployed
+  // with the feed handlers in docs/apps-script/Code.gs.
+  SCHEDULE_URL_ALT:
+    "https://script.google.com/macros/s/AKfycbyKXzPHQLsHCoryx0aJVpVkP0Z0XrnPxjucaiUJtR1aXeux33ygq2Br2QcBNU_MAB7qDw/exec?feed=schedule",
+  COLLAB_URL_ALT:
+    "https://script.google.com/macros/s/AKfycbyKXzPHQLsHCoryx0aJVpVkP0Z0XrnPxjucaiUJtR1aXeux33ygq2Br2QcBNU_MAB7qDw/exec?feed=collab",
+
   // Used when the sheet has no rows yet, or cannot be reached.
   LOCAL_EVENTS_URL: "data/events.json",
   LOCAL_PARTNERS_URL: "data/partners.json",
@@ -567,19 +577,25 @@ function cachedEvents() {
   } catch (e) { return null; }
 }
 
+function fetchSchedule(url) {
+  return fetchWithTimeout(url, { cache: "no-store" }, 9000)
+    .then((res) => (res.ok ? res.text() : Promise.reject(new Error("HTTP " + res.status))))
+    .then((text) => { const ev = parseSchedule(text); if (!ev.length) throw new Error("empty"); return ev; });
+}
+
 async function loadEvents() {
-  // The sheet is the source of truth once it has rows in it. The sheet and the
-  // local file are requested together, so the fallback never queues behind a
-  // stalled request to Google; whichever is usable wins, sheet first.
-  const fromSheet = CONFIG.SCHEDULE_URL
-    ? fetchWithTimeout(CONFIG.SCHEDULE_URL, { cache: "no-store" }, 9000)
-        .then((res) => (res.ok ? res.text() : Promise.reject(new Error("HTTP " + res.status))))
-        .then((text) => { const ev = parseSchedule(text); if (!ev.length) throw new Error("empty"); return ev; })
-    : Promise.reject(new Error("no sheet"));
+  // The sheet is the source of truth once it has rows in it. Two live sources
+  // are tried — the published feed, then the bridge feed (owner-read, works
+  // even if Publish-to-web is off) — then the local file, then the last cache.
+  // All requests are fired together so a stalled one never blocks a good one.
+  const sheetTries = [CONFIG.SCHEDULE_URL, CONFIG.SCHEDULE_URL_ALT]
+    .filter(Boolean).map((u) => fetchSchedule(u));
   const fromFile = loadJSON(SOURCES.events);
 
   let events = null;
-  try { events = await fromSheet; } catch (e) { /* try the file */ }
+  for (const p of sheetTries) {
+    try { events = await p; if (events && events.length) break; } catch (e) { /* next source */ }
+  }
   if (!events) { try { events = await fromFile; } catch (e) { /* try the cache */ } }
   if (events && events.length) { cacheEvents(events); return events; }
 
@@ -964,11 +980,13 @@ function loadCollaborators() {
     let logos = {};
     try { logos = await loadJSON("data/collab-logos.json"); } catch (e) { logos = {}; }
     let list = [];
-    try {
-      const res = await fetchWithTimeout(CONFIG.COLLAB_URL, { cache: "no-store" });
-      list = parseCollaborators(await res.text());
-    } catch (e) {
-      list = [];
+    // Published feed first, then the bridge feed (owner-read, publish-proof).
+    for (const url of [CONFIG.COLLAB_URL, CONFIG.COLLAB_URL_ALT].filter(Boolean)) {
+      try {
+        const res = await fetchWithTimeout(url, { cache: "no-store" });
+        const parsed = parseCollaborators(await res.text());
+        if (parsed.length) { list = parsed; break; }
+      } catch (e) { /* next source */ }
     }
     list.forEach((p) => {
       const k = p.name && p.name.trim().toLowerCase();

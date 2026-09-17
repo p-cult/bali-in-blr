@@ -499,6 +499,22 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
 
 ---
 
+### 17 Sep 2026 — make the sheet read publish-proof (bridge feeds)
+- The planning workbook is published per-sheet, so the "Event List" tab kept
+  ending up un-published (401) whenever publish was re-toggled — breaking the
+  live calendar (it fell back to `data/events.json`). Re-publishing was a
+  recurring band-aid.
+- **Fix:** the Apps Script bridge now serves the schedule and collab tabs from
+  the planning workbook **by id** (`openById(PLANNING_ID)`), returned as TSV
+  (`?feed=schedule`, `?feed=collab`). The script executes as the owner, so this
+  works whether or not the tabs are published. The site tries the published feed
+  first, then the bridge feed, then the local file — so a publish toggle can no
+  longer break it. `sync-images.sh` gained the same fallback.
+- **Needs a one-time Apps Script redeploy** (the feed handlers are new in
+  `Code.gs`). Until then the bridge returns its old default for `?feed=…` and
+  the site simply uses the published feed / local fallback as before — no
+  regression. Also: the bridge's account must have access to `PLANNING_ID`.
+
 ## 2. Lessons and standing rules (the "why" behind the rules)
 
 **Data and privacy**
