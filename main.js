@@ -1488,7 +1488,9 @@ async function initOnboarding() {
   try {
     const seen = new Set();
     (await loadEvents()).map(normaliseEvent).forEach((e) => {
-      if (!e.title || seen.has(e.title)) return;
+      // Private/internal rows stay on the calendar for information, but they
+      // are not something a visitor can sign up to attend.
+      if (!e.title || e.notPublic || seen.has(e.title)) return;
       seen.add(e.title);
       const chip = calDayChip(e);
       const when = chip.mon ? " · " + chip.day + " " + chip.mon : "";

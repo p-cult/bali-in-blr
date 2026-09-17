@@ -22,7 +22,10 @@ the web as TSV, so editing that tab updates the site with no code change.
 | `date` | `2026-10-11`, `11/10/2026` (day first) or `October 11, 2026` all work. Unreadable dates show as "date to be announced" |
 | `venue` | Free text |
 | `start time`, `end time` | Free text, joined with an en dash |
-| `ticket link` | A link here flips the event to "On sale" and shows the booking button; empty means "Tickets coming soon" |
+| `ticket link` | Generic ticket URL (used only when the named provider columns are empty) |
+| `bookmyshow link` | BookMyShow URL — a real URL here puts a BookMyShow button on that event |
+| `district link` | District URL — same, for District |
+| `rsvp link` | External RSVP (form / page / phone). Placeholder links containing `EXAMPLE-` are ignored |
 
 The header row is found by name, so blank rows above it and reordered columns
 are both fine. While the tab has no rows, the site falls back to

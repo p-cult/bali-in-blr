@@ -48,6 +48,7 @@ v1.html             Previous design, kept for reference. noindex + robots-blocke
 admin/              Internal, login-gated tools (not for the public):
   index.html          Admin hub at /admin — lists the tools.
   campaign-links.html Campaign Link Builder (UTM links + QR → 'links' sheet tab).
+  report.html         Project report (programme, venues, costing, live counts).
   auth.js             Shared sign-in gate (username+password, SHA-256 hashes).
 assets/             Photos (extracted & optimised from the festival brochure PDF).
 data/
@@ -73,8 +74,10 @@ HANDOVER.md         This file.
 ```
 
 ### Feature switches & admin (quick pointers)
-- **`CONFIG.BOOKING_OPEN`** / **`CONFIG.RSVP_ENABLED`** in `main.js` gate the
-  calendar buttons — see §3. Both are currently `false`.
+- **`CONFIG.BOOKING_OPEN`** / **`CONFIG.RSVP_ENABLED`** in `main.js` — see §3.
+  Both are currently `false`. A real BookMyShow / District / RSVP / ticket URL
+  on an Event List row still renders that event's button (the flag only covers
+  events that have no live link yet).
 - **Admin** lives at `/admin` (login-gated; users are defined as SHA-256 hashes
   in `admin/auth.js`). Add a new admin tool by dropping a page under `admin/`
   that includes `auth.js` and wraps its content in `<div id="admin-app" hidden>`.
@@ -118,17 +121,22 @@ See `docs/BRIDGE-SETUP.md` for the full data model (flavours, questions carousel
 dedupe, receipts, share links) and `docs/apps-script/Code.gs` for the bridge.
 
 ### Calendar feature switches (`CONFIG` in `main.js`)
-Two flags gate what the calendar's event buttons do. **Both are `false`.**
-- **`BOOKING_OPEN`** — while `false`, event buttons never use ticket/RSVP links
-  from the sheet (placeholder links containing an `EXAMPLE-` marker or an
-  `example.com/net/org` domain are stripped by `toActionUrl` regardless), the
-  "Tickets live / Sold out" chips and the seats bar are hidden, and every button
-  routes to the single Register section. Flip to `true` for real ticketing.
-- **`RSVP_ENABLED`** — while `false`, buttons read "Register". When `true`,
-  buttons read "RSVP" and route to `#register?rsvp=1&programme=<event>`; the
-  register module then posts `flavour=rsvp` (event name included), landing in a
-  dedicated **RSVPs** tab. Turning it on needs BOTH this flag AND an Apps Script
-  redeploy (the `rsvp` flavour already exists in `Code.gs`).
+Two flags remain. **Both are `false`.**
+- **Per-event ticket buttons** — the Event List tab has `bookmyshow link`,
+  `district link`, `rsvp link` and `ticket link`. A real URL in any of those
+  cells renders that provider's button on that event (BookMyShow / District /
+  RSVP / generic Book). Placeholder/junk links (`EXAMPLE-`, example.com) are
+  stripped by `toActionUrl` before they can fire. Paste a live URL to activate
+  a show; an empty cell shows nothing extra.
+- **`BOOKING_OPEN`** — while `false`, events *without* a live link still route
+  to the single Register section, and the seats/FOMO bar stays hidden. Flip to
+  `true` when ticketing is generally open (waitlist copy, occupancy).
+- **`RSVP_ENABLED`** — while `false`, unlinked event buttons read "Register".
+  When `true`, they read "RSVP" and route to `#register?rsvp=1&programme=<event>`;
+  the register module then posts `flavour=rsvp` (event name included), landing
+  in a dedicated **RSVPs** tab. Turning it on needs BOTH this flag AND an Apps
+  Script redeploy (the `rsvp` flavour already exists in `Code.gs`). Ignored on
+  an event that already has its own ticket/RSVP URL.
 
 ---
 
@@ -147,13 +155,17 @@ names** so the bridge returns matching keys:
 | `time` | free text, optional |
 | `venue` | free text, optional |
 | `status` | `announced` \| `onsale` \| `concluded` (drives badge + button) |
-| `ticketUrl` | external ticket link (shown when `onsale`); or a media link (when `concluded`) |
+| `ticketUrl` | generic ticket/media link (fallback when no named provider is set) |
+| `bmsUrl` / `bookmyshow link` | BookMyShow URL — renders "Book on BookMyShow" |
+| `districtUrl` / `district link` | District URL — renders "Book on District" |
+| `rsvpUrl` / `rsvp link` | external RSVP (form / page / tel:) |
 | `image` | path like `assets/kecak-hanuman.jpg` (or a full URL) |
 | `description` | short blurb |
 
-Rendering logic (in `main.js` `loadCalendar`): dated events sort chronologically
-and appear before undated ones; `onsale` shows a **Book / passes** button,
-`concluded` shows a **View media** button, otherwise "Tickets coming soon".
+Rendering logic (in `main.js` `calAction`): a real URL in a provider column
+renders that button immediately; events with no live link go to Register while
+`BOOKING_OPEN` is false; `concluded` shows **View media** when a generic ticket
+link is present; `not public` / `internal` lists the event with no action.
 
 **Event images:** put an `assets/…` path in the image column. A Google Drive
 share link also works — Drive images can't be embedded directly, so
@@ -260,10 +272,14 @@ reports success — reload before assuming a file is missing.
 - [x] **Privacy policy** — `privacy.html` exists and is linked from the consent
       lines and the footer.
 - [ ] **Calendar (ongoing):** keep adding events/dates in the schedule sheet as they
-      firm up; add a ticket link to flip an event to "On sale".
-- [ ] **Phase 3 — Ticketing:** external platform (TBD — e.g. Townscript / District).
-      Paste each event's URL into the schedule sheet's ticket-link column; the
-      booking button appears automatically.
+      firm up. Paste a BookMyShow and/or District URL into that row to put a
+      Book button on the event.
+- [ ] **Phase 3 — Ticketing:** BookMyShow and District are both wired. Paste each
+      event's URL into the Event List `bookmyshow link` / `district link`
+      columns; the matching button appears. `BOOKING_OPEN` can stay false until
+      occupancy/waitlist copy is wanted globally.
+- [x] **Internal project report** — `/admin/report.html` (login-gated): programme
+      vs Event Brief, venues, indicative costing, live registration counts.
 - [ ] **Phase 4 — Post-event media:** build a Gallery section; set concluded events'
       link to a media/album, or add a dedicated `Media` sheet + renderer.
       Unused images `assets/carvings.jpg` and `assets/batik.jpg` are available.

@@ -26,18 +26,24 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
   domain, HTTPS). Festival runs **1–18 October 2026**.
 - **Bridge connected.** Register and Volunteer forms save via the Apps Script
   bridge into a deduplicated `Master` registry with per-flavour tabs and
-  receipts. Calendar reads the schedule sheet's `Event List` tab live.
-  Live counts: `BRIDGE_URL?sheet=stats` (85 registered on 13 Sep 2026).
+  receipts. Calendar reads the schedule sheet's `Event List` tab live, with a
+  publish-proof fallback through the bridge (`?feed=schedule` / `?feed=collab`).
+  Live counts: `BRIDGE_URL?sheet=stats` (178 registered on 17 Sep 2026:
+  52 updates, 129 volunteers).
 - **Measurement.** Views, every call-to-action click, phone and email taps,
   outbound links and confirmed registrations all reach `dataLayer`. The GTM
   container still needs its tags: see `docs/ANALYTICS-SETUP.md`.
-- **Switches currently OFF** in `main.js` `CONFIG`: `BOOKING_OPEN` (per-event
-  ticket/RSVP links from the sheet) and `RSVP_ENABLED` (per-event RSVP
-  capture). All event buttons funnel to the single Register module.
+- **Ticketing.** Event List columns `bookmyshow link`, `district link`,
+  `rsvp link` and `ticket link` each render a button when they hold a real URL.
+  No live ticket URLs yet; placeholder `EXAMPLE-` links are stripped. Switches
+  currently OFF: `BOOKING_OPEN` (occupancy bar / global waitlist copy) and
+  `RSVP_ENABLED` (internal RSVP flavour). Unlinked events still funnel to
+  Register.
 - **Analytics:** Google Tag Manager installed; GA4/Meta/Ads are added inside
   GTM, not in the repo.
-- **Admin:** `/admin` hub with a staff sign-in gate and the Campaign Link
-  Builder (UTM + ref links, QR minting, recorded to the sheet's `Mint` tab).
+- **Admin:** `/admin` hub with a staff sign-in gate, the Campaign Link
+  Builder, and a **Project report** (`/admin/report.html`) that reconstructs
+  the funder write-up from the planning workbook plus live registration counts.
 - **Images:** event photos come from Google Drive links in the sheet, synced
   to `assets/drive/` by `tools/sync-images.sh`. Programme cards carry the
   client's own photos (all seven have real images; no placeholder remains).
@@ -52,8 +58,8 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
   thing to hand a designer; the stylesheets remain the exact reference.
 - **Print:** `tools/build-event-posters.py` renders the event listing at
   500&#215;1000&#160;mm and 1000&#215;500&#160;mm into `assets/print/`.
-- **Open:** ticketing platform not chosen (Phase 3); post-event media/gallery
-  (Phase 4); an internal project-report page (see §3); the Monument display
+- **Open:** paste real BookMyShow / District URLs into the Event List as
+  shows go on sale; post-event media/gallery (Phase 4); the Monument display
   font is not licensed (see §2).
 
 ---
@@ -535,12 +541,42 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
   the live standalone script — it blanks SHEET_ID and kills registrations. Edit
   only the intended lines; keep the real SHEET_ID (vault → memory).
 
+### 17 Sep 2026 (later) — per-event BookMyShow / District buttons
+- Ticketing is no longer "pick one platform". Each Event List row can carry a
+  **bookmyshow link** and a **district link** (and the existing rsvp / ticket
+  columns). A provider button appears the moment a real URL is pasted; an empty
+  cell shows nothing. Placeholder `EXAMPLE-` links are still stripped.
+- `BOOKING_OPEN` is no longer a hard gate on those URLs: a single event can go
+  on sale without flipping the whole calendar. Events with no live link still
+  funnel to Register. The occupancy bar stays behind the flag.
+- Also: `admin/auth.js` no longer comments the plaintext passwords next to the
+  hashes (they were served at `/admin/auth.js`). Repo `Code.gs` keeps
+  `PLANNING_ID` blank, same rule as `SHEET_ID`.
+
+### 17 Sep 2026 (end of day) — internal project report
+- Built `/admin/report.html` (login-gated, noindex, unlinked from the public
+  hub): live registration counts from the bridge, Event Brief programme table
+  next to the public calendar, venues/collaborators, and the indicative costing
+  sheet. Print/save as PDF uses the cream print palette.
+- It flags sheet mismatches rather than "fixing" them in code. First one: the
+  Kumarans **Workshop for students** is Open to public: No on the Event Brief
+  but still has a Register button on the calendar (Event List status is not
+  `not public`). Same class of bug as Manipal on 12 Sep — set the status cell.
+- Register's programme checklist no longer includes `not public` rows. Manipal
+  was listed on the calendar (correctly with no button) but still offered as
+  something to sign up for.
+- Costing and ticket-price columns stay off the public hub; they are only on
+  this staff page. Do not add a `?feed=budget` to the unauthenticated bridge.
+
 ## 2. Lessons and standing rules (the "why" behind the rules)
 
 **Data and privacy**
 - PII lives only in the Foundation's Google Workspace. The site exposes
   aggregates only. The public site reads **only** the `Event List` tab of
   the planning sheet — never budget, fees, or personal rows.
+- Costing and artist fees may appear on `/admin/report.html` (staff gate).
+  Never add a budget/fees `?feed=` to the unauthenticated bridge — its URL
+  is public by design and must only return public data.
 - Spreadsheet ids are not secrets but do not belong in a public repo; they
   are in the vault. The bridge and schedule URLs must stay in `main.js`
   because the browser fetches them; their safety comes from returning only
@@ -615,6 +651,7 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
 - Cross-check the public calendar against the planning sheet's Event Brief.
   An event can be confirmed and dated yet not open to the public; listing it
   with a Register button invites people to something they cannot attend.
+  Those rows must also stay out of the Register programme checklist.
 - Client changes arrive as documents with strikethrough (old) beside new
   text. Apply them verbatim and only where struck; do not improve, extend or
   invent copy around them. Anything not struck stays.
@@ -633,16 +670,14 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
 
 ## 3. Deferred and future work (with context)
 
-- **Ticketing (Phase 3):** platform undecided (Townscript / District were
-  floated). Paste per-event URLs into the sheet's ticket-link column and set
-  `BOOKING_OPEN=true` when real.
+- **Ticketing (Phase 3):** BookMyShow and District buttons are wired. Paste
+  per-event URLs into the Event List provider columns. `BOOKING_OPEN` only
+  needs flipping for occupancy/waitlist copy.
 - **RSVP:** built and off. Flag + Apps Script redeploy to enable.
 - **Post-event media (Phase 4):** gallery section or a `Media` sheet +
   renderer; concluded events link to albums.
-- **Internal project-report page:** Vinod wants a page that helps produce
-  the funder/Foundation report from the planning sheet (programming grid,
-  event brief, venues, budget, fees) plus registration and volunteer counts.
-  Must be private or access-controlled, never a section of the public hub.
+- **Internal project-report page:** shipped at `/admin/report.html`. Iterate
+  if the funder template wants different sections.
 - **Calendar PDF download** is hidden on the site for now.
 - **Monument licence** purchase, then the one-token font switch.
 - **DNS hardening (client deferred, 10 Sep 2026):** on Cloudflare, add
