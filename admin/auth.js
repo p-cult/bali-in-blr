@@ -19,8 +19,8 @@
   "use strict";
 
   const USERS = {
-    jois:  "ee9d41e56dce85563d3e14b0a37eb48dde121c27539a2f4f9884e56b2ea1e0c7", // jois-7aade8
-    vinod: "df6fcc5c1774a5292e5b8c61bb0e9cc57034b3b4f25b439231fe7c9cd726c820", // vinod-98860
+    jois:  "ee9d41e56dce85563d3e14b0a37eb48dde121c27539a2f4f9884e56b2ea1e0c7",
+    vinod: "df6fcc5c1774a5292e5b8c61bb0e9cc57034b3b4f25b439231fe7c9cd726c820",
   };
   const AUTH_FLAG = "bali-admin-auth";
 

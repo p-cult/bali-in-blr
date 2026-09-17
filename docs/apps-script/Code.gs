@@ -44,8 +44,12 @@ const SHEET_ID = '';
 
 /* The planning workbook ("All things - Bali in Bengaluru") that holds the
    Event List and Collab/venues tabs. The script's owner must have access to it;
-   reads go through this by id so they never depend on Publish-to-web. */
-const PLANNING_ID = '1DLvEugQc1YvtXN428pR2b5d71vFRCkq1tnZpYPkEdmY';
+   reads go through this by id so they never depend on Publish-to-web.
+   ⚠️ Vault secret — like SHEET_ID this is blank in the repo. The real id lives
+   in the vault (bash tools/vault.sh show → memory) and in the LIVE script only.
+   The live Apps Script already has the correct value; do NOT paste this repo
+   copy over it (that would blank PLANNING_ID and break the feeds). */
+const PLANNING_ID = '';
 
 /** The spreadsheet this script works on. */
 function book() {
