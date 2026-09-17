@@ -28,12 +28,17 @@
  */
 
 /**
- * Normally nothing to set here. Create this script from inside the spreadsheet
- * (Extensions > Apps Script) and it is bound to that sheet, which book() uses.
- * Only set SHEET_ID if the script lives somewhere else and must reach the
- * sheet by id. Deliberately left blank in the repository: the id is not a
- * secret, but the sheet holds personal data, so it does not belong in a
- * public repo.
+ * The Registration Data spreadsheet id. The DEPLOYED "Bali-in-Blr" script is a
+ * STANDALONE project (not container-bound), so book() reaches the sheet by id —
+ * the live deployment HAS a real value here. It is blank in the repo on purpose
+ * (the id lives in the vault, not a public repo).
+ *
+ * ⚠️ LANDMINE: because this is blank here, do NOT paste this whole file over the
+ * live script — that wipes SHEET_ID and book() returns null (getActiveSpreadsheet
+ * is null for a standalone script), breaking ALL registrations. When editing the
+ * deployed script, change only the lines you mean to; keep the real SHEET_ID. To
+ * see it:  bash tools/vault.sh show  → memory. (17 Sep 2026: a full paste caused
+ * exactly this outage — see JOURNAL.)
  */
 const SHEET_ID = '';
 

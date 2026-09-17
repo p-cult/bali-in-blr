@@ -515,6 +515,26 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
   the site simply uses the published feed / local fallback as before — no
   regression. Also: the bridge's account must have access to `PLANNING_ID`.
 
+### 17 Sep 2026 — bridge redeployed with feeds; a SHEET_ID outage on the way
+- Redeployed the "Bali-in-Blr" Apps Script (standalone project; deployment id
+  AKfycby…MAB7qDw) so the `?feed=schedule` / `?feed=collab` handlers go live —
+  the site's publish-proof fallback now works end to end. Also re-published the
+  Event List tab (Publish to web → that sheet), which had been 401.
+- **Outage (self-inflicted, ~10 min):** I pasted the repo `Code.gs` over the live
+  script. The repo keeps `const SHEET_ID = ''` (the real id is a vault secret),
+  so this wiped it; `book()` then returned null (standalone → getActiveSpreadsheet
+  is null) and every registration/read threw `TypeError … getSheetByName`.
+  Caught it via a post-deploy `mode=check` returning that error.
+- **Recovery:** undid the paste in the editor (restored the working code WITH the
+  real SHEET_ID), saved, deployed Version 10 → registrations restored. Then added
+  the feed handlers WITHOUT touching SHEET_ID by transforming the Monaco model
+  in-place (string-insert, never reading/printing the secret), saved, deployed
+  Version 11. Verified: mode=check ok, feed=schedule TSV (16 rows), feed=collab
+  TSV with the Logos block.
+- **Lesson (also flagged in Code.gs):** never paste the whole repo `Code.gs` over
+  the live standalone script — it blanks SHEET_ID and kills registrations. Edit
+  only the intended lines; keep the real SHEET_ID (vault → memory).
+
 ## 2. Lessons and standing rules (the "why" behind the rules)
 
 **Data and privacy**
