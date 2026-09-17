@@ -14,9 +14,9 @@ const CONFIG = {
   // "https://script.google.com/macros/s/AKfy.../exec"
   BRIDGE_URL: "https://script.google.com/macros/s/AKfycbyKXzPHQLsHCoryx0aJVpVkP0Z0XrnPxjucaiUJtR1aXeux33ygq2Br2QcBNU_MAB7qDw/exec",
 
-  // The festival calendar, read live from the "Event List" tab of the
-  // published schedule sheet. Columns: title, category, date, venue,
-  // start time, end time, ticket link. Edit the sheet and the site follows.
+  // The festival calendar, read live from the "Event List" tab. Ticket buttons
+  // also overlay BookMyShow / District URLs from the "BMS" listings tab.
+  // Edit those cells and the site follows.
   SCHEDULE_URL:
     "https://docs.google.com/spreadsheets/d/e/2PACX-1vTji37D6cT7J9bLFptJdNaYrvZF_soZyiqIsX-rHYUj4H6rnfMCExu2hIyVjCk48j86rdaBhp_lthzb/pub?gid=289612903&single=true&output=tsv",
 
@@ -38,16 +38,22 @@ const CONFIG = {
   COLLAB_URL_ALT:
     "https://script.google.com/macros/s/AKfycbyKXzPHQLsHCoryx0aJVpVkP0Z0XrnPxjucaiUJtR1aXeux33ygq2Br2QcBNU_MAB7qDw/exec?feed=collab",
 
+  // BookMyShow / District listings (the "BMS" tab). Staff put a hyperlink on
+  // the word "Link" in "Event link - BMS" / "Event link - District". The
+  // published TSV only has the label; the bridge feed returns the real URL.
+  TICKETS_URL:
+    "https://docs.google.com/spreadsheets/d/e/2PACX-1vTji37D6cT7J9bLFptJdNaYrvZF_soZyiqIsX-rHYUj4H6rnfMCExu2hIyVjCk48j86rdaBhp_lthzb/pub?gid=41213049&single=true&output=tsv",
+  TICKETS_URL_ALT:
+    "https://script.google.com/macros/s/AKfycbyKXzPHQLsHCoryx0aJVpVkP0Z0XrnPxjucaiUJtR1aXeux33ygq2Br2QcBNU_MAB7qDw/exec?feed=bms",
+
   // Used when the sheet has no rows yet, or cannot be reached.
   LOCAL_EVENTS_URL: "data/events.json",
   LOCAL_PARTNERS_URL: "data/partners.json",
 
-  // Master switch for per-event booking. While false, every calendar event's
-  // button routes to the ONE internal registration module (#register, with the
-  // programme pre-selected) — never to ticket/RSVP links from the sheet. So
-  // stray or placeholder sheet links (e.g. forms.gle/…) can never fire, and all
-  // registration funnels through a single page. Flip to true only when
-  // real per-event booking/ticketing is live.
+  // Occupancy / waitlist copy only. Per-event Book / RSVP buttons follow the
+  // sheet: a real URL in a ticket column (Event List or the BMS tab) shows
+  // that button whether this flag is on or off. Leave false until seats are
+  // worth showing. Placeholder EXAMPLE- links are still stripped.
   BOOKING_OPEN: false,
 
   // Per-event RSVP, routed through the Apps Script bridge into the sheet's
@@ -454,14 +460,19 @@ function toImageUrl(v) {
 /* A booking/RSVP target from the sheet: either a URL or a phone number. A bare
    phone number becomes a tel: link so the button dials it. */
 function toActionUrl(v) {
-  const s = String(v == null ? "" : v).trim();
+  let s = String(v == null ? "" : v).trim();
   if (!s) return "";
+  // Visible labels used on the BMS tab when the URL is a cell hyperlink, plus
+  // other non-URL placeholders. These are not booking targets.
+  if (/^(link|links|na|n\/a|pending|in review|review|yes|no|none|tbd|coming soon|-|–|—)$/i.test(s)) return "";
   // Drop obvious placeholder / dummy links, whatever sits in the sheet:
   //  - the "EXAMPLE-" marker (e.g. forms.gle/EXAMPLE-rsvp), case-sensitive so a
   //    real link with "example" in a slug is not caught;
   //  - RFC-2606 reserved test domains (example.com/net/org).
   if (/EXAMPLE-/.test(s)) return "";
   if (/^https?:\/\/(?:[^/]*\.)?example\.(?:com|net|org)\b/i.test(s)) return "";
+  const embedded = s.match(/https?:\/\/[^\s<>"'\)\]]+/i);
+  if (embedded) s = embedded[0];
   const safe = safeUrl(s);
   if (safe) return safe;                       // already a URL / tel: / relative
   const digits = s.replace(/[^\d+]/g, "");
@@ -491,7 +502,18 @@ function formatDate(iso) {
 /* ---------- The schedule sheet ----------
    Reads the "Event List" tab, published as TSV. The header row is found by
    name rather than position, so blank rows above it — or columns moved
-   around — do not break it. */
+   around — do not break it. Ticket columns are matched loosely so
+   "bookmyshow link" and "Event link - BMS" both work. */
+function isBmsCol(n) { return /book\s*my\s*show|\bbms\b/.test(n) && !/banner/.test(n); }
+function isDistrictCol(n) { return /district/.test(n) && /link|url|event/.test(n); }
+function isRsvpCol(n) { return /\brsvp\b/.test(n); }
+function isTicketCol(n) {
+  if (isBmsCol(n) || isDistrictCol(n) || isRsvpCol(n)) return false;
+  return n === "ticket" || n === "ticket link" || n === "ticket url" ||
+    (/ticket/.test(n) && /link|url/.test(n));
+}
+function isEventNameCol(n) { return n === "title" || n === "event" || n === "event name"; }
+
 function parseSchedule(tsv) {
   const rows = tsv.split(/\r?\n/).map((line) => line.split("\t"));
   const headerAt = rows.findIndex((cells) => {
@@ -502,10 +524,13 @@ function parseSchedule(tsv) {
 
   const header = rows[headerAt].map((c) => c.trim().toLowerCase());
   const col = (name) => header.indexOf(name);
-  const at = (cells, name) => {
-    const i = col(name);
-    return i === -1 ? "" : String(cells[i] == null ? "" : cells[i]).trim();
-  };
+  const find = (pred) => header.findIndex(pred);
+  const atI = (cells, i) => i === -1 ? "" : String(cells[i] == null ? "" : cells[i]).trim();
+  const at = (cells, name) => atI(cells, col(name));
+  const iBms = find(isBmsCol);
+  const iDist = find(isDistrictCol);
+  const iRsvp = find(isRsvpCol);
+  const iTicket = find(isTicketCol);
 
   return rows.slice(headerAt + 1)
     .filter((cells) => at(cells, "title"))
@@ -523,16 +548,80 @@ function parseSchedule(tsv) {
       mapUrl: at(cells, "map link"),
       description: at(cells, "description"),
       image: at(cells, "image"),
-      ticketUrl: at(cells, "ticket link"),
-      bmsUrl: at(cells, "bookmyshow link") || at(cells, "bookmyshow") || at(cells, "bms link"),
-      districtUrl: at(cells, "district link") || at(cells, "district"),
+      ticketUrl: atI(cells, iTicket) || at(cells, "ticket link"),
+      bmsUrl: atI(cells, iBms),
+      districtUrl: atI(cells, iDist),
       passInfo: at(cells, "pass info"),
-      rsvpUrl: at(cells, "rsvp link"),
+      rsvpUrl: atI(cells, iRsvp) || at(cells, "rsvp link"),
       capacity: at(cells, "capacity"),
       seatsLeft: at(cells, "seats left"),
       showSeats: at(cells, "show seats"),
       statusRaw: at(cells, "status"),
     }));
+}
+
+/* The BMS listings tab: Event + Event link - BMS + Event link - District. */
+function parseTicketLinks(tsv) {
+  const rows = tsv.split(/\r?\n/).map((line) => line.split("\t"));
+  const headerAt = rows.findIndex((cells) => {
+    const names = cells.map((c) => c.trim().toLowerCase());
+    return names.some(isEventNameCol) && (names.some(isBmsCol) || names.some(isDistrictCol));
+  });
+  if (headerAt === -1) return [];
+  const header = rows[headerAt].map((c) => c.trim().toLowerCase());
+  const iTitle = header.findIndex(isEventNameCol);
+  const iBms = header.findIndex(isBmsCol);
+  const iDist = header.findIndex(isDistrictCol);
+  const atI = (cells, i) => i === -1 ? "" : String(cells[i] == null ? "" : cells[i]).trim();
+  return rows.slice(headerAt + 1)
+    .filter((cells) => atI(cells, iTitle))
+    .map((cells) => ({
+      title: atI(cells, iTitle),
+      bmsUrl: atI(cells, iBms),
+      districtUrl: atI(cells, iDist),
+    }));
+}
+
+function titleKey(s) {
+  return String(s || "")
+    .toLowerCase()
+    .replace(/kechak/g, "kecak")
+    .replace(/[—–×]/g, " ")
+    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+function titlesMatch(a, b) {
+  const x = titleKey(a), y = titleKey(b);
+  if (!x || !y) return false;
+  if (x === y) return true;
+  if (x.length >= 12 && y.length >= 12 && (x.indexOf(y) !== -1 || y.indexOf(x) !== -1)) return true;
+  return false;
+}
+function copyLinkFields(dst, src) {
+  ["ticketUrl", "bmsUrl", "districtUrl", "rsvpUrl"].forEach((k) => {
+    if (!dst[k] && src[k]) dst[k] = src[k];
+  });
+}
+function mergeRawEvents(lists) {
+  const nonempty = lists.filter((a) => a && a.length);
+  if (!nonempty.length) return null;
+  const base = nonempty[0].map((e) => Object.assign({}, e));
+  nonempty.slice(1).forEach((list) => {
+    list.forEach((src) => {
+      const hit = base.find((e) => titlesMatch(e.title, src.title));
+      if (hit) copyLinkFields(hit, src);
+    });
+  });
+  return base;
+}
+function overlayTicketLinks(events, extras) {
+  if (!extras || !extras.length) return events;
+  extras.forEach((src) => {
+    const hit = events.find((e) => titlesMatch(e.title, src.title));
+    if (hit) copyLinkFields(hit, src);
+  });
+  return events;
 }
 
 /* The filters only know these three, so anything else is folded in. */
@@ -584,22 +673,40 @@ function fetchSchedule(url) {
     .then((res) => (res.ok ? res.text() : Promise.reject(new Error("HTTP " + res.status))))
     .then((text) => { const ev = parseSchedule(text); if (!ev.length) throw new Error("empty"); return ev; });
 }
+function fetchTicketLinks(url) {
+  return fetchWithTimeout(url, { cache: "no-store" }, 9000)
+    .then((res) => (res.ok ? res.text() : Promise.reject(new Error("HTTP " + res.status))))
+    .then((text) => parseTicketLinks(text));
+}
 
 async function loadEvents() {
   // The sheet is the source of truth once it has rows in it. Two live sources
   // are tried — the published feed, then the bridge feed (owner-read, works
   // even if Publish-to-web is off) — then the local file, then the last cache.
-  // All requests are fired together so a stalled one never blocks a good one.
+  // Link columns are merged across sources: the published TSV drops hyperlinks,
+  // the bridge keeps them, so first-wins would hide Book buttons.
   const sheetTries = [CONFIG.SCHEDULE_URL, CONFIG.SCHEDULE_URL_ALT]
-    .filter(Boolean).map((u) => fetchSchedule(u).catch(() => null)); // .catch so an unawaited loser never becomes an unhandled rejection
+    .filter(Boolean).map((u) => fetchSchedule(u).catch(() => null));
+  const ticketTries = [CONFIG.TICKETS_URL_ALT, CONFIG.TICKETS_URL]
+    .filter(Boolean).map((u) => fetchTicketLinks(u).catch(() => null));
   const fromFile = loadJSON(SOURCES.events);
 
-  let events = null;
+  const lists = [];
   for (const p of sheetTries) {
-    try { events = await p; if (events && events.length) break; } catch (e) { /* next source */ }
+    try { const ev = await p; if (ev && ev.length) lists.push(ev); } catch (e) { /* next */ }
   }
+  let events = mergeRawEvents(lists);
   if (!events) { try { events = await fromFile; } catch (e) { /* try the cache */ } }
-  if (events && events.length) { cacheEvents(events); return events; }
+
+  if (events && events.length) {
+    const extras = [];
+    for (const p of ticketTries) {
+      try { const rows = await p; if (rows && rows.length) extras.push(rows); } catch (e) { /* next */ }
+    }
+    extras.forEach((rows) => overlayTicketLinks(events, rows));
+    cacheEvents(events);
+    return events;
+  }
 
   const cached = cachedEvents();
   if (cached) return cached;

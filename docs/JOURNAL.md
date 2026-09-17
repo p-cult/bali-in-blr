@@ -33,12 +33,12 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
 - **Measurement.** Views, every call-to-action click, phone and email taps,
   outbound links and confirmed registrations all reach `dataLayer`. The GTM
   container still needs its tags: see `docs/ANALYTICS-SETUP.md`.
-- **Ticketing.** Event List columns `bookmyshow link`, `district link`,
-  `rsvp link` and `ticket link` each render a button when they hold a real URL.
-  No live ticket URLs yet; placeholder `EXAMPLE-` links are stripped. Switches
-  currently OFF: `BOOKING_OPEN` (occupancy bar / global waitlist copy) and
-  `RSVP_ENABLED` (internal RSVP flavour). Unlinked events still funnel to
-  Register.
+- **Ticketing.** Buttons follow the sheet. BookMyShow / District URLs live on
+  the **BMS** tab (`Event link - BMS` / `Event link - District`) as hyperlinks
+  labelled "Link", and also on Event List if those cells are filled. The
+  published TSV only has the word "Link"; the bridge feed returns the real
+  href (needs the 17 Sep `sheetTsv` / `feed=bms` Apps Script patch). Unlinked
+  events still say Register. `BOOKING_OPEN` only gates the occupancy bar.
 - **Analytics:** Google Tag Manager installed; GA4/Meta/Ads are added inside
   GTM, not in the repo.
 - **Admin:** `/admin` hub with a staff sign-in gate, the Campaign Link
@@ -567,6 +567,19 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
   something to sign up for.
 - Costing and ticket-price columns stay off the public hub; they are only on
   this staff page. Do not add a `?feed=budget` to the unauthenticated bridge.
+
+### 17 Sep 2026 — calendar buttons follow the BMS tab hyperlinks
+- The burning issue was not a missing report: staff put BookMyShow / District
+  URLs on the **BMS** listings tab as cell hyperlinks labelled "Link". The
+  public TSV only contains that label, so the calendar never saw a URL and
+  every event stayed on Register. The Event List's own bookmyshow/district
+  columns were empty.
+- The site now overlays the BMS tab onto the Event List (matched by event
+  name). `sheetTsv` writes the hyperlink href instead of the label, and
+  `?feed=bms` serves that tab. **Deploy those two changes in the live Apps
+  Script without pasting the whole file** (keep SHEET_ID / PLANNING_ID). Until
+  that deploy, a pasted-as-text `https://…` URL in either tab already works;
+  a Ctrl-K "Link" does not.
 
 ## 2. Lessons and standing rules (the "why" behind the rules)
 

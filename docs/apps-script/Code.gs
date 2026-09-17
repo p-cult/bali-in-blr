@@ -58,13 +58,45 @@ function book() {
     : SpreadsheetApp.getActiveSpreadsheet();
 }
 
-/** A tab of any accessible spreadsheet, serialised as TSV (display values). */
+/** Prefer a pasted URL; otherwise the cell's hyperlink (Ctrl-K / Insert link).
+    Publish-to-web TSV only exports the visible label ("Link"), so this is how
+    the site ever sees the real BookMyShow / District href. */
+function cellExport(display, rich, formula) {
+  var shown = String(display == null ? '' : display).trim();
+  if (/^(https?:|mailto:|tel:)/i.test(shown)) return shown;
+  var link = '';
+  if (rich) {
+    link = rich.getLinkUrl() || '';
+    if (!link) {
+      var runs = rich.getRuns();
+      for (var i = 0; i < runs.length; i++) {
+        link = runs[i].getLinkUrl() || '';
+        if (link) break;
+      }
+    }
+  }
+  if (link) return link;
+  var f = String(formula || '');
+  var m = f.match(/HYPERLINK\s*\(\s*"([^"]+)"/i) || f.match(/HYPERLINK\s*\(\s*'([^']+)'/i);
+  if (m) return m[1];
+  return shown;
+}
+
+/** A tab of any accessible spreadsheet, serialised as TSV.
+    Hyperlink URLs are written in place of a label so the site can use them. */
 function sheetTsv(spreadsheetId, tabName) {
   const ss = SpreadsheetApp.openById(spreadsheetId);
   const sh = ss.getSheetByName(tabName);
   if (!sh || sh.getLastRow() < 1) return '';
-  return sh.getDataRange().getDisplayValues()
-    .map(function (row) { return row.join('\t'); }).join('\n');
+  const range = sh.getDataRange();
+  const display = range.getDisplayValues();
+  const rich = range.getRichTextValues();
+  const formulas = range.getFormulas();
+  return display.map(function (row, r) {
+    return row.map(function (cell, c) {
+      return cellExport(cell, rich[r][c], formulas[r][c]);
+    }).join('\t');
+  }).join('\n');
 }
 
 /** Plain-text (TSV) response, with the same permissive access as json(). */
@@ -398,6 +430,9 @@ function doGet(e) {
   const feed = ((e && e.parameter && e.parameter.feed) || '').toLowerCase();
   if (feed === 'schedule') return tsvOut(sheetTsv(PLANNING_ID, 'Event List'));
   if (feed === 'collab') return tsvOut(sheetTsv(PLANNING_ID, 'Collab / venues'));
+  // Marketing listings tab: columns "Event link - BMS" / "Event link - District".
+  // Cells are often a hyperlink labelled "Link" — cellExport turns that into the URL.
+  if (feed === 'bms' || feed === 'tickets') return tsvOut(sheetTsv(PLANNING_ID, 'BMS'));
 
   let data;
   if (verify) data = readReceipt(verify);
