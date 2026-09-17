@@ -591,6 +591,26 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
   bookmyshow.com / district.in URL from any cell, and sheet fetches are
   cache-busted so a paste shows on the next reload.
 
+### 17 Sep 2026 — provider logos, brand colours, status + back-to-main
+- **Security sweep.** Removed the plaintext admin passwords that were sitting in
+  comments beside the hashes in `admin/auth.js` (served publicly — defeated the
+  hashing). Blanked `PLANNING_ID` in the repo copy of `Code.gs` to match the
+  `SHEET_ID` vault-secret treatment (live script keeps the real id). Rotation of
+  the two admin passwords is still an open to-do (old ones are burned).
+- **Provider buttons carry brand logos.** BookMyShow → `assets/bms-btn.svg` on
+  brand red (#C4242C); District → `assets/dstrct-btn.svg` on District purple
+  (#8B15F0). Both buttons share `min-width` + a fixed `height` so they are
+  identical in size; the logo alone scales (BMS nudged up). Text kept as each
+  anchor's `aria-label`.
+- **Status chip.** A bare dash `-` in the Status cell no longer force-hides the
+  chip (only real words none/hide/off/nothing/na do) — so a ticket link now
+  auto-shows the chip. And low seat counts no longer auto-downgrade to "Filling
+  fast": a live link reads "Tickets live"; only 0 seats forces "Sold out";
+  "Filling fast" is opt-in via the Status column.
+- **Back to main page.** The view bar's back button always closes the view to
+  reveal the site's main page (was `history.back()`, which left the site when a
+  view was opened from a shared link or new tab).
+
 ## 2. Lessons and standing rules (the "why" behind the rules)
 
 **Data and privacy**
