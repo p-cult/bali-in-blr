@@ -365,7 +365,7 @@
           <div class="onboard-stage" id="stage-updates"></div>
 
           <div class="onboard-card onboard-signup" hidden>
-            <form class="signup-form" id="signup-form" data-require="name email" novalidate>
+            <form class="signup-form" id="signup-form" data-require="name email phone" novalidate>
             <input type="hidden" name="flavour" value="updates" />
             <!-- Fallback default for the bridge's required 'notify' field. The
                  onboarding "How should we reach you?" question overwrites this
@@ -381,8 +381,8 @@
             <input type="email" id="sf-email" name="email" autocomplete="email" required />
             </div>
             <div class="field">
-            <label for="sf-phone">Phone (WhatsApp)</label>
-            <input type="tel" id="sf-phone" name="phone" autocomplete="tel" inputmode="tel" placeholder="+91" />
+            <label for="sf-phone">Phone (WhatsApp) <span class="req">*</span></label>
+            <input type="tel" id="sf-phone" name="phone" autocomplete="tel" inputmode="tel" placeholder="+91" required />
             </div>
             <input type="hidden" name="age18" value="Yes" />
             <label class="check check-consent">
