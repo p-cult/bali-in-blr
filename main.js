@@ -589,7 +589,7 @@ async function loadEvents() {
   // even if Publish-to-web is off) — then the local file, then the last cache.
   // All requests are fired together so a stalled one never blocks a good one.
   const sheetTries = [CONFIG.SCHEDULE_URL, CONFIG.SCHEDULE_URL_ALT]
-    .filter(Boolean).map((u) => fetchSchedule(u));
+    .filter(Boolean).map((u) => fetchSchedule(u).catch(() => null)); // .catch so an unawaited loser never becomes an unhandled rejection
   const fromFile = loadJSON(SOURCES.events);
 
   let events = null;
