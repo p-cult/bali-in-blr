@@ -459,12 +459,16 @@ function toImageUrl(v) {
 
 /* A booking/RSVP target from the sheet: either a URL or a phone number. A bare
    phone number becomes a tel: link so the button dials it. */
+function isJunkLink(v) {
+  return /^(link|links|na|n\/a|pending|in review|review|yes|no|none|tbd|coming soon|-|–|—)$/i.test(String(v == null ? "" : v).trim());
+}
+
 function toActionUrl(v) {
   let s = String(v == null ? "" : v).trim();
   if (!s) return "";
   // Visible labels used on the BMS tab when the URL is a cell hyperlink, plus
   // other non-URL placeholders. These are not booking targets.
-  if (/^(link|links|na|n\/a|pending|in review|review|yes|no|none|tbd|coming soon|-|–|—)$/i.test(s)) return "";
+  if (isJunkLink(s)) return "";
   // Drop obvious placeholder / dummy links, whatever sits in the sheet:
   //  - the "EXAMPLE-" marker (e.g. forms.gle/EXAMPLE-rsvp), case-sensitive so a
   //    real link with "example" in a slug is not caught;
@@ -513,6 +517,15 @@ function isTicketCol(n) {
     (/ticket/.test(n) && /link|url/.test(n));
 }
 function isEventNameCol(n) { return n === "title" || n === "event" || n === "event name"; }
+function looksBmsUrl(s) { return /bookmyshow\.com/i.test(s); }
+function looksDistrictUrl(s) { return /(?:^|\/\/)(?:www\.)?(?:district\.in|district\.com|insider\.in)\b/i.test(s); }
+function firstUrlIn(cells, pred) {
+  for (let i = 0; i < cells.length; i++) {
+    const u = toActionUrl(cells[i]);
+    if (u && pred(u)) return u;
+  }
+  return "";
+}
 
 function parseSchedule(tsv) {
   const rows = tsv.split(/\r?\n/).map((line) => line.split("\t"));
@@ -549,8 +562,8 @@ function parseSchedule(tsv) {
       description: at(cells, "description"),
       image: at(cells, "image"),
       ticketUrl: atI(cells, iTicket) || at(cells, "ticket link"),
-      bmsUrl: atI(cells, iBms),
-      districtUrl: atI(cells, iDist),
+      bmsUrl: toActionUrl(atI(cells, iBms)) || firstUrlIn(cells, looksBmsUrl),
+      districtUrl: toActionUrl(atI(cells, iDist)) || firstUrlIn(cells, looksDistrictUrl),
       passInfo: at(cells, "pass info"),
       rsvpUrl: atI(cells, iRsvp) || at(cells, "rsvp link"),
       capacity: at(cells, "capacity"),
@@ -600,7 +613,9 @@ function titlesMatch(a, b) {
 }
 function copyLinkFields(dst, src) {
   ["ticketUrl", "bmsUrl", "districtUrl", "rsvpUrl"].forEach((k) => {
-    if (!dst[k] && src[k]) dst[k] = src[k];
+    const incoming = toActionUrl(src[k]);
+    if (!incoming) return;
+    if (!toActionUrl(dst[k])) dst[k] = incoming;
   });
 }
 function mergeRawEvents(lists) {
@@ -668,13 +683,16 @@ function cachedEvents() {
   } catch (e) { return null; }
 }
 
+function cacheBust(url) {
+  return url + (url.indexOf("?") >= 0 ? "&" : "?") + "_=" + Date.now();
+}
 function fetchSchedule(url) {
-  return fetchWithTimeout(url, { cache: "no-store" }, 9000)
+  return fetchWithTimeout(cacheBust(url), { cache: "no-store" }, 9000)
     .then((res) => (res.ok ? res.text() : Promise.reject(new Error("HTTP " + res.status))))
     .then((text) => { const ev = parseSchedule(text); if (!ev.length) throw new Error("empty"); return ev; });
 }
 function fetchTicketLinks(url) {
-  return fetchWithTimeout(url, { cache: "no-store" }, 9000)
+  return fetchWithTimeout(cacheBust(url), { cache: "no-store" }, 9000)
     .then((res) => (res.ok ? res.text() : Promise.reject(new Error("HTTP " + res.status))))
     .then((text) => parseTicketLinks(text));
 }

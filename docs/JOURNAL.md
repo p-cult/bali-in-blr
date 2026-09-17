@@ -33,12 +33,13 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
 - **Measurement.** Views, every call-to-action click, phone and email taps,
   outbound links and confirmed registrations all reach `dataLayer`. The GTM
   container still needs its tags: see `docs/ANALYTICS-SETUP.md`.
-- **Ticketing.** Buttons follow the sheet. BookMyShow / District URLs live on
-  the **BMS** tab (`Event link - BMS` / `Event link - District`) as hyperlinks
-  labelled "Link", and also on Event List if those cells are filled. The
-  published TSV only has the word "Link"; the bridge feed returns the real
-  href (needs the 17 Sep `sheetTsv` / `feed=bms` Apps Script patch). Unlinked
-  events still say Register. `BOOKING_OPEN` only gates the occupancy bar.
+- **Ticketing.** Buttons follow the sheet. First live URL (17 Sep 2026): Event
+  List **Kecak Workshop** → BookMyShow
+  `https://in.bookmyshow.com/events/kecak-workshop-bali-in-bengaluru/ET00517147`.
+  Other rows still Register until a real `https://` is pasted. The **BMS** tab
+  still stores Ctrl-K hyperlinks labelled "Link"; published TSV only has that
+  word. Overlay ignores those labels so they cannot wipe a real Event List URL.
+  Unlinked events still say Register. `BOOKING_OPEN` only gates the occupancy bar.
 - **Analytics:** Google Tag Manager installed; GA4/Meta/Ads are added inside
   GTM, not in the repo.
 - **Admin:** `/admin` hub with a staff sign-in gate, the Campaign Link
@@ -580,6 +581,15 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
   Script without pasting the whole file** (keep SHEET_ID / PLANNING_ID). Until
   that deploy, a pasted-as-text `https://…` URL in either tab already works;
   a Ctrl-K "Link" does not.
+
+### 17 Sep 2026 — Kecak Workshop URL is live; junk "Link" overlay
+- Event List `bookmyshow link` for Kecak Workshop now has a pasted BookMyShow
+  URL. The BMS tab for the same row is still the word "Link" (a cell hyperlink
+  the published TSV cannot carry). Overlay used to copy that label into empty
+  fields, and a stale fetch left the calendar on Register. `copyLinkFields`
+  now keeps only `toActionUrl` survivors, Event List rows also pick up a
+  bookmyshow.com / district.in URL from any cell, and sheet fetches are
+  cache-busted so a paste shows on the next reload.
 
 ## 2. Lessons and standing rules (the "why" behind the rules)
 
