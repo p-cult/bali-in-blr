@@ -390,10 +390,11 @@ async function loadJSON(url) {
     const back = e.target.closest("[data-close-view]");
     if (!back) return;
     e.preventDefault();
-    // Prefer real Back so the view leaves no dead entry in history.
-    const openId = location.hash.slice(1).split("?")[0];
-    if (KEYS.indexOf(openId) !== -1 && history.length > 1) history.back();
-    else close();
+    // "Back to main page" always returns to THIS site's main page — reveal it
+    // underneath and drop the #view from the URL. (Not history.back(): when the
+    // calendar was opened from a shared link or a new tab, Back would leave the
+    // site or jump to an unrelated page instead of the main page.)
+    close();
   });
 
   document.addEventListener("keydown", (e) => {
