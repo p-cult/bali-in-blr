@@ -804,10 +804,15 @@ function normaliseEvent(raw, i) {
     showSeats: calYes(pick("showSeats")),
     statusRaw: pick("statusRaw", "status").toLowerCase(),
   };
-  // A status of none/hide/off/- means "show no status label" — the tickets,
-  // RSVP and seats bar still derive from the other columns as usual.
-  ev.hideStatus = /^(none|hide|hidden|off|nothing|na|n\/a|-|–|—)$/i.test(ev.statusRaw);
+  // Only an explicit word (none/hide/off/nothing/na) forces "show no status
+  // label". A bare dash or blank means "unset" — treated as auto, so the chip
+  // still derives from the links/columns (e.g. a ticket link => "Tickets live").
+  // The tickets, RSVP and seats bar always derive from the other columns.
+  ev.hideStatus = /^(none|hide|hidden|off|nothing|na|n\/a)$/i.test(ev.statusRaw);
   if (ev.hideStatus) ev.statusRaw = "";
+  // A bare dash is a placeholder, not a real status — clear it so deriveStatus
+  // falls through to the auto logic (link present => live, etc.).
+  if (/^[-–—]$/.test(ev.statusRaw)) ev.statusRaw = "";
   // A status of internal/private/invite/closed/"not public" lists the event on
   // the calendar but offers no action: it is not something a visitor can book,
   // RSVP to or register for (e.g. a campus performance on a partner's invite).
