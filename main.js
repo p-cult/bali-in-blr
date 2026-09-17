@@ -837,10 +837,11 @@ function deriveStatus(ev) {
   return "waitlist"; // tickets not live yet — the waitlist is open
 }
 function refineByOccupancy(ev, base) {
-  if (ev.capacity && ev.seatsLeft != null) {
-    if (ev.seatsLeft <= 0) return "soldout";
-    if (ev.seatsLeft / ev.capacity <= 0.2) return "fast";
-  }
+  // Only a genuine sell-out (0 seats) overrides the label — a safety so a full
+  // show never says "book". Low seats do NOT auto-downgrade to "Filling fast";
+  // that label is opt-in via the Status column ("fast"/"filling"), so a live
+  // ticket link simply reads "Tickets live" unless staff say otherwise.
+  if (ev.capacity && ev.seatsLeft != null && ev.seatsLeft <= 0) return "soldout";
   return base;
 }
 
