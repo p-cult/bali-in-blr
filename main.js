@@ -823,10 +823,12 @@ function normaliseEvent(raw, i) {
   return ev;
 }
 
-/* live | fast | soldout | rsvp | waitlist | concluded */
+/* open | live | fast | soldout | rsvp | waitlist | concluded */
 function deriveStatus(ev) {
   const o = ev.statusRaw;
   if (/conclud|past|over/.test(o)) return "concluded";
+  // Free, walk-in event — no ticket or registration needed.
+  if (/open to all|open for all|open house|free entry|all welcome/.test(o)) return "open";
   if (/sold|full/.test(o)) return "soldout";
   if (/fast|filling/.test(o)) return "fast";
   if (/rsvp/.test(o)) return "rsvp";
@@ -894,6 +896,8 @@ function hasLiveLinks(ev) { const a = eventActions(ev); return !!(a.bms || a.dis
 
 function calStatusChip(ev) {
   if (ev.hideStatus) return "";
+  // A free/open event always shows its badge — it needs no ticket link.
+  if (ev.status === "open") return '<span class="cal-status cal-status--live"><span class="dot"></span>Open to all</span>';
   // Show a status chip either when booking is globally open, or — regardless of
   // that switch — for any individual event that already has a real booking/RSVP
   // link in the sheet, so activating one event doesn't wait on the global flag.
@@ -908,8 +912,13 @@ function calStatusChip(ev) {
   }
 }
 function calAction(ev) {
-  // Listed for information only — no booking, RSVP or registration.
-  if (ev.notPublic) return '<span class="cal-soon">Not open to the public</span>';
+  // Listed for information only — no booking, RSVP or registration. If the row
+  // carries a pass-info note (e.g. "Only for Kumarans students"), show that; it
+  // says who the event is for, which is more useful than the generic line.
+  if (ev.notPublic) return `<span class="cal-soon">${ev.passInfo ? esc(ev.passInfo) : "Not open to the public"}</span>`;
+
+  // Free, walk-in event — nothing to book; just tell people they're welcome.
+  if (ev.status === "open") return '<span class="cal-soon">Free entry &middot; all are welcome, no booking needed</span>';
 
   const isTel = (u) => /^tel:/i.test(u || "");
   const btn = (rawUrl, cls, label) => {
