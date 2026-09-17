@@ -1,24 +1,5 @@
 {
-  "updates": [
-    {
-      "id": "programmes",
-      "title": "Which programmes would you like to attend?",
-      "hint": "Pick as many as you like.",
-      "multi": true,
-      "source": "events"
-    },
-    {
-      "id": "notify",
-      "title": "How should we reach you?",
-      "hint": "Choose as many as you like.",
-      "multi": true,
-      "options": [
-        "Email",
-        "WhatsApp",
-        "SMS"
-      ]
-    }
-  ],
+  "updates": [],
   "volunteer": [
     {
       "id": "areas",
