@@ -907,6 +907,12 @@ function calAction(ev) {
     const url = safeUrl(rawUrl) || "#register";
     return `<a class="btn ${cls} btn-sm" href="${esc(url)}"${/^https?:/i.test(url) ? ' target="_blank" rel="noopener"' : ""}>${label}</a>`;
   };
+  // A provider button whose label is the brand's own logo (an <img>), with the
+  // text kept as the accessible name so screen readers still announce it.
+  const logoBtn = (rawUrl, cls, src, label) => {
+    const url = safeUrl(rawUrl) || "#register";
+    return `<a class="btn ${cls} btn-sm btn-logo" href="${esc(url)}" aria-label="${esc(label)}"${/^https?:/i.test(url) ? ' target="_blank" rel="noopener"' : ""}><img class="btn-logo-img" src="${esc(src)}" alt="" aria-hidden="true"></a>`;
+  };
   const a = eventActions(ev);
   const pass = ev.passInfo ? `<span class="cal-soon">${esc(ev.passInfo)}</span>` : "";
 
@@ -923,7 +929,7 @@ function calAction(ev) {
   // Sold out is honoured over the links (no "Book" on a full show).
   if (ev.status !== "soldout") {
     const btns = [];
-    if (a.bms) btns.push(btn(a.bms, "btn-bms", "Book on BookMyShow"));
+    if (a.bms) btns.push(logoBtn(a.bms, "btn-bms", "assets/bms-btn.svg", "Book on BookMyShow"));
     if (a.district) btns.push(btn(a.district, "btn-district", "Book on District"));
     // A generic ticket link is a fallback only when no named provider is set.
     if (!a.bms && !a.district && a.ticket) {

@@ -291,6 +291,11 @@ p.section-intro { max-width: 44rem; color: var(--muted); font-size: 1.05rem; }
 .btn-district:hover { background: #000; border-color: #000; }
 .section-cream .btn-district { border-color: #1B1D21; }
 
+/* A button whose label is the brand's own logo (an <img>) rather than text.
+   The logo keeps its own aspect ratio; the button's padding sets its size. */
+.btn-logo { display: inline-flex; align-items: center; justify-content: center; }
+.btn-logo-img { height: 1.2rem; width: auto; display: block; }
+
 /* --------------------------------------------------------------- 6. Header */
 
 .site-header {
