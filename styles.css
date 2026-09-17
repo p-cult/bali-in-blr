@@ -295,8 +295,11 @@ p.section-intro { max-width: 44rem; color: var(--muted); font-size: 1.05rem; }
 /* A button whose label is the brand's own logo (an <img>) rather than text.
    The logo keeps its own aspect ratio; a shared min-width + fixed logo height
    make every provider button (BookMyShow, District) the same size. */
-.btn-logo { display: inline-flex; align-items: center; justify-content: center; min-width: 10.5rem; }
+/* Fixed height so a bigger logo never changes the button's size; both provider
+   buttons stay identical (min-width + height), only the logo inside scales. */
+.btn-logo { display: inline-flex; align-items: center; justify-content: center; min-width: 10.5rem; height: 2.6rem; padding-top: 0; padding-bottom: 0; }
 .btn-logo-img { height: 1.25rem; width: auto; display: block; }
+.btn-bms .btn-logo-img { height: 1.55rem; }  /* BookMyShow reads a touch small — nudge it up */
 
 /* --------------------------------------------------------------- 6. Header */
 
