@@ -1645,7 +1645,7 @@ async function initOnboarding() {
     // Fill any dynamic (source:"events") question with the live programmes,
     // and drop it entirely if there are none, so the form never stalls.
     qs = qs
-      .map((q) => (q.source === "events" ? Object.assign({}, q, { options: programmeOptions, all: true }) : q))
+      .map((q) => (q.source === "events" ? Object.assign({}, q, { options: programmeOptions }) : q))
       .filter((q) => !(q.source === "events" && (!q.options || !q.options.length)));
     setupOnboarding(shell, qs);
   });
@@ -1694,17 +1694,10 @@ function setupOnboarding(shell, questions) {
       );
     }).join("");
 
-    // Season pass: one box that ticks every programme. No name, so it never
-    // posts and never counts as an answer of its own.
-    const allBox = q.all
-      ? '<label class="choice choice-all"><input type="checkbox" data-onboard-all />' +
-        "<span>Season pass &mdash; all programmes</span></label>"
-      : "";
-
     card.innerHTML =
       "<legend>" + esc(q.title || "") + "</legend>" +
       (q.hint ? '<p class="onboard-hint">' + esc(q.hint) + "</p>" : "") +
-      '<div class="choices">' + allBox + options + "</div>" +
+      '<div class="choices">' + options + "</div>" +
       '<p class="onboard-error" role="alert" hidden>Please choose at least one to continue.</p>';
 
     stage.appendChild(card);
@@ -1760,7 +1753,6 @@ function setupOnboarding(shell, questions) {
   signup.insertBefore(change, signup.firstChild);
 
   function selected(i) {
-    // input[name] excludes the nameless season-pass "all" box.
     return Array.from(cards[i].querySelectorAll("input[name]:checked")).map((el) => el.value);
   }
 
@@ -1813,21 +1805,6 @@ function setupOnboarding(shell, questions) {
   stage.addEventListener("change", (e) => {
     const err = cards[index] && cards[index].querySelector(".onboard-error");
     if (err) err.hidden = true;
-
-    // Season pass: the master box ticks/unticks every programme; ticking any
-    // programme keeps the master box in sync.
-    const card0 = cards[index];
-    if (card0) {
-      if (e.target.matches("[data-onboard-all]")) {
-        card0.querySelectorAll("input[name]").forEach((cb) => { cb.checked = e.target.checked; });
-      } else {
-        const all = card0.querySelector("[data-onboard-all]");
-        if (all) {
-          const boxes = Array.from(card0.querySelectorAll("input[name]"));
-          all.checked = boxes.length > 0 && boxes.every((b) => b.checked);
-        }
-      }
-    }
 
     // Unticking the last box clears the recorded answer, so a stale one can
     // never travel with the form.
@@ -1898,8 +1875,6 @@ function setupOnboarding(shell, questions) {
       .find((b) => b.value.toLowerCase() === want.toLowerCase());
     if (!box || box.checked) return;
     box.checked = true;
-    const all = cards[qi].querySelector("[data-onboard-all]");
-    if (all) all.checked = Array.from(cards[qi].querySelectorAll("input[name]")).every((b) => b.checked);
     answers[questions[qi].id] = selected(qi);
     form.elements[questions[qi].id].value = selected(qi).join(", ");
     show(qi);

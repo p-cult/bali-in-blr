@@ -3,7 +3,7 @@
     {
       "id": "programmes",
       "title": "Which programmes would you like to attend?",
-      "hint": "Pick any — or choose the season pass for all.",
+      "hint": "Pick as many as you like.",
       "multi": true,
       "source": "events"
     },
