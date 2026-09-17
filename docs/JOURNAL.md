@@ -23,23 +23,26 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
 ## 0. Where things stand (update this block when the status changes)
 
 - **Live** at https://bali-in-blr.paramfoundation.org (GitHub Pages, custom
-  domain, HTTPS). Festival runs **1–18 October 2026**.
+  domain, HTTPS). Programmed events run **3–18 October 2026** — sixteen days,
+  opening with the Inaugural Kecak on 3 Oct. (It was billed 1–18 Oct early on;
+  the sheet is authoritative and the site's copy was reconciled to it on
+  17 Sep — see §1.)
 - **Bridge connected.** Register and Volunteer forms save via the Apps Script
   bridge into a deduplicated `Master` registry with per-flavour tabs and
   receipts. Calendar reads the schedule sheet's `Event List` tab live, with a
   publish-proof fallback through the bridge (`?feed=schedule` / `?feed=collab`).
-  Live counts: `BRIDGE_URL?sheet=stats` (178 registered on 17 Sep 2026:
-  52 updates, 129 volunteers).
+  Live counts: `BRIDGE_URL?sheet=stats` (184 registered on 17 Sep 2026:
+  54 updates, 133 volunteers — 187 flavour rows, so the dedup is working).
 - **Measurement.** Views, every call-to-action click, phone and email taps,
   outbound links and confirmed registrations all reach `dataLayer`. The GTM
   container still needs its tags: see `docs/ANALYTICS-SETUP.md`.
-- **Ticketing.** Buttons follow the sheet. First live URL (17 Sep 2026): Event
-  List **Kecak Workshop** → BookMyShow
-  `https://in.bookmyshow.com/events/kecak-workshop-bali-in-bengaluru/ET00517147`.
-  Other rows still Register until a real `https://` is pasted. The **BMS** tab
-  still stores Ctrl-K hyperlinks labelled "Link"; published TSV only has that
-  word. Overlay ignores those labels so they cannot wipe a real Event List URL.
-  Unlinked events still say Register. `BOOKING_OPEN` only gates the occupancy bar.
+- **Ticketing.** Buttons follow the sheet. As of 17 Sep 2026, **7 of the 15
+  listed events carry a live BookMyShow URL and 6 also carry District**; the
+  rest funnel to Register until a real `https://` is pasted into the Event
+  List. The **BMS** tab still stores Ctrl-K hyperlinks labelled "Link";
+  published TSV only has that word, so the overlay ignores those labels and
+  they cannot wipe a real Event List URL. `BOOKING_OPEN` only gates the
+  occupancy bar. Verify counts against the live page, not this line.
 - **Analytics:** Google Tag Manager installed; GA4/Meta/Ads are added inside
   GTM, not in the repo.
 - **Admin:** `/admin` hub with a staff sign-in gate, the Campaign Link
@@ -51,17 +54,32 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
 - **Brand:** the festival logo (`assets/logo.svg`) is inlined wherever the
   name is a heading or brand mark; the hero uses the title mark, inlined in
   `index.html` and deliberately not shipped as a file (source in the vault).
-  Hero copy and numbers (18 days, 18 events, 15 venues) are the client's,
-  applied 9 Sep from their corrections document.
+  Hero copy is the client's, applied 9 Sep from their corrections document.
+  The three hero numbers are **not** copy — they auto-sync from the schedule
+  sheet (`updateHeroStats`) and currently read 16 days / 15 events / 14
+  venues. The markup holds the same values as a fallback. Do not quote a
+  number from this file as the live one; read the page.
 - **Brand kit:** colour, pairings, the reference boards, the block motif,
   seams and edges, both wordmarks and type. Shared with the team at
   **/brand/** (link-only: noindex, robots-disallowed, unlinked). It is the
   thing to hand a designer; the stylesheets remain the exact reference.
 - **Print:** `tools/build-event-posters.py` renders the event listing at
   500&#215;1000&#160;mm and 1000&#215;500&#160;mm into `assets/print/`.
-- **Open:** paste real BookMyShow / District URLs into the Event List as
-  shows go on sale; post-event media/gallery (Phase 4); the Monument display
-  font is not licensed (see §2).
+- **Open:**
+  - **Pending Apps Script deploy.** The repo `Code.gs` has the `?feed=bms`
+    handler and the rich-text `sheetTsv` (which writes a hyperlink's href
+    instead of its label); the live script does **not** — `?feed=bms` still
+    returns the default service JSON. Nothing is broken by this: the Event
+    List's own provider columns carry the live URLs. Until it is deployed, a
+    Ctrl-K "Link" on the BMS tab cannot be read; a pasted `https://…` can.
+    Deploy by editing only those lines — **never paste the whole repo
+    `Code.gs`** over the live script (it blanks `SHEET_ID`/`PLANNING_ID` and
+    kills registrations; see §1, 17 Sep).
+  - Paste real BookMyShow / District URLs into the Event List as shows go on
+    sale (7 of 15 done).
+  - Rotate the two admin passwords (the old ones were served in comments).
+  - Post-event media/gallery (Phase 4).
+  - The Monument display font is not licensed (see §2).
 
 ---
 
@@ -611,6 +629,28 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
   reveal the site's main page (was `history.back()`, which left the site when a
   view was opened from a shared link or new tab).
 
+### 17 Sep 2026 (copy) — "Eighteen days" reconciled to the sheet's sixteen
+- The hero's three numbers auto-sync from the schedule sheet and read
+  **16 days / 15 events / 14 venues** (days = first event 3 Oct to last 18 Oct,
+  inclusive). Five places in the copy still said "Eighteen days" / "18-day",
+  written when the festival was billed 1–18 October. A visitor saw "16 Days"
+  beside prose claiming eighteen.
+- **Decision (client): the sheet is final — the festival is 16 days.** Changed
+  the wording, not the maths: meta description ("A 16-day cultural festival"),
+  the programme `h2`, the calendar view's print masthead lead, the calendar
+  intro, and the volunteer paragraph. The print-only calendar masthead's
+  dateline went 1 Oct → **3 Oct – 18 Oct 2026** to match. The brand kit's
+  poster specimen chip went 18 → 16 days (label only; the colours it
+  demonstrates are unchanged).
+- Text only: no CSS or JS was touched, so no `?v=` bump was needed. The stats
+  keep deriving from the sheet, so the numbers cannot drift again.
+- **The mismatch was really in this file.** §0 recorded "18 days, 18 events,
+  15 venues" as the hero numbers, left over from the 9 Sep client copy and
+  never updated when the stats were made self-syncing on 15 Sep. A session
+  read that line, reported a bug that did not exist, and proposed changing a
+  number the sheet already had right. §0 now says the numbers are derived and
+  to read the page. Same correction applied to the stale ticketing paragraph.
+
 ## 2. Lessons and standing rules (the "why" behind the rules)
 
 **Data and privacy**
@@ -691,6 +731,12 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
   palette without showing a preview first.
 
 **Working practice**
+- **Derived numbers are not copy.** Anything the site computes from the
+  sheet (the hero's days/events/venues, ticket-button counts) is only ever
+  true on the page. §0 once recorded them as fixed client copy; a later
+  session quoted that line, reported a mismatch that did not exist, and
+  nearly "corrected" a number the sheet already had right. When §0 states a
+  number, it says where it comes from and to verify on the page.
 - Cross-check the public calendar against the planning sheet's Event Brief.
   An event can be confirmed and dated yet not open to the public; listing it
   with a Register button invites people to something they cannot attend.
