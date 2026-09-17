@@ -467,7 +467,7 @@
 .cal-occ--fast .cal-occ-note { color: var(--accent); font-weight: 600; }
 
 /* action */
-.cal-act { margin-top: 0.45rem; display: flex; align-items: center; gap: 0.9rem; }
+.cal-act { margin-top: 0.45rem; display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem 0.75rem; }
 .cal-soon { font-size: 0.78rem; font-style: italic; color: var(--muted-2); }
 
 /* sold out: the poster reads as "gone" so the live ones feel alive */

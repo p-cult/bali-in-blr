@@ -524,6 +524,8 @@ function parseSchedule(tsv) {
       description: at(cells, "description"),
       image: at(cells, "image"),
       ticketUrl: at(cells, "ticket link"),
+      bmsUrl: at(cells, "bookmyshow link") || at(cells, "bookmyshow") || at(cells, "bms link"),
+      districtUrl: at(cells, "district link") || at(cells, "district"),
       passInfo: at(cells, "pass info"),
       rsvpUrl: at(cells, "rsvp link"),
       capacity: at(cells, "capacity"),
@@ -668,6 +670,8 @@ function normaliseEvent(raw, i) {
     description: pick("description"),
     image: toImageUrl(pick("image")),
     ticketUrl: toActionUrl(pick("ticketUrl", "ticket link", "ticketurl")),
+    bmsUrl: toActionUrl(pick("bmsUrl", "bookmyshow link", "bookmyshow", "bms link")),
+    districtUrl: toActionUrl(pick("districtUrl", "district link", "district")),
     passInfo: pick("passInfo"),
     rsvpUrl: toActionUrl(pick("rsvpUrl", "rsvp link")),
     capacity: calNum(pick("capacity")),
@@ -698,7 +702,7 @@ function deriveStatus(ev) {
   if (/wait|soon|announce/.test(o)) return "waitlist";
   if (/live|onsale|on sale/.test(o)) return refineByOccupancy(ev, "live");
   // auto, from the data present:
-  if (ev.ticketUrl) return refineByOccupancy(ev, "live");
+  if (ev.ticketUrl || ev.bmsUrl || ev.districtUrl) return refineByOccupancy(ev, "live");
   if (ev.rsvpUrl || /free|rsvp|pass/i.test(ev.passInfo)) return "rsvp";
   return "waitlist"; // tickets not live yet — the waitlist is open
 }
@@ -738,10 +742,28 @@ function calTimeText(ev) {
   return esc(s) + " onwards";
 }
 
+/* The real, validated booking links an event carries in the sheet. A button is
+   shown for each provider that has a link — that is how a ticket button is
+   "activated": the moment a real URL lands in the sheet cell, its button
+   appears; an empty cell shows nothing. Placeholder/junk links were already
+   stripped by toActionUrl(), so only genuine links reach here. */
+function eventActions(ev) {
+  return {
+    bms: safeUrl(ev.bmsUrl),
+    district: safeUrl(ev.districtUrl),
+    ticket: safeUrl(ev.ticketUrl), // a generic single ticket link (any provider)
+    rsvp: safeUrl(ev.rsvpUrl),     // an external RSVP link (form / page / tel:)
+  };
+}
+function hasTicketLinks(ev) { const a = eventActions(ev); return !!(a.bms || a.district || a.ticket); }
+function hasLiveLinks(ev) { const a = eventActions(ev); return !!(a.bms || a.district || a.ticket || a.rsvp); }
+
 function calStatusChip(ev) {
-  // Booking closed: don't advertise "Tickets live"/"RSVP open"/"Sold out".
-  if (!CONFIG.BOOKING_OPEN) return "";
   if (ev.hideStatus) return "";
+  // Show a status chip either when booking is globally open, or — regardless of
+  // that switch — for any individual event that already has a real booking/RSVP
+  // link in the sheet, so activating one event doesn't wait on the global flag.
+  if (!CONFIG.BOOKING_OPEN && !hasLiveLinks(ev)) return "";
   switch (ev.status) {
     case "fast": return `<span class="cal-status cal-status--fast">${CAL_ICONS.flame}Filling fast</span>`;
     case "soldout": return `<span class="cal-status cal-status--full">${CAL_ICONS.ticketX}Sold out</span>`;
@@ -755,13 +777,42 @@ function calAction(ev) {
   // Listed for information only — no booking, RSVP or registration.
   if (ev.notPublic) return '<span class="cal-soon">Not open to the public</span>';
 
-  // The internal waitlist/register link carries the programme so the
-  // registration form can pre-tick it. An external rsvp link is left as-is.
+  const isTel = (u) => /^tel:/i.test(u || "");
+  const btn = (rawUrl, cls, label) => {
+    const url = safeUrl(rawUrl) || "#register";
+    return `<a class="btn ${cls} btn-sm" href="${esc(url)}"${/^https?:/i.test(url) ? ' target="_blank" rel="noopener"' : ""}>${label}</a>`;
+  };
+  const a = eventActions(ev);
+  const pass = ev.passInfo ? `<span class="cal-soon">${esc(ev.passInfo)}</span>` : "";
+
+  // Concluded events never book — offer media if a link is on the row.
+  if (ev.status === "concluded") return a.ticket ? btn(a.ticket, "btn-ghost", "View media") : "";
+
+  // The internal register/waitlist route carries the programme so the form can
+  // pre-tick it; an external RSVP link (below) is followed as-is.
   const reg = "#register?programme=" + encodeURIComponent(ev.title || "");
 
-  // Until booking opens, ignore every sheet ticket/rsvp link (including junk or
-  // placeholder ones). Either capture an RSVP through the bridge (when enabled)
-  // or send the event to the single registration section.
+  // ---- Per-event booking links from the sheet (single source of truth). ----
+  // A provider button appears for each column that holds a real link, so you
+  // activate an event simply by pasting its BookMyShow / District / RSVP link.
+  // Sold out is honoured over the links (no "Book" on a full show).
+  if (ev.status !== "soldout") {
+    const btns = [];
+    if (a.bms) btns.push(btn(a.bms, "btn-bms", "Book on BookMyShow"));
+    if (a.district) btns.push(btn(a.district, "btn-district", "Book on District"));
+    // A generic ticket link is a fallback only when no named provider is set.
+    if (!a.bms && !a.district && a.ticket) {
+      btns.push(btn(a.ticket, "btn-primary", isTel(a.ticket) ? "Call to book" : "Book / passes"));
+    }
+    if (a.rsvp) btns.push(btn(a.rsvp, "btn-primary", isTel(a.rsvp) ? "Call to RSVP" : "RSVP to attend"));
+    if (btns.length) return btns.join("") + pass;
+  } else {
+    // Sold out with a link on the row — let people follow it (waitlist/returns).
+    const back = a.rsvp || a.bms || a.district || a.ticket;
+    if (back) return btn(back, "btn-ghost", "Join the waitlist") + pass;
+  }
+
+  // ---- No per-event links yet: the internal registration flow. ----
   if (!CONFIG.BOOKING_OPEN) {
     if (CONFIG.RSVP_ENABLED) {
       // Routes into the Register module in RSVP mode; the submission posts to
@@ -771,24 +822,8 @@ function calAction(ev) {
     }
     return `<a class="btn btn-primary btn-sm" href="${esc(reg)}">Register</a>`;
   }
-
-  const wl = safeUrl(ev.rsvpUrl) || reg;
-  const btn = (rawUrl, cls, label) => {
-    const url = safeUrl(rawUrl) || "#register";
-    return `<a class="btn ${cls} btn-sm" href="${esc(url)}"${/^https?:/i.test(url) ? ' target="_blank" rel="noopener"' : ""}>${label}</a>`;
-  };
-  const isTel = (u) => /^tel:/i.test(u || "");
-  switch (ev.status) {
-    case "live":
-    case "fast": {
-      const u = ev.ticketUrl || wl;
-      return btn(u, "btn-primary", isTel(u) ? "Call to book" : "Book / passes");
-    }
-    case "rsvp": return btn(wl, "btn-primary", isTel(wl) ? "Call to RSVP" : "RSVP to attend") + (ev.passInfo ? `<span class="cal-soon">${esc(ev.passInfo)}</span>` : "");
-    case "soldout": return btn(wl, "btn-ghost", "Join the waitlist");
-    case "concluded": return ev.ticketUrl ? btn(ev.ticketUrl, "btn-ghost", "View media") : "";
-    default: return btn(wl, "btn-primary", "Join the waitlist") + '<span class="cal-soon">Be first when booking opens</span>';
-  }
+  if (ev.status === "soldout") return btn(reg, "btn-ghost", "Join the waitlist");
+  return btn(reg, "btn-primary", "Join the waitlist") + '<span class="cal-soon">Be first when booking opens</span>';
 }
 /* The occupancy bar is the FOMO visual. Shown only when there is capacity to
    report and the event is actually selling (live/fast) — never on sold out. */

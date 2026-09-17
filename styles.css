@@ -282,6 +282,15 @@ p.section-intro { max-width: 44rem; color: var(--muted); font-size: 1.05rem; }
 .btn-block { display: block; width: 100%; }
 .btn-sm { padding: 0.6rem 1.1rem; font-size: 0.78rem; }
 
+/* Ticketing providers — each event can carry a BookMyShow and/or a District
+   link (and/or an RSVP). Kept in the providers' own colours so the button is
+   recognisable, with white text for contrast. */
+.btn-bms { background: #C4242C; color: #FFF; border-color: #C4242C; }
+.btn-bms:hover { background: #A61C23; border-color: #A61C23; }
+.btn-district { background: #1B1D21; color: #FFF; border-color: #1B1D21; }
+.btn-district:hover { background: #000; border-color: #000; }
+.section-cream .btn-district { border-color: #1B1D21; }
+
 /* --------------------------------------------------------------- 6. Header */
 
 .site-header {
