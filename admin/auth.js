@@ -24,13 +24,11 @@
   const USERS = {
     jois:   "ee9d41e56dce85563d3e14b0a37eb48dde121c27539a2f4f9884e56b2ea1e0c7",
     vinod:  "df6fcc5c1774a5292e5b8c61bb0e9cc57034b3b4f25b439231fe7c9cd726c820",
-    kishen: "673d28f333f9be7fab5b86f8094230ef85ab5e02a1aced676777257c79e7de5a",
     kishan: "21e72236a640e3217ca075262b8f40b0a3b0be6f735df7d86f6e890195059a29",
   };
   // Tools a user is limited to. Tool names: "tickets", "links", "report".
   // Kishen enters ticket sales; the report carries costing and artist fees.
   const ACCESS = {
-    kishen: ["tickets"],
     kishan: ["tickets"],
   };
   function canUse(user, tool) {
