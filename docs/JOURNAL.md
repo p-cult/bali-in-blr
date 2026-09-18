@@ -63,6 +63,8 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
   seams and edges, both wordmarks and type. Shared with the team at
   **/brand/** (link-only: noindex, robots-disallowed, unlinked). It is the
   thing to hand a designer; the stylesheets remain the exact reference.
+- **Progress dashboard:** `/progress/` (link-only) — tickets from the Tickets
+  workbook, events from the Event List, totals from the bridge. See §1, 18 Sep.
 - **Print:** `tools/build-event-posters.py` renders the event listing at
   500&#215;1000&#160;mm and 1000&#215;500&#160;mm into `assets/print/`.
 - **Open:**
@@ -650,6 +652,35 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
   read that line, reported a bug that did not exist, and proposed changing a
   number the sheet already had right. §0 now says the numbers are derived and
   to read the page. Same correction applied to the stale ticketing paragraph.
+
+### 18 Sep 2026 — ticket log and stakeholder progress dashboard
+- **Ticket log.** A separate "Tickets - Bali in Blr" workbook (id in the
+  vault). `Master` tab: headers on row 10, entries from row 11 to 2100 —
+  Date (`DD-MMM | HH:MM`), Number of tickets (whole numbers ≥ 1, others
+  rejected), Event (dropdown, off-list rejected).
+- **The dropdown follows the website.** A helper `Events` tab holds one
+  `IMPORTDATA` formula over the same published Event List the site reads,
+  keeping rows that carry a BookMyShow or District URL. Headers there carry
+  stray spaces (`'bookmyshow link       '`), so the formula trims and
+  lower-cases before matching — exactly as `main.js` does. Refreshes about
+  hourly (Google's import cadence). Single-letter `LET` names like `r` are
+  reserved (R1C1) and silently break the formula; use full words.
+- **Auto date.** A bound Apps Script, "Tickets - auto date stamp", with a
+  simple `onEdit` trigger (no authorisation): when B and C are both filled,
+  A gets the current date-time once and keeps it; clearing B or C clears A.
+  A formula cannot do this — `NOW()` recalculates and every stamp drifts.
+- **Dashboard** at `/progress/` for partners and stakeholders: countdown,
+  tickets sold, events on sale, registered and volunteer totals, tickets by
+  event, sales by day, latest entries, and the full timeline. Standalone like
+  `/brand/` (own styles and logo fills; logo is the heading), noindex,
+  robots-disallowed, unlinked. Reads three live sources — the Tickets
+  `Master` tab (published to web as TSV, **that tab only**; `Events` returns
+  401), the Event List, and the bridge's aggregate stats. Each source has a
+  bounded timeout and a last-good browser copy, and the page says when it is
+  showing one. An unreadable ticket source shows "—", never a false 0.
+- **No project-updates panel yet:** nothing records updates or milestones.
+  Add an "Updates" tab (Date, Update) to the Tickets workbook to wire one in;
+  the page shows only what has a real source.
 
 ## 2. Lessons and standing rules (the "why" behind the rules)
 

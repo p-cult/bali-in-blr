@@ -10,4 +10,7 @@ Disallow: /admin/
 # Brand kit — shared with the team by link, not indexed
 Disallow: /brand/
 
+# Stakeholder progress dashboard — shared by link, not indexed
+Disallow: /progress/
+
 Sitemap: https://bali-in-blr.paramfoundation.org/sitemap.xml
