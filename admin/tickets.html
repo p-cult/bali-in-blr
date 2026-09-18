@@ -108,8 +108,13 @@
 <script>
 (function () {
   "use strict";
-  // The Tickets sheet's own web app ("Tickets - auto date stamp" project).
+  // Write endpoint: the Tickets sheet's own web app ("Tickets - auto date stamp" project).
+  // Set this once the Apps Script is deployed as a web app (Deploy → New deployment → Web app).
   const API = "__TICKETS_API__";
+
+  // Read sources (already published — no API needed for loading).
+  const EVENTS_TSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTji37D6cT7J9bLFptJdNaYrvZF_soZyiqIsX-rHYUj4H6rnfMCExu2hIyVjCk48j86rdaBhp_lthzb/pub?gid=41213049&single=true&output=tsv";
+  const MASTER_TSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRdhMrW0iA2AWYrea-WhTWy7SNXOLbfcO596asXH3GvCBxZo3XmqcoV-9L0X_kBfj1GuGWM5YTBOBh8/pub?gid=0&single=true&output=tsv";
 
   const $ = function (id) { return document.getElementById(id); };
   function esc(s) {
@@ -128,25 +133,48 @@
     } finally { clearTimeout(t); }
   }
 
+  function parseTsv(text) {
+    return text.trim().split("\n").map(function (l) { return l.split("\t"); });
+  }
+
   async function loadData() {
+    // Events: read from the BMS/ticketing tab of the main sheet (published TSV).
+    // Recent + totals: read from the published Master tab of the Tickets sheet.
     try {
-      const d = await call(API + "?data=1&_=" + Date.now());
+      const [evRes, masterRes] = await Promise.all([
+        fetch(EVENTS_TSV + "&_=" + Date.now(), { cache: "no-store" }),
+        fetch(MASTER_TSV + "&_=" + Date.now(), { cache: "no-store" }),
+      ]);
+      const evRows = parseTsv(await evRes.text());
+      // BMS tab columns: 0=Date, 1=Event name, 2=BMS link label, 3=District link label …
+      // Row 0 is the header; event name is col 1. Deduplicate.
+      const seen = {}, events = [];
+      evRows.slice(1).forEach(function (r) {
+        const name = (r[1] || "").trim();
+        if (name && !seen[name]) { seen[name] = 1; events.push(name); }
+      });
+
       const sel = $("event"), keep = sel.value;
-      sel.innerHTML = '<option value="">Choose an event…</option>' + (d.events || []).map(function (e) {
-        return "<option>" + esc(e) + "</option>";
-      }).join("");
+      sel.innerHTML = '<option value="">Choose an event…</option>' +
+        events.map(function (e) { return "<option>" + esc(e) + "</option>"; }).join("");
       if (keep) sel.value = keep;
-      const rows = d.recent || [];
-      $("total").textContent = d.totalTickets != null ? d.totalTickets + " sold in all" : "";
-      $("recent").innerHTML = rows.length
-        ? "<table><tbody>" + rows.map(function (r) {
-            return '<tr><td class="when">' + esc(r.when) + "</td><td>" + esc(r.event) +
-              '</td><td class="qty">' + esc(r.qty) + "</td></tr>";
+
+      // Master TSV: headers on row 10 (index 9), entries from row 11 (index 10).
+      const masterRows = parseTsv(await masterRes.text()).slice(10)
+        .filter(function (r) { return r[0] && r[0].trim(); });
+      const recent = masterRows.slice(-20).reverse();
+      let total = 0;
+      masterRows.forEach(function (r) { total += Number(r[1]) || 0; });
+      $("total").textContent = total ? total + " sold in all" : "";
+      $("recent").innerHTML = recent.length
+        ? "<table><tbody>" + recent.map(function (r) {
+            return '<tr><td class="when">' + esc(r[0]) + "</td><td>" + esc(r[2]) +
+              '</td><td class="qty">' + esc(r[1]) + "</td></tr>";
           }).join("") + "</tbody></table>"
         : '<p class="empty">No ticket sales recorded yet.</p>';
       return true;
     } catch (e) {
-      $("recent").innerHTML = '<p class="empty">Could not reach the ticket sheet. Check the connection and reload.</p>';
+      $("recent").innerHTML = '<p class="empty">Could not load ticket data. Check connection and reload.</p>';
       return false;
     }
   }
