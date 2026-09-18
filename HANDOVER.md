@@ -17,11 +17,12 @@ presented by **Param Foundation** (a Bengaluru non-profit in science & culture).
 - **Stack:** plain **HTML + CSS + vanilla JS**. No framework, no build step, no
   dependencies, no package.json. Open `index.html` and it runs.
 
-The festival runs **1–18 October 2026** in Bengaluru: performances,
-workshops, and talks blending Indonesian (Balinese) and Indian traditions.
+Programmed events run **3–18 October 2026** in Bengaluru — sixteen days,
+opening with the Inaugural Kecak on 3 Oct: performances, workshops, and talks
+blending Indonesian (Balinese) and Indian traditions.
 Headliner: **Dr. I Wayan Dibia** (Padma Shri).
-(Dates are the source of truth in the schedule sheet — see §3/§4. Ignore any
-older "September" wording elsewhere.)
+(Dates are the source of truth in the schedule sheet — see §3/§4. It was
+billed 1–18 Oct early on; ignore that and any older "September" wording.)
 
 ### The product vision (what it must grow into)
 A single evolving destination that:
@@ -49,7 +50,10 @@ admin/              Internal, login-gated tools (not for the public):
   index.html          Admin hub at /admin — lists the tools.
   campaign-links.html Campaign Link Builder (UTM links + QR → 'links' sheet tab).
   report.html         Project report (programme, venues, costing, live counts).
-  auth.js             Shared sign-in gate (username+password, SHA-256 hashes).
+  tickets.html        Ticket sales entry → the Tickets workbook's own script.
+  auth.js             Shared sign-in gate (username+password, SHA-256 hashes);
+                      ACCESS limits a user to certain tools and the hub hides
+                      the rest.
 assets/             Photos (extracted & optimised from the festival brochure PDF).
 data/
   events.json       Calendar FALLBACK when the schedule sheet is unreachable (§4).
@@ -66,8 +70,9 @@ tools/
   brand/index.html  The brand kit — link-only page for the team (noindex).
   ANALYTICS-SETUP.md (docs/) What the site reports, and the GTM work left to do.
   build-event-posters.py  Print-ready event listing, 1:2 and 2:1, into assets/print/.
-  sync-images.sh    Pull Google Drive event images → optimise → assets/drive/.
-                    Run when a Drive image link in the sheet is added/changed.
+  sync-images.sh    Pull Drive event images AND collaborator logos → optimise
+                    → assets/drive/ (.jpg for photos, .png keeps a logo's
+                    alpha). Run when a Drive link in the sheet changes.
 README.md           Short version of this doc for casual contributors.
 HANDOVER.md         This file.
 .cursor/rules/      Cursor project rules.
@@ -167,13 +172,17 @@ renders that button immediately; events with no live link go to Register while
 `BOOKING_OPEN` is false; `concluded` shows **View media** when a generic ticket
 link is present; `not public` / `internal` lists the event with no action.
 
-**Event images:** put an `assets/…` path in the image column. A Google Drive
-share link also works — Drive images can't be embedded directly, so
-`tools/sync-images.sh` downloads and optimises each one into
-`assets/drive/<fileId>.jpg`, and `toImageUrl()` in `main.js` maps the link to
-that local copy. Run the script (and commit `assets/drive/`) whenever a Drive
-image is added or changed. A missing/failed image collapses to a clean no-image
-poster rather than a broken icon.
+**Event images and collaborator logos:** put an `assets/…` path in the image
+column. A Google Drive share link also works — Drive images can't be embedded
+directly, so `tools/sync-images.sh` downloads and optimises each one into
+`assets/drive/<fileId>.<ext>`, and `toImageUrl()` in `main.js` maps the link to
+that local copy. A photograph becomes `.jpg`; an image with real transparency
+(a logo) stays `.png` with its alpha, because flattening it onto white puts a
+box on the cream partner tile. Run the script (and commit `assets/drive/`)
+whenever a Drive file is added or changed — but the site does not wait for it:
+a logo falls back to `.jpg` and then to the live Drive copy, so it appears as
+soon as its link is in the sheet. A missing/failed image collapses to a clean
+no-image poster rather than a broken icon.
 
 ### `data/partners.json` (and the future `Partners` sheet)
 Array of `{ name, logo, url, tier }`. Empty array → the section shows a

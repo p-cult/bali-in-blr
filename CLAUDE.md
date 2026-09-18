@@ -89,6 +89,10 @@ Live and deployed. The hub is built and running: signup + volunteer forms saving
 through the Google Apps Script bridge (flavours → deduplicated `Master` registry,
 receipts), a calendar reading real dates live from the schedule sheet, GTM
 analytics, a privacy page, a print edition, an encrypted vault for secrets, and a
-live custom domain (https://bali-in-blr.paramfoundation.org). Remaining: add
-ticket links and post-event media as shows go on sale and conclude. Roadmap in
+live custom domain (https://bali-in-blr.paramfoundation.org). Also live: an
+`/admin` hub (campaign links, project report, ticket sales) behind a per-tool
+sign-in gate, and a link-only `/progress/` dashboard for stakeholders.
+Collaborator names AND logos come from the Collab/venues sheet, so adding a row
+there puts a partner on the site with no code change. Remaining: add ticket
+links and post-event media as shows go on sale and conclude. Roadmap in
 HANDOVER §7.

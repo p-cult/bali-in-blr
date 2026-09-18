@@ -31,12 +31,12 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
   bridge into a deduplicated `Master` registry with per-flavour tabs and
   receipts. Calendar reads the schedule sheet's `Event List` tab live, with a
   publish-proof fallback through the bridge (`?feed=schedule` / `?feed=collab`).
-  Live counts: `BRIDGE_URL?sheet=stats` (184 registered on 17 Sep 2026:
-  54 updates, 133 volunteers — 187 flavour rows, so the dedup is working).
+  Live counts: `BRIDGE_URL?sheet=stats` (196 registered on 19 Sep 2026:
+  58 updates, 141 volunteers — 199 flavour rows, so the dedup is working).
 - **Measurement.** Views, every call-to-action click, phone and email taps,
   outbound links and confirmed registrations all reach `dataLayer`. The GTM
   container still needs its tags: see `docs/ANALYTICS-SETUP.md`.
-- **Ticketing.** Buttons follow the sheet. As of 17 Sep 2026, **7 of the 15
+- **Ticketing.** Buttons follow the sheet. As of 19 Sep 2026, **8 of the 16
   listed events carry a live BookMyShow URL and 6 also carry District**; the
   rest funnel to Register until a real `https://` is pasted into the Event
   List. The **BMS** tab still stores Ctrl-K hyperlinks labelled "Link";
@@ -46,17 +46,22 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
 - **Analytics:** Google Tag Manager installed; GA4/Meta/Ads are added inside
   GTM, not in the repo.
 - **Admin:** `/admin` hub with a staff sign-in gate, the Campaign Link
-  Builder, and a **Project report** (`/admin/report.html`) that reconstructs
-  the funder write-up from the planning workbook plus live registration counts.
-- **Images:** event photos come from Google Drive links in the sheet, synced
-  to `assets/drive/` by `tools/sync-images.sh`. Programme cards carry the
+  Builder, a **Project report** (`/admin/report.html`) that reconstructs the
+  funder write-up from the planning workbook plus live registration counts,
+  and **Ticket sales** (`/admin/tickets.html`). The hub hides any tool the
+  signed-in user cannot open (`ACCESS` in `admin/auth.js`).
+- **Images:** event photos AND collaborator logos come from Google Drive
+  links in the sheet, synced to `assets/drive/` by `tools/sync-images.sh`.
+  Photos become `.jpg`; a logo with transparency stays `.png` with its alpha.
+  The site tries `.png`, then `.jpg`, then the live Drive copy — so a newly
+  linked logo shows before the script has run. Programme cards carry the
   client's own photos (all seven have real images; no placeholder remains).
 - **Brand:** the festival logo (`assets/logo.svg`) is inlined wherever the
   name is a heading or brand mark; the hero uses the title mark, inlined in
   `index.html` and deliberately not shipped as a file (source in the vault).
   Hero copy is the client's, applied 9 Sep from their corrections document.
   The three hero numbers are **not** copy — they auto-sync from the schedule
-  sheet (`updateHeroStats`) and currently read 16 days / 15 events / 14
+  sheet (`updateHeroStats`) and currently read 16 days / 16 events / 14
   venues. The markup holds the same values as a fallback. Do not quote a
   number from this file as the live one; read the page.
 - **Brand kit:** colour, pairings, the reference boards, the block motif,
@@ -79,7 +84,8 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
     kills registrations; see §1, 17 Sep).
   - Paste real BookMyShow / District URLs into the Event List as shows go on
     sale (7 of 15 done).
-  - Rotate the two admin passwords (the old ones were served in comments).
+  - Rotate the admin passwords (the old ones were served in comments).
+    `admin/auth.js` currently holds jois, vinod and kishan (tickets only).
   - Post-event media/gallery (Phase 4).
   - The Monument display font is not licensed (see §2).
 
@@ -748,6 +754,41 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
   directly (`user`/`pass` correct, deliberately bad event name) before
   touching anything live, rather than guessing both layers needed the same
   fix.
+
+### 19 Sep 2026 — the Files column filled, and logos that keep their alpha
+- **The Files column was empty for all 14 logos**, so `data/collab-logos.json`
+  had been hand-maintained instead and the two drifted apart. Filled F15:F27
+  from the shared `web-logos` Drive folder and added a row for **Mandala
+  Bengaluru**, which had a logo in the folder but no row, so it could never
+  appear. `Ministry of culture` is still Pending with no file.
+- **Name → file matches that are not obvious:** `MUSIC ACADEMY.png` is
+  **Chowdiah** (Academy of Music, Chowdiah Memorial Hall); `SRRK.png` is
+  Rajarajeshwari Kalaniketan; `Indian Music Experience.png` is IME;
+  `Drishti Art Foundation.png` is the sheet's "Drishti Art Centre".
+- **The sync then flattened every logo onto white.** `sync-images.sh` was
+  written for photographs: it fetched Drive's *thumbnail* (always JPEG) and
+  re-encoded to JPEG. On the cream partner tile that is a glaring white box —
+  the same fault that had been chased manually on one logo the day before.
+  Fixed by downloading the **original** (`uc?export=download`) first and
+  writing `.png` when the image has real alpha, at `LOGOMAX=600` (they render
+  at 30-60px; 1-2MB → 48-428K). The thumbnail endpoint remains the fallback.
+- **Lesson:** a tool named for one asset type will silently mangle another.
+  The white box was not a CSS problem and no amount of resizing would have
+  fixed it.
+- **Verified:** 14/14 logos load from local PNGs, 0 Drive hits, 0 broken.
+  A second sync run is byte-identical, so this is not recurring churn.
+
+### 19 Sep 2026 — alignment sweep
+- Reconciled every *current-state* claim against the live sheet. Chronology
+  entries below were left alone: they are dated history, not status.
+- `index.html` hero fallback said **15 events**; the sheet has 16. That is the
+  number a visitor sees if the sheet fetch fails, so it was wrong twice over.
+- `HANDOVER.md` still opened with **1–18 October**; programmed events run
+  **3–18 October** (sixteen days).
+- §0 here said **7 of 15** events carry BookMyShow; it is now **8 of 16**.
+  Hero numbers 16/15/14 → **16/16/14**. Registrations 184 → **196**.
+- §0 and HANDOVER did not mention `/admin/tickets.html` or that the image sync
+  now covers logos. Both added.
 
 ## 2. Lessons and standing rules (the "why" behind the rules)
 
