@@ -458,6 +458,30 @@ function toImageUrl(v) {
   return s;
 }
 
+/* The Drive file id in a sheet value, or "". */
+function driveId(v) {
+  const m = String(v == null ? "" : v).trim()
+    .match(/drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?(?:[^#]*&)?id=)([A-Za-z0-9_-]+)/);
+  return m ? m[1] : "";
+}
+
+/* Drive's own thumbnail endpoint, which DOES serve a plain image to an <img>
+   for a file shared "Anyone with the link". Used only as a stand-in until
+   sync-images.sh brings down the optimised local copy. */
+function driveLiveUrl(id, w) {
+  return "https://drive.google.com/thumbnail?id=" + encodeURIComponent(id) + "&sz=w" + (w || 800);
+}
+
+/* onerror for any sheet-driven image: try the live Drive copy once, then give
+   up. Lets a logo appear the moment its link lands in the sheet, with no sync
+   and no deploy; the optimised local copy takes over once it exists. */
+function imgFallback(img) {
+  img.onerror = null;
+  const next = img.getAttribute("data-fallback");
+  if (next) { img.removeAttribute("data-fallback"); img.src = next; return; }
+  img.remove();
+}
+
 /* A booking/RSVP target from the sheet: either a URL or a phone number. A bare
    phone number becomes a tel: link so the button dials it. */
 function isJunkLink(v) {
@@ -1220,7 +1244,9 @@ function collabMark(p, cls) {
   const logo = p && safeUrl(toImageUrl(p.logo));
   const name = (p && p.name) || "";
   if (logo) {
-    return `<img class="${cls}" src="${esc(logo)}" alt="${esc(name)}" title="${esc(name)}" loading="lazy" onerror="this.remove();" />`;
+    const id = driveId(p.logo);
+    const fallback = id ? ` data-fallback="${esc(driveLiveUrl(id, 800))}"` : "";
+    return `<img class="${cls}" src="${esc(logo)}" alt="${esc(name)}" title="${esc(name)}" loading="lazy"${fallback} onerror="imgFallback(this)" />`;
   }
   return `<span class="${cls} ${cls}--dummy" title="${esc(name)}">${esc(collabMonogram(name))}</span>`;
 }
