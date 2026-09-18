@@ -517,6 +517,7 @@
 }
 .partner:hover { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
 .partner img, .partner-logo { max-width: 100%; max-height: 60px; object-fit: contain; }
+.partner-logo[alt="Yaksha Kala Academy"] { max-height: 72px; }
 /* Dummy monogram stand-in until a real logo lands. On the cream tile. */
 .partner-logo--dummy {
   display: inline-flex;
