@@ -698,31 +698,42 @@ function fetchTicketLinks(url) {
     .then((text) => parseTicketLinks(text));
 }
 
-async function loadEvents() {
-  // The sheet is the source of truth once it has rows in it. Two live sources
-  // are tried — the published feed, then the bridge feed (owner-read, works
-  // even if Publish-to-web is off) — then the local file, then the last cache.
-  // Link columns are merged across sources: the published TSV drops hyperlinks,
-  // the bridge keeps them, so first-wins would hide Book buttons.
-  const sheetTries = [CONFIG.SCHEDULE_URL, CONFIG.SCHEDULE_URL_ALT]
-    .filter(Boolean).map((u) => fetchSchedule(u).catch(() => null));
-  const ticketTries = [CONFIG.TICKETS_URL_ALT, CONFIG.TICKETS_URL]
-    .filter(Boolean).map((u) => fetchTicketLinks(u).catch(() => null));
-  const fromFile = loadJSON(SOURCES.events);
-
-  const lists = [];
-  for (const p of sheetTries) {
-    try { const ev = await p; if (ev && ev.length) lists.push(ev); } catch (e) { /* next */ }
+// One load per page view: the calendar and the Register form's programme list
+// both need the events, and each used to start its own full set of requests.
+let eventsLoad = null;
+function loadEvents() {
+  if (!eventsLoad) {
+    eventsLoad = loadEventsOnce().catch((err) => { eventsLoad = null; throw err; });
   }
-  let events = mergeRawEvents(lists);
-  if (!events) { try { events = await fromFile; } catch (e) { /* try the cache */ } }
+  return eventsLoad;
+}
+
+// The published sheet first; the bridge only when it fails. The bridge is the
+// same Apps Script that saves registrations, and every read it serves takes
+// one of the owner's ~30 concurrent execution slots. Asking it on every visit,
+// in parallel with a published feed that already answered, spent those slots
+// for nothing and left signups competing with page views for them.
+async function firstWorking(urls, fetcher, ok) {
+  for (const url of urls.filter(Boolean)) {
+    try { const out = await fetcher(url); if (ok(out)) return out; } catch (e) { /* next */ }
+  }
+  return null;
+}
+
+async function loadEventsOnce() {
+  // Order: published feed, then the bridge feed (owner-read, so it works even
+  // if Publish-to-web is off), then the local file, then the last cache.
+  const fromFile = loadJSON(SOURCES.events).catch(() => null);
+  let events = await firstWorking(
+    [CONFIG.SCHEDULE_URL, CONFIG.SCHEDULE_URL_ALT], fetchSchedule, (ev) => ev && ev.length);
+  if (events) events = mergeRawEvents([events]);
+  if (!events) events = await fromFile;
 
   if (events && events.length) {
-    const extras = [];
-    for (const p of ticketTries) {
-      try { const rows = await p; if (rows && rows.length) extras.push(rows); } catch (e) { /* next */ }
-    }
-    extras.forEach((rows) => overlayTicketLinks(events, rows));
+    // BookMyShow / District overlay: same rule — published tab first.
+    const rows = await firstWorking(
+      [CONFIG.TICKETS_URL, CONFIG.TICKETS_URL_ALT], fetchTicketLinks, (r) => r && r.length);
+    if (rows) overlayTicketLinks(events, rows);
     cacheEvents(events);
     return events;
   }

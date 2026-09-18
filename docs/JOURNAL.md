@@ -682,6 +682,28 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
   Add an "Updates" tab (Date, Update) to the Tickets workbook to wire one in;
   the page shows only what has a real source.
 
+### 18 Sep 2026 — the site stops spending bridge capacity on page views
+- **Symptom:** the bridge went slow and flaky — 4 of 6 GETs came back as
+  Google's own 404 page after 13–40 s; successes took 5–9 s instead of ~1 s.
+  No Google Workspace incident was open.
+- **Cause (ours):** every public page view made **four** bridge calls
+  (`feed=schedule` and `feed=bms`, twice each), in parallel with published
+  feeds that had already answered. `loadEvents` fired the bridge feed
+  alongside the published one (so links could be merged), and it ran twice
+  per view — once for the calendar, once for the Register form. `feed=bms`
+  is not even deployed, so each of those calls bought nothing. Apps Script
+  allows the owner roughly 30 concurrent executions, and registrations share
+  them: page traffic was competing with signups.
+- **Fix:** one shared load per page view, and the bridge only as a fallback
+  when the published feed fails. Bridge calls per view: 4 → 0; published
+  requests 5 → 3; calendar unchanged (15 events, 7 BookMyShow, 6 District).
+  Verified the fallback by breaking the published URL: one bridge call, all
+  15 events. The bridge itself was not touched.
+- **Trade-off:** a Ctrl-K hyperlink on the BMS tab is only readable through
+  the bridge (and only once the rich-text `sheetTsv` is deployed). With the
+  bridge now a fallback, paste plain `https://` URLs into the Event List —
+  which is what staff already do for all 7 live links.
+
 ## 2. Lessons and standing rules (the "why" behind the rules)
 
 **Data and privacy**
@@ -706,6 +728,9 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
   not diagnose POSTs with `curl -L`; it turns Google's redirect into a 405.
 - Do not name a request parameter `sid`. Google rejects it before your code
   runs, with a misleading error and no execution log.
+- **The bridge is for writes and fallbacks, not page views.** Public pages
+  read published feeds; the bridge is asked only when those fail. It shares
+  ~30 concurrent executions with every registration.
 - Any new field the bridge requires needs a **redeploy**; ship the front end
   compatible with the old bridge (mirror fields) or you break live signups.
 - Bound every wait: attempts run against a time budget, JSONP timeout is 4 s,
