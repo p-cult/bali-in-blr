@@ -704,6 +704,29 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
   bridge now a fallback, paste plain `https://` URLs into the Event List —
   which is what staff already do for all 7 live links.
 
+### 18 Sep 2026 — a collaborator logo goes live from the sheet alone
+- **Problem.** The Logos block was already wired (name / status / Files), but
+  `toImageUrl` mapped a Drive link to `assets/drive/<id>.jpg` — a file that
+  only exists after someone runs `tools/sync-images.sh` and pushes. So pasting
+  a link in the sheet showed nothing, and every new collaborator meant a code
+  round-trip. In practice the Files column was left empty and
+  `data/collab-logos.json` was hand-maintained instead, which is why logos and
+  names drifted apart.
+- **Fix.** The `<img>` now carries `data-fallback` pointing at Drive's own
+  thumbnail endpoint (`drive.google.com/thumbnail?id=…`), which *does* serve a
+  plain image to an `<img>` for a file shared "Anyone with the link".
+  `imgFallback()` swaps to it once, on error. Order of precedence is unchanged:
+  optimised local copy first, live Drive only as a stand-in, monogram never.
+- **Result.** Add a row with a Drive link and the logo is on the site at the
+  next page load — no script, no commit, no deploy. `sync-images.sh` is now an
+  optimisation pass, not a prerequisite.
+- **`data/collab-logos.json` is now only a safety net.** The sheet's Files
+  column wins (`if (!p.logo && …)`). Prefer filling the sheet; don't add new
+  names to the JSON.
+- **Known data gaps:** "Mandala Bengaluru" has a logo in the Drive folder but
+  no row in the Logos block, so it cannot appear. "Ministry of culture" has a
+  row (Pending) but no file.
+
 ## 2. Lessons and standing rules (the "why" behind the rules)
 
 **Data and privacy**
