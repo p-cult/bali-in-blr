@@ -26,6 +26,7 @@
   .signout{background:none;border:1px solid var(--line);color:var(--ink);font:inherit;font-size:.8rem;border-radius:5px;padding:.35rem .8rem;cursor:pointer}
   .signout:hover{border-color:var(--ink)}
   .tools{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:1rem}
+  .tool[hidden]{display:none}
   .tool{display:block;background:var(--bg3);border:1px solid var(--line);border-radius:var(--radius);padding:1.3rem;text-decoration:none;color:inherit;transition:.15s}
   .tool:hover{border-color:var(--accent);transform:translateY(-1px)}
   .tool h2{font-family:var(--display);font-weight:700;text-transform:uppercase;font-size:1rem;letter-spacing:.03em;margin:0 0 .35rem}
@@ -46,11 +47,15 @@
   <p class="sub">Internal tools for the festival hub. Pick a tool below.</p>
 
   <div class="tools">
-    <a class="tool" href="campaign-links.html">
+    <a class="tool" href="tickets.html" data-tool="tickets">
+      <h2>Ticket sales <span class="arrow">&rarr;</span></h2>
+      <p>Record tickets sold: pick the event, enter the number. Feeds the progress dashboard.</p>
+    </a>
+    <a class="tool" href="campaign-links.html" data-tool="links">
       <h2>Campaign Link Builder <span class="arrow">&rarr;</span></h2>
       <p>Mint trackable UTM links and QR codes for posters, posts and ads. Saves to the master links sheet.</p>
     </a>
-    <a class="tool" href="report.html">
+    <a class="tool" href="report.html" data-tool="report">
       <h2>Project report <span class="arrow">&rarr;</span></h2>
       <p>Funder / Foundation write-up: programme, venues, indicative costing, and live registration counts.</p>
     </a>
@@ -61,11 +66,15 @@
   </footer>
 </div>
 
-<script src="auth.js?v=3"></script>
+<script src="auth.js?v=4"></script>
 <script>
   AdminAuth.protect({
     onUnlock: function (user) {
       document.getElementById("who").textContent = user;
+      // Show only the tools this person can open.
+      document.querySelectorAll(".tool[data-tool]").forEach(function (a) {
+        a.hidden = !AdminAuth.canUse(user, a.dataset.tool);
+      });
     },
   });
   document.getElementById("signout").addEventListener("click", AdminAuth.signOut);

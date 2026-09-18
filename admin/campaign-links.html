@@ -183,7 +183,7 @@
 </div>
 <div class="toast" id="toast"></div>
 
-<script src="auth.js?v=3"></script>
+<script src="auth.js?v=4"></script>
 <script>
 const BASE = "https://bali-in-blr.paramfoundation.org/";
 const BRIDGE_URL = "https://script.google.com/macros/s/AKfycbyKXzPHQLsHCoryx0aJVpVkP0Z0XrnPxjucaiUJtR1aXeux33ygq2Br2QcBNU_MAB7qDw/exec";
@@ -199,6 +199,7 @@ const slug = (s) => String(s||"").toLowerCase().trim().replace(/[^a-z0-9]+/g,"-"
    boot() runs only once the gate is cleared. */
 let ADMIN_USER = "", ADMIN_KEY = "";
 AdminAuth.protect({
+  tool: "links",
   onUnlock: (user) => {
     const c = AdminAuth.creds() || {};
     ADMIN_USER = user;

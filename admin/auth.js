@@ -8,7 +8,10 @@
 
    To add or change an admin, run:
      printf '%s' 'their-password' | shasum -a 256
-   and add/replace the hash in USERS below.
+   and add/replace the hash in USERS below. If the person should only use
+   some tools, list them in ACCESS; anyone not in ACCESS can open every tool.
+   A user who can enter tickets must also be added to the Tickets sheet's own
+   script (it checks the same hash on Google's side before it writes).
 
    Usage on an admin page:
      <div id="admin-app" hidden> …page… </div>
@@ -19,9 +22,21 @@
   "use strict";
 
   const USERS = {
-    jois:  "ee9d41e56dce85563d3e14b0a37eb48dde121c27539a2f4f9884e56b2ea1e0c7",
-    vinod: "df6fcc5c1774a5292e5b8c61bb0e9cc57034b3b4f25b439231fe7c9cd726c820",
+    jois:   "ee9d41e56dce85563d3e14b0a37eb48dde121c27539a2f4f9884e56b2ea1e0c7",
+    vinod:  "df6fcc5c1774a5292e5b8c61bb0e9cc57034b3b4f25b439231fe7c9cd726c820",
+    kishen: "673d28f333f9be7fab5b86f8094230ef85ab5e02a1aced676777257c79e7de5a",
+    kishan: "21e72236a640e3217ca075262b8f40b0a3b0be6f735df7d86f6e890195059a29",
   };
+  // Tools a user is limited to. Tool names: "tickets", "links", "report".
+  // Kishen enters ticket sales; the report carries costing and artist fees.
+  const ACCESS = {
+    kishen: ["tickets"],
+    kishan: ["tickets"],
+  };
+  function canUse(user, tool) {
+    const allowed = ACCESS[user];
+    return !tool || !allowed || allowed.indexOf(tool) !== -1;
+  }
   const AUTH_FLAG = "bali-admin-auth";
 
   async function sha256(s) {
@@ -61,6 +76,7 @@
       .aa-btn{font-family:"Archivo","Arial Narrow",sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.03em;font-size:.8rem;border:0;border-radius:5px;padding:.7rem 1.2rem;cursor:pointer;background:#ff5a3c;color:#111;margin-top:.3rem}
       .aa-btn:hover{background:#C87941}
       .aa-err{color:#ff5a3c;font-size:.85rem;margin:.2rem 0 0}
+      .aa-link{text-align:center;text-decoration:none}
     `;
     const style = document.createElement("style");
     style.id = "aa-styles";
@@ -101,6 +117,12 @@
       const errEl = gate.querySelector(".aa-err");
 
       const unlock = (u) => {
+        if (!canUse(u, opts.tool)) {
+          gate.querySelector("form").innerHTML =
+            "<h1>No access</h1><p>Your account can't open this tool.</p>" +
+            '<a class="aa-btn aa-link" href="./">Back to admin</a>';
+          return;
+        }
         gate.hidden = true;
         gate.remove();
         if (app) app.hidden = false;
@@ -136,5 +158,5 @@
     }
   }
 
-  global.AdminAuth = { protect, checkCreds, creds, currentUser, signOut, AUTH_FLAG };
+  global.AdminAuth = { protect, checkCreds, creds, currentUser, canUse, signOut, AUTH_FLAG };
 })(window);

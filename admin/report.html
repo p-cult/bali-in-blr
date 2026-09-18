@@ -114,7 +114,7 @@
   <footer>Bali in Bengaluru · internal · <a href="../">Public site</a></footer>
 </div>
 
-<script src="auth.js?v=3"></script>
+<script src="auth.js?v=4"></script>
 <script>
 (function () {
   "use strict";
@@ -474,6 +474,7 @@
   }
 
   AdminAuth.protect({
+    tool: "report",
     onUnlock: function (user) {
       document.getElementById("who").textContent = user;
       load();
