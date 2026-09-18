@@ -27,7 +27,7 @@
     kishan: "21e72236a640e3217ca075262b8f40b0a3b0be6f735df7d86f6e890195059a29",
   };
   // Tools a user is limited to. Tool names: "tickets", "links", "report".
-  // Kishen enters ticket sales; the report carries costing and artist fees.
+  // Kishan enters ticket sales; the report carries costing and artist fees.
   const ACCESS = {
     kishan: ["tickets"],
   };
