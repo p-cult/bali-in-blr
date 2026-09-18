@@ -10,11 +10,17 @@
 #     bash tools/sync-images.sh
 #     git add assets/drive && git commit -m "Sync Drive images" && git push
 #
-# It reads the published schedule sheet, downloads every Drive-linked image,
-# optimises it (caps the long side, recompresses), and writes it to
-# assets/drive/<fileId>.jpg — the exact path main.js maps every Drive link to
-# (see toImageUrl). So the sheet keeps the Drive link; the site serves the
-# local optimised copy. Re-running picks up any changed photo.
+# It reads the published schedule sheet and the Collab/venues tab, downloads
+# every Drive-linked image, optimises it (caps the long side, recompresses),
+# and writes it to assets/drive/<fileId>.<ext> — the path main.js maps every
+# Drive link to (see toImageUrl). So the sheet keeps the Drive link; the site
+# serves the local optimised copy. Re-running picks up any changed file.
+#
+# A photograph becomes .jpg. An image with real transparency — a collaborator
+# logo — stays .png with its alpha, because flattening it onto white puts a
+# glaring box on the cream partner tile. Only one extension exists per id; the
+# site tries both and then the live Drive copy, so a logo still shows the
+# moment its link is in the sheet, before this script has ever run.
 #
 # Dependency-free on macOS (curl + `sips`). Elsewhere it uses whichever of
 # these is present, in order: ImageMagick (`magick` / `convert`), Python 3
@@ -32,7 +38,8 @@ PARTNERS_URL="https://script.google.com/macros/s/AKfycbyKXzPHQLsHCoryx0aJVpVkP0Z
 # The "Collab / venues" tab's Files column holds collaborator logos as Drive
 # links; scan it so those logos are synced alongside event images.
 COLLAB_URL="https://docs.google.com/spreadsheets/d/e/2PACX-1vTji37D6cT7J9bLFptJdNaYrvZF_soZyiqIsX-rHYUj4H6rnfMCExu2hIyVjCk48j86rdaBhp_lthzb/pub?gid=7166598&single=true&output=tsv"
-MAXDIM=1600          # longest side, px
+MAXDIM=1600          # longest side, px — photographs
+LOGOMAX=600          # longest side, px — transparent logos, drawn at 30-60px
 QUALITY=70           # JPEG quality
 OUTDIR="assets/drive"
 
@@ -58,6 +65,33 @@ is_image() {
     convert) identify "$1" >/dev/null 2>&1 ;;
     pillow)  python3 -c 'import sys; from PIL import Image; Image.open(sys.argv[1]).verify()' "$1" >/dev/null 2>&1 ;;
     *)       head -c 4 "$1" | grep -q $'\xff\xd8\|\x89PNG\|RIFF\|GIF8' ;;
+  esac
+}
+# Does this image carry real transparency? Logos do; photographs don't. A
+# transparent logo flattened to JPEG gains a white box, which is glaring on the
+# cream partner tile — so those are kept as PNG with their alpha intact.
+has_alpha() {
+  case "$TOOL" in
+    sips)    [ "$(sips -g hasAlpha "$1" 2>/dev/null | awk '/hasAlpha/{print $2}')" = "yes" ] ;;
+    magick)  [ "$(magick identify -format '%A' "$1" 2>/dev/null)" != "Undefined" ] ;;
+    convert) [ "$(identify -format '%A' "$1" 2>/dev/null)" != "Undefined" ] ;;
+    pillow)  python3 -c 'import sys; from PIL import Image; im=Image.open(sys.argv[1]); sys.exit(0 if (im.mode in ("RGBA","LA","PA") or "transparency" in im.info) else 1)' "$1" >/dev/null 2>&1 ;;
+    *)       return 1 ;;
+  esac
+}
+optimise_png() {  # in out — resize, keep alpha
+  case "$TOOL" in
+    sips)    cp "$1" "$2" && sips -Z "$LOGOMAX" -s format png "$2" >/dev/null ;;
+    magick)  magick "$1" -auto-orient -resize "${LOGOMAX}x${LOGOMAX}>" "png:$2" ;;
+    convert) convert "$1" -auto-orient -resize "${LOGOMAX}x${LOGOMAX}>" "png:$2" ;;
+    pillow)  python3 - "$1" "$2" "$LOGOMAX" <<'PY'
+import sys; from PIL import Image, ImageOps
+im=ImageOps.exif_transpose(Image.open(sys.argv[1])).convert("RGBA")
+im.thumbnail((int(sys.argv[3]),int(sys.argv[3])))
+im.save(sys.argv[2],"PNG",optimize=True)
+PY
+    ;;
+    *)       cp "$1" "$2" ;;
   esac
 }
 optimise() {  # in out
@@ -108,17 +142,26 @@ if [ -z "$ids" ]; then echo "No Google Drive image links found. Nothing to do.";
 count=0; ok=0; fail=0
 for id in $ids; do
   count=$((count+1))
-  out="$OUTDIR/$id.jpg"
   raw="$(mktemp)"
-  # The thumbnail endpoint reliably returns a JPEG for a shared file and avoids
-  # Drive's "confirm download" page that large uc?export links can return.
-  if ! curl -fsSL --max-time 60 "https://drive.google.com/thumbnail?id=${id}&sz=w2000" -o "$raw"; then
-    echo "  ✗ ${id}  — download failed (is it shared 'Anyone with the link'?)"; rm -f "$raw"; fail=$((fail+1)); continue
+  # Prefer the ORIGINAL file: the thumbnail endpoint always re-encodes to JPEG,
+  # which would flatten a transparent logo onto white. Fall back to the
+  # thumbnail, which avoids Drive's "confirm download" page on large files.
+  if ! curl -fsSL --max-time 60 "https://drive.google.com/uc?export=download&id=${id}" -o "$raw" || ! is_image "$raw"; then
+    if ! curl -fsSL --max-time 60 "https://drive.google.com/thumbnail?id=${id}&sz=w2000" -o "$raw"; then
+      echo "  ✗ ${id}  — download failed (is it shared 'Anyone with the link'?)"; rm -f "$raw"; fail=$((fail+1)); continue
+    fi
   fi
   if ! is_image "$raw"; then
     echo "  ✗ ${id}  — not a readable image (private, or needs manual export)"; rm -f "$raw"; fail=$((fail+1)); continue
   fi
-  optimise "$raw" "$out"; rm -f "$raw"
+  # A logo keeps its alpha as PNG; a photograph becomes JPEG. Only one of the
+  # two ever exists for an id, so the site's .jpg → .png chain lands on it.
+  if has_alpha "$raw"; then
+    out="$OUTDIR/$id.png"; optimise_png "$raw" "$out"; rm -f "$OUTDIR/$id.jpg"
+  else
+    out="$OUTDIR/$id.jpg"; optimise "$raw" "$out"; rm -f "$OUTDIR/$id.png"
+  fi
+  rm -f "$raw"
   echo "  ✓ ${id}  → ${out}  ($(dims "$out"), $(du -h "$out" | cut -f1))"
   ok=$((ok+1))
 done

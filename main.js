@@ -472,14 +472,17 @@ function driveLiveUrl(id, w) {
   return "https://drive.google.com/thumbnail?id=" + encodeURIComponent(id) + "&sz=w" + (w || 800);
 }
 
-/* onerror for any sheet-driven image: try the live Drive copy once, then give
-   up. Lets a logo appear the moment its link lands in the sheet, with no sync
-   and no deploy; the optimised local copy takes over once it exists. */
+/* onerror for any sheet-driven image. `data-fallback` is a "|"-separated queue
+   tried in order, then the image gives up and removes itself. The queue is
+   .png (a logo, alpha kept by sync-images.sh) then the live Drive copy — so a
+   logo shows the moment its link lands in the sheet, with no sync and no
+   deploy, and the optimised local copy takes over once it exists. */
 function imgFallback(img) {
-  img.onerror = null;
-  const next = img.getAttribute("data-fallback");
-  if (next) { img.removeAttribute("data-fallback"); img.src = next; return; }
-  img.remove();
+  const queue = (img.getAttribute("data-fallback") || "").split("|").filter(Boolean);
+  const next = queue.shift();
+  if (!next) { img.onerror = null; img.remove(); return; }
+  img.setAttribute("data-fallback", queue.join("|"));
+  img.src = next;
 }
 
 /* A booking/RSVP target from the sheet: either a URL or a phone number. A bare
@@ -1241,11 +1244,17 @@ function collabMonogram(name) {
   return (w.length === 1 ? w[0].slice(0, 4) : w.map((x) => x[0]).join("").slice(0, 3)).toUpperCase();
 }
 function collabMark(p, cls) {
-  const logo = p && safeUrl(toImageUrl(p.logo));
   const name = (p && p.name) || "";
+  const id = p && driveId(p.logo);
+  // A collaborator logo is nearly always a transparent PNG, so try that first
+  // and keep .jpg behind it; toImageUrl's .jpg is the right default elsewhere.
+  const logo = id
+    ? "assets/drive/" + id + ".png"
+    : p && safeUrl(toImageUrl(p.logo));
   if (logo) {
-    const id = driveId(p.logo);
-    const fallback = id ? ` data-fallback="${esc(driveLiveUrl(id, 800))}"` : "";
+    const fallback = id
+      ? ` data-fallback="${esc("assets/drive/" + id + ".jpg|" + driveLiveUrl(id, 800))}"`
+      : "";
     return `<img class="${cls}" src="${esc(logo)}" alt="${esc(name)}" title="${esc(name)}" loading="lazy"${fallback} onerror="imgFallback(this)" />`;
   }
   return `<span class="${cls} ${cls}--dummy" title="${esc(name)}">${esc(collabMonogram(name))}</span>`;
