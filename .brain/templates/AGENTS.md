@@ -20,13 +20,16 @@ cannot.
    before touching anything. They are why the work goes well or badly.
 2. **`.brain/doctrine/`** — how work is done here. Short. Each rule exists
    because something went wrong once.
-3. **`docs/SEED.md`** — this project's unchanging north star.
-4. **`CLAUDE.md`** — first actions, the file map, project rules.
-5. **`docs/JOURNAL.md`** — decisions and why. If the code looks odd, the
+3. **`.brain/wisdom/`** — what went wrong before, across every project, and
+   what fixed it. Read `working-together.md` every session, and the file for
+   an area (sheets, deploy, identity, security…) **before** working in it.
+4. **`docs/SEED.md`** — this project's unchanging north star.
+5. **`CLAUDE.md`** — first actions, the file map, project rules.
+6. **`docs/JOURNAL.md`** — decisions and why. If the code looks odd, the
    reason is here. **Do not undo a recorded decision without raising it.**
-6. **`docs/CYCLE.md`** — if this project runs in cycles, the checklist for
+7. **`docs/CYCLE.md`** — if this project runs in cycles, the checklist for
    one. Routine cycles should need no assistant at all.
-7. **The sealed vault**, if the project has one, for private context.
+8. **The sealed vault**, if the project has one, for private context.
 
 ## How to report work
 

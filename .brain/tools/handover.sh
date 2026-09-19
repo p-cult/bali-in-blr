@@ -69,6 +69,7 @@ reading_order() {
   hd "Read before editing, in this order"
   local i=1 f
   for f in .brain/heart/ESSENCE.md .brain/heart/PROOF.md .brain/heart/DELIVERY.md \
+           .brain/wisdom/working-together.md \
            docs/SEED.md CLAUDE.md AGENTS.md docs/JOURNAL.md docs/CYCLE.md; do
     [ -f "$f" ] && { printf '  %d. %s\n' "$i" "$f"; i=$((i+1)); }
   done

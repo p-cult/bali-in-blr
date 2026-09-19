@@ -87,7 +87,7 @@ fi
 # ----------------------------------------------------------------- the vault
 if [ -n "$VAULT_KEY" ] || [ -f secure/vault.json.enc ]; then
   hd "Vault"
-  K="${BALI_VAULT_KEY:-$VAULT_KEY}"
+  K="${BRAIN_VAULT_KEY:-$VAULT_KEY}"   # BRAIN_VAULT_KEY overrides brain.conf per command
   if [ -n "$K" ] && [ -r "$K" ]; then
     ok "key readable"
     if [ -x .brain/tools/vault.sh ] || [ -f .brain/tools/vault.sh ]; then
@@ -101,4 +101,4 @@ fi
 
 printf '\n'
 dim "Everything above was measured just now. Docs may disagree; they are wrong."
-dim "Doctrine: .brain/doctrine/   History: docs/JOURNAL.md"
+dim "Before working in an area, read .brain/wisdom/ for it.   History: docs/JOURNAL.md"
