@@ -31,8 +31,9 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
   bridge into a deduplicated `Master` registry with per-flavour tabs and
   receipts. Calendar reads the schedule sheet's `Event List` tab live, with a
   publish-proof fallback through the bridge (`?feed=schedule` / `?feed=collab`).
-  Live counts: `BRIDGE_URL?sheet=stats` (196 registered on 19 Sep 2026:
-  58 updates, 141 volunteers — 199 flavour rows, so the dedup is working).
+  Live counts: `BRIDGE_URL?sheet=stats` (198 registered on 19 Sep 2026:
+  58 updates, 143 volunteers — 201 flavour rows, so the dedup is working).
+  This number moves; read the endpoint, do not quote this line.
 - **Measurement.** Views, every call-to-action click, phone and email taps,
   outbound links and confirmed registrations all reach `dataLayer`. The GTM
   container still needs its tags: see `docs/ANALYTICS-SETUP.md`.
@@ -50,6 +51,11 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
   funder write-up from the planning workbook plus live registration counts,
   and **Ticket sales** (`/admin/tickets.html`). The hub hides any tool the
   signed-in user cannot open (`ACCESS` in `admin/auth.js`).
+- **Collaborators** are published from the Collab/venues tab's Logos block:
+  a row needs a logo link AND a received status (`collabReceived`). "Pending",
+  "NA" or blank keeps it off the site, so pasting a logo early is harmless —
+  marking it received is what publishes it. 14 published; Ministry of culture
+  is Pending with no file.
 - **Images:** event photos AND collaborator logos come from Google Drive
   links in the sheet, synced to `assets/drive/` by `tools/sync-images.sh`.
   Photos become `.jpg`; a logo with transparency stays `.png` with its alpha.
@@ -733,6 +739,29 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
   no row in the Logos block, so it cannot appear. "Ministry of culture" has a
   row (Pending) but no file.
 
+### 18 Sep 2026 — a logo that would not look bigger, and two changes that should not have been made
+- **The Yaksha Kala Academy logo read tiny and no amount of CSS fixed it.** It
+  was resized four times (60 → 78 → 94 → 140px) before the cause turned out to
+  be the file, not the design system: the artwork is a narrow 1:2.4 mark, and
+  an intermediate pass flattened its transparency onto white, so the cream
+  tile showed a white block. Every container change was reverted; the tile is
+  back to the shared 60px with a single 72px override for that one mark.
+- **Lesson: check the asset before touching the token/component system.** A
+  logo that "looks small" is usually the file — padding baked into the
+  artwork, a flattened alpha channel, the wrong export. Resizing the
+  container to compensate bends the design system around one bad file.
+- **Two changes were made that nobody asked for. Both were reverted:**
+  - `admin/tickets.html` had its whole read path rewritten to pull two
+    published TSVs instead of the Tickets web app. That bypassed the Tickets
+    sheet's own `Events` tab, which this journal records as the deliberate
+    dropdown source. The actual fault was an unfilled `__TICKETS_API__`
+    placeholder — nothing to do with the read design.
+  - `data/collab-logos.json` had its working `yuvakasangha` mapping silently
+    repointed at a smaller new file, and gained alias keys matching no name
+    in the sheet.
+- **Lesson:** diagnosing a cause does not authorise redesigning around it, and
+  a recorded decision is not undone without raising it first.
+
 ### 18 Sep 2026 — ticket-sales admin module finished, and a credential typo caught twice
 - **Shipped.** `/admin/tickets.html` now points at the Tickets sheet's own
   deployed Apps Script web app (a separate script/execution pool from the
@@ -844,6 +873,26 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
   The site's own `loadCollaborators()` is authoritative; a cache-busted fetch
   with no-cache headers agrees with it.
 
+### 19 Sep 2026 — an event title corrected, and a feed that lied twice
+- Fixed `Balinese Dance Demonstartion` → `Demonstration` in the Event List
+  (`A26`). Checked the blast radius first, because an event title is a
+  **matching key**: the Tickets `Events` tab imports it, `doPost` validates
+  against it, and `/progress/` matches sales to events by title. Nothing
+  referenced the misspelling — no ticket row, not in the ticketed dropdown,
+  not in the repo — so the rename was display-only and needed no deploy.
+  **Renaming an event that already has ticket rows would orphan those rows.**
+- **The published TSV serves stale copies while an edit propagates**, and one
+  read is not proof. It reported Mandala's status as blank when the cell
+  already read "Recieved", and it served the old event title to the live page
+  minutes after a cache-busted fetch had returned the corrected one. Sampling
+  the feed eight times then showed it correct 8/8.
+- **Verifying a sheet edit:** reload after a minute, or sample more than once.
+  A single stale read is not a failed edit.
+- Also recorded in the vault: the collaborator logo Drive folder
+  (`memory.client_assets.collaborator_logos_folder`) and the tickets web app
+  (`sheets.tickets.web_app`). The journal is the public half, so asset links
+  and deployment ids live there and are pointed at from here.
+
 ## 2. Lessons and standing rules (the "why" behind the rules)
 
 **Data and privacy**
@@ -950,6 +999,15 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
 - Commit messages explain the reasoning. They are the audit trail this
   journal summarises.
 - Verify on the live site after deploying, not just locally.
+- **Change only what was asked.** Finding the cause of a problem is not
+  permission to redesign around it. Two unrequested changes in one session
+  (rewriting the tickets read path, repointing a working logo mapping) both
+  had to be reverted. If a fix seems to need a wider change, say so and let
+  the client decide; never undo a decision recorded here without raising it.
+- **One read of a published feed is not evidence.** Google serves stale
+  copies of a published TSV while an edit propagates, and cache-busting does
+  not reliably defeat it. Before reporting an edit as failed — or as done —
+  read twice, a minute apart.
 
 ---
 
