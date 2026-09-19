@@ -72,7 +72,9 @@ const CONFIG = {
 const ANALYTICS = {
   // Google Tag Manager is installed as Google's own snippet at the top of
   // <head> in index.html (GTM-5S6DXF7V), so it loads before anything else.
-  // Left blank here on purpose — setting it would load a second copy.
+  // Left blank here on purpose. Filling it in is now safe either way — the
+  // loader skips injection when a container is already on the page — but
+  // there is no reason to set it while the snippet is in the HTML.
   // Everything below announces itself to dataLayer, which GTM reads.
   GTM_ID: "",            // "GTM-XXXXXXX"
 
@@ -104,7 +106,11 @@ const SOURCES = {
 (function analytics() {
   window.dataLayer = window.dataLayer || [];
 
-  if (ANALYTICS.GTM_ID) {
+  // Guarded, not just documented: index.html already carries Google's own GTM
+  // snippet, so injecting a second container would double-count every event.
+  // Setting GTM_ID on a page that has no snippet still works.
+  const gtmAlready = !!document.querySelector('script[src*="googletagmanager.com/gtm.js"]');
+  if (ANALYTICS.GTM_ID && !gtmAlready) {
     dataLayer.push({ "gtm.start": Date.now(), event: "gtm.js" });
     const gtm = document.createElement("script");
     gtm.async = true;
