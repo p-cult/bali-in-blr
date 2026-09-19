@@ -1014,6 +1014,20 @@ private half is unrecoverable, by design. `doctor.sh` now says so on every run,
 and `docs/ANOTHER-MACHINE.md` states it plainly. **A second offline copy is the
 one thing a human still has to do.**
 
+### 19 Sep 2026 — site copy moves to a "Content" tab
+
+Decision: every static line of text on the page (nav, hero, programme cards,
+featuring, presented-by, support, calendar/forms headings, footer) is editable
+from a "Content" tab (columns `key`, `text`) in the planning sheet. Elements in
+`index.html` carry `data-content="key"`; `loadContent()` in `main.js` reads the
+bridge feed `?feed=content` and overwrites them via `textContent` (`**word**`
+= bold). The wording in the HTML stays as the fallback, so an empty tab, missing
+tab or outage changes nothing. Deliberately **not** sheet-driven: `<title>`,
+meta, JSON-LD, the logo, form labels, consent text and Privacy links (SEO,
+legal and function). Seed for the tab: `data/content.tsv`. Needs the
+`content` feed line in `docs/apps-script/Code.gs` added to the live script and
+redeployed. Copy is single-line (no tabs/newlines in cells).
+
 ## 2. Lessons and standing rules (the "why" behind the rules)
 
 **Data and privacy**

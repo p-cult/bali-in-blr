@@ -429,6 +429,8 @@ function doGet(e) {
   // site's existing parsers.
   const feed = ((e && e.parameter && e.parameter.feed) || '').toLowerCase();
   if (feed === 'schedule') return tsvOut(sheetTsv(PLANNING_ID, 'Event List'));
+  // Site copy: the "Content" tab (key, text) overrides marked text on the page.
+  if (feed === 'content') return tsvOut(sheetTsv(PLANNING_ID, 'Content'));
   if (feed === 'collab') return tsvOut(sheetTsv(PLANNING_ID, 'Collab / venues'));
   // Marketing listings tab: columns "Event link - BMS" / "Event link - District".
   // Cells are often a hyperlink labelled "Link" — cellExport turns that into the URL.

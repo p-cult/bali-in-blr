@@ -1,0 +1,93 @@
+key	text	where
+nav.a1	Calendar	nav · a
+nav.a2	Programme	nav · a
+nav.a3	Featuring	nav · a
+nav.a4	Collaborators	nav · a
+nav.a5	Support	nav · a
+nav.a6	Volunteer	nav · a
+nav.a7	Get updates	nav · a
+page.span1	Param Foundation presents	page · span
+page.span2	Bengaluru · October 2026	page · span
+hero.lead	Bringing Balinese traditions and conversation to Bengaluru, creating a cultural exchange that can be watched, heard, learnt and experienced.	hero · p
+hero.tagline	Sharing Stories | Connecting Cultures	hero · p
+page.span3	Days	page · span
+page.span4	Events	page · span
+page.span5	Venues across the city	page · span
+page.a1	See what’s on	page · a
+page.a2	Get festival updates	page · a
+programme.p1	The programme	programme · p
+programme.title	Sixteen days of performances, learning & making	programme · h2
+programme.h31	Performances	programme · h3
+programme.h41	Kecak Performance	programme · h4
+programme.p2	Performed by master artists, Kecak is one of Bali's most iconic performance traditions, rooted in ritual trance chants. A powerful chorus of men creates its signature “cak, cak, cak” rhythm, as dancers bring the stories to life through Balinese movement.	programme · p
+programme.h42	Balinese Dance × Yakshagana	programme · h4
+programme.p3	The vocal rhythm and choral structures of Balinese dance meet the percussive, movement-based vocabulary of Yakshagana, exploring shared stories.	programme · p
+programme.h43	Shadow Puppetry	programme · h4
+programme.p4	Collaborative puppetry performances by master artists of Indonesia and India.	programme · p
+programme.h32	Workshops	programme · h3
+programme.h44	Shadow Puppetry Workshop	programme · h4
+programme.p5	An introduction to Balinese and Indian shadow traditions, techniques of light, material, movement, and narration. Participants develop short sequences, and selected performers appear alongside master artists in a live presentation.	programme · p
+programme.h45	Mask-Making Workshop	programme · h4
+programme.p6	Exploring Balinese mask traditions with symbolism, facial geometry, colour, and expression. Hands-on creation of masks using traditional and accessible materials, exhibited as part of the festival display.	programme · p
+programme.h33	Academic traditions	programme · h3
+programme.h46	Dance & Movement Workshops	programme · h4
+programme.p7	Traditional Balinese dance techniques, with a focus on body discipline, expression, and musicality.	programme · p
+programme.h47	Lecture–Demonstration Sessions	programme · h4
+programme.p8	An introduction to Balinese arts and culture by Dr. Wayan Dibia for university students and faculty, practitioners, researchers, scholars, and heritage enthusiasts across Bengaluru.	programme · p
+featuring.p1	Featuring	featuring · p
+featuring.h21	Dr. I Wayan Dibia	featuring · h2
+featuring.p2	Padma Shri awardee & team	featuring · p
+featuring.p3	A renowned Balinese artist, scholar and choreographer known for connecting Balinese and Indian performing traditions. With over **150 choreographic works** and seven books to his name, his work draws deeply from the Ramayana and Mahabharata.	featuring · p
+featuring.p4	He was awarded the **Padma Shri** by the Government of India in 2021 for his contributions to the arts and to cross-cultural dialogue.	featuring · p
+foundation.eyebrow	Presented by	foundation · p
+foundation.title	The Culture vertical of the Param Foundation	foundation · h2
+foundation.text	A platform dedicated to encouraging, organizing and elevating the essence of Indian arts and culture by connecting practitioners, and academicians, through research, immersive experiences, engaging storytelling, and innovation for contemporary acceptance.	foundation · p
+foundation.fact1.label	Founded on	foundation · span
+foundation.fact1.value	Culture, Science, History and Innovation together	foundation · em
+foundation.fact2.label	Working across	foundation · span
+foundation.fact2.value	Physical centres and digital platforms	foundation · em
+foundation.fact3.label	This season	foundation · span
+foundation.fact3.value	Bali in Bengaluru, its finest international festival	foundation · em
+foundation.a1	paramfoundation.org	foundation · a
+page.p1	The festival will also include	page · p
+page.h41	Exhibition	page · h4
+page.p2	Masks, textiles, and ritual objects.	page · p
+page.h42	Film screenings	page · h4
+page.p3	Documentary and archival work.	page · p
+page.h43	Food traditions	page · h4
+page.p4	The flavours and rituals of Balinese cuisine.	page · p
+partners.h21	Collaborators	partners · h2
+partners.p1	The festival is shaped with cultural institutions, venues and partners across Bengaluru.	partners · p
+support.p1	Support us	support · p
+support.h21	Partner with the festival	support · h2
+support.p2	Param Foundation invites contributions from corporates, individuals, philanthropic organisations and patrons of art. Beyond money, you can partner in kind — hospitality, travel, venue, printing, publicity.	support · p
+support.a1	Call +91 90350 34725	support · a
+support.a2	paramfoundation.org	support · a
+support.dt1	CSR eligible	support · dt
+support.dd1	Donations qualify under Schedule VII — Education, Arts, Heritage and Innovation.	support · dd
+support.dt2	80G benefits	support · dt
+support.dd2	Contributions are deductible under Section 80G, with acknowledgement in festival materials.	support · dd
+support.dt3	Full compliance	support · dt
+support.dd3	Complete compliance support, reporting and co-branding for institutional partners.	support · dd
+calendar.p1	Festival calendar	calendar · p
+calendar.h21	What's on	calendar · h2
+calendar.p2	Plan your October! Sixteen days across Bengaluru.	calendar · p
+calendar.a1	Download the calendar (PDF)	calendar · a
+calendar.span1	One page, printed on paper — dates as confirmed today.	calendar · span
+register.p1	Stay in the loop	register · p
+register.h21	Register for updates	register · h2
+register.p2	Sign up to receive announcements, passes and other exclusive content from Bali in Bengaluru.	register · p
+signup-form.button1	Register	signup-form · button
+volunteer.p1	Get involved	volunteer · p
+volunteer.h21	Volunteer with us	volunteer · h2
+volunteer.p2	Bali in Bengaluru is built by the people who show up. Over sixteen days we need hands for front-of-house, artist hospitality, workshop support, documentation, and setup — no prior experience needed, just time and care.	volunteer · p
+volunteer.span1	Who	volunteer · span
+volunteer.value1	Students, artists, and anyone curious about the work	volunteer · em
+volunteer.span2	What	volunteer · span
+volunteer.value2	Front-of-house, hospitality, workshops, documentation	volunteer · em
+volunteer.span3	Next	volunteer · span
+volunteer.value3	Fill in the form — our team will call you with the details	volunteer · em
+volunteer-form.button1	Submit	volunteer-form · button
+footer.p1	A cultural festival by Param Foundation	footer · p
+footer.a1	paramfoundation.org	footer · a
+footer.a2	+91 90350 34725	footer · a

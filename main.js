@@ -1999,7 +1999,39 @@ function setupOnboarding(shell, questions) {
   applyRsvpContext();
 }
 
+/* ---------- Site copy from the sheet ----------
+   The "Content" tab (columns: key, text) overrides any element marked
+   data-content="key"; **word** makes bold. The wording already in index.html is the fallback, so
+   an empty tab or an outage leaves the page exactly as it is. */
+async function loadContent() {
+  if (!CONFIG.BRIDGE_URL) return;
+  try {
+    const res = await fetchWithTimeout(CONFIG.BRIDGE_URL + "?feed=content", { cache: "no-store" });
+    if (!res.ok) return;
+    const rows = (await res.text()).replace(/\r/g, "").split("\n").map((r) => r.split("\t"));
+    const copy = {};
+    rows.forEach((r) => {
+      const key = (r[0] || "").trim();
+      const text = (r[1] || "").trim();
+      if (key && text) copy[key] = text;
+    });
+    document.querySelectorAll("[data-content]").forEach((el) => {
+      const text = copy[el.getAttribute("data-content")];
+      if (!text) return;
+      el.textContent = "";
+      text.split("**").forEach((part, i) => {
+        if (!part) return;
+        if (i % 2) el.appendChild(document.createElement("strong")).textContent = part;
+        else el.appendChild(document.createTextNode(part));
+      });
+    });
+  } catch (err) {
+    /* keep the built-in wording */
+  }
+}
+
 /* ---------- Boot ---------- */
+loadContent();
 loadCalendar();
 loadPartners();
 initOnboarding();

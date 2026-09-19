@@ -232,6 +232,7 @@ p.section-intro { max-width: 44rem; color: var(--muted); font-size: 1.05rem; }
   padding: 0.85rem 0;
   border-top: 1px solid var(--line);
 }
+.fact-list li em { font-style: normal; }
 .fact-list li span {
   flex: none;
   width: 150px;
