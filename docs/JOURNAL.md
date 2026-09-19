@@ -1025,16 +1025,15 @@ tabs and sub-tabs by site section (Navigation, Hero, Programme > Performances /
 Workshops / Academic traditions, Featuring, Presented by > Foundation facts,
 Also at the festival, Collaborators, Support > Support benefits, Calendar, Get
 updates, Volunteer > Volunteer summary, Footer). The Doc is written for
-non-technical editors: each tab opens with a red how-to line, then plain-English
-headings ("Intro paragraph", "Button: get updates") with the text underneath,
-and a first tab "Read me first". (It was first `key: text` lines; the user found
-`page.span5:` confusing, so labels replaced keys.) The label -> key table is
-`CONTENT_MAP` in `Code.gs`. The reader is forgiving on purpose: labels match by
-their words (case, colon, spacing and heading style ignored), several paragraphs
-under a label are joined, notes are ignored, and anything missing, renamed or
-empty falls back to the HTML wording. `**word**` = bold. Non-breaking spaces
-must be kept (do not collapse `\s`; it caused a regression). A new tab/label
-needs a `CONTENT_MAP` entry too.
+non-technical editors and reads like a normal document: each tab is plain text
+in page order, one paragraph per line, titles bold, no headings or keys, plus a
+"Read me first" tab. (History: `key: text` lines, then labelled headings; the
+user found both confusing.) Lines are matched to keys **by position** using
+`CONTENT_MAP` in `Code.gs` (its labels are for maintainers only). Safety: if a
+tab's non-empty line count differs from the map, that whole tab is skipped and
+the HTML wording stays; empty lines and a `NOTE:` line are ignored. `**word**`
+= bold. Do not collapse `\s` (non-breaking spaces must survive). A new tab or
+line needs a `CONTENT_MAP` entry too.
 
 Wiring: elements in `index.html` carry `data-content="key"`; `loadContent()` in
 `main.js` reads the bridge feed `?feed=content` and overwrites them via
@@ -1047,7 +1046,7 @@ Privacy links (SEO, legal and function). Seed: `data/content.tsv`.
 
 Live-script setup done: `CONTENT_DOC_ID` (blank in the repo, like
 `PLANNING_ID`) set in the live script; Docs permission granted; deployment
-updated in place (version 15 after the readable rewrite, same `/exec` URL). Adding a *new* line to the site
+updated in place (version 16 after the plain-text rewrite, same `/exec` URL). Adding a *new* line to the site
 needs a matching `data-content` in `index.html` plus a line in the Doc. Lessons:
 Docs tabs are created with the Docs advanced service (`addDocumentTab`); typing
 into the Doc title via keystrokes fires shortcuts, so set it via the Rename field.

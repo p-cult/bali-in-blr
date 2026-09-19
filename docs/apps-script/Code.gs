@@ -104,10 +104,10 @@ function sheetTsv(spreadsheetId, tabName) {
   }).join('\n');
 }
 
-/* What each labelled item in the site-copy Doc is called, per Doc tab.
-   In the Doc every item is a label line (a Heading 3, but matched by its text, so
-   styling does not matter) with its text in the paragraph(s) beneath. The label maps to the key the page's data-content uses.
-   Tab titles and labels must match the Doc exactly. */
+/* The lines of each site-copy Doc tab, in page order. In the Doc each tab is
+   plain text, one paragraph per line, in exactly this order (no headings). The
+   first text is a label for maintainers only; the second is the data-content
+   key. Tab titles must match the Doc exactly. */
 const CONTENT_MAP = {
   'Navigation': [
     ['Menu link to Calendar', 'nav.a1'],
@@ -119,10 +119,10 @@ const CONTENT_MAP = {
     ['Menu button: Get updates', 'nav.a7']
   ],
   'Hero': [
-    ['Intro paragraph', 'hero.lead'],
-    ['Tagline', 'hero.tagline'],
     ['Small line above the title', 'page.span1'],
     ['Place and month', 'page.span2'],
+    ['Intro paragraph', 'hero.lead'],
+    ['Tagline', 'hero.tagline'],
     ['Counter label: days', 'page.span3'],
     ['Counter label: events', 'page.span4'],
     ['Counter label: venues', 'page.span5'],
@@ -239,33 +239,28 @@ const CONTENT_MAP = {
   ]
 };
 
-/** The site-copy Google Doc, tabs and sub-tabs included. Serves key<TAB>text
-    rows; anything not under a known Heading 3 label (notes, a Read me tab) is ignored. */
+/** The site-copy Google Doc, tabs and sub-tabs included. Each tab is read by
+    position: if its number of non-empty lines (ignoring a NOTE: line) is not what
+    CONTENT_MAP expects, that tab is skipped and the HTML wording stays. */
 function docContent(docId) {
   if (!docId) return '';
-  const norm = function (s) { return String(s).toLowerCase().replace(/[:\s]+$/g, '').replace(/\s+/g, ' ').trim(); };
-  const maps = {};
+  const norm = function (s) { return String(s).toLowerCase().replace(/\s+/g, ' ').trim(); };
+  const keysByTab = {};
   Object.keys(CONTENT_MAP).forEach(function (title) {
-    const m = {};
-    CONTENT_MAP[title].forEach(function (e) { m[norm(e[0])] = e[1]; });
-    maps[norm(title)] = m;
+    keysByTab[norm(title)] = CONTENT_MAP[title].map(function (e) { return e[1]; });
   });
-  const done = {}, out = [];
+  const out = [];
   (function walk(tabs) {
     tabs.forEach(function (t) {
-      const map = maps[norm(t.getTitle())] || {};
-      let key = '', parts = [];
-      const flush = function () {
-        if (key && parts.length && !(key in done)) { done[key] = 1; out.push(key + '\t' + parts.join(' ')); }
-        key = ''; parts = [];
-      };
-      t.asDocumentTab().getBody().getParagraphs().forEach(function (p) {
-        const txt = p.getText().replace(/[ \t\r\n\u000b]+/g, ' ').replace(/^ | $/g, '');
-        if (!txt) return;
-        if (map[norm(txt)]) { flush(); key = map[norm(txt)]; return; }
-        if (key) parts.push(txt);
-      });
-      flush();
+      const keys = keysByTab[norm(t.getTitle())];
+      if (keys) {
+        const lines = [];
+        t.asDocumentTab().getBody().getParagraphs().forEach(function (p) {
+          const txt = p.getText().replace(/[ \t\r\n]+/g, ' ').replace(/^ | $/g, '');
+          if (txt && !/^NOTE:/.test(txt)) lines.push(txt);
+        });
+        if (lines.length === keys.length) keys.forEach(function (k, i) { out.push(k + '\t' + lines[i]); });
+      }
       walk(t.getChildTabs());
     });
   })(DocumentApp.openById(docId).getTabs());
