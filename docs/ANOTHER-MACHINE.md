@@ -105,6 +105,8 @@ recovered from GitHub; the key cannot. It exists in exactly one place. If this
 drive dies, the private half — sheet ids, design links, people, constraints — is
 gone for good. Keep a second copy somewhere offline (another encrypted drive, a
 safe). `bash tools/doctor.sh` warns about this on every run.
+`docs/KEY-RECOVERY.md` has the procedure: how to back it up, how to verify
+the backup actually opens the vault, and what to do if it is lost or leaks.
 
 ## Not on the drive at all
 

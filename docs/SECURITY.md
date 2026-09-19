@@ -16,6 +16,10 @@ for good; there is no recovery, by design.
 
 If the drive is mounted elsewhere, point at the key with `BALI_VAULT_KEY`.
 
+**Backing it up, restoring it, or recovering from a loss or a leak:**
+`docs/KEY-RECOVERY.md`. The key exists in one place by default, on the same
+physical disk as the repository — make a second copy and verify it works.
+
 ## The vault
 
 | File | In git? | What it is |
