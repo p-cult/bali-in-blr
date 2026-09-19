@@ -4,6 +4,7 @@ Build the print-ready event posters, in two shapes.
 
     python3 tools/build-event-posters.py            # both
     python3 tools/build-event-posters.py --only 1x2 # one
+    python3 tools/build-event-posters.py --public-only  # drop internal / invite-only shows
 
 Reads the live schedule sheet (falling back to data/events.json when it cannot
 be reached), lays the festival lockup and every event out in the poster
@@ -327,6 +328,8 @@ def render(events, key, chrome):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--only", choices=sorted(SIZES))
+    ap.add_argument("--public-only", action="store_true",
+                    help="leave out events whose Status marks them not open to the public")
     args = ap.parse_args()
 
     events = from_sheet()
@@ -335,6 +338,14 @@ def main():
         events, src = from_file(), "data/events.json (sheet unreachable)"
     if not events:
         sys.exit("No events anywhere — nothing to print.")
+    if args.public_only:
+        # Same words the site treats as "not open to the public" (main.js notPublic).
+        not_public = re.compile(r"^(internal|private|invite|invite only|invitation|"
+                                r"invitation only|closed|not public|not open|no button)$", re.I)
+        dropped = [e["title"] for e in events if not_public.match(e.get("status", ""))]
+        events = [e for e in events if not not_public.match(e.get("status", ""))]
+        for t in dropped:
+            print(f"  left out (not public): {t}")
     events.sort(key=sort_key)
 
     chrome = find_chrome()
