@@ -920,12 +920,15 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
   dispatched the job. It fetched exactly that one file, committed as
   `github-actions[bot]` and pushed. So an explicit `permissions: contents:
   write` does override a repo whose default workflow permission is *read*.
-- **`sips` was silently upscaling.** The restored file came back 445×142 (its
-  native size) where `sips -Z` had produced 600×191. Pillow refuses to
-  upscale; `sips -Z` does not. §2 already says never upscale a client image,
-  so the runner is right and the local path is wrong. Files made by the two
-  tools therefore differ — harmless while `--new-only` stops either
-  overwriting the other, but the `sips` branch is worth fixing.
+- **`sips` was silently upscaling, and it is now fixed.** `sips -Z N` resamples
+  to N in both directions, enlarging anything smaller; ImageMagick's `NxN>` and
+  Pillow's `thumbnail()` only ever shrink. `sips_fit()` now measures first and
+  passes `-Z` only when the image really is over the cap. This broke §2's
+  "never upscale a client photo" rule on every run since the script was
+  written. It was not only logos: an event photo whose source is 1500×984 had
+  been stored as 1600×1049. **The images already committed were made by the old
+  path, so some are inflated** — a one-off re-sync without `--new-only` would
+  correct them, at the cost of rewriting those files once.
 
 ## 2. Lessons and standing rules (the "why" behind the rules)
 

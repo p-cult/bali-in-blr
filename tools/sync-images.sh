@@ -92,9 +92,21 @@ has_alpha() {
     *)       return 1 ;;
   esac
 }
+# `sips -Z N` resamples to N in BOTH directions: it UPSCALES anything smaller,
+# which breaks the standing rule never to upscale a client image. ImageMagick's
+# "NxN>" and Pillow's thumbnail() only ever shrink. So for sips, measure first
+# and pass -Z only when the image is actually bigger than the cap.
+sips_long_side() {  # file -> longest side in px
+  sips -g pixelWidth -g pixelHeight "$1" 2>/dev/null \
+    | awk '/pixelWidth/{w=$2}/pixelHeight/{h=$2}END{print (w>h?w:h)+0}'
+}
+sips_fit() {  # file cap -> echoes "-Z cap" when it needs shrinking, else nothing
+  _sl="$(sips_long_side "$1")"
+  if [ -n "$_sl" ] && [ "$_sl" -gt "$2" ] 2>/dev/null; then printf -- '-Z %s' "$2"; fi
+}
 optimise_png() {  # in out — resize, keep alpha
   case "$TOOL" in
-    sips)    cp "$1" "$2" && sips -Z "$LOGOMAX" -s format png "$2" >/dev/null ;;
+    sips)    cp "$1" "$2" && sips $(sips_fit "$2" "$LOGOMAX") -s format png "$2" >/dev/null ;;
     magick)  magick "$1" -auto-orient -resize "${LOGOMAX}x${LOGOMAX}>" "png:$2" ;;
     convert) convert "$1" -auto-orient -resize "${LOGOMAX}x${LOGOMAX}>" "png:$2" ;;
     pillow)  python3 - "$1" "$2" "$LOGOMAX" <<'PY'
@@ -109,7 +121,7 @@ PY
 }
 optimise() {  # in out
   case "$TOOL" in
-    sips)    cp "$1" "$2" && sips -Z "$MAXDIM" -s format jpeg -s formatOptions "$QUALITY" "$2" >/dev/null ;;
+    sips)    cp "$1" "$2" && sips $(sips_fit "$2" "$MAXDIM") -s format jpeg -s formatOptions "$QUALITY" "$2" >/dev/null ;;
     magick)  magick "$1" -auto-orient -resize "${MAXDIM}x${MAXDIM}>" -quality "$QUALITY" "jpg:$2" ;;
     convert) convert "$1" -auto-orient -resize "${MAXDIM}x${MAXDIM}>" -quality "$QUALITY" "jpg:$2" ;;
     pillow)  python3 - "$1" "$2" "$MAXDIM" "$QUALITY" <<'PY'
