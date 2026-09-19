@@ -30,6 +30,19 @@
 # ============================================================================
 set -euo pipefail
 
+# --new-only: fetch ids that have no local copy yet and leave existing files
+# untouched. Different machines' image tools produce different bytes for the
+# same source, so re-optimising everything on a schedule would rewrite every
+# file on every run and fight with local runs. The scheduled job uses this;
+# a human runs the script bare to refresh a changed image.
+NEW_ONLY=0
+for arg in "$@"; do
+  case "$arg" in
+    --new-only) NEW_ONLY=1 ;;
+    *) echo "Unknown option: $arg" >&2; exit 2 ;;
+  esac
+done
+
 SCHEDULE_URL="https://docs.google.com/spreadsheets/d/e/2PACX-1vTji37D6cT7J9bLFptJdNaYrvZF_soZyiqIsX-rHYUj4H6rnfMCExu2hIyVjCk48j86rdaBhp_lthzb/pub?gid=289612903&single=true&output=tsv"
 # Bridge feed fallback (owner-read; works even if the tab isn't published).
 SCHEDULE_ALT="https://script.google.com/macros/s/AKfycbyKXzPHQLsHCoryx0aJVpVkP0Z0XrnPxjucaiUJtR1aXeux33ygq2Br2QcBNU_MAB7qDw/exec?feed=schedule"
@@ -139,9 +152,12 @@ rm -f "$tmp"
 
 if [ -z "$ids" ]; then echo "No Google Drive image links found. Nothing to do."; exit 0; fi
 
-count=0; ok=0; fail=0
+count=0; ok=0; fail=0; skip=0
 for id in $ids; do
   count=$((count+1))
+  if [ "$NEW_ONLY" = "1" ] && { [ -f "$OUTDIR/$id.jpg" ] || [ -f "$OUTDIR/$id.png" ]; }; then
+    skip=$((skip+1)); continue
+  fi
   raw="$(mktemp)"
   # Prefer the ORIGINAL file: the thumbnail endpoint always re-encodes to JPEG,
   # which would flatten a transparent logo onto white. Fall back to the
@@ -167,7 +183,7 @@ for id in $ids; do
 done
 
 echo
-echo "Done: ${ok} synced, ${fail} failed, ${count} total → ${OUTDIR}/"
+echo "Done: ${ok} synced, ${skip} already present, ${fail} failed, ${count} total → ${OUTDIR}/"
 if [ "$ok" -gt 0 ]; then
   echo "Next: git add ${OUTDIR} && git commit -m 'Sync Drive images' && git push"
 fi

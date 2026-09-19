@@ -1,0 +1,67 @@
+# Bring newly linked Drive images on-site without anyone running a script.
+#
+# Staff paste a Google Drive link into the schedule sheet's image column or the
+# Collab/venues Logos block. The site maps that link to a local optimised copy
+# in assets/drive/. Until this job existed a person had to run
+# tools/sync-images.sh and push, so text updated itself but images did not.
+#
+# The site does try the live Drive copy as a fallback, but Google rate-limits
+# that endpoint, so it is best-effort. This job is what makes images reliable.
+#
+# --new-only matters: image tools differ per machine (sips here, ImageMagick on
+# the runner) and produce different bytes for the same source. Re-optimising
+# everything on a schedule would rewrite every file each run and fight with
+# local runs. This only fetches ids with no local copy. To refresh a CHANGED
+# image, run the script by hand without the flag and push.
+name: Sync Drive images
+
+on:
+  schedule:
+    - cron: "17 * * * *"   # hourly, off the hour to avoid the rush
+  workflow_dispatch:        # and on demand from the Actions tab
+
+# Only what this job needs: commit the synced files back to main.
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-drive-images
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Ensure an image tool is available
+        run: |
+          python3 -m pip install --quiet --upgrade Pillow
+          # The script picks magick / convert / Pillow in that order. Fail loudly
+          # rather than silently saving logos as opaque JPEG, which would put a
+          # white box on the cream partner tile.
+          if ! (command -v magick >/dev/null || command -v convert >/dev/null \
+                || python3 -c 'import PIL' >/dev/null 2>&1); then
+            echo "No image tool available — refusing to run." >&2
+            exit 1
+          fi
+
+      - name: Sync images that are not on-site yet
+        run: bash tools/sync-images.sh --new-only
+
+      - name: Commit anything new
+        run: |
+          if [ -z "$(git status --porcelain assets/drive)" ]; then
+            echo "Nothing new. Done."
+            exit 0
+          fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/drive
+          git commit -m "Sync Drive images (automated)
+
+          Picked up by .github/workflows/sync-drive-images.yml — a Drive link
+          was added to the sheet and had no local copy yet."
+          # A human may have pushed since checkout; rebase rather than fail.
+          git pull --rebase origin main
+          git push
