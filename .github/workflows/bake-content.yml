@@ -1,0 +1,48 @@
+# Bake the site-copy Google Doc into index.html every hour.
+#
+# The page already swaps the Doc's text in live for each visitor (main.js
+# loadContent). This job keeps the printed wording in index.html itself current
+# too, so search engines, link previews, visitors with scripts blocked and the
+# offline fallback all see the latest text. The live swap stays: it covers the
+# gap between runs.
+#
+# tools/bake-content.py never wipes anything: if the feed is unreachable,
+# malformed or suspiciously small it changes nothing and exits 0.
+name: Bake site copy
+
+on:
+  schedule:
+    - cron: "43 * * * *"   # hourly, off the hour and off the image sync
+  workflow_dispatch:        # and on demand from the Actions tab
+
+permissions:
+  contents: write
+
+concurrency:
+  group: bake-content
+  cancel-in-progress: false
+
+jobs:
+  bake:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Bake the Doc's text into index.html
+        run: python3 tools/bake-content.py
+
+      - name: Commit if the wording changed
+        run: |
+          if [ -z "$(git status --porcelain index.html)" ]; then
+            echo "No wording changes. Done."
+            exit 0
+          fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Bake site copy from the Doc (automated)
+
+          Picked up by .github/workflows/bake-content.yml — the text in the
+          Google Doc changed since the last bake."
+          git pull --rebase origin main
+          git push

@@ -1051,6 +1051,16 @@ needs a matching `data-content` in `index.html` plus a line in the Doc. Lessons:
 Docs tabs are created with the Docs advanced service (`addDocumentTab`); typing
 into the Doc title via keystrokes fires shortcuts, so set it via the Rename field.
 
+Baking (added after the Doc move): `.github/workflows/bake-content.yml` runs
+hourly (:43) and `tools/bake-content.py` writes the Doc's text into the
+`data-content` elements of `index.html`, committing only if it changed. The live
+swap in `main.js` stays on top (covers the gap between runs). The script never
+wipes: an unreachable, malformed or under-50-row feed changes nothing. So the
+wording in `index.html` is now generated for these elements; edit the Doc, not
+the HTML (a hand edit to one of those elements is overwritten within the hour).
+First bake only reformatted (entities to characters, one line per element);
+visible text was verified identical.
+
 ## 2. Lessons and standing rules (the "why" behind the rules)
 
 **Data and privacy**
