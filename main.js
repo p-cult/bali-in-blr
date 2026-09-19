@@ -448,8 +448,11 @@ function safeUrl(u) {
    Staff paste those from Drive by habit, so map any Drive link to the local,
    optimised copy that tools/sync-images.sh downloads to assets/drive/<id>.jpg.
    Run that script whenever a Drive image is added or changed. Anything else (a
-   local assets/ path or a normal image URL) is returned unchanged; if the
-   synced copy isn't there yet, the <img> onerror falls back to a blank poster. */
+   local assets/ path or a normal image URL) is returned unchanged. If the
+   synced copy isn't there yet, the <img> falls back to the other extension and
+   then to the live Drive copy (see imgFallback), so a freshly pasted link
+   shows before sync-images.sh has run; only a genuinely unreadable file
+   collapses to a blank poster. */
 function toImageUrl(v) {
   const s = String(v == null ? "" : v).trim();
   if (!s) return "";
@@ -480,9 +483,14 @@ function driveLiveUrl(id, w) {
 function imgFallback(img) {
   const queue = (img.getAttribute("data-fallback") || "").split("|").filter(Boolean);
   const next = queue.shift();
-  if (!next) { img.onerror = null; img.remove(); return; }
-  img.setAttribute("data-fallback", queue.join("|"));
-  img.src = next;
+  if (next) { img.setAttribute("data-fallback", queue.join("|")); img.src = next; return; }
+  // Queue exhausted: give up quietly. `data-fail-class` lets the caller mark
+  // its container — the event poster uses it to collapse to a clean blank
+  // rather than leaving a broken-image gap.
+  img.onerror = null;
+  const failClass = img.getAttribute("data-fail-class");
+  if (failClass && img.parentNode) img.parentNode.classList.add(failClass);
+  img.remove();
 }
 
 /* A booking/RSVP target from the sheet: either a URL or a phone number. A bare
@@ -833,6 +841,9 @@ function normaliseEvent(raw, i) {
     mapUrl: pick("mapUrl", "map link"),
     description: pick("description"),
     image: toImageUrl(pick("image")),
+    // Keep the Drive id so the poster can fall back to the live Drive copy
+    // when sync-images.sh has not brought the optimised file down yet.
+    imageId: driveId(pick("image")),
     ticketUrl: toActionUrl(pick("ticketUrl", "ticket link", "ticketurl")),
     bmsUrl: toActionUrl(pick("bmsUrl", "bookmyshow link", "bookmyshow", "bms link")),
     districtUrl: toActionUrl(pick("districtUrl", "district link", "district")),
@@ -1031,7 +1042,9 @@ function cardHTML(ev) {
   const hasImg = !!ev.image;
   const poster =
     `<div class="cal-poster${hasImg ? "" : " cal-poster--blank"}">` +
-    (hasImg ? `<img src="${esc(ev.image)}" alt="" loading="lazy" onerror="this.parentNode.classList.add('cal-poster--blank');this.remove();" />` : "") +
+    (hasImg ? `<img src="${esc(ev.image)}" alt="" loading="lazy"${
+      ev.imageId ? ` data-fallback="${esc("assets/drive/" + ev.imageId + ".png|" + driveLiveUrl(ev.imageId, 1600))}"` : ""
+    } data-fail-class="cal-poster--blank" onerror="imgFallback(this)" />` : "") +
     `<span class="cal-date"><b>${esc(chip.day)}</b><i>${esc(chip.mon)}</i></span></div>`;
 
   const mapUrl = safeUrl(ev.mapUrl);
