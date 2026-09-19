@@ -71,25 +71,36 @@ def main():
         r'(<(?P<tag>[a-z0-9]+)\b[^>]*\bdata-content="(?P<key>[^"]+)"[^>]*>)(?P<inner>.*?)(</(?P=tag)>)',
         re.S | re.I,
     )
-    baked = skipped = 0
+    changed, skipped = [], 0
+
+    def flat(s):
+        return re.sub(r"[ \t\r\n]+", " ", s).strip()
 
     def sub(m):
-        nonlocal baked, skipped
-        text = copy.get(m.group("key"))
+        nonlocal skipped
+        key = m.group("key")
+        text = copy.get(key)
         if not text:
             return m.group(0)
         inner = m.group("inner")
         if re.search(r"<(?!/?strong\b)", inner):  # has other markup: do not touch
             skipped += 1
             return m.group(0)
-        baked += 1
+        current = flat(html.unescape(re.sub(r"</?strong>", "**", inner)))
+        if current == flat(text):  # wording already matches: leave the HTML alone
+            return m.group(0)
+        changed.append(key)
         return m.group(1) + to_html(text) + m.group(5)
 
     out = pat.sub(sub, src)
-    if out != src:
-        open(path, "w", encoding="utf-8").write(out)
-    print(f"Baked {baked} elements ({skipped} skipped for other markup); "
-          f"{'changed' if out != src else 'no change'}.")
+    if not changed:
+        print(f"In sync: the Doc matches index.html ({len(copy)} lines checked, "
+              f"{skipped} skipped for other markup). Nothing to bake.")
+        return 0
+    open(path, "w", encoding="utf-8").write(out)
+    print(f"Doc changed. Baked {len(changed)} element(s): {', '.join(changed)}")
+    with open(f"{ROOT}/.bake-changed", "w", encoding="utf-8") as f:
+        f.write(", ".join(changed))
     return 0
 
 

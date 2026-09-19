@@ -7,7 +7,9 @@
 # gap between runs.
 #
 # tools/bake-content.py never wipes anything: if the feed is unreachable,
-# malformed or suspiciously small it changes nothing and exits 0.
+# malformed or suspiciously small it changes nothing and exits 0. It compares
+# the wording, not the markup, and only rewrites elements whose text differs
+# from the Doc; when nothing differs there is no write and no commit.
 name: Bake site copy
 
 on:
@@ -28,7 +30,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Bake the Doc's text into index.html
+      - name: Compare the Doc with index.html and bake only what differs
         run: python3 tools/bake-content.py
 
       - name: Commit if the wording changed
@@ -42,7 +44,7 @@ jobs:
           git add index.html
           git commit -m "Bake site copy from the Doc (automated)
 
-          Picked up by .github/workflows/bake-content.yml — the text in the
-          Google Doc changed since the last bake."
+          The Doc differed from index.html for: $(cat .bake-changed)
+          (.github/workflows/bake-content.yml)"
           git pull --rebase origin main
           git push

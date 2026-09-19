@@ -1058,7 +1058,9 @@ swap in `main.js` stays on top (covers the gap between runs). The script never
 wipes: an unreachable, malformed or under-50-row feed changes nothing. So the
 wording in `index.html` is now generated for these elements; edit the Doc, not
 the HTML (a hand edit to one of those elements is overwritten within the hour).
-First bake only reformatted (entities to characters, one line per element);
+The check compares wording (not markup) per element and only rewrites elements
+whose text differs from the Doc; in sync = no write, no commit, and a commit
+message lists the changed keys. First bake only reformatted (entities to characters, one line per element);
 visible text was verified identical.
 
 ## 2. Lessons and standing rules (the "why" behind the rules)
