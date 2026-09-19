@@ -1278,14 +1278,25 @@ function calCollaborators(ev) {
   return `<div class="cal-collabs"><span class="cal-collabs-label">In collaboration with</span><span class="cal-collab-logos">${items}</span></div>`;
 }
 
+/* The Logos block's Status column gates publication. The sheet spells it
+   "Recieved", so accept both spellings rather than depending on a typo. */
+function collabReceived(p) {
+  const s = String((p && p.status) || "").trim().toLowerCase();
+  return s === "recieved" || s === "received";
+}
+
 async function loadPartners() {
   const grid = document.getElementById("partners-grid");
   if (!grid) return;
 
   const partners = await loadCollaborators();
-  // Only show collaborators that actually have a logo — dummy monogram chips are
-  // disabled for now; a collaborator appears here as soon as its logo exists.
-  const withLogos = (Array.isArray(partners) ? partners : []).filter((p) => safeUrl(toImageUrl(p.logo)));
+  // A collaborator is published only when it has a logo AND the Logos block's
+  // Status column says the logo is in. Anything else — "Pending", blank, a
+  // note — stays off the site, so an unconfirmed partner is never shown as one
+  // just because someone pasted a file link early. Dummy monogram chips are
+  // disabled for now.
+  const withLogos = (Array.isArray(partners) ? partners : [])
+    .filter((p) => collabReceived(p) && safeUrl(toImageUrl(p.logo)));
 
   if (withLogos.length === 0) {
     grid.innerHTML = `

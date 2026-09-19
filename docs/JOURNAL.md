@@ -824,6 +824,26 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
   be read and set directly. Remember a saved script is NOT a deployed script:
   deploy a new version or the web app keeps serving the old code.
 
+### 19 Sep 2026 — the Logos Status column now gates publication
+- **The site ignored Status entirely.** `loadPartners` published any row with a
+  logo, so the moment a file link was pasted the collaborator went live — even
+  one still marked **Pending**. With `Ministry of culture` pending, pasting its
+  logo early would have published a government body as a confirmed festival
+  collaborator. Nobody had hit this because every other row says "Recieved".
+- **Fix:** `collabReceived(p)` gates the grid — a row is published only with a
+  logo AND a received status. "Pending", "NA", blank or a stray note all keep
+  it off the site. Pasting a logo link early is now harmless; marking the row
+  received is the deliberate act that publishes it.
+- The sheet spells it **"Recieved"**. The check accepts both spellings, trims
+  and lowercases, so fixing the typo later will not silently empty the grid.
+- **Scope:** the grid only. The Event List has no `collaborators` column and
+  neither pending name is a venue, so calendar cards cannot surface one today.
+  If a `collaborators` column is ever added, gate `calCollaborators` too.
+- **Careful with the published TSV when verifying:** a plain read returned a
+  stale row (Mandala's status showed blank when it was already "Recieved").
+  The site's own `loadCollaborators()` is authoritative; a cache-busted fetch
+  with no-cache headers agrees with it.
+
 ## 2. Lessons and standing rules (the "why" behind the rules)
 
 **Data and privacy**
