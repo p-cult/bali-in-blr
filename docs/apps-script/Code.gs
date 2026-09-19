@@ -104,24 +104,172 @@ function sheetTsv(spreadsheetId, tabName) {
   }).join('\n');
 }
 
-/** The site-copy Google Doc, tabs and sub-tabs included. Lines shaped
-    "key: text" become key<TAB>text rows; anything else (notes, headings) is ignored. */
+/* What each labelled item in the site-copy Doc is called, per Doc tab.
+   In the Doc every item is a label line (a Heading 3, but matched by its text, so
+   styling does not matter) with its text in the paragraph(s) beneath. The label maps to the key the page's data-content uses.
+   Tab titles and labels must match the Doc exactly. */
+const CONTENT_MAP = {
+  'Navigation': [
+    ['Menu link to Calendar', 'nav.a1'],
+    ['Menu link to Programme', 'nav.a2'],
+    ['Menu link to Featuring', 'nav.a3'],
+    ['Menu link to Collaborators', 'nav.a4'],
+    ['Menu link to Support', 'nav.a5'],
+    ['Menu link to Volunteer', 'nav.a6'],
+    ['Menu button: Get updates', 'nav.a7']
+  ],
+  'Hero': [
+    ['Intro paragraph', 'hero.lead'],
+    ['Tagline', 'hero.tagline'],
+    ['Small line above the title', 'page.span1'],
+    ['Place and month', 'page.span2'],
+    ['Counter label: days', 'page.span3'],
+    ['Counter label: events', 'page.span4'],
+    ['Counter label: venues', 'page.span5'],
+    ['Button: see the calendar', 'page.a1'],
+    ['Button: get updates', 'page.a2']
+  ],
+  'Programme': [
+    ['Small heading above the title', 'programme.p1'],
+    ['Section title', 'programme.title']
+  ],
+  'Performances': [
+    ['Group heading', 'programme.h31'],
+    ['Performance 1 - title', 'programme.h41'],
+    ['Performance 1 - description', 'programme.p2'],
+    ['Performance 2 - title', 'programme.h42'],
+    ['Performance 2 - description', 'programme.p3'],
+    ['Performance 3 - title', 'programme.h43'],
+    ['Performance 3 - description', 'programme.p4']
+  ],
+  'Workshops': [
+    ['Group heading', 'programme.h32'],
+    ['Workshop 1 - title', 'programme.h44'],
+    ['Workshop 1 - description', 'programme.p5'],
+    ['Workshop 2 - title', 'programme.h45'],
+    ['Workshop 2 - description', 'programme.p6']
+  ],
+  'Academic traditions': [
+    ['Group heading', 'programme.h33'],
+    ['Session 1 - title', 'programme.h46'],
+    ['Session 1 - description', 'programme.p7'],
+    ['Session 2 - title', 'programme.h47'],
+    ['Session 2 - description', 'programme.p8']
+  ],
+  'Featuring': [
+    ['Small heading', 'featuring.p1'],
+    ['Name', 'featuring.h21'],
+    ['Subtitle', 'featuring.p2'],
+    ['First paragraph', 'featuring.p3'],
+    ['Second paragraph', 'featuring.p4']
+  ],
+  'Presented by': [
+    ['Small heading', 'foundation.eyebrow'],
+    ['Heading', 'foundation.title'],
+    ['Paragraph', 'foundation.text'],
+    ['Website link text', 'foundation.a1']
+  ],
+  'Foundation facts': [
+    ['Fact 1 - label', 'foundation.fact1.label'],
+    ['Fact 1 - text', 'foundation.fact1.value'],
+    ['Fact 2 - label', 'foundation.fact2.label'],
+    ['Fact 2 - text', 'foundation.fact2.value'],
+    ['Fact 3 - label', 'foundation.fact3.label'],
+    ['Fact 3 - text', 'foundation.fact3.value']
+  ],
+  'Also at the festival': [
+    ['Intro line', 'page.p1'],
+    ['Item 1 - title', 'page.h41'],
+    ['Item 1 - description', 'page.p2'],
+    ['Item 2 - title', 'page.h42'],
+    ['Item 2 - description', 'page.p3'],
+    ['Item 3 - title', 'page.h43'],
+    ['Item 3 - description', 'page.p4']
+  ],
+  'Collaborators': [
+    ['Section title', 'partners.h21'],
+    ['Intro paragraph', 'partners.p1']
+  ],
+  'Support': [
+    ['Small heading', 'support.p1'],
+    ['Section title', 'support.h21'],
+    ['Paragraph', 'support.p2'],
+    ['Call button text', 'support.a1'],
+    ['Website link text', 'support.a2']
+  ],
+  'Support benefits': [
+    ['Benefit 1 - title', 'support.dt1'],
+    ['Benefit 1 - description', 'support.dd1'],
+    ['Benefit 2 - title', 'support.dt2'],
+    ['Benefit 2 - description', 'support.dd2'],
+    ['Benefit 3 - title', 'support.dt3'],
+    ['Benefit 3 - description', 'support.dd3']
+  ],
+  'Calendar': [
+    ['Small heading', 'calendar.p1'],
+    ['Section title', 'calendar.h21'],
+    ['Intro line', 'calendar.p2'],
+    ['Download button text', 'calendar.a1'],
+    ['Note beside the download button', 'calendar.span1']
+  ],
+  'Get updates': [
+    ['Small heading', 'register.p1'],
+    ['Section title', 'register.h21'],
+    ['Intro paragraph', 'register.p2'],
+    ['Sign-up button text', 'signup-form.button1']
+  ],
+  'Volunteer': [
+    ['Small heading', 'volunteer.p1'],
+    ['Section title', 'volunteer.h21'],
+    ['Paragraph', 'volunteer.p2'],
+    ['Submit button text', 'volunteer-form.button1']
+  ],
+  'Volunteer summary': [
+    ['Row 1 - label', 'volunteer.span1'],
+    ['Row 1 - text', 'volunteer.value1'],
+    ['Row 2 - label', 'volunteer.span2'],
+    ['Row 2 - text', 'volunteer.value2'],
+    ['Row 3 - label', 'volunteer.span3'],
+    ['Row 3 - text', 'volunteer.value3']
+  ],
+  'Footer': [
+    ['Line of text', 'footer.p1'],
+    ['Website link text', 'footer.a1'],
+    ['Phone number', 'footer.a2']
+  ]
+};
+
+/** The site-copy Google Doc, tabs and sub-tabs included. Serves key<TAB>text
+    rows; anything not under a known Heading 3 label (notes, a Read me tab) is ignored. */
 function docContent(docId) {
   if (!docId) return '';
-  const rows = [];
+  const norm = function (s) { return String(s).toLowerCase().replace(/[:\s]+$/g, '').replace(/\s+/g, ' ').trim(); };
+  const maps = {};
+  Object.keys(CONTENT_MAP).forEach(function (title) {
+    const m = {};
+    CONTENT_MAP[title].forEach(function (e) { m[norm(e[0])] = e[1]; });
+    maps[norm(title)] = m;
+  });
+  const done = {}, out = [];
   (function walk(tabs) {
     tabs.forEach(function (t) {
-      t.asDocumentTab().getBody().getText().split('\n').forEach(function (line) {
-        const i = line.indexOf(':');
-        if (i < 1) return;
-        const key = line.slice(0, i).trim();
-        if (!/^[a-z0-9-]+(\.[a-z0-9-]+)+$/i.test(key)) return;
-        rows.push(key + '\t' + line.slice(i + 1).trim().replace(/[\t\r]/g, ' '));
+      const map = maps[norm(t.getTitle())] || {};
+      let key = '', parts = [];
+      const flush = function () {
+        if (key && parts.length && !(key in done)) { done[key] = 1; out.push(key + '\t' + parts.join(' ')); }
+        key = ''; parts = [];
+      };
+      t.asDocumentTab().getBody().getParagraphs().forEach(function (p) {
+        const txt = p.getText().replace(/[ \t\r\n\u000b]+/g, ' ').replace(/^ | $/g, '');
+        if (!txt) return;
+        if (map[norm(txt)]) { flush(); key = map[norm(txt)]; return; }
+        if (key) parts.push(txt);
       });
+      flush();
       walk(t.getChildTabs());
     });
   })(DocumentApp.openById(docId).getTabs());
-  return rows.join('\n');
+  return out.join('\n');
 }
 
 /** Plain-text (TSV) response, with the same permissive access as json(). */
