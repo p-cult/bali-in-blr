@@ -981,6 +981,39 @@ two findings deliberately left alone are not re-raised as if they were new.
 - The published planning sheet was **not** raised: §2 records that as a
   considered decision.
 
+### 19 Sep 2026 — made the project genuinely hand-over-able
+Goal: anyone — another machine, another AI tool, another Claude account, or a
+human coder — can continue from the drive or a plain clone with nothing carried
+in someone's head. Audited what already existed rather than adding scaffolding.
+Most of it (`AGENTS.md`, `HANDOVER.md`, this journal, `doctor.sh`, the vault)
+was already good. Three things were wrong.
+
+- **`CLAUDE.md` was lying in its own first screen.** It still read "Currently
+  not connected: calendar/partners read local JSON and the signup form is in
+  demo mode" — false since the bridge went live, and contradicting the status
+  block in the same file. It is the first thing a Claude session reads.
+  Replaced with how it actually works: the sheet is the source of truth,
+  `data/*.json` are fallbacks, two separate web apps, and the
+  never-create-a-new-deployment rule.
+- **`README.md` carried the same claim**, plus the old github.io URL and
+  instructions to add events by editing `data/events.json`. Rewritten as a
+  front door that routes to the other docs instead of duplicating them.
+- **`doctor.sh` verified the machine but not the system.** It now also checks
+  the admin tools and the sync workflow, that both Apps Script sources are
+  backed up (they exist only inside Google otherwise), and read-tests both web
+  apps and the live site — reading the URLs out of the files that use them, so
+  it stays honest after a redeploy.
+
+**Checked and already fine:** every topic held in a Claude account's memory is
+also in the repo or the vault, so no knowledge is account-bound. Nothing was
+untracked. A fresh clone serves with zero setup and cannot open the vault.
+
+**The single point of no return is the vault key.** Everything else recovers
+from GitHub. The key exists in exactly one place on one drive; lose it and the
+private half is unrecoverable, by design. `doctor.sh` now says so on every run,
+and `docs/ANOTHER-MACHINE.md` states it plainly. **A second offline copy is the
+one thing a human still has to do.**
+
 ## 2. Lessons and standing rules (the "why" behind the rules)
 
 **Data and privacy**
