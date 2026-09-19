@@ -1,0 +1,6 @@
+brain 0.1.0
+vendored 2026-09-19
+canonical: /Volumes/bkp-01/0proj/code/param/_brain
+
+This is a COPY. Do not edit it here — edit the brain and re-pull, or the
+next pull overwrites your change. Project-specific values go in brain.conf.

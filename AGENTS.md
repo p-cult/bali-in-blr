@@ -4,6 +4,22 @@ Whichever assistant opens this repository (Claude Code, Cursor, Codex, Copilot,
 Gemini, or anything else), on whichever machine: **this project has a memory,
 and you are expected to load it before acting.**
 
+**Before anything else — this is cheap and it is evidence:**
+
+```bash
+bash .brain/tools/state.sh      # what is actually true right now
+```
+
+Everything below is prose, and prose goes stale. That command's output
+cannot. This project's own entry-point file once claimed the backend was not
+connected, months after it went live.
+
+`.brain/` is a vendored copy of the shared brain at `param/_brain`
+(github.com/p-cult/param-brain). Do not edit it here — improve the brain and
+re-pull. Project facts go in `brain.conf`, never in `.brain/`.
+Start with `.brain/doctrine/` — five short rules, each earned from a real
+failure.
+
 Read, in this order:
 
 1. **`CLAUDE.md`** — first actions for a new session or machine, file map,
