@@ -12,3 +12,4 @@ secure/vault.json
 secure/*.plain
 .secrets/
 .bake-changed
+.bake-state

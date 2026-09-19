@@ -10,7 +10,9 @@ replacement. Standard library only.
 Never wipes anything: on any fetch problem, a malformed feed or a suspiciously
 small feed it changes nothing and exits 0 (the site just keeps its wording).
 """
+import hashlib
 import html
+import os
 import re
 import sys
 import urllib.request
@@ -71,7 +73,7 @@ def main():
         r'(<(?P<tag>[a-z0-9]+)\b[^>]*\bdata-content="(?P<key>[^"]+)"[^>]*>)(?P<inner>.*?)(</(?P=tag)>)',
         re.S | re.I,
     )
-    changed, skipped = [], 0
+    changed, skipped, diffs = [], 0, []
 
     def flat(s):
         return re.sub(r"[ \t\r\n]+", " ", s).strip()
@@ -90,13 +92,26 @@ def main():
         if current == flat(text):  # wording already matches: leave the HTML alone
             return m.group(0)
         changed.append(key)
+        diffs.append(key + "\t" + text)
         return m.group(1) + to_html(text) + m.group(5)
 
     out = pat.sub(sub, src)
+    state = f"{ROOT}/.bake-state"
     if not changed:
+        open(state, "w").write("")
         print(f"In sync: the Doc matches index.html ({len(copy)} lines checked, "
               f"{skipped} skipped for other markup). Nothing to bake.")
         return 0
+    # Settle first: bake only a difference that is unchanged since the previous
+    # check, so a half-finished edit is never baked. The live swap covers the wait.
+    sig = hashlib.sha256("\n".join(sorted(diffs)).encode("utf-8")).hexdigest()
+    prev = open(state).read().strip() if os.path.exists(state) else ""
+    if sig != prev and not os.environ.get("BAKE_NOW"):
+        open(state, "w").write(sig)
+        print(f"Doc differs from index.html in {len(changed)} element(s): "
+              f"{', '.join(changed)}. Waiting for the next check to let the edit settle.")
+        return 0
+    open(state, "w").write("")
     open(path, "w", encoding="utf-8").write(out)
     print(f"Doc changed. Baked {len(changed)} element(s): {', '.join(changed)}")
     with open(f"{ROOT}/.bake-changed", "w", encoding="utf-8") as f:

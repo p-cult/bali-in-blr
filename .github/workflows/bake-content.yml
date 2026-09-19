@@ -9,13 +9,20 @@
 # tools/bake-content.py never wipes anything: if the feed is unreachable,
 # malformed or suspiciously small it changes nothing and exits 0. It compares
 # the wording, not the markup, and only rewrites elements whose text differs
-# from the Doc; when nothing differs there is no write and no commit.
+# from the Doc; when nothing differs there is no write and no commit. A
+# difference is baked only once it is unchanged at two hourly checks in a row
+# (settle-first), so a half-finished edit is never baked.
 name: Bake site copy
 
 on:
   schedule:
     - cron: "43 * * * *"   # hourly, off the hour and off the image sync
   workflow_dispatch:        # and on demand from the Actions tab
+    inputs:
+      now:
+        description: "Bake straight away (skip the settle check)"
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -30,8 +37,26 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Remembers what differed at the previous check (a hash, no content) so a
+      # difference is only baked once it has stayed the same for a full hour.
+      - name: Restore the previous check
+        uses: actions/cache/restore@v4
+        with:
+          path: .bake-state
+          key: bake-state-none
+          restore-keys: bake-state-
+
       - name: Compare the Doc with index.html and bake only what differs
+        env:
+          BAKE_NOW: ${{ inputs.now && '1' || '' }}
         run: python3 tools/bake-content.py
+
+      - name: Remember this check
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: .bake-state
+          key: bake-state-${{ github.run_id }}
 
       - name: Commit if the wording changed
         run: |

@@ -1060,7 +1060,10 @@ wording in `index.html` is now generated for these elements; edit the Doc, not
 the HTML (a hand edit to one of those elements is overwritten within the hour).
 The check compares wording (not markup) per element and only rewrites elements
 whose text differs from the Doc; in sync = no write, no commit, and a commit
-message lists the changed keys. First bake only reformatted (entities to characters, one line per element);
+message lists the changed keys. Settle-first: a difference is only baked once it is identical at two hourly
+checks in a row (hash kept in the Actions cache, no content), so a half-finished
+edit is never baked; bake time is therefore 1-2 hours, the live swap covers the
+wait. Manual runs can tick "Bake straight away". First bake only reformatted (entities to characters, one line per element);
 visible text was verified identical.
 
 ## 2. Lessons and standing rules (the "why" behind the rules)
