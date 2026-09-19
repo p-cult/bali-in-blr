@@ -109,8 +109,22 @@ Store the passphrase where you would store any other one you cannot afford to
 lose, and do not store it on the same drive.
 
 **Current state (19 Sep 2026):** the key was **rotated** after the old one was
-exposed (see below). `bkp-01` holds the new primary. The wrapped copy on
-`jssd-01` is STALE — it still wraps the retired key and must be redone.
+exposed (see below). Three copies of the current key exist:
+
+| Where | Form | Needs |
+|---|---|---|
+| `bkp-01` `.secrets/bali-in-blr.key` | plaintext, `chmod 400` | the drive |
+| `jssd-01` `.secrets/bali-in-blr.key.enc` | passphrase-wrapped | the drive **and** the passphrase |
+| printed QR code | visual | the paper |
+
+The `jssd-01` copy was re-wrapped against the new key and verified. No
+plaintext key sits on that drive.
+
+**A wrapped backup is only as good as the passphrase.** The first verification
+of the re-wrap failed with `bad decrypt` — a typo at the prompt, not a bad
+file; a careful retry passed. That is exactly why the verify step compares
+against the original instead of just checking that `openssl` produced output.
+If a verify fails, retry before regenerating.
 
 ### A QR code (best for getting it back in without typos)
 
