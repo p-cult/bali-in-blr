@@ -762,22 +762,22 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
 - **Lesson:** diagnosing a cause does not authorise redesigning around it, and
   a recorded decision is not undone without raising it first.
 
-### 18 Sep 2026 — ticket-sales admin module finished, and a credential typo caught twice
+### 18 Sep 2026 — ticket-sales admin module finished, and a username guessed wrong
 - **Shipped.** `/admin/tickets.html` now points at the Tickets sheet's own
   deployed Apps Script web app (a separate script/execution pool from the
   registration bridge, by design — ticket entry can never compete with
   signups for Apps Script's shared slots). End-to-end tested live: signed in,
   recorded a real sale, watched it land in "Latest entries" and the sheet.
-- **The username is `kishan`, not `kishen`.** `admin/auth.js` had the entry
-  misspelled `kishan` with a hash that didn't match either spelling —
-  corrected once, wrongly, to `kishen` (a plausible-looking but wrong guess).
-  The client caught it and confirmed the real spelling: `kishan`. Fixed
-  `USERS`/`ACCESS` in `admin/auth.js` back to `kishan` with the hash for
-  `kishan-r3-3r` (`21e72236a640…`), bumped `auth.js?v=6` on all four admin
-  pages so the correction isn't served stale, and matched the spelling in
+- **The username is `kishan`.** `admin/auth.js` carried a hash that matched
+  no spelling of it, and the name was then "corrected" to a made-up variant
+  on nothing more than it looking plausible. The client confirmed the real
+  spelling. `USERS`/`ACCESS` now read `kishan` with the hash for that
+  account, `auth.js?v=6` was bumped on all four admin pages so the correction
+  is not served stale, and the same spelling was applied in
   `docs/CONTINUE-IN-CURSOR.md`.
-- **Lesson:** the live Apps Script's own server-side `USERS` map (it
-  independently re-checks credentials in `doPost()` — "the admin page's
+- **Lesson: never guess a person's name.** Ask, or read it from a system
+  that already holds it. The live Apps Script's own server-side `USERS` map
+  (it independently re-checks credentials in `doPost()` — "the admin page's
   sign-in is not the only lock") already had `kishan` right; only the
   client-side gate was wrong. Verified this by probing the deployed script
   directly (`user`/`pass` correct, deliberately bad event name) before
