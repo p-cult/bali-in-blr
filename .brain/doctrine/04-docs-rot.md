@@ -7,6 +7,11 @@ are read first and set the mental model for everything after. In one audit the
 two files an assistant reads first both described a state that had been false
 for weeks.
 
+It was not a one-off. A second project's go-live status file still said "can
+we switch over tomorrow? No" a fortnight after the switch had happened and the
+new system was serving production. The newer handover docs were right; the
+status file simply never got touched again.
+
 ## How to apply
 
 - Keep a **status block** that states where each fact comes from, not the fact

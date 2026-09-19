@@ -25,3 +25,17 @@ backup redone.
   must reveal nothing.
 - Exposure is answered by **rotation**, and rotation protects the future only:
   encrypted blobs already published stay readable with the retired key.
+
+## Credentials in docs
+
+Across the projects this brain was built from, logins were written in plain
+text into a README, a committed credentials file, and an editor rule telling
+AI tools which password to type — in a public repository. They turned out to
+be test accounts, but nobody could have known that without checking the live
+user list.
+
+- **No username + password pair in any committed file.** Not in a README, not
+  "just for staging", not in a tool rule. Say where to get it instead.
+- **A test account's password is still a password.** People reuse them.
+- `brain.sh check` scans every tracked file for credential-shaped lines and
+  secret-looking filenames. It prints the file and line, **never the value**.
