@@ -790,6 +790,36 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
 - §0 and HANDOVER did not mention `/admin/tickets.html` or that the image sync
   now covers logos. Both added.
 
+### 19 Sep 2026 — ticket entry tested end to end; date format fixed
+- **The web app was already deployed** ("Ticket web app v1", 18 Sep 19:49) and
+  already wired into `admin/tickets.html`. The earlier "loading is so slow"
+  symptom was a stale working copy still holding `__TICKETS_API__`, which burnt
+  the full 12s timeout on every load. Nothing needed deploying.
+- **End-to-end test:** wrong password → refused, nothing written, total
+  unchanged. Correct password → row written, `?verify=<id>` found it, total
+  moved, date stamped `dd-MMM | HH:mm`. Test rows were deleted afterwards so
+  the stakeholder dashboard stays honest.
+- **A POST returns HTTP 405 and an HTML body even when the row is written.**
+  That is why the page confirms by id instead of trusting the reply — do not
+  "fix" that apparent error. `?data=1` also returns a non-JSON interstitial
+  now and then; retry rather than treating it as failure.
+- **Removed three probe rows** (`probe2-…`, `ff84cac7-…`, `1e06da16-…`) left by
+  18 Sep testing. They were counted as real sales: `/progress/` was showing
+  **8 tickets when only 5 were genuine**. Test writes must be cleaned up.
+- **Date format bug fixed.** Rows stamped by the `onEdit` trigger hold a real
+  `Date`; rows written by `doPost` hold a preformatted string. `getData()`
+  returned `r[0]` raw, so JSON serialised the Dates as
+  `2026-09-18T05:03:00.000Z` and the admin table printed that verbatim. Added
+  `fmtWhen()` and deployed as **Version 2**. The **deployment id did not
+  change**, so the `/exec` URL and the site were untouched.
+- **The script is now in the repo** at `docs/apps-script/Tickets.gs`. It had
+  existed only inside Google, with no backup and no version control.
+- **Editing a live Apps Script from a browser:** keyboard events do not reach
+  either Google Sheets or the Apps Script editor here — no Enter, Escape or
+  cmd+A. Mouse and character typing do work, and the editor's Monaco model can
+  be read and set directly. Remember a saved script is NOT a deployed script:
+  deploy a new version or the web app keeps serving the old code.
+
 ## 2. Lessons and standing rules (the "why" behind the rules)
 
 **Data and privacy**
