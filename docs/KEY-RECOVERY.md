@@ -70,6 +70,47 @@ cp /Volumes/bkp-01/.secrets/bali-in-blr.key /Volumes/<OTHER>/.secrets/
 chmod 400 /Volumes/<OTHER>/.secrets/bali-in-blr.key
 ```
 
+### A passphrase-wrapped copy (when the drive itself is not trustworthy)
+
+An exFAT or FAT drive does not enforce file permissions — `ls` may show
+`-r--------`, but anyone who plugs the drive in can read the file. If a backup
+drive will be handled by other people, or leaves your control, wrap the key so
+the file alone is useless.
+
+Encrypt it with the same scheme the vault itself uses:
+
+```bash
+openssl enc -aes-256-cbc -pbkdf2 -iter 200000 -salt \
+  -in  /Volumes/bkp-01/.secrets/bali-in-blr.key \
+  -out /Volumes/<OTHER>/.secrets/bali-in-blr.key.enc
+```
+
+Verify it unwraps to the *exact* key before deleting anything — this prints a
+verdict, never the key:
+
+```bash
+openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 \
+  -in /Volumes/<OTHER>/.secrets/bali-in-blr.key.enc \
+  | cmp -s - /Volumes/bkp-01/.secrets/bali-in-blr.key \
+  && echo VERIFIED || echo FAILED
+```
+
+Only once it says VERIFIED, remove the plaintext copy from that drive
+(`rm -P`). Leave a `README.txt` beside it saying what it is and how to unwrap
+it — a backup nobody can identify is not a backup.
+
+**This buys theft resistance and costs recoverability.** Recovery now needs
+*two* things: the file and the passphrase. Forget the passphrase and lose the
+primary drive, and the vault is gone — the wrapped copy will not save you. So
+a wrapped drive backup does not replace the paper copy of the raw key; it
+complements it.
+
+Store the passphrase where you would store any other one you cannot afford to
+lose, and do not store it on the same drive.
+
+**Current state (19 Sep 2026):** `jssd-01` holds a wrapped copy, verified, with
+no plaintext beside it. The primary on `bkp-01` is unwrapped.
+
 ### Never
 
 - In git, in any form, in any repository
@@ -98,6 +139,10 @@ character, a mangled paste, the wrong file.
 
 Do the same after transcribing to paper: type the characters into a temporary
 file, test it, then delete that file.
+
+For a wrapped backup, test the whole round trip — unwrap it and compare against
+the original, as shown above. Testing that it merely *decrypts* is not enough;
+a wrong passphrase can still produce output.
 
 ---
 
