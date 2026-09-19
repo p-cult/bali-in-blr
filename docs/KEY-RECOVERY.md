@@ -108,8 +108,47 @@ complements it.
 Store the passphrase where you would store any other one you cannot afford to
 lose, and do not store it on the same drive.
 
-**Current state (19 Sep 2026):** `jssd-01` holds a wrapped copy, verified, with
-no plaintext beside it. The primary on `bkp-01` is unwrapped.
+**Current state (19 Sep 2026):** the key was **rotated** after the old one was
+exposed (see below). `bkp-01` holds the new primary. The wrapped copy on
+`jssd-01` is STALE — it still wraps the retired key and must be redone.
+
+### A QR code (best for getting it back in without typos)
+
+64 base64 characters are easy to mistype. A QR removes that risk entirely:
+
+```bash
+qrencode -o vault-key-qr.png -s 10 -m 4 -l H < <(tr -d '\n' < /Volumes/bkp-01/.secrets/bali-in-blr.key)
+```
+
+`-l H` is the highest error correction, so a creased or partly damaged print
+still scans. Verify it decodes back to the exact key before trusting it — a QR
+is an *encoding*, not encryption, so treat the printout exactly like the
+written key: anyone who photographs it has the key.
+
+### If the key is exposed
+
+It happened on 19 Sep 2026: part of the key was rendered into a chat
+transcript. The transcript could not be deleted, so the key was rotated
+instead, which is the general answer — **you cannot unpublish a secret, you can
+only retire it.**
+
+Rotating is cheap:
+
+```bash
+openssl rand -base64 48 | tr -d '\n' | cut -c1-64 > /tmp/new.key && printf '\n' >> /tmp/new.key
+bash tools/vault.sh open                                  # with the OLD key
+BALI_VAULT_KEY=/tmp/new.key bash tools/vault.sh seal       # re-seal with the NEW one
+BALI_VAULT_KEY=<old> bash tools/vault.sh show              # must now FAIL
+cp /tmp/new.key /Volumes/bkp-01/.secrets/bali-in-blr.key && chmod 400 ...
+```
+
+Then redo every backup — they all still hold the retired key.
+
+**What rotation cannot fix:** older `secure/vault.json.enc` blobs already
+pushed to a public repo stay decryptable with the old key forever. Rotation
+protects everything from now on, not the past. Judge whether anything in those
+old blobs needs rotating in its own right — sheet ids and links are not
+credentials, and Google still enforces sharing permissions regardless.
 
 ### Never
 
