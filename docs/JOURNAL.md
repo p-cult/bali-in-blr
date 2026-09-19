@@ -1014,19 +1014,36 @@ private half is unrecoverable, by design. `doctor.sh` now says so on every run,
 and `docs/ANOTHER-MACHINE.md` states it plainly. **A second offline copy is the
 one thing a human still has to do.**
 
-### 19 Sep 2026 — site copy moves to a "Content" tab
+### 19 Sep 2026 — site copy moves to a Google Doc (first built as a sheet tab)
 
 Decision: every static line of text on the page (nav, hero, programme cards,
 featuring, presented-by, support, calendar/forms headings, footer) is editable
-from a "Content" tab (columns `key`, `text`) in the planning sheet. Elements in
-`index.html` carry `data-content="key"`; `loadContent()` in `main.js` reads the
-bridge feed `?feed=content` and overwrites them via `textContent` (`**word**`
-= bold). The wording in the HTML stays as the fallback, so an empty tab, missing
-tab or outage changes nothing. Deliberately **not** sheet-driven: `<title>`,
-meta, JSON-LD, the logo, form labels, consent text and Privacy links (SEO,
-legal and function). Seed for the tab: `data/content.tsv`. Needs the
-`content` feed line in `docs/apps-script/Code.gs` added to the live script and
-redeployed. Copy is single-line (no tabs/newlines in cells).
+from one Google Doc, "Bali in Bengaluru - Website copy". It was first built as
+a "Content" sheet tab; the user asked for a Doc instead, so the tab is now
+unused (safe to delete) and the Doc is the source. The Doc is organised in
+tabs and sub-tabs by site section (Navigation, Hero, Programme > Performances /
+Workshops / Academic traditions, Featuring, Presented by > Foundation facts,
+Also at the festival, Collaborators, Support > Support benefits, Calendar, Get
+updates, Volunteer > Volunteer summary, Footer). Each line is `key: text`
+(`**word**` = bold, one line per item). Only the text after the first colon is
+edited; the key must stay. Lines that are not `key: text` are ignored, so
+notes and headings are safe.
+
+Wiring: elements in `index.html` carry `data-content="key"`; `loadContent()` in
+`main.js` reads the bridge feed `?feed=content` and overwrites them via
+`textContent`. The feed (`docContent()` in `docs/apps-script/Code.gs`) walks
+every tab and sub-tab of the Doc and returns `key<TAB>text` rows, so `main.js`
+did not change. The wording in the HTML stays as the fallback, so a broken
+line, an empty Doc or an outage changes nothing. Deliberately **not**
+Doc-driven: `<title>`, meta, JSON-LD, the logo, form labels, consent text and
+Privacy links (SEO, legal and function). Seed: `data/content.tsv`.
+
+Live-script setup done: `CONTENT_DOC_ID` (blank in the repo, like
+`PLANNING_ID`) set in the live script; Docs permission granted; deployment
+updated in place (version 13, same `/exec` URL). Adding a *new* line to the site
+needs a matching `data-content` in `index.html` plus a line in the Doc. Lessons:
+Docs tabs are created with the Docs advanced service (`addDocumentTab`); typing
+into the Doc title via keystrokes fires shortcuts, so set it via the Rename field.
 
 ## 2. Lessons and standing rules (the "why" behind the rules)
 

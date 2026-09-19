@@ -51,6 +51,11 @@ const SHEET_ID = '';
    copy over it (that would blank PLANNING_ID and break the feeds). */
 const PLANNING_ID = '';
 
+/* The Google Doc "Bali in Bengaluru - Website copy" (tabs per site section).
+   Blank in the repo like PLANNING_ID; the live script has the real id.
+   Reads through DocumentApp, which needs the Docs scope. */
+const CONTENT_DOC_ID = '';
+
 /** The spreadsheet this script works on. */
 function book() {
   return SHEET_ID
@@ -97,6 +102,26 @@ function sheetTsv(spreadsheetId, tabName) {
       return cellExport(cell, rich[r][c], formulas[r][c]);
     }).join('\t');
   }).join('\n');
+}
+
+/** The site-copy Google Doc, tabs and sub-tabs included. Lines shaped
+    "key: text" become key<TAB>text rows; anything else (notes, headings) is ignored. */
+function docContent(docId) {
+  if (!docId) return '';
+  const rows = [];
+  (function walk(tabs) {
+    tabs.forEach(function (t) {
+      t.asDocumentTab().getBody().getText().split('\n').forEach(function (line) {
+        const i = line.indexOf(':');
+        if (i < 1) return;
+        const key = line.slice(0, i).trim();
+        if (!/^[a-z0-9-]+(\.[a-z0-9-]+)+$/i.test(key)) return;
+        rows.push(key + '\t' + line.slice(i + 1).trim().replace(/[\t\r]/g, ' '));
+      });
+      walk(t.getChildTabs());
+    });
+  })(DocumentApp.openById(docId).getTabs());
+  return rows.join('\n');
 }
 
 /** Plain-text (TSV) response, with the same permissive access as json(). */
@@ -429,8 +454,8 @@ function doGet(e) {
   // site's existing parsers.
   const feed = ((e && e.parameter && e.parameter.feed) || '').toLowerCase();
   if (feed === 'schedule') return tsvOut(sheetTsv(PLANNING_ID, 'Event List'));
-  // Site copy: the "Content" tab (key, text) overrides marked text on the page.
-  if (feed === 'content') return tsvOut(sheetTsv(PLANNING_ID, 'Content'));
+  // Site copy: the Content doc ("key: text" lines) overrides marked text on the page.
+  if (feed === 'content') return tsvOut(docContent(CONTENT_DOC_ID));
   if (feed === 'collab') return tsvOut(sheetTsv(PLANNING_ID, 'Collab / venues'));
   // Marketing listings tab: columns "Event link - BMS" / "Event link - District".
   // Cells are often a hyperlink labelled "Link" — cellExport turns that into the URL.
