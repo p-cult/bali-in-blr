@@ -930,6 +930,57 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
   path, so some are inflated** — a one-off re-sync without `--new-only` would
   correct them, at the cost of rewriting those files once.
 
+### 19 Sep 2026 — whole-project audit
+A pass over security, dead code, assets, markup, compliance, links and
+infrastructure. Recorded so the next session need not repeat it, and so the
+two findings deliberately left alone are not re-raised as if they were new.
+
+**Checked and clean** (point-in-time, 19 Sep):
+- No secrets committed. `secure/vault.json.enc` is genuinely encrypted
+  (`Salted__` header); the plaintext is gitignored. No API keys or tokens.
+- No dead code: 71 top-level functions in `main.js`, **none unreferenced**.
+  No `console.log` in shipped code.
+- Assets: every referenced file exists, and **no asset is unreferenced**. All
+  four `data/*.json` parse; `collab-logos.json` points at 13 files, all present.
+- Markup: no duplicate element ids, every `<img>` in `index.html` has `alt`.
+- Privacy: no PII-bearing feed reaches a public page — `/progress/` reads
+  `?sheet=stats` (aggregates). Repo `Code.gs` still keeps `SHEET_ID` and
+  `PLANNING_ID` empty, as §1 (17 Sep) requires.
+- Indexing: all seven private pages carry `noindex, nofollow` *and* are
+  disallowed in `robots.txt`. Both sitemap URLs resolve.
+- Infrastructure: HTTPS enforced, `http → https` 301, CNAME correct, 404s 404.
+- The 16 selectors defined in both stylesheets are deliberate layering —
+  `site.css` loads after `styles.css`.
+
+**Fixed:**
+- `privacy.html` asked for `styles.css?v=hub34` while `index.html` asked for
+  `hub39`. One file, two cache keys: downloaded twice, and privacy could
+  render from a long-stale copy. Both now on `hub39` — **when a shared
+  stylesheet is version-bumped, bump it on every page that loads it.**
+- The analytics loader's `GTM_ID` was blank with a comment warning that
+  setting it would load a second container, since `index.html` carries
+  Google's own snippet. The warning was right but advisory. The loader now
+  skips injection when a `gtm.js` container is already present, so
+  double-counting is structurally impossible. (The audit first called this an
+  undocumented trap; it was documented. The defect was that a comment was
+  doing a guard's job.)
+
+**Left alone on purpose — do not re-raise as new:**
+- **The admin gate keeps the password in `sessionStorage`** (`auth.js`). Not
+  an oversight: `tickets.html` re-sends user and password on every save
+  because the Apps Script re-verifies them server-side. `sessionStorage` is
+  origin-scoped and dies with the tab, and reading it already requires script
+  execution on an admin page — where the login form is readable anyway. These
+  are shared staff credentials and `auth.js` states it is a lightweight gate,
+  not a secret store. Closing it properly means issuing a short-lived token
+  from the Apps Script; judged not worth changing the live ticket-recording
+  script weeks before the festival. Revisit if admin access widens.
+- **~3.6MB of print PDFs** in `assets/print/` are the two largest tracked
+  files and sit in every clone. They are referenced, so not dead weight;
+  moving them to Drive or a release is optional tidying, not a defect.
+- The published planning sheet was **not** raised: §2 records that as a
+  considered decision.
+
 ## 2. Lessons and standing rules (the "why" behind the rules)
 
 **Data and privacy**
