@@ -51,7 +51,7 @@ const SHEET_ID = '';
    copy over it (that would blank PLANNING_ID and break the feeds). */
 const PLANNING_ID = '';
 
-/* The Google Doc "Bali in Bengaluru - Website copy" (tabs per site section).
+/* The Google Doc "Bali in Bengaluru - Website text" (tabs per site section).
    Blank in the repo like PLANNING_ID; the live script has the real id.
    Reads through DocumentApp, which needs the Docs scope. */
 const CONTENT_DOC_ID = '';

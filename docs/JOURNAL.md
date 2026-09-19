@@ -1018,7 +1018,7 @@ one thing a human still has to do.**
 
 Decision: every static line of text on the page (nav, hero, programme cards,
 featuring, presented-by, support, calendar/forms headings, footer) is editable
-from one Google Doc, "Bali in Bengaluru - Website copy". It was first built as
+from one Google Doc, "Bali in Bengaluru - Website text". It was first built as
 a "Content" sheet tab; the user asked for a Doc instead, so the tab is now
 unused (safe to delete) and the Doc is the source. The Doc is organised in
 tabs and sub-tabs by site section (Navigation, Hero, Programme > Performances /
