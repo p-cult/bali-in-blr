@@ -64,6 +64,10 @@ sitemap.xml         SEO.
 docs/
   BRIDGE-SETUP.md   Step-by-step Google Sheets + Apps Script setup (the backend).
   apps-script/Code.gs  The Apps Script "bridge" code, ready to paste & deploy.
+.github/workflows/
+  sync-drive-images.yml  Hourly job: pulls any newly linked Drive image into
+                    assets/drive/ and commits it, so images keep up with the
+                    sheet without anyone running a script.
 tools/
   JOURNAL.md        (docs/) Decisions, problems solved, lessons — the project memory.
   assets/logo.svg   The festival logo (source). Inlined in every page; see §5.

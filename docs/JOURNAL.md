@@ -893,6 +893,40 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
   (`sheets.tickets.web_app`). The journal is the public half, so asset links
   and deployment ids live there and are pointed at from here.
 
+### 19 Sep 2026 — new Drive images sync themselves
+- **Sheet text reached the site by itself; images did not.** A Drive link
+  pasted into an event's image column or the Logos block resolved only to
+  `assets/drive/<id>.<ext>`, so nothing appeared until a person ran
+  `tools/sync-images.sh` and pushed.
+- **First attempt was a client-side fallback** — the `<img>` now tries `.jpg`,
+  `.png`, then the live Drive copy. It works, but **Google rate-limits the
+  thumbnail endpoint**: it served this browser fine in the morning and refused
+  every request by evening, while `curl` fetched the same URL successfully.
+  Treat that fallback as best-effort, never as the mechanism.
+- **The real fix is `.github/workflows/sync-drive-images.yml`** — hourly and
+  on demand, it fetches any Drive id with no local copy and commits only if
+  something arrived. Pages redeploys on that push. First workflow in the repo;
+  it does not touch the existing Pages deployment.
+- **`--new-only` exists to prevent churn.** Image tools differ per machine and
+  produce different bytes from the same source, so re-optimising everything on
+  a schedule would rewrite every file each run and fight local runs. The job
+  passes the flag; refreshing a *changed* image stays a deliberate manual run
+  without it.
+- **The runner has no ImageMagick** — it falls through to Pillow, which the
+  workflow installs. Without a tool the script would silently write logos as
+  opaque JPEG and put a white box on the cream tile, so the job fails loudly
+  if none is present.
+- **Verified end to end, not assumed:** deleted a synced image, pushed, and
+  dispatched the job. It fetched exactly that one file, committed as
+  `github-actions[bot]` and pushed. So an explicit `permissions: contents:
+  write` does override a repo whose default workflow permission is *read*.
+- **`sips` was silently upscaling.** The restored file came back 445×142 (its
+  native size) where `sips -Z` had produced 600×191. Pillow refuses to
+  upscale; `sips -Z` does not. §2 already says never upscale a client image,
+  so the runner is right and the local path is wrong. Files made by the two
+  tools therefore differ — harmless while `--new-only` stops either
+  overwriting the other, but the `sips` branch is worth fixing.
+
 ## 2. Lessons and standing rules (the "why" behind the rules)
 
 **Data and privacy**
