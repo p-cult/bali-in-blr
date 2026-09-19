@@ -116,6 +116,58 @@ head_ "Site"
 n=$(ls assets 2>/dev/null | wc -l | tr -d ' ')
 [ "$n" -gt 0 ] && ok "assets/ has $n files" || bad "assets/ is empty" "Images did not travel."
 
+# ------------------------------------------------------- internal tooling
+head_ "Internal tools and automation"
+for f in admin/index.html admin/tickets.html admin/report.html \
+         admin/campaign-links.html admin/auth.js progress/index.html; do
+  [ -f "$f" ] && ok "$f" || bad "$f is missing" "The drive copy is incomplete."
+done
+if [ -f .github/workflows/sync-drive-images.yml ]; then
+  ok "Hourly Drive-image sync workflow present"
+else
+  bad "sync-drive-images.yml is missing" \
+      "New images in the sheet would stop reaching the site. Restore it from git."
+fi
+for f in docs/apps-script/Code.gs docs/apps-script/Tickets.gs; do
+  [ -f "$f" ] && ok "$f backed up" \
+    || bad "$f is missing" "That script then exists ONLY inside Google, with no backup."
+done
+
+# ------------------------------------------------------------- the backends
+# URLs are read out of the files that use them, so this stays honest if either
+# web app is ever redeployed.
+head_ "Backends"
+if command -v curl >/dev/null 2>&1; then
+  BRIDGE=$(grep -oE 'https://script\.google\.com/macros/s/[A-Za-z0-9_-]+/exec' main.js | head -1)
+  TICKETS=$(grep -oE 'https://script\.google\.com/macros/s/[A-Za-z0-9_-]+/exec' admin/tickets.html | head -1)
+  if [ -n "$BRIDGE" ] && curl -sL --max-time 25 "$BRIDGE?sheet=stats" | grep -q '"registered"'; then
+    ok "Registration bridge answering"
+  else
+    note "Registration bridge did not answer" \
+         "Forms and live counts are down, or it was redeployed to a new /exec URL."
+  fi
+  if [ -n "$TICKETS" ] && curl -sL --max-time 25 "$TICKETS?data=1" | grep -q '"totalTickets"'; then
+    ok "Tickets web app answering"
+  else
+    note "Tickets web app did not answer" \
+         "Retry once; it serves an interstitial now and then. If it persists it was redeployed -- NEVER create a new deployment, update the existing one (docs/JOURNAL.md, 19 Sep)."
+  fi
+  if curl -s -o /dev/null -w '%{http_code}' --max-time 25 https://bali-in-blr.paramfoundation.org/ | grep -q 200; then
+    ok "Live site responding"
+  else
+    note "Live site did not respond 200" "Check GitHub Pages and the custom domain."
+  fi
+else
+  note "curl not found -- skipped the backend checks" "Install curl to test them."
+fi
+
+# ------------------------------------------ the one thing that cannot be undone
+head_ "Recoverability"
+if [ -r "$KEY" ]; then
+  note "The vault key exists in ONE place only: $KEY" \
+       "Lose the drive and the private half is gone for good, by design (docs/SECURITY.md). Keep a second copy somewhere offline -- never in git, never in cloud storage."
+fi
+
 printf '\n\033[1m%s passed, %s to look at, %s blocking\033[0m\n' "$pass" "$warn" "$fail"
 if [ "$fail" -eq 0 ]; then
   printf 'Ready. Serve it with:  python3 -m http.server 8000\n'

@@ -98,15 +98,41 @@ export BALI_VAULT_KEY="/Volumes/bkp-01 1/.secrets/bali-in-blr.key"
 `docs/SECURITY.md` has the detail. The short version: the key opens
 `secure/vault.json.enc`, it lives only on this drive, and it must never be
 committed, emailed, put in a cloud folder, or pasted into a chat. Anyone with
-the repository alone cannot read the sealed notes, and that is the point. Back
-it up by copying the drive, offline.
+the repository alone cannot read the sealed notes, and that is the point.
+
+**This is the project's single point of no return.** Everything else can be
+recovered from GitHub; the key cannot. It exists in exactly one place. If this
+drive dies, the private half — sheet ids, design links, people, constraints — is
+gone for good. Keep a second copy somewhere offline (another encrypted drive, a
+safe). `bash tools/doctor.sh` warns about this on every run.
 
 ## Not on the drive at all
 
-Two things live in Google and need the right account
+These live in Google and need the right account
 (`vinodkumar@paramculture.org`), whichever computer you are on:
 
-- the registration spreadsheet
-- the Apps Script bridge behind `CONFIG.BRIDGE_URL`
+- **The sheets.** The registration workbook, the planning workbook
+  ("All things - Bali in Bengaluru") the site reads live, and the Tickets
+  workbook. Ids are in the vault under `sheets`.
+- **Two Apps Script web apps**, deliberately separate so ticket entry can never
+  compete with signups for Apps Script's shared execution slots:
+  - the registration bridge behind `CONFIG.BRIDGE_URL` in `main.js`
+  - the tickets web app behind `const API` in `admin/tickets.html`
+
+  Both sources are backed up in `docs/apps-script/`. Keep them in step with
+  what is deployed — the repo copy is the only backup.
+
+  **When redeploying either: update the existing deployment. Never create a new
+  one.** A new deployment mints a new `/exec` URL and breaks the page pointing
+  at it. Updating in place keeps the id, so nothing else needs changing.
+  (`docs/JOURNAL.md`, 19 Sep.)
+- **The shared Drive folder** of collaborator logos. Link in the vault under
+  `memory.client_assets.collaborator_logos_folder`. Files must be shared
+  "Anyone with the link" or they will not render.
+
+Also not on the drive: **GitHub Actions**. `.github/workflows/sync-drive-images.yml`
+runs hourly on GitHub and pulls any newly linked Drive image into
+`assets/drive/`. It needs nothing installed locally — but if Actions are ever
+disabled on the repo, new images silently stop reaching the site.
 
 See `docs/BRIDGE-SETUP.md`.

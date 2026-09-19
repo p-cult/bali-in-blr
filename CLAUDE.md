@@ -55,10 +55,24 @@ dependencies. Hosted on **GitHub Pages**, auto-deploys on push to `main`.
   `.cursor/rules/` — same rules for Cursor
 
 ## Architecture (short)
-Data is designed to come from **Google Sheets via a Google Apps Script Web App**
-("the bridge"). **Currently not connected:** calendar/partners read local JSON and
-the signup form is in demo mode. To go live, set `CONFIG.BRIDGE_URL` and repoint
-`EVENTS_URL`/`PARTNERS_URL` in `main.js` — nothing else. See HANDOVER §3 and
+Content comes from **Google Sheets**, read live in the browser on every page
+load. **The sheet is the source of truth, not this repo** — editing a cell is
+enough; there is no build or deploy step for content. That covers calendar
+events, booking links, event status, the hero's computed numbers, and
+collaborators with their logos. `data/events.json` and `data/partners.json` are
+*fallbacks* for when the sheet is unreachable, not the live data.
+
+Writes (signups, volunteers, ticket sales) go through **Google Apps Script web
+apps** — two separate ones on purpose, so ticket entry can never compete with
+signups for Apps Script's shared execution slots:
+- the registration bridge, `CONFIG.BRIDGE_URL` in `main.js`
+- the tickets web app, `const API` in `admin/tickets.html`
+
+Both sources are backed up in `docs/apps-script/`; the repo copy is the only
+backup, so keep it in step. **When redeploying either, update the existing
+deployment — never create a new one**, or the `/exec` URL changes and the page
+breaks (`docs/JOURNAL.md`, 19 Sep). Drive images linked in the sheet are pulled
+in hourly by `.github/workflows/sync-drive-images.yml`. See HANDOVER §3 and
 `docs/BRIDGE-SETUP.md`.
 
 ## Rules
