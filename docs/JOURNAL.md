@@ -758,9 +758,10 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
 ### 19 Sep 2026 — the Files column filled, and logos that keep their alpha
 - **The Files column was empty for all 14 logos**, so `data/collab-logos.json`
   had been hand-maintained instead and the two drifted apart. Filled F15:F27
-  from the shared `web-logos` Drive folder and added a row for **Mandala
-  Bengaluru**, which had a logo in the folder but no row, so it could never
-  appear. `Ministry of culture` is still Pending with no file.
+  from the shared `web-logos` Drive folder (link in the vault under
+  `memory.client_assets.collaborator_logos_folder`) and added a row for
+  **Mandala Bengaluru**, which had a logo in the folder but no row, so it
+  could never appear. `Ministry of culture` is still Pending with no file.
 - **Name → file matches that are not obvious:** `MUSIC ACADEMY.png` is
   **Chowdiah** (Academy of Music, Chowdiah Memorial Hall); `SRRK.png` is
   Rajarajeshwari Kalaniketan; `Indian Music Experience.png` is IME;
@@ -813,7 +814,10 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
   `fmtWhen()` and deployed as **Version 2**. The **deployment id did not
   change**, so the `/exec` URL and the site were untouched.
 - **The script is now in the repo** at `docs/apps-script/Tickets.gs`. It had
-  existed only inside Google, with no backup and no version control.
+  existed only inside Google, with no backup and no version control. Keep the
+  two in step. The deployment is recorded in the vault under
+  `sheets.tickets.web_app`; **update the existing deployment, never create a
+  new one** — a new deployment mints a new `/exec` URL and breaks the page.
 - **Editing a live Apps Script from a browser:** keyboard events do not reach
   either Google Sheets or the Apps Script editor here — no Enter, Escape or
   cmd+A. Mouse and character typing do work, and the editor's Monaco model can
