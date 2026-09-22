@@ -27,9 +27,11 @@
     kishan: "21e72236a640e3217ca075262b8f40b0a3b0be6f735df7d86f6e890195059a29",
   };
   // Tools a user is limited to. Tool names: "tickets", "links", "report", "logistics".
-  // Kishan enters ticket sales; the report carries costing and artist fees.
+  // Vinod and Jois are full admins (not listed = every tool). Kishan enters
+  // ticket sales and runs the artist logistics planner; the report carries
+  // costing and artist fees, so it stays off his list.
   const ACCESS = {
-    kishan: ["tickets"],
+    kishan: ["tickets", "logistics"],
   };
   function canUse(user, tool) {
     const allowed = ACCESS[user];
