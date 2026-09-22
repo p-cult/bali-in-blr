@@ -131,7 +131,8 @@ input[type=time]::-webkit-calendar-picker-indicator,input[type=date]::-webkit-ca
 .tl-truck{opacity:.7;font-size:.85rem}
 .tl-truck .tl-when{color:var(--muted)}
 .tl-truck .tl-body b{font-weight:500;color:var(--muted)}
-.tl-truck .tl-body b::before{content:"▮ ";color:var(--copper)}
+.truck-icon{width:1.35em;height:auto;vertical-align:-.15em;margin-right:.45em;color:var(--copper)}
+.truck-back .truck-icon{transform:scaleX(-1)}
 .tl-sleep .tl-when::after{content:""}
 .tl-edit{display:flex;flex-wrap:wrap;gap:.5rem .9rem;margin-top:.35rem;font-size:.78rem;color:var(--muted)}
 .tl-edit input[type=number]{width:4.2rem}

@@ -49,19 +49,27 @@ jobs:
       - name: Sync images that are not on-site yet
         run: bash tools/sync-images.sh --new-only
 
+      # Event page banners, one Drive folder per event (data/event-banners.json).
+      # Re-downloads only when the chosen file changes, so an unchanged banner is
+      # never rewritten; a new banner in the folder shows on the page within the
+      # hour. A failure here must not block the image sync above from committing.
+      - name: Sync event page banners
+        continue-on-error: true
+        run: python3 tools/sync-event-banners.py
+
       - name: Commit anything new
         run: |
-          if [ -z "$(git status --porcelain assets/drive)" ]; then
+          if [ -z "$(git status --porcelain assets/drive assets/events data/event-banners.json)" ]; then
             echo "Nothing new. Done."
             exit 0
           fi
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add assets/drive
+          git add assets/drive assets/events data/event-banners.json
           git commit -m "Sync Drive images (automated)
 
-          Picked up by .github/workflows/sync-drive-images.yml — a Drive link
-          was added to the sheet and had no local copy yet."
+          Picked up by .github/workflows/sync-drive-images.yml — a Drive link in
+          the sheet, or an event banner folder, had something new."
           # A human may have pushed since checkout; rebase rather than fail.
           git pull --rebase origin main
           git push

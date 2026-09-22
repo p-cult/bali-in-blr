@@ -797,6 +797,81 @@ body.view-open { overflow: hidden; }
 .view-head h2 { margin: 0; }
 .view-body > .section { padding-top: 2.6rem; }
 
+/* ------------------------------------------------------ 10b. Event pages */
+/* event/?e=<slug>. The banner is the ticket-platform artwork with the title set
+   into it, so it is shown whole at its own 2:1 ratio and never cropped. The
+   stand-in sits underneath; when the image loads it covers it, when there is
+   none the stand-in is what shows. */
+
+.page-event .nav-links a[href="#calendar"] { color: var(--ink); }
+.ev-page { padding: 2rem 0 4rem; min-height: 60vh; }
+.ev-back {
+  display: inline-block; margin-bottom: 1.2rem; font-size: 0.82rem; font-weight: 600;
+  letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); text-decoration: none;
+}
+.ev-back:hover { color: var(--accent); }
+
+.ev-banner {
+  position: relative; margin: 0 0 2.4rem; aspect-ratio: 2 / 1; overflow: hidden;
+  border-radius: var(--radius); background: var(--bg-3); border: 1px solid var(--line);
+}
+.ev-banner img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+.ev-banner.has-image { background: var(--bg-2); }
+.ev-banner.has-image .ev-standin { visibility: hidden; }
+
+.ev-standin {
+  position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: flex-end;
+  gap: 0.6rem; padding: clamp(1.2rem, 4vw, 3rem);
+}
+.ev-standin-kicker {
+  font-size: 0.72rem; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: var(--copper);
+}
+.ev-standin-title {
+  font-family: var(--display); font-weight: 800; text-transform: uppercase; line-height: 0.98;
+  font-size: clamp(1.4rem, 4vw, 2.8rem); max-width: 18ch; color: var(--ink);
+}
+/* the festival's block motif: three squares, the fourth corner empty */
+.ev-standin-motif {
+  position: absolute; top: clamp(1.2rem, 4vw, 3rem); right: clamp(1.2rem, 4vw, 3rem);
+  display: grid; grid-template-columns: repeat(3, 1.1rem); grid-template-rows: repeat(2, 1.1rem);
+}
+.ev-standin-motif i { display: block; background: var(--accent); }
+.ev-standin-motif i:nth-child(1) { grid-column: 2; grid-row: 1; }
+.ev-standin-motif i:nth-child(2) { grid-column: 1; grid-row: 2; background: var(--copper); }
+.ev-standin-motif i:nth-child(3) { grid-column: 3; grid-row: 2; }
+
+.ev-grid { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 2.4rem; }
+.ev-head { display: flex; align-items: center; gap: 0.8rem; margin-bottom: 0.7rem; }
+.ev-title {
+  font-family: var(--display); font-weight: 800; text-transform: uppercase; letter-spacing: -0.01em;
+  font-size: clamp(1.7rem, 4vw, 2.6rem); line-height: 1.02; margin: 0 0 1.1rem; text-wrap: balance;
+}
+p.ev-desc { font-size: 1.08rem; line-height: 1.65; color: var(--muted); max-width: 58ch; margin: 0; }
+
+.ev-side {
+  align-self: start; background: var(--bg-3); border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 1.4rem;
+}
+.ev-facts { margin: 0 0 1.3rem; display: grid; gap: 0.9rem; }
+.ev-facts div { display: grid; grid-template-columns: 5.5rem minmax(0, 1fr); gap: 0.8rem; align-items: baseline; }
+.ev-facts dt {
+  font-size: 0.66rem; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: var(--copper);
+}
+.ev-facts dd { margin: 0; font-size: 0.95rem; color: var(--ink); }
+.ev-act { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+
+.ev-missing { padding: 3rem 0; }
+.ev-missing h1 {
+  font-family: var(--display); font-weight: 800; text-transform: uppercase; font-size: 1.8rem; margin: 0 0 0.6rem;
+}
+.ev-missing p { color: var(--muted); }
+
+/* calendar rows with a page: the whole row opens it; buttons keep their own jobs */
+.cal-event.has-page { cursor: pointer; }
+.cal-title-link { color: inherit; text-decoration: none; }
+.cal-event.has-page:hover .cal-title-link { color: var(--accent); }
+.cal-title-link:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
 /* --------------------------------------------------------- 11. Responsive */
 /* Largest first, so a value is only ever overridden by a narrower screen. */
 
@@ -813,6 +888,7 @@ body.view-open { overflow: hidden; }
 }
 
 @media (max-width: 760px) {
+  .ev-grid { grid-template-columns: minmax(0, 1fr); gap: 1.6rem; }
   /* Keep all three stats on one row on phones; shrink the number to fit. */
   .hero-meta { flex-wrap: nowrap; gap: 0.8rem; }
   .hero-meta div { flex: 1 1 0; width: auto; min-width: 0; }

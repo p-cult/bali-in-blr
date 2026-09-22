@@ -490,7 +490,7 @@
           : timeline.push(block("show", x.b.start, x.b.end, x.ev.title, { ev: x.ev, venue: x.venue, artists: x.b.artists, cast: x.b.cast }));
       }
       const freeAt = x.b.end + (x.meal ? 0 : x.b.change) + x.b.after;
-      if (!x.meal) pushWrap(timeline, x);
+      if (!x.meal) { pushWrap(timeline, x); truckBack(ctx, day, timeline, x, freeAt, dateISO); }
       here = x.idx; hereLabel = x.venue ? x.venue.name : x.ev.venue;
       notBefore = freeAt;
 
@@ -646,7 +646,7 @@
       pushPrep(timeline, arrive, x);
       timeline.push(block("show", x.b.start, x.b.end, x.ev.title, { ev: x.ev, venue: x.venue, artists: x.b.artists, cast: x.b.cast }));
       here = x.b.end + x.b.change + x.b.after;
-      pushWrap(timeline, x);
+      pushWrap(timeline, x); truckBack(ctx, day, timeline, x, here, dateISO);
     });
     const lo = toMin(D.lunchWindow[0]), lc = toMin(D.lunchWindow[1]);
     // Dinner in town, then the night drive home.
@@ -846,12 +846,26 @@
       let dep = at - 45;
       for (let i = 0; i < 3; i++) { tr = ctx.travel(sIdx, x.idx, dateISO, dep); dep = at - (tr.min == null ? 45 : tr.min); }
       leave = dep;
-      timeline.push(block("truck", leave, at, "Instrument vehicle: leave " + (store.name || "storage") + " for " + (x.venue ? x.venue.name : x.ev.venue), { detail: legDetail(tr, 0) + " · production vehicle, not artist time" }));
+      timeline.push(block("truck", leave, at, "Instrument vehicle: leave " + (store.name || "storage") + " for " + (x.venue ? x.venue.name : x.ev.venue), { dir: "out", detail: legDetail(tr, 0) + " · production vehicle, not artist time" }));
     } else {
-      timeline.push(block("truck", at, null, "Instruments at " + (x.venue ? x.venue.name : x.ev.venue) + " by now", { detail: store ? "" : "set the instrument storage location in the planner sheet to get the departure time" }));
+      timeline.push(block("truck", at, null, "Instruments at " + (x.venue ? x.venue.name : x.ev.venue) + " by now", { dir: "out", detail: store ? "" : "set the instrument storage location in the planner sheet to get the departure time" }));
     }
     day.trucks = day.trucks || [];
     day.trucks.push({ id: x.ev.id, instrAt: at, instrLeave: leave });
+  }
+
+  // After the wrap the instruments go back (or on to the next venue: the
+  // planner keeps it simple and shows the return to storage).
+  function truckBack(ctx, day, timeline, x, freeAt, dateISO) {
+    const cfg = ctx.cfg;
+    const store = cfg.instrumentStore && cfg.instrumentStore.lat != null ? cfg.instrumentStore : null;
+    const from = x.venue ? x.venue.name : x.ev.venue;
+    if (store && x.idx >= 0) {
+      const tr = ctx.travel(x.idx, ctx.point(store), dateISO, freeAt);
+      timeline.push(block("truck", freeAt, freeAt + (tr.min == null ? 45 : tr.min), "Instrument vehicle: leave " + from + " for " + (store.name || "storage"), { dir: "back", detail: legDetail(tr, 0) + " · production vehicle, not artist time" }));
+    } else {
+      timeline.push(block("truck", freeAt, null, "Instruments leave " + from, { dir: "back", detail: "" }));
+    }
   }
 
   // The pre-show segments between arrival and the start. A late arrival

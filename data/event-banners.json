@@ -1,16 +1,85 @@
 {
   "_note": "Which Drive folder holds each event's banner. Keys are event slugs (the title, lowercased, non-letters as hyphens). tools/sync-event-banners.py fills in 'source' and 'version' — edit only 'folder'. A file named banner* in a folder wins; otherwise the widest landscape image is used.",
   "events": {
-    "indonesian-indian-shadow-puppetry-performance": { "folder": "1wApekormP63LDjbAB95fvZdQYLat7VTu", "label": "Collab - shadow" },
-    "dance-movement-workshop":                        { "folder": "1HmAT4WY77mSo2HwzBAo22eNmlimu_qUl", "label": "Drishti" },
-    "indonesian-shadow-puppetry-performance":         { "folder": "127aDTcqpfLO0w2HMwSSpKJcEfDCISTdB", "label": "For jagriti" },
-    "gamelan-workshop":                               { "folder": "1rRpQNK0X81NvYgXaLo0CcazrypCZe4d5", "label": "Gamelan workshop" },
-    "lecture-demonstration":                          { "folder": "1oqw_L0X5RB1ORgM_cQ3rvxFg13Q5-eCX", "label": "IME" },
-    "balinese-dance-demonstration":                   { "folder": "1oqw_L0X5RB1ORgM_cQ3rvxFg13Q5-eCX", "label": "IME" },
-    "kecak-workshop":                                 { "folder": "17t5vuKkKbe7JmLslQNyzUg4SACjWa4vC", "label": "Kecak workshop - studio1" },
-    "mask-making-workshop":                           { "folder": "1H2mhyDYfnWnuUN_gC7DAPmZeE6zl-S4h", "label": "Mask making" },
-    "traditional-balinese-dance":                     { "folder": "1OHVNTJ5hchupFSAuvFSd-HigUQx-i-Ce", "label": "Rangamancha" },
-    "balinese-shadow-puppetry-workshop":              { "folder": "1ykxdY1v1rXO_mm-sC9rGAIxGhYyWZHVE", "label": "workshop - shadow puppetry" },
-    "traditional-balinese-dance-yakshagana-performance": { "folder": "1UKehCFfv8jftPqZCkDSkhixnH6K2dTSe", "label": "Yakshagana x balinese dance - chowdiah" }
+    "indonesian-indian-shadow-puppetry-performance": {
+      "folder": "1wApekormP63LDjbAB95fvZdQYLat7VTu",
+      "label": "Collab - shadow",
+      "source": "19CLPMCEWkTl2UhEnaABM-9v7HsXLOmSo",
+      "version": "19CLPMCEWk",
+      "picked": "BMS-Landscape.png (1920x960)",
+      "updated": "2026-09-22"
+    },
+    "dance-movement-workshop": {
+      "folder": "1HmAT4WY77mSo2HwzBAo22eNmlimu_qUl",
+      "label": "Drishti",
+      "source": "1N9a6KYDOSF-iwEftVOY5dy7S7BaCsPKd",
+      "version": "1N9a6KYDOS",
+      "picked": "BMS-Landscape.png (1920x960)",
+      "updated": "2026-09-22"
+    },
+    "indonesian-shadow-puppetry-performance": {
+      "folder": "127aDTcqpfLO0w2HMwSSpKJcEfDCISTdB",
+      "label": "For jagriti",
+      "source": "1iqjzYCO9txUExwZaHFQ3iHiR-yivpImz",
+      "version": "1iqjzYCO9t",
+      "picked": "BMS-Landscape.png (1920x960)",
+      "updated": "2026-09-22"
+    },
+    "gamelan-workshop": {
+      "folder": "1rRpQNK0X81NvYgXaLo0CcazrypCZe4d5",
+      "label": "Gamelan workshop",
+      "source": "1xzcX8-KXoO295ZIH8hAN-ZsYYx47L-y5",
+      "version": "1xzcX8-KXo",
+      "picked": "BMS-Landscape.png (1920x960)",
+      "updated": "2026-09-22"
+    },
+    "lecture-demonstration": {
+      "folder": "1oqw_L0X5RB1ORgM_cQ3rvxFg13Q5-eCX",
+      "label": "IME"
+    },
+    "balinese-dance-demonstration": {
+      "folder": "1oqw_L0X5RB1ORgM_cQ3rvxFg13Q5-eCX",
+      "label": "IME"
+    },
+    "kecak-workshop": {
+      "folder": "17t5vuKkKbe7JmLslQNyzUg4SACjWa4vC",
+      "label": "Kecak workshop - studio1",
+      "source": "153PkETSoMFKzmxlRhrLgYgxiIXcLdy6v",
+      "version": "153PkETSoM",
+      "picked": "BMS-Landscape.png (1920x960)",
+      "updated": "2026-09-22"
+    },
+    "mask-making-workshop": {
+      "folder": "1H2mhyDYfnWnuUN_gC7DAPmZeE6zl-S4h",
+      "label": "Mask making",
+      "source": "1QMlaoxqm2wPHXbDcUJfttaQLGL83KcNY",
+      "version": "1QMlaoxqm2",
+      "picked": "BMS-Landscape.png (1920x960)",
+      "updated": "2026-09-22"
+    },
+    "traditional-balinese-dance": {
+      "folder": "1OHVNTJ5hchupFSAuvFSd-HigUQx-i-Ce",
+      "label": "Rangamancha",
+      "source": "112w2FJbO9B-twg6nkg1P2pm8hYtjU9kF",
+      "version": "112w2FJbO9",
+      "picked": "BMS-Landscape.png (1920x960)",
+      "updated": "2026-09-22"
+    },
+    "balinese-shadow-puppetry-workshop": {
+      "folder": "1ykxdY1v1rXO_mm-sC9rGAIxGhYyWZHVE",
+      "label": "workshop - shadow puppetry",
+      "source": "16ZEcCRgGTm27rZqoIXk9qqNiY0h51eoD",
+      "version": "16ZEcCRgGT",
+      "picked": "BMS-Landscape.png (1920x960)",
+      "updated": "2026-09-22"
+    },
+    "traditional-balinese-dance-yakshagana-performance": {
+      "folder": "1UKehCFfv8jftPqZCkDSkhixnH6K2dTSe",
+      "label": "Yakshagana x balinese dance - chowdiah",
+      "source": "138n92is3REqEHCuMHFGuHorCKZMvXAqI",
+      "version": "138n92is3R",
+      "picked": "BMS-Landscape.png (1920x960)",
+      "updated": "2026-09-22"
+    }
   }
 }

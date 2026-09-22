@@ -184,11 +184,18 @@ function trackAction(kind, label, extra) {
 }
 
 document.addEventListener("click", (e) => {
+  const row = e.target.closest(".cal-event.has-page");
+  if (row && !e.target.closest("a, button") && row.dataset.href) {
+    trackAction("event_open", row.querySelector(".cal-title")?.textContent.trim() || "", { href: row.dataset.href });
+    location.href = row.dataset.href;
+    return;
+  }
   const el = e.target.closest("a[href], button");
   if (!el) return;
   const href = el.getAttribute("href") || "";
   const text = (el.textContent || "").replace(/\s+/g, " ").trim();
 
+  if (/^event\/\?e=/.test(href)) return trackAction("event_open", text, { href: href });
   if (/^tel:/i.test(href)) return trackAction("call_click", text, { number: href.slice(4) });
   if (/^mailto:/i.test(href)) return trackAction("email_click", text);
   if (/^#(register|volunteer|calendar)/.test(href)) {
@@ -412,7 +419,7 @@ async function loadJSON(url) {
 })();
 
 /* ---------- Footer year ---------- */
-document.getElementById("year").textContent = new Date().getFullYear();
+{ const y = document.getElementById("year"); if (y) y.textContent = new Date().getFullYear(); }
 
 /* ---------- Mobile nav toggle ---------- */
 (function nav() {
@@ -1043,6 +1050,32 @@ function calOcc(ev) {
   return `<div class="cal-occ${fast ? " cal-occ--fast" : ""}"><div class="cal-occ-bar"><div class="cal-occ-fill" style="width:${booked}%"></div></div>${note}</div>`;
 }
 
+/* ---------- Event pages ----------
+   Each event has a stable address, event/?e=<slug>, built from its title so it
+   survives row reordering. Two events with the same title get their date
+   appended. Only events with tickets live are linked from the calendar; the
+   address itself works for any event. */
+function slugify(s) {
+  return String(s || "").toLowerCase().normalize("NFKD")
+    .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+}
+function assignSlugs(events) {
+  const seen = {};
+  events.forEach((ev) => {
+    let slug = slugify(ev.title) || ev.id;
+    if (seen[slug]) slug += "-" + slugify(ev.startDate || String(seen[slug] + 1));
+    seen[slugify(ev.title)] = (seen[slugify(ev.title)] || 0) + 1;
+    ev.slug = slug;
+  });
+  return events;
+}
+function ticketsLive(ev) {
+  return !ev.notPublic && ["live", "fast", "soldout"].includes(ev.status);
+}
+function eventHref(ev) {
+  return "event/?e=" + encodeURIComponent(ev.slug);
+}
+
 function cardHTML(ev) {
   const chip = calDayChip(ev);
   const hasImg = !!ev.image;
@@ -1065,7 +1098,7 @@ function cardHTML(ev) {
     venue + `</p>`;
 
   return `
-    <article class="cal-event${ev.status === "soldout" ? " is-full" : ""}" data-category="${esc(ev.category || "")}">
+    <article class="cal-event${ev.status === "soldout" ? " is-full" : ""}${ticketsLive(ev) ? " has-page" : ""}" data-category="${esc(ev.category || "")}"${ticketsLive(ev) ? ` data-href="${esc(eventHref(ev))}"` : ""}>
       ${poster}
       <div class="cal-body">
         <div class="cal-head">
@@ -1073,7 +1106,7 @@ function cardHTML(ev) {
           ${ev.collab && !String(ev.collaborators || "").trim() ? `<span class="cal-collab" title="A collaboration">${CAL_ICONS.rings}</span>` : ""}
           ${calStatusChip(ev)}
         </div>
-        <h4 class="cal-title">${esc(ev.title)}</h4>
+        <h4 class="cal-title">${ticketsLive(ev) ? `<a class="cal-title-link" href="${esc(eventHref(ev))}">${esc(ev.title)}</a>` : esc(ev.title)}</h4>
         ${meta}
         ${ev.description ? `<p class="cal-desc">${esc(ev.description)}</p>` : ""}
         ${calOcc(ev)}
@@ -1151,7 +1184,7 @@ async function loadCalendar() {
   }
 
   // Sheet/file row order is the display order — reordering rows reorders the site.
-  events = events.map(normaliseEvent);
+  events = assignSlugs(events.map(normaliseEvent));
 
   updateHeroStats(events);
   await loadCollaborators(); // so cards can show each event's collaborator logos
