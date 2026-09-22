@@ -36,6 +36,9 @@ h2{font-family:var(--display);font-weight:700;text-transform:uppercase;font-size
 .field input:focus,.field select:focus{outline:none;border-color:var(--accent)}
 .stays{display:grid;gap:.6rem}
 .stay{display:grid;grid-template-columns:auto 1fr auto;gap:.8rem;align-items:center;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:.6rem .8rem}
+.stay-pick{display:flex;flex-direction:column;gap:.3rem;font-size:.75rem;color:var(--muted);white-space:nowrap}
+.stay-pick label{display:flex;align-items:center;gap:.35rem;cursor:pointer}
+#restore-stays{margin-top:.6rem}
 .stay.primary{border-color:var(--copper)}
 .stay input[type=text]{background:none;border:0;border-bottom:1px solid var(--line2);color:var(--ink);font:inherit;padding:.2rem 0;width:100%}
 .stay .addr{font-size:.8rem;color:var(--muted2)}
@@ -136,21 +139,41 @@ footer{margin-top:2.5rem;color:var(--muted2);font-size:.78rem}footer a{color:var
   .addstay{grid-template-columns:1fr}
 }
 
-/* Print: cream sheet, one day per page, everything expanded. */
+/* Print: cream sheet, one day per page, everything expanded. Compact
+   two-column rows so a day fits a page; the mobile ladder must not apply. */
 @media print{
   :root{--bg:#fff;--bg2:#fff;--bg3:#fff;--ink:#1B1D21;--muted:#444;--muted2:#666;--line:#ccc;--line2:#bbb;--accent-2:#8E4A24}
-  body{padding:0;font-size:11pt}
+  @page{size:A4;margin:12mm 12mm 14mm}
+  body{padding:0;font-size:9.5pt;line-height:1.35;background:#fff}
+  .wrap{max-width:none}
+  h1{font-size:18pt;margin:0 0 .2rem}
+  .sub{font-size:9pt;margin:0 0 .6rem}
   .no-print,.bar,.panel.no-print,.btn,footer .np{display:none!important}
-  .day{break-inside:avoid;page-break-inside:avoid;border:0;border-top:2px solid #8E4A24;border-radius:0}
+  .totals{grid-template-columns:repeat(5,1fr);gap:.3rem;margin:0 0 .6rem}
+  .stat{border-color:#ccc;padding:.3rem .45rem}
+  .stat-k{font-size:6.5pt}.stat-v{font-size:10pt}.stat-v small{font-size:7pt}
+  .stat-wide{grid-column:span 1}
+  .day{break-inside:avoid;page-break-inside:avoid;border:0;border-top:2px solid #8E4A24;border-radius:0;margin:0}
   .day-rest{opacity:1}
   .day[data-print="page"]{page-break-before:always}
+  .day>summary{padding:.35rem 0 .25rem;gap:.6rem}
   .day>summary::before{display:none}
-  .day-body{padding-left:0}
-  .tl-show{background:none;border-left:3px solid #8E4A24}
+  .day-date{font-size:12pt;min-width:0}
+  .day-sum{font-size:8.5pt}
+  .day-body{padding:0;border-top:0}
+  .day-events{margin:.2rem 0 .2rem;gap:.25rem}
+  .day-ev{font-size:7.5pt;padding:.05rem .4rem;border-color:#bbb}
+  .day-flags{margin:.2rem 0 .3rem;font-size:8pt}
+  .timeline{margin-top:.2rem}
+  .tl-row{grid-template-columns:8.5rem 1fr;gap:.6rem;padding:.16rem 0;font-size:9pt;border-bottom:1px dotted #ccc;break-inside:avoid}
+  .tl-when{color:#8E4A24}
+  .tl-detail{font-size:7.5pt;color:#555}
+  .tl-broad{opacity:.7;font-size:8.5pt}
+  .tl-show{background:none;border-left:3px solid #8E4A24;padding-left:.45rem;margin-left:0}
+  .tl-show .tl-body b{font-size:9pt}
+  .tl-truck{opacity:.75;font-size:8.5pt}
+  .tl-edit,.addons,.meal-edit{display:none}
   .badge-red{background:#c0392b;color:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
   .day-flags .flag-red{color:#c0392b}
-  .tl-edit,.addons{display:none}
-  .totals{grid-template-columns:repeat(4,1fr)}
-  .stat{border-color:#ccc}
-  details:not([open])>*:not(summary){display:block}
+  footer{font-size:7.5pt;margin-top:.8rem}
 }

@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@125,600;125,700;125,900&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="../plan/plan.css?v=6" />
+<link rel="stylesheet" href="../plan/plan.css?v=8" />
 </head>
 <body>
 <div class="wrap" id="admin-app" hidden>
@@ -38,12 +38,13 @@
   <div class="panel no-print">
     <h2 style="margin-top:0">Places of stay</h2>
     <div class="stays" id="stays"></div>
+    <button class="btn btn-sm" type="button" id="restore-stays" hidden>Restore default stays</button>
     <div class="addstay">
       <label class="field">Name <input type="text" id="new-name" placeholder="e.g. Hotel near Jayanagar" /></label>
       <label class="field">Address, Google Maps link, or “lat, lon” <input type="text" id="new-addr" placeholder="paste an address or a maps link" /></label>
       <button class="btn" type="button" id="add-stay">Add &amp; locate</button>
     </div>
-    <p class="muted" style="font-size:.8rem;margin:.6rem 0 0">Every active stay is planned in full and compared below. The selected stay is the one shown day by day and on the public link.</p>
+    <p class="muted" style="font-size:.8rem;margin:.6rem 0 0">“Main plan” is the stay shown day by day, on the public link and in the sheet; “compare” plans a stay in full for the comparison below. Delete asks first and is never allowed on the main plan.</p>
   </div>
 
   <div class="panel no-print">
@@ -183,12 +184,15 @@
     $("stays").innerHTML = c.stays.map(function (s, i) {
       const primary = selectedStay === s.id;
       return "<div class='stay" + (primary ? " primary" : "") + "' data-i='" + i + "'>" +
-        "<input type='radio' name='sel' title='Show this stay day by day'" + (primary ? " checked" : "") + ">" +
+        "<div class='stay-pick'><label title='The day-by-day plan, the public link and the sheet use this stay'><input type='radio' name='sel'" + (primary ? " checked" : "") + "> main plan</label>" +
+        "<label title='Plan this stay in full and show it in the comparison'><input type='checkbox' data-act='compare'" + (s.active !== false ? " checked" : "") + (primary ? " disabled" : "") + "> compare</label></div>" +
         "<div><input type='text' data-k='name' value='" + L.esc(s.name) + "'><div class='addr'>" + L.esc(s.address || "") + "</div>" +
         "<div class='pos'>" + (s.lat != null ? (+s.lat).toFixed(4) + ", " + (+s.lon).toFixed(4) + " · " + L.esc(s.precision || "") : "<span class='warn'>not located — paste a maps link</span>") + "</div></div>" +
-        "<div class='ops'><button class='pill" + (s.active !== false ? " on" : "") + "' data-act='toggle' type='button'>" + (s.active !== false ? "compared" : "off") + "</button>" +
-        "<button class='btn btn-sm' data-act='remove' type='button'>remove</button></div></div>";
+        "<div class='ops'><button class='btn btn-sm' data-act='remove' type='button'" + (primary ? " disabled title='Pick another stay as the main plan first'" : "") + ">Delete</button></div></div>";
     }).join("");
+    const missing = (defaults ? defaults.stays : []).filter(function (d) { return !c.stays.some(function (s) { return s.id === d.id; }); });
+    $("restore-stays").hidden = !missing.length;
+    $("restore-stays").textContent = "Restore " + missing.map(function (s) { return s.name; }).join(" and ");
   }
   function renderExtras() {
     const xs = cfg().extras || [];
@@ -288,9 +292,19 @@
     $("stays").addEventListener("click", function (e) {
       const row = e.target.closest(".stay"); if (!row) return;
       const s = cfg().stays[+row.dataset.i];
-      if (e.target.dataset.act === "toggle") { s.active = s.active === false; scheduleRebuild(true); }
-      if (e.target.dataset.act === "remove") { cfg().stays.splice(+row.dataset.i, 1); scheduleRebuild(true); }
-      if (e.target.type === "radio") { selectedStay = s.id; s.active = true; scheduleRebuild(false); }
+      if (e.target.dataset.act === "compare") { s.active = e.target.checked; scheduleRebuild(true); return; }
+      if (e.target.dataset.act === "remove") {
+        if (s.id === selectedStay) return;
+        if (!confirm("Delete the stay “" + s.name + "”? It leaves the comparison; you can add it again or restore the defaults.")) return;
+        cfg().stays.splice(+row.dataset.i, 1); scheduleRebuild(true); return;
+      }
+      if (e.target.type === "radio") { selectedStay = s.id; s.active = true; scheduleRebuild(true); }
+    });
+    $("restore-stays").addEventListener("click", function () {
+      const c = cfg();
+      (defaults.stays || []).forEach(function (d) { if (!c.stays.some(function (s) { return s.id === d.id; })) c.stays.push(L.clone(d)); });
+      if (!c.stays.some(function (s) { return s.id === selectedStay; })) selectedStay = c.stays[0].id;
+      scheduleRebuild(true);
     });
     $("stays").addEventListener("input", function (e) {
       const row = e.target.closest(".stay"); if (!row || e.target.dataset.k !== "name") return;

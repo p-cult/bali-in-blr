@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@125,600;125,700;125,900&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="plan.css?v=6" />
+<link rel="stylesheet" href="plan.css?v=8" />
 </head>
 <body>
 <div class="wrap">
@@ -67,6 +67,8 @@
     const today = new Date().toISOString().slice(0, 10);
     $("days").innerHTML = R.tour(plan, { openDate: params.get("day") || today, cfg: data.cfg });
     $("warnings").innerHTML = ctx.warnings.map(L.esc).join("<br>");
+    // ?print=1: the print edition — every day open, one day per page.
+    if (params.get("print")) document.querySelectorAll(".day").forEach(function (d, i) { d.open = true; if (i) d.dataset.print = "page"; });
   }
 
   async function start() {

@@ -131,7 +131,11 @@ so a re-plan costs nothing.
 
 ## Comparing stays
 
-Every *active* stay is planned in full. The comparison table shows total
+Each stay row has a **main plan** radio (the stay shown day by day, on
+the public link and in the sheet), a **compare** checkbox (plan it in full
+for the comparison) and a **Delete** button that asks first and is disabled
+on the main plan. If a default stay is missing from your draft, a "Restore
+…" button brings it back. Every compared stay is planned in full. The comparison table shows total
 road time, delta against the best, distance, average per show day,
 earliest wake, latest lights out, early calls, holds in town, and an
 indicative vehicle cost (₹/km × km, floored at a per-day minimum). A second
@@ -188,6 +192,11 @@ then on the sheet's value, so change it in either place.
 
 ## Sharing and saving
 
+- **Print / save as PDF** on either page prints the plan as one day per
+  page, two-column rows, cream sheet. `/plan/?print=1` opens the public page
+  with every day expanded for headless printing; a PDF was rendered this
+  way with Chrome headless (`--print-to-pdf`, a two-minute virtual time
+  budget so Google traffic finishes first).
 - **Copy public link** puts the entire plan (stays, buffers, overrides,
   venue pins) in the URL hash of `/plan/`, so the public page shows exactly
   what the planner shows, with no backend. `?stay=<id>` picks the stay,
