@@ -33,7 +33,7 @@ BLEED = 3  # mm on every edge
 SIZES = {
     # cols/thumb are tuned so every event lands on ONE sheet in each shape.
     "1x2": {"trim": (500, 1000), "cols": 2, "thumb": 56, "type": 1.32, "label": "500 x 1000 mm"},
-    "2x1": {"trim": (1000, 500), "cols": 4, "thumb": 21, "type": 0.62, "label": "1000 x 500 mm"},
+    "2x1": {"trim": (1000, 500), "cols": 5, "thumb": 19, "type": 0.58, "label": "1000 x 500 mm"},
 }
 
 
@@ -173,6 +173,21 @@ def sort_key(e):
     return (mo or 99, d or 99)
 
 
+def festival_span(events):
+    """First event to last, from the data — never typed. e.g. 3&#8211;18 Oct."""
+    pts = []
+    for e in events:
+        for v in (e["date"], e["end"]):
+            d, mo = parse_date(v)
+            if d and mo:
+                pts.append((mo, d))
+    if not pts:
+        return "October"
+    (m1, d1), (m2, d2) = min(pts), max(pts)
+    n1, n2 = list(MONTHS)[m1 - 1].title(), list(MONTHS)[m2 - 1].title()
+    return f"{d1}&#8211;{d2} {n2}" if m1 == m2 else f"{d1} {n1}&#8211;{d2} {n2}"
+
+
 def logo_svg():
     s = (ROOT / "assets" / "logo.svg").read_text().strip()
     s = re.sub(r"<title[^>]*>.*?</title>", "", s)
@@ -294,7 +309,7 @@ def build_html(events, key):
     <div class="top">
       <div class="lock">{logo_svg()}</div>
       <div>
-        <div class="dates"><b>1&#8211;18 Oct<br>2026</b><span>Bengaluru</span></div>
+        <div class="dates"><b>{festival_span(events)}<br>2026</b><span>Bengaluru</span></div>
         <div class="motif"><i class="m1"></i><i class="m2"></i><i class="m3"></i></div>
       </div>
     </div>
