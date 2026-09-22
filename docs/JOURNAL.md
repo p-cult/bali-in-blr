@@ -1327,8 +1327,16 @@ the buffer — the tool's job is to expose the squeeze, not hide it.
   its details panel under the description below 900px, so a tablet gets the
   full-width panel. Measured side by side: 159px desktop, 168px tablet, 139px
   phone, 168px in the calendar.
-- Found, not fixed: at 768px the site header's menu overflows sideways; it
-  only collapses to the hamburger below 760px. Site-wide and older than this.
+- Header on tablets, fixed the same day: the full menu needs ~880px beside the
+  logo (measured), but only folded into the menu button below 760px, so from
+  761-880px the page scrolled sideways. It now folds at 960px, with headroom
+  because the labels are editable from the sheet. Only the menu rules moved;
+  the rest of the 760px layout is untouched.
+- That exposed an older fault: privacy.html's header has one link and no menu
+  button, so whenever the menu folded, "Back to the festival" disappeared —
+  on phones since the page was made. It is now `.nav-links--fixed` and stays
+  visible at every width.
+- Every page loading styles.css is on the same cache tag (privacy had lagged).
 
 ## 2. Lessons and standing rules (the "why" behind the rules)
 

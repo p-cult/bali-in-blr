@@ -548,13 +548,11 @@ p.legal-small { font-size: 0.85rem; color: var(--muted-2); }
 /* One block per breakpoint, largest first, so a value is only ever overridden
    by a narrower screen — never by a rule further down at the same width. */
 
-@media (max-width: 900px) {
-  .cards-3 { grid-template-columns: repeat(2, 1fr); }
-}
-
-@media (max-width: 760px) {
-  :root { --gutter: 1.5rem; }
-
+/* The full menu needs ~880px beside the logo (measured 22 Sep 2026), and its
+   labels are editable from the sheet, so it folds into the menu button with
+   headroom at 960px — not at the phone breakpoint, where a tablet's header
+   overflowed sideways. */
+@media (max-width: 960px) {
   .nav-toggle { display: flex; }
   .nav-links {
     position: absolute;
@@ -573,6 +571,23 @@ p.legal-small { font-size: 0.85rem; color: var(--muted-2); }
   .nav-links.open { max-height: 420px; }
   .nav-links a { display: block; padding: 1rem var(--gutter); border-top: 1px solid var(--line); }
   .nav-cta { border-radius: 0; }
+
+  /* A page with a single header link and no menu button (privacy) keeps it
+     visible; there is nothing to fold away. */
+  .nav-links--fixed {
+    position: static; flex-direction: row; max-height: none; overflow: visible;
+    background: none; border: 0; transition: none;
+  }
+  .nav-links--fixed a { padding: 0; border-top: 0; }
+}
+
+@media (max-width: 900px) {
+  .cards-3 { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 760px) {
+  :root { --gutter: 1.5rem; }
+
 
   .grid-2 { grid-template-columns: 1fr; }
   .fact-list li { flex-direction: column; gap: 0.25rem; }
