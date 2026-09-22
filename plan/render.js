@@ -59,6 +59,25 @@
       "<label class='tl-skip'><input type='checkbox' data-k='skip'" + (o.skip ? " checked" : "") + "> skip</label>" +
       "</span>";
   }
+  // Day add-ons (planner only): stops with a purpose, a location and optional
+  // HH:MM times. Blank list = default day.
+  function stopEditor(day, cfg) {
+    const list = ((cfg.stops || {})[day.date]) || [];
+    const rows = list.map(function (p, i) {
+      const when = p.start ? p.start + (p.end ? " – " + p.end : "") : "auto";
+      return "<div class='addon-row'><span class='pill on'>" + esc(L.PURPOSE[p.purpose] || "Stop") + "</span><span class='addon-name'>" +
+        (p.link ? "<a href='" + esc(p.link) + "' target='_blank' rel='noopener'>" + esc(p.name) + "</a>" : esc(p.name)) + (p.area ? " <small>" + esc(p.area) + "</small>" : "") +
+        (p.lat == null ? " <small class='prec low'>NOT LOCATED</small>" : "") + "</span><span class='addon-when'>" + esc(when) + "</span>" +
+        "<button class='btn btn-sm' type='button' data-stoprm='" + i + "'>remove</button></div>";
+    }).join("");
+    const opts = Object.keys(L.PURPOSE).map(function (k) { return "<option value='" + k + "'>" + esc(L.PURPOSE[k]) + "</option>"; }).join("");
+    return "<div class='addons' data-date='" + day.date + "'>" + rows +
+      "<div class='addon-add'><select data-k='purpose'>" + opts + "</select>" +
+      "<input type='text' data-k='where' placeholder='Google Maps link, address or lat, lon'>" +
+      "<input type='time' data-k='start' title='Start (optional)'><input type='time' data-k='end' title='End (optional)'>" +
+      "<button class='btn btn-sm' type='button' data-stopadd>Add</button></div></div>";
+  }
+
   function dayCard(day, opts) {
     opts = opts || {};
     const open = opts.open ? " open" : "";

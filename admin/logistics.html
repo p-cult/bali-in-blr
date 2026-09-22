@@ -122,14 +122,14 @@
 
 <script src="auth.js?v=6"></script>
 <script src="../plan/engine.js?v=19"></script>
-<script src="../plan/render.js?v=12"></script>
+<script src="../plan/render.js?v=13"></script>
 <script>
 (function () {
   "use strict";
   const L = window.Logistics, R = window.LogisticsRender;
   const $ = function (id) { return document.getElementById(id); };
   const STORE = "bali-logistics-draft";
-  let data, ctx, defaults, selectedStay = null, renderTimer = null;
+  let data, ctx, defaults, selectedStay = null, renderTimer = null, refreshTraffic = null;
 
   const DAY_FIELDS = [
     ["wake", "Wake → breakfast"], ["breakfast", "Breakfast"], ["prep", "Get ready"], ["loadOut", "Load vehicle"], ["loadIn", "Unload on return"],
@@ -422,7 +422,7 @@
       data.cfg = L.clone(defaults); try { localStorage.removeItem(STORE); } catch (e) { /* ignore */ }
       bindForms(); scheduleRebuild(true);
     });
-    async function refreshTraffic() {
+    refreshTraffic = async function () {
       if (!L.CONFIG.LOGISTICS_URL) { ctx.warnings.push("Live traffic needs the logistics backend (docs/LOGISTICS.md). Until then, times use road routing plus the Bengaluru hour-by-hour profile."); render(); return; }
       cfg().provider = "bridge"; $("provider").value = "bridge";
       const stays = L.activeStays(cfg());
@@ -435,8 +435,8 @@
         });
       }
       render();
-    }
-    $("traffic").addEventListener("click", refreshTraffic);
+    };
+    $("traffic").addEventListener("click", function () { refreshTraffic(); });
     $("save").addEventListener("click", async function () {
       $("status").textContent = "Saving…";
       try {
