@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@125,600;125,700;125,900&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="plan.css?v=1" />
+<link rel="stylesheet" href="plan.css?v=2" />
 </head>
 <body>
 <div class="wrap">
@@ -33,8 +33,8 @@
   </footer>
 </div>
 
-<script src="engine.js?v=4"></script>
-<script src="render.js?v=3"></script>
+<script src="engine.js?v=6"></script>
+<script src="render.js?v=4"></script>
 <script>
 (function () {
   "use strict";
@@ -74,8 +74,7 @@
       const ex = data.cfg.excludeStatuses || [];
       data.events = data.events.filter(function (e) { return ex.indexOf((e.status || "").toLowerCase()) === -1; });
       ctx = new L.Ctx(data.cfg, data.venues);
-      L.activeStays(data.cfg).forEach(function (s) { ctx.point(s); });
-      data.events.forEach(function (e) { const v = data.venues.resolve(e.venue); if (v) ctx.point(v); });
+      L.registerPoints(ctx, data.cfg, data.venues, data.events);
       await ctx.ensureMatrix();
       render();
       if (L.CONFIG.LOGISTICS_URL && data.cfg.provider === "bridge") {

@@ -94,6 +94,14 @@ h2{font-family:var(--display);font-weight:700;text-transform:uppercase;font-size
 .tl-edit input[type=text]{width:14rem}
 .tl-edit input{background:var(--bg);border:1px solid var(--line2);border-radius:4px;color:var(--ink);font:inherit;font-size:.78rem;padding:.15rem .35rem}
 
+.meals-out{display:grid;gap:.4rem;margin:.6rem 0 .4rem;padding:.6rem .8rem;background:var(--bg);border:1px dashed var(--line2);border-radius:6px}
+.meal-out{display:grid;grid-template-columns:5.5rem 1fr auto auto;gap:.5rem;align-items:center;font-size:.8rem;color:var(--muted)}
+.meal-out span{font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted2)}
+.meal-out input{background:var(--bg3);border:1px solid var(--line2);border-radius:5px;color:var(--ink);font:inherit;font-size:.8rem;padding:.3rem .5rem;min-width:0}
+.meal-out i{grid-column:2;font-style:normal;color:var(--accent-2);font-size:.75rem}
+.tl-meal .tl-body b{color:var(--accent-2)}
+@media (max-width:760px){.meal-out{grid-template-columns:1fr}}
+
 /* compare */
 .cmp{width:100%;border-collapse:collapse;font-size:.85rem;margin:0 0 1rem}
 .cmp th,.cmp td{padding:.45rem .55rem;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}

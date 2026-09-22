@@ -61,6 +61,18 @@ public events, with their own buffer row ("Internal"), and are marked as
 internal on the plan. First entry: the photoshoot at Mandala Cultural
 Centre, Kanakapura Road, on 2 Oct 2026, 7am–2pm.
 
+## Meals out
+
+Inside any day in the planner, "Lunch out" and "Dinner out" take a Google
+Maps link, an address or `lat, lon`. Blank is the default (lunch packed or
+at the stay, dinner at the stay or near the venue). With a place set, the
+plan routes the group there: lunch goes into the first gap that overlaps the
+lunch window (before the first call, between events, or after a morning
+programme) and the next leg starts from the restaurant; dinner follows the
+last event, then the drive home. Rest days get a stay → place → stay trip.
+If lunch cannot fit around the programme the day says so and ignores the
+stop. Meal stops travel in the public link.
+
 ## Travel time — three providers
 
 | Provider | Needs | Gives |

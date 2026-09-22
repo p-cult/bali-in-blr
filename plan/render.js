@@ -8,6 +8,7 @@
 
   function summaryLine(day) {
     if (day.kind === "rest") return "Rest day · no travel";
+    if (day.mealsOnly) return "No programme · meals out · " + dur(day.travelMin) + " on the road · " + Math.round(day.km) + " km";
     if (day.kind === "outstation") return day.events.length + " event · out of town · arrive " + hm(day.wake) + " after the overnight drive · leave " + hm(day.sleep) + " for the night drive home · " + dur(day.travelMin) + " on the road";
     const n = day.events.length;
     if (day.nightDeparture) return (n === 1 ? "1 event" : n + " events") + " · leave " + hm(day.leave) + " · overnight coach to " + day.nightTo + " at " + hm(day.sleep) + (day.back == null ? " straight from the venue" : "") + " · " + dur(day.travelMin) + " in town";
@@ -40,6 +41,22 @@
       "</span>";
   }
 
+  // Optional lunch / dinner locations for the day (planner only). Blank =
+  // default (at the stay or near the venue). Paste a Google Maps link, an
+  // address or "lat, lon"; the plan re-routes through it.
+  function mealEditor(day, cfg) {
+    const m = ((cfg.mealStops || {})[day.date]) || {};
+    function one(k, label) {
+      const p = m[k];
+      return "<label class='meal-out'><span>" + label + " out</span>" +
+        "<input type='text' data-meal='" + k + "' value='" + esc(p ? (p.link || p.name) : "") + "' placeholder='blank = " + (k === "lunch" ? "packed / at the stay" : "at the stay or near the venue") + " · paste a Google Maps link'>" +
+        (p ? "<i>" + esc(p.name) + (p.area ? ", " + esc(p.area) : "") + "</i>" : "") +
+        "<button class='btn btn-sm' type='button' data-mealset='" + k + "'>" + (p ? "Update" : "Set") + "</button>" +
+        (p ? "<button class='btn btn-sm' type='button' data-mealclear='" + k + "'>Clear</button>" : "") + "</label>";
+    }
+    return "<div class='meals-out' data-date='" + day.date + "'>" + one("lunch", "Lunch") + one("dinner", "Dinner") + "</div>";
+  }
+
   function dayCard(day, opts) {
     opts = opts || {};
     const open = opts.open ? " open" : "";
@@ -47,9 +64,10 @@
     const events = day.events.length ? "<p class='day-events'>" + day.events.map(function (e) {
       return "<span class='day-ev" + (e.notPublic ? " day-ev-private" : "") + "'>" + esc(e.title) + (e.start != null ? " <i>" + hm(e.start) + "</i>" : "") + "</span>";
     }).join("") + "</p>" : "";
+    const meals = opts.editable && day.kind !== "outstation" ? mealEditor(day, opts.cfg) : "";
     return "<details class='day day-" + day.kind + "'" + open + " data-date='" + day.date + "'>" +
       "<summary><span class='day-date'>" + esc(L.dateLabel(day.date)) + "</span><span class='day-sum'>" + esc(summaryLine(day)) + "</span></summary>" +
-      "<div class='day-body'>" + events + flags +
+      "<div class='day-body'>" + events + flags + meals +
       "<div class='timeline'>" + day.blocks.map(function (b) { return blockRow(b, opts); }).join("") + "</div>" +
       "</div></details>";
   }

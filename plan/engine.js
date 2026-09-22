@@ -296,7 +296,7 @@
   Ctx.prototype.point = function (p) {
     if (!p || p.lat == null || p.lon == null) return -1;
     const k = pkey(p);
-    if (this.pindex[k] == null) { this.pindex[k] = this.points.length; this.points.push({ lat: +p.lat, lon: +p.lon, key: k }); this.matrix = null; }
+    if (this.pindex[k] == null) { this.pindex[k] = this.points.length; this.points.push({ lat: +p.lat, lon: +p.lon, key: k }); }
     return this.pindex[k];
   };
   Ctx.prototype.ensureMatrix = async function () {
@@ -321,13 +321,18 @@
     const bucket = Math.floor(departMin / 15);
     const ck = this.points[a].key + "|" + this.points[b].key + "|" + dateISO + "|" + bucket;
     if (this.legCache[ck]) return this.legCache[ck];
-    const base = this.matrix.dur[a][b], km = this.matrix.dist[a][b];
-    if (base == null) return { min: null, km: km, source: "unroutable" };
+    let base = this.matrix.dur[a] && this.matrix.dur[a][b], km = this.matrix.dist[a] && this.matrix.dist[a][b];
+    let src = this.matrix.source;
+    if (base == null) {
+      // Point added after the matrix was built (a meal stop dropped in
+      // just now): estimate until the next full rebuild.
+      km = haversineKm(this.points[a], this.points[b]) * CONFIG.ROAD_FACTOR; base = km / CONFIG.CITY_KMH * 60; src = "estimate";
+    }
     const mult = this.multiplier(dateISO, departMin);
     // Congestion is a city phenomenon: it stretches the first CITY_MIN_CAP
     // minutes of a leg, not a four-hour highway run to Manipal.
     const cityPart = Math.min(base, CONFIG.CITY_MIN_CAP);
-    return { min: base + cityPart * (mult - 1), km: km, source: this.matrix.source + "+profile", mult: mult };
+    return { min: base + cityPart * (mult - 1), km: km, source: src + "+profile", mult: mult };
   };
 
   /* ---------- the day planner ---------- */
@@ -353,6 +358,7 @@
     const cfg = ctx.cfg, D = cfg.day;
     const stayIdx = ctx.point(stay);
     const day = { date: dateISO, stay: stay, blocks: [], legs: [], flags: [], travelMin: 0, km: 0, events: [] };
+    const stops = mealStops(cfg, dateISO, ctx);
     const evs = events.map(function (ev) { return { ev: ev, b: bufFor(cfg, ev), venue: ctx.venues.resolve(ev.venue) }; })
       .filter(function (x) { return !x.b.skip; });
     evs.forEach(function (x) {
@@ -371,16 +377,26 @@
     });
     evs.sort(function (a, b) { return a.b.start - b.b.start; });
     day.events = evs.map(function (x) { return x.ev; });
+    placeMealStops(ctx, evs, stops, stayIdx, dateISO, D, day);
 
     if (!evs.length) {
       const wake = toMin(D.restDayWake) || 480;
       day.kind = "rest";
       day.blocks.push(block("wake", wake, wake + D.wake, "Wake up", { broad: true }));
       day.blocks.push(block("meal", wake + D.wake, wake + D.wake + D.breakfast, "Breakfast at the stay", { broad: true }));
-      day.blocks.push(block("free", wake + D.wake + D.breakfast, toMin(D.dinnerWindow[0]) + 30, "Rest day — no programme", { note: "Rehearsal, rest or a city visit can be pencilled here." }));
-      day.blocks.push(block("meal", toMin(D.dinnerWindow[0]) + 30, toMin(D.dinnerWindow[0]) + 30 + D.dinner, "Dinner at the stay"));
-      day.blocks.push(block("sleep", toMin(D.dinnerWindow[0]) + 30 + D.dinner + D.windDown, null, "Lights out", { broad: true }));
-      day.wake = wake; day.sleep = day.blocks[day.blocks.length - 1].from;
+      let t = wake + D.wake + D.breakfast;
+      const dinnerAt = toMin(D.dinnerWindow[0]) + 30;
+      if (stops.lunch) {
+        const lunchAt = Math.max(toMin(D.lunchWindow[0]) + 30, t + 60);
+        t = mealTrip(ctx, day, stayIdx, stops.lunch, lunchAt, D.lunch, "Lunch", dateISO, t, D);
+      }
+      if (t < dinnerAt - 30) day.blocks.push(block("free", t, stops.dinner ? dinnerAt - 60 : dinnerAt, "Rest day — no programme", { note: "Rehearsal, rest or a city visit can be pencilled here." }));
+      if (stops.dinner) t = mealTrip(ctx, day, stayIdx, stops.dinner, dinnerAt, D.dinner, "Dinner", dateISO, Math.max(t, dinnerAt - 60), D);
+      else { day.blocks.push(block("meal", dinnerAt, dinnerAt + D.dinner, "Dinner at the stay")); t = dinnerAt + D.dinner; }
+      day.blocks.sort(function (a, b) { return a.from - b.from; });
+      day.blocks.push(block("sleep", t + D.windDown, null, "Lights out", { broad: true }));
+      day.wake = wake; day.sleep = t + D.windDown;
+      day.kind = day.km ? "show" : "rest"; if (day.kind === "show") day.mealsOnly = true;
       return day;
     }
 
@@ -411,6 +427,7 @@
       const x = evs[i];
       const wanted = x.b.start - x.b.before;
       const leg = legTo(x, wanted, notBefore);
+      if (x.meal && leg.arrive > x.b.start) { x.b.end += leg.arrive - x.b.start; x.b.start = leg.arrive; }
       const arrive = Math.min(leg.arrive, x.b.start);
       const fromStay = here === stayIdx;
       const depart = leg.depart - (fromStay && notBefore == null ? D.loadOut : 0);
@@ -420,14 +437,20 @@
       }));
       day.legs.push({ from: hereLabel, to: x.venue ? x.venue.name : x.ev.venue, depart: depart, arrive: leg.arrive, travel: leg.travel });
       if (leg.travel.min != null) { day.travelMin += leg.travel.min; day.km += leg.travel.km || 0; }
-      if (leg.arrive > wanted + 5) day.flags.push("“" + x.ev.title + "”: arrives " + hm(arrive) + ", " + dur(leg.arrive - wanted) + " into the " + x.b.before + " min buffer — the previous event runs too close.");
-      if (leg.arrive > x.b.start) day.flags.push("“" + x.ev.title + "” cannot be reached before it starts (" + hm(leg.arrive) + ").");
-      if (x.b.start > arrive) timeline.push(block("buffer", arrive, x.b.start, "At venue — " + (x.ev.category === "Performance" ? "load-in, sound & costume, warm-up" : "set-up & settle") , { minutes: Math.round(x.b.start - arrive) }));
-      x.ev.shows.length > 1
-        ? x.ev.shows.forEach(function (s, k) { timeline.push(block("show", s.start, s.end, x.ev.title + " — show " + (k + 1), { ev: x.ev, venue: x.venue, showIndex: k })); })
-        : timeline.push(block("show", x.b.start, x.b.end, x.ev.title, { ev: x.ev, venue: x.venue }));
+      if (!x.meal && leg.arrive > wanted + 5) day.flags.push("“" + x.ev.title + "”: arrives " + hm(arrive) + ", " + dur(leg.arrive - wanted) + " into the " + x.b.before + " min buffer — the previous event runs too close.");
+      if (!x.meal && leg.arrive > x.b.start) day.flags.push("“" + x.ev.title + "” cannot be reached before it starts (" + hm(leg.arrive) + ").");
+      if (x.meal) {
+        // A meal out: no venue buffers, the meal itself, then move on.
+        if (x.b.start > arrive + 5) timeline.push(block("hold", arrive, x.b.start, "Arrive early at " + x.venue.name, { inTown: true }));
+        timeline.push(block("meal", x.b.start, x.b.end, x.meal + " at " + x.venue.name, { stop: x.venue }));
+      } else {
+        if (x.b.start > arrive + 1) timeline.push(block("buffer", arrive, x.b.start, "At venue — " + (x.ev.category === "Performance" ? "load-in, sound & costume, warm-up" : "set-up & settle") , { minutes: Math.round(x.b.start - arrive) }));
+        x.ev.shows.length > 1
+          ? x.ev.shows.forEach(function (s, k) { timeline.push(block("show", s.start, s.end, x.ev.title + " — show " + (k + 1), { ev: x.ev, venue: x.venue, showIndex: k })); })
+          : timeline.push(block("show", x.b.start, x.b.end, x.ev.title, { ev: x.ev, venue: x.venue }));
+      }
       const freeAt = x.b.end + x.b.after;
-      timeline.push(block("buffer", x.b.end, freeAt, "Wrap — pack, meet people, load-out", { minutes: x.b.after }));
+      if (x.b.after > 0) timeline.push(block("buffer", x.b.end, freeAt, "Wrap — pack, meet people, load-out", { minutes: x.b.after }));
       here = x.idx; hereLabel = x.venue ? x.venue.name : x.ev.venue;
       notBefore = freeAt;
 
@@ -465,7 +488,8 @@
     let backLeg = ctx.travel(here, stayIdx, dateISO, departHome);
     let home = departHome + (backLeg.min == null ? 45 : backLeg.min);
     let dinnerBlock = null;
-    if (home + 10 > dinnerClose) {
+    if (day.dinnerOut) { /* dinner already taken at the chosen place */ }
+    else if (home + 10 > dinnerClose) {
       // Too late to eat at the stay: dinner near the venue before the drive.
       dinnerBlock = block("meal", departHome, departHome + D.dinner, "Dinner near " + hereLabel + " (late return)");
       departHome += D.dinner;
@@ -477,7 +501,8 @@
     day.legs.push({ from: hereLabel, to: "the stay", depart: departHome, arrive: home, travel: backLeg });
     if (backLeg.min != null) { day.travelMin += backLeg.min; day.km += backLeg.km || 0; }
     let sleepAt;
-    if (!dinnerBlock) {
+    if (day.dinnerOut) sleepAt = home + D.loadIn + D.windDown;
+    else if (!dinnerBlock) {
       const dAt = Math.max(home + D.loadIn, dinnerOpen);
       timeline.push(block("meal", dAt, dAt + D.dinner, "Dinner at the stay", { broad: dAt > home + 30 }));
       sleepAt = dAt + D.dinner + D.windDown;
@@ -497,7 +522,7 @@
       wake = normalWake; bfStart = wake + D.wake;
       morning.push(block("wake", wake, bfStart, "Wake up", { broad: true }));
       morning.push(block("meal", bfStart, bfStart + D.breakfast, "Breakfast at the stay", { broad: true }));
-      const lunchAt = prepStart - D.lunch >= lo ? Math.min(prepStart - D.lunch, lo + 30) : null;
+      const lunchAt = !day.lunchOut && prepStart - D.lunch >= lo ? Math.min(prepStart - D.lunch, lo + 30) : null;
       const freeTo = lunchAt != null ? lunchAt : prepStart;
       if (freeTo - (bfStart + D.breakfast) >= 30) morning.push(block("free", bfStart + D.breakfast, freeTo, "Free at the stay — rehearsal, rest", { broad: true }));
       if (lunchAt != null) {
@@ -511,7 +536,7 @@
     morning.push(block("prep", prepStart, leaveStay, "Get ready · costumes & instruments to the vehicle", {}));
     // Lunch on the road: if a show sits inside the lunch window, say so.
     const busy = timeline.filter(function (b) { return b.type === "show" && b.from < lc && b.to > lo; });
-    const lunchDone = morning.some(function (b) { return b.type === "meal" && /Lunch/.test(b.label); });
+    const lunchDone = day.lunchOut || morning.some(function (b) { return b.type === "meal" && /Lunch/.test(b.label); });
     if (!lunchDone && busy.length) day.flags.push("Lunch falls inside “" + busy[0].label + "” — arrange packed lunch at the venue.");
 
     day.blocks = morning.concat(timeline).sort(function (a, b) { return a.from - b.from; });
@@ -628,6 +653,72 @@
     }
   }
 
+  // Meal-out locations for a date: cfg.mealStops[date] = {lunch:{name,lat,lon}, dinner:{…}}.
+  function mealStops(cfg, dateISO, ctx) {
+    const m = (cfg.mealStops || {})[dateISO] || {};
+    const out = {};
+    ["lunch", "dinner"].forEach(function (k) {
+      const p = m[k];
+      if (p && p.lat != null && p.lon != null) out[k] = { name: p.name || (k === "lunch" ? "lunch place" : "dinner place"), lat: +p.lat, lon: +p.lon, area: p.area || "", idx: ctx.point(p), stop: true };
+    });
+    return out;
+  }
+  // Rest-day trip: stay → place → meal → stay. Returns the time back.
+  function mealTrip(ctx, day, stayIdx, place, mealAt, len, label, dateISO, notBefore, D) {
+    const go = ctx.travel(stayIdx, place.idx, dateISO, mealAt - 30);
+    const dep = Math.max(notBefore, mealAt - (go.min || 30) - D.loadOut);
+    const arr = dep + D.loadOut + (go.min || 30);
+    const start = Math.max(arr, mealAt);
+    day.blocks.push(block("leg", dep, arr, "Leave the stay for " + place.name, { travel: go, detail: legDetail(go, D.loadOut) }));
+    day.blocks.push(block("meal", start, start + len, label + " at " + place.name, { stop: place }));
+    const back = ctx.travel(place.idx, stayIdx, dateISO, start + len);
+    day.blocks.push(block("leg", start + len, start + len + (back.min || 30), "Return to the stay", { travel: back, detail: legDetail(back, 0) }));
+    [go, back].forEach(function (t) { if (t.min != null) { day.travelMin += t.min; day.km += t.km || 0; } });
+    day.legs.push({ from: "the stay", to: place.name, depart: dep, arrive: arr, travel: go }, { from: place.name, to: "the stay", depart: start + len, arrive: start + len + (back.min || 30), travel: back });
+    if (label === "Lunch") day.lunchOut = true; else day.dinnerOut = true;
+    return start + len + (back.min || 30);
+  }
+  // Insert lunch/dinner-out as synthetic events so the main loop routes
+  // through them. Lunch goes into the first gap that overlaps the lunch
+  // window (before the first call, between events, or after a morning
+  // programme); dinner goes after the last event.
+  function placeMealStops(ctx, evs, stops, stayIdx, dateISO, D, day) {
+    const lo = toMin(D.lunchWindow[0]), lc = toMin(D.lunchWindow[1]);
+    function mealEvent(kind, place, start, len) {
+      return { ev: { id: "meal-" + kind + "@" + dateISO, title: kind, category: "Meal", shows: [], notPublic: true }, b: { start: start, end: start + len, before: 0, after: 0 }, venue: place, idx: place.idx, meal: kind };
+    }
+    if (stops.lunch) {
+      const p = stops.lunch; let placed = null;
+      const firstCall = evs[0].b.start - evs[0].b.before;
+      const toFirst = ctx.travel(p.idx, evs[0].idx, dateISO, lo + 60).min || 30;
+      if (firstCall - toFirst - D.lunch >= lo) {
+        placed = mealEvent("Lunch", p, Math.min(lc, firstCall - toFirst - D.lunch), D.lunch);
+      } else {
+        for (let i = 0; i < evs.length && !placed; i++) {
+          const freeAt = evs[i].b.end + evs[i].b.after;
+          const inbound = ctx.travel(evs[i].idx, p.idx, dateISO, freeAt).min || 30;
+          const start = Math.max(freeAt + inbound, lo);
+          if (start > lc + 30) break;
+          const next = evs[i + 1];
+          if (!next) { placed = mealEvent("Lunch", p, start, D.lunch); break; }
+          const onward = ctx.travel(p.idx, next.idx, dateISO, start + D.lunch).min || 30;
+          if (start + D.lunch + onward <= next.b.start - next.b.before + 15) placed = mealEvent("Lunch", p, start, D.lunch);
+        }
+      }
+      if (placed) { evs.push(placed); day.lunchOut = true; }
+      else day.flags.push("Lunch at " + p.name + " does not fit around the programme today; the stop is ignored.");
+    }
+    if (stops.dinner) {
+      const p = stops.dinner; const last = evs.filter(function (x) { return !x.meal; }).slice(-1)[0];
+      const freeAt = last.b.end + last.b.after;
+      const inbound = ctx.travel(last.idx, p.idx, dateISO, freeAt).min || 30;
+      const start = Math.max(freeAt + inbound, toMin(D.dinnerWindow[0]));
+      evs.push(mealEvent("Dinner", p, start, D.dinner)); day.dinnerOut = true;
+      if (start > toMin(D.dinnerWindow[1]) + 60) day.flags.push("Dinner at " + p.name + " would start " + hm(start) + " — late.");
+    }
+    evs.sort(function (a, b) { return a.b.start - b.b.start; });
+  }
+
   function mealHint(from, to, D) {
     const lo = toMin(D.lunchWindow[0]), lc = toMin(D.lunchWindow[1]);
     if (from < lc && to > lo && (Math.min(to, lc) - Math.max(from, lo)) >= 45) return " · lunch here";
@@ -708,13 +799,28 @@
   }
 
   /* ---------- config helpers ---------- */
+  // Register every place the plan can route through, so one matrix call
+  // covers stays, venues, internal engagements and meal stops.
+  function registerPoints(ctx, cfg, venues, events) {
+    activeStays(cfg).forEach(function (s) { ctx.point(s); });
+    events.forEach(function (e) { const v = venues.resolve(e.venue); if (v) ctx.point(v); });
+    Object.keys(cfg.mealStops || {}).forEach(function (d) {
+      ["lunch", "dinner"].forEach(function (k) { const p = cfg.mealStops[d][k]; if (p && p.lat != null) ctx.point(p); });
+    });
+  }
   function activeStays(cfg) { return (cfg.stays || []).filter(function (s) { return s.active !== false && s.lat != null; }); }
   function encodeShare(cfg) {
-    const slim = { v: cfg.version || 1, extras: cfg.extras || [], party: cfg.party, stays: cfg.stays, day: cfg.day, buffers: cfg.buffers, overrides: cfg.overrides, provider: cfg.provider, traffic: cfg.traffic, excludeStatuses: cfg.excludeStatuses, venueOverrides: cfg.venueOverrides || [] };
+    const slim = { v: cfg.version || 1, extras: cfg.extras || [], mealStops: cfg.mealStops || {}, party: cfg.party, stays: cfg.stays, day: cfg.day, buffers: cfg.buffers, overrides: cfg.overrides, provider: cfg.provider, traffic: cfg.traffic, excludeStatuses: cfg.excludeStatuses, venueOverrides: cfg.venueOverrides || [] };
     return btoa(unescape(encodeURIComponent(JSON.stringify(slim)))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
   }
   function decodeShare(s) {
     try { s = s.replace(/-/g, "+").replace(/_/g, "/"); while (s.length % 4) s += "="; return JSON.parse(decodeURIComponent(escape(atob(s)))); } catch (e) { return null; }
+  }
+  // "…/maps/place/Vidyarthi+Bhavan/@…" → "Vidyarthi Bhavan"
+  function placeNameFromLink(s) {
+    const m = /\/place\/([^\/@?]+)/.exec(String(s || ""));
+    if (!m) return "";
+    try { return decodeURIComponent(m[1]).replace(/\+/g, " ").trim(); } catch (e) { return m[1].replace(/\+/g, " "); }
   }
   // Parse "12.97,77.43", a Google Maps URL with @lat,lon or ?q=lat,lon.
   function parseLatLon(s) {
@@ -774,8 +880,8 @@
   global.Logistics = {
     CONFIG: CONFIG, providers: providers, Ctx: Ctx, VenueBook: VenueBook,
     load: load, parseSchedule: parseSchedule, planDay: planDay, planTour: planTour, compareStays: compareStays,
-    refineWithBridge: refineWithBridge, activeStays: activeStays, encodeShare: encodeShare, decodeShare: decodeShare,
-    parseLatLon: parseLatLon, geocode: geocode, deepMerge: deepMerge, clone: clone,
+    refineWithBridge: refineWithBridge, activeStays: activeStays, registerPoints: registerPoints, encodeShare: encodeShare, decodeShare: decodeShare,
+    parseLatLon: parseLatLon, placeNameFromLink: placeNameFromLink, geocode: geocode, deepMerge: deepMerge, clone: clone,
     esc: esc, hm: hm, dur: dur, toMin: toMin, dateLabel: dateLabel, slug: slug, pad: pad,
   };
 })(window);

@@ -1113,6 +1113,12 @@ engagements" list in the plan config rather than a row in the schedule
 sheet — the sheet stays the public calendar's source of truth, and the
 planner merges the two.
 
+Same day: optional per-day meal locations (lunch / dinner out, a Maps
+link). Implemented as synthetic events the main loop routes through, so
+departure, holds and the return re-derive with no special cases. Meal
+stops are registered as routing points up front; a point dropped in after
+the matrix exists gets a straight-line estimate until the next rebuild.
+
 Lesson: the first pass let a leg depart before the previous event had
 wrapped (arrival was fixed at start − buffer). Legs now leave no earlier
 than the previous wrap and the day is flagged with the minutes lost from

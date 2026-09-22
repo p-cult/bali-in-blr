@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@125,600;125,700;125,900&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="../plan/plan.css?v=1" />
+<link rel="stylesheet" href="../plan/plan.css?v=2" />
 </head>
 <body>
 <div class="wrap" id="admin-app" hidden>
@@ -119,8 +119,8 @@
 </div>
 
 <script src="auth.js?v=6"></script>
-<script src="../plan/engine.js?v=4"></script>
-<script src="../plan/render.js?v=3"></script>
+<script src="../plan/engine.js?v=6"></script>
+<script src="../plan/render.js?v=4"></script>
 <script>
 (function () {
   "use strict";
@@ -213,8 +213,7 @@
     const c = cfg();
     if (full) {
       ctx = new L.Ctx(c, data.venues);
-      L.activeStays(c).forEach(function (s) { ctx.point(s); });
-      data.events.forEach(function (e) { const v = data.venues.resolve(e.venue); if (v) ctx.point(v); });
+      L.registerPoints(ctx, c, data.venues, data.events);
       $("status").textContent = "Fetching road distances…";
       await ctx.ensureMatrix();
     } else ctx.cfg = c;
@@ -319,6 +318,29 @@
       if (e.target.dataset.xrm == null) return;
       cfg().extras.splice(+e.target.dataset.xrm, 1);
       await rebuildEvents(); scheduleRebuild(true);
+    });
+
+    // Meals out: set / clear a lunch or dinner location for a day.
+    $("days").addEventListener("click", async function (e) {
+      const box = e.target.closest(".meals-out"); if (!box) return;
+      const date = box.dataset.date, k = e.target.dataset.mealset || e.target.dataset.mealclear;
+      if (!k) return;
+      const ms = cfg().mealStops = cfg().mealStops || {};
+      if (e.target.dataset.mealclear) { if (ms[date]) delete ms[date][k]; scheduleRebuild(true); return; }
+      const text = box.querySelector("input[data-meal='" + k + "']").value.trim();
+      if (!text) { if (ms[date]) delete ms[date][k]; scheduleRebuild(true); return; }
+      try {
+        const pos = await locate(text);
+        if (!pos) { ctx.warnings.push("Could not locate “" + text + "” — paste a Google Maps link that contains coordinates."); render(); return; }
+        const fromLink = L.placeNameFromLink(text);
+        const name = fromLink || (L.parseLatLon(text) ? (k === "lunch" ? "Lunch place" : "Dinner place") + " (" + pos.lat.toFixed(3) + ", " + pos.lon.toFixed(3) + ")" : (pos.label || text).split(",")[0]);
+        ms[date] = ms[date] || {};
+        ms[date][k] = { name: name, area: L.parseLatLon(text) ? "" : (pos.label || "").split(",").slice(1, 3).join(",").trim(), lat: pos.lat, lon: pos.lon, link: /^https?:/.test(text) ? text : "" };
+        scheduleRebuild(true);
+      } catch (err) { ctx.warnings.push("Locate failed: " + err.message); render(); }
+    });
+    $("days").addEventListener("keydown", function (e) {
+      if (e.key === "Enter" && e.target.dataset.meal) { e.preventDefault(); e.target.closest(".meal-out").querySelector("[data-mealset]").click(); }
     });
 
     // Per-event overrides inside the day cards.
