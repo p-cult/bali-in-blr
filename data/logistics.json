@@ -24,6 +24,16 @@
       "lon": 77.4305523,
       "precision": "locality",
       "active": true
+    },
+    {
+      "id": "citadel-sarovar-portico",
+      "name": "Citadel Sarovar Portico",
+      "address": "41 Ananda Rao Circle, Gandhi Nagar, Bengaluru 560009 (near KSR railway station)",
+      "lat": 12.9809954,
+      "lon": 77.5751603,
+      "precision": "building",
+      "link": "https://www.sarovarhotels.com/citadel-sarovar-portico-bangalore/",
+      "active": true
     }
   ],
   "day": {

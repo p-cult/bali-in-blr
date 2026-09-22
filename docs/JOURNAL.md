@@ -1126,6 +1126,12 @@ defaulting to wherever the group is, editable in the planner (time, length,
 note, or a location that re-routes the day). The old "packed lunch" flag
 became a real lunch line inside the show.
 
+Comparison stay set to Citadel Sarovar Portico (Ananda Rao Circle, Gandhi
+Nagar) on the user's request: 22 h 48 of road time over the tour against
+29 h 04 from 20th Mile. Maps "share" links carry only a place id, so the
+planner now reads a place name or q= from such links and geocodes it, and
+says clearly when a link has neither.
+
 Lesson: the first pass let a leg depart before the previous event had
 wrapped (arrival was fixed at start − buffer). Legs now leave no earlier
 than the previous wrap and the day is flagged with the minutes lost from

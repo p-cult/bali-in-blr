@@ -254,8 +254,17 @@
   async function locate(text) {
     const ll = L.parseLatLon(text);
     if (ll) return Object.assign(ll, { precision: "pinned", label: text });
-    $("status").textContent = "Locating “" + text + "”…";
-    const g = await L.geocode(text);
+    let q = text;
+    if (/^https?:/.test(text)) {
+      // A Maps link without coordinates (share links, place-id links): try
+      // the place name in it, otherwise it cannot be located.
+      let m = L.placeNameFromLink(text);
+      if (!m) { try { const u = new URL(text); m = u.searchParams.get("q") || u.searchParams.get("query") || ""; } catch (e) { m = ""; } }
+      if (!m || /^-?\d/.test(m)) { ctx.warnings.push("That Maps link has no coordinates or place name in it. Open the place in Google Maps, use Share → Copy link, or paste the address."); return null; }
+      q = m + ", Bengaluru";
+    }
+    $("status").textContent = "Locating “" + q + "”…";
+    const g = await L.geocode(q);
     return g ? Object.assign(g, { precision: "geocoded" }) : null;
   }
 
