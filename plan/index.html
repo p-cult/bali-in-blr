@@ -33,8 +33,8 @@
   </footer>
 </div>
 
-<script src="engine.js?v=14"></script>
-<script src="render.js?v=6"></script>
+<script src="engine.js?v=15"></script>
+<script src="render.js?v=8"></script>
 <script>
 (function () {
   "use strict";
@@ -60,7 +60,8 @@
     if (!stay) { $("sub").textContent = "No stay is configured for this plan."; return; }
     if (pick.value !== stay.id) pick.value = stay.id;
     plan = L.planTour(ctx, data.events, stay);
-    $("sub").textContent = data.cfg.party.label + " · " + data.cfg.party.size + " people · staying at " + stay.name +
+    const pt = data.cfg.party;
+    $("sub").textContent = pt.label + " · " + (pt.artists != null ? pt.artists + " artists + " + (pt.volunteers || 0) + " volunteers" : pt.size + " people") + " · staying at " + stay.name +
       " · " + plan.days.length + " days, " + L.dateLabel(plan.days[0].date) + " – " + L.dateLabel(plan.days[plan.days.length - 1].date);
     $("totals").innerHTML = R.totalsCard(plan);
     const today = new Date().toISOString().slice(0, 10);

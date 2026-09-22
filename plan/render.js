@@ -102,7 +102,11 @@
   function totalsCard(plan) {
     const t = plan.totals;
     if (!plan.days.length) return "";
+    const party = plan.party || {};
+    const seats = (party.vehicles || []).reduce(function (n, v) { return n + (v.seats || 0) * (v.count || 1); }, 0);
+    const who = party.artists != null ? party.artists + " artists + " + (party.volunteers || 0) + " volunteers" : (party.size || "—") + " people";
     return "<div class='totals'>" +
+      stat("Travelling", who + (party.vehicles && party.vehicles[0] ? " · " + (party.vehicles[0].count || 1) + " × " + party.vehicles[0].name : "")) +
       stat("Days", plan.days.length + " (" + t.showDays + " with events)") +
       stat("Road time", dur(t.travelMin)) +
       stat("Distance", Math.round(t.km) + " km") +

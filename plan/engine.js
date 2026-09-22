@@ -829,7 +829,9 @@
     });
     const veh = (ctx.cfg.party.vehicles || [])[0] || { ratePerKm: 0, minPerDay: 0, count: 1 };
     t.vehicleCost = days.reduce(function (s, day) { return s + Math.max(day.km * (veh.ratePerKm || 0), day.kind === "rest" ? 0 : (veh.minPerDay || 0)); }, 0) * (veh.count || 1);
-    return { stay: stay, days: days, totals: t };
+    const seats = (ctx.cfg.party.vehicles || []).reduce(function (n, v) { return n + (v.seats || 0) * (v.count || 1); }, 0);
+    if (seats && seats < (ctx.cfg.party.size || 0)) ctx.warnings.push("The group is " + ctx.cfg.party.size + " people but the vehicles seat " + seats + " — add a vehicle or a bigger coach.");
+    return { stay: stay, days: days, totals: t, party: ctx.cfg.party };
   }
   function compareStays(ctx, events, stays) {
     const rows = stays.map(function (s) { const p = planTour(ctx, events, s); return { stay: s, totals: p.totals, plan: p }; });

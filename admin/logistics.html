@@ -60,8 +60,10 @@
 
   <div class="panel no-print">
     <div class="grid">
-      <label class="field">Group size <input type="number" id="party-size" min="1" /></label>
+      <label class="field">Artists <input type="number" id="party-artists" min="0" /></label>
+      <label class="field">Volunteers travelling <input type="number" id="party-volunteers" min="0" /></label>
       <label class="field">Group label <input type="text" id="party-label" /></label>
+      <label class="field">Seats per vehicle <input type="number" id="veh-seats" min="1" /></label>
       <label class="field">Vehicle ₹/km <input type="number" id="veh-rate" min="0" /></label>
       <label class="field">Vehicle min ₹/day <input type="number" id="veh-min" min="0" /></label>
       <label class="field">Vehicles <input type="number" id="veh-count" min="1" /></label>
@@ -119,8 +121,8 @@
 </div>
 
 <script src="auth.js?v=6"></script>
-<script src="../plan/engine.js?v=14"></script>
-<script src="../plan/render.js?v=6"></script>
+<script src="../plan/engine.js?v=15"></script>
+<script src="../plan/render.js?v=8"></script>
 <script>
 (function () {
   "use strict";
@@ -143,9 +145,9 @@
   /* ---- forms ---- */
   function bindForms() {
     const c = cfg();
-    $("party-size").value = c.party.size; $("party-label").value = c.party.label;
+    $("party-artists").value = c.party.artists != null ? c.party.artists : c.party.size; $("party-volunteers").value = c.party.volunteers || 0; $("party-label").value = c.party.label;
     const v = c.party.vehicles[0];
-    $("veh-rate").value = v.ratePerKm; $("veh-min").value = v.minPerDay; $("veh-count").value = v.count;
+    $("veh-seats").value = v.seats || 0; $("veh-rate").value = v.ratePerKm; $("veh-min").value = v.minPerDay; $("veh-count").value = v.count;
     $("provider").value = c.provider; $("safety").value = c.traffic.safety;
     $("day-grid").innerHTML = DAY_FIELDS.map(function (f) {
       const val = c.day[f[0]]; const isTime = typeof val === "string";
@@ -163,9 +165,10 @@
   }
   function readForms() {
     const c = cfg();
-    c.party.size = +$("party-size").value || 1; c.party.label = $("party-label").value;
+    c.party.artists = +$("party-artists").value || 0; c.party.volunteers = +$("party-volunteers").value || 0;
+    c.party.size = c.party.artists + c.party.volunteers || 1; c.party.label = $("party-label").value;
     const v = c.party.vehicles[0];
-    v.ratePerKm = +$("veh-rate").value || 0; v.minPerDay = +$("veh-min").value || 0; v.count = +$("veh-count").value || 1;
+    v.seats = +$("veh-seats").value || 0; v.ratePerKm = +$("veh-rate").value || 0; v.minPerDay = +$("veh-min").value || 0; v.count = +$("veh-count").value || 1;
     c.provider = $("provider").value; c.traffic.safety = +$("safety").value || 1;
     document.querySelectorAll("[data-day]").forEach(function (i) { c.day[i.dataset.day] = i.type === "time" ? i.value : (+i.value || 0); });
     document.querySelectorAll("[data-buf]").forEach(function (i) { c.buffers[i.dataset.buf][i.dataset.k] = +i.value || 0; });
@@ -272,7 +275,7 @@
 
   /* ---- events ---- */
   function wire() {
-    document.querySelectorAll("#party-size,#party-label,#veh-rate,#veh-min,#veh-count,#safety").forEach(function (i) { i.addEventListener("input", function () { scheduleRebuild(false); }); });
+    document.querySelectorAll("#party-artists,#party-volunteers,#party-label,#veh-seats,#veh-rate,#veh-min,#veh-count,#safety").forEach(function (i) { i.addEventListener("input", function () { scheduleRebuild(false); }); });
     $("provider").addEventListener("change", function () { scheduleRebuild(true); });
     $("day-grid").addEventListener("input", function () { scheduleRebuild(false); });
     $("buffers").addEventListener("input", function () { scheduleRebuild(false); });

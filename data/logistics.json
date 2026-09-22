@@ -3,17 +3,19 @@
   "version": 1,
   "party": {
     "label": "Balinese artist group",
-    "size": 20,
+    "size": 27,
     "vehicles": [
       {
-        "name": "Tempo Traveller (26 seats)",
-        "seats": 26,
-        "count": 1,
-        "ratePerKm": 28,
+        "name": "Tempo Traveller (17 seats)",
+        "seats": 17,
+        "count": 2,
+        "ratePerKm": 26,
         "minPerDay": 3000
       }
     ],
-    "notes": "Gamelan and puppet sets travel with the group: add load time on show days."
+    "notes": "25 artists + 2 volunteers travel together in two tempo travellers, with the gamelan and puppet sets: add load time on show days.",
+    "artists": 25,
+    "volunteers": 2
   },
   "stays": [
     {
