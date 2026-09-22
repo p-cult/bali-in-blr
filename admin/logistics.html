@@ -119,7 +119,7 @@
 </div>
 
 <script src="auth.js?v=6"></script>
-<script src="../plan/engine.js?v=9"></script>
+<script src="../plan/engine.js?v=11"></script>
 <script src="../plan/render.js?v=6"></script>
 <script>
 (function () {
@@ -212,7 +212,9 @@
     readForms(); persist();
     const c = cfg();
     if (full) {
+      const oldCache = ctx ? ctx.legCache : {};
       ctx = new L.Ctx(c, data.venues);
+      ctx.legCache = oldCache;
       L.registerPoints(ctx, c, data.venues, data.events);
       $("status").textContent = "Fetching road distances…";
       await ctx.ensureMatrix();
@@ -416,14 +418,21 @@
       data.cfg = L.clone(defaults); try { localStorage.removeItem(STORE); } catch (e) { /* ignore */ }
       bindForms(); scheduleRebuild(true);
     });
-    $("traffic").addEventListener("click", async function () {
+    async function refreshTraffic() {
       if (!L.CONFIG.LOGISTICS_URL) { ctx.warnings.push("Live traffic needs the logistics backend (docs/LOGISTICS.md). Until then, times use road routing plus the Bengaluru hour-by-hour profile."); render(); return; }
       cfg().provider = "bridge"; $("provider").value = "bridge";
-      $("status").textContent = "Asking Google Maps for traffic on every leg…";
-      const stay = L.activeStays(cfg()).find(function (s) { return s.id === selectedStay; });
-      const plan = L.planTour(ctx, data.events, stay);
-      await L.refineWithBridge(ctx, plan); render();
-    });
+      const stays = L.activeStays(cfg());
+      const selected = stays.find(function (s) { return s.id === selectedStay; }) || stays[0];
+      for (const s of [selected].concat(stays.filter(function (x) { return x !== selected; }))) {
+        if (!s) continue;
+        await L.refineTour(ctx, data.events, s, function (plan, done, total, pass) {
+          $("status").textContent = "Google traffic for " + s.name + ": " + Math.min(done, total) + "/" + total + " legs" + (pass ? " (pass " + (pass + 1) + ")" : "") + "…";
+          if (s === selected) render();
+        });
+      }
+      render();
+    }
+    $("traffic").addEventListener("click", refreshTraffic);
     $("save").addEventListener("click", async function () {
       $("status").textContent = "Saving…";
       try {
@@ -446,6 +455,7 @@
       selectedStay = (L.activeStays(data.cfg)[0] || {}).id || null;
       bindForms(); wire();
       await rebuild(true);
+      if (L.CONFIG.LOGISTICS_URL && cfg().provider === "bridge") await refreshTraffic();
     } catch (e) { $("status").textContent = "Failed to load: " + e.message; }
   }
   AdminAuth.protect({ tool: "logistics", onUnlock: start });

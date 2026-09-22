@@ -141,12 +141,18 @@ then be written back into `venues.json` for good.
 
 ## Backend: `docs/apps-script/Logistics.gs`
 
-A third Apps Script web app (keep it separate from the registration bridge
-and the tickets app so planning never competes with signups). Setup steps
-are in the file header. Once deployed, paste the `/exec` URL into
-`CONFIG.LOGISTICS_URL` in `plan/engine.js` and bump `?v=` on both pages.
-Actions: `leg` (traffic-aware duration), `geocode`, `load`, `save`. No
-personal data passes through it.
+A third Apps Script web app, **deployed 22 Sep 2026** as the standalone
+project "Bali-in-Blr Logistics" (owner: the Foundation's Apps Script
+account; deployment "Logistics web app v1", currently Version 2). Its `/exec` URL is in
+`CONFIG.LOGISTICS_URL` in `plan/engine.js` (public by necessity, like the
+bridge URL). It finds the planning workbook by name and keeps its
+`TravelCache` and `Plan` tabs there. To change the code: paste the new
+file, then Deploy → Manage deployments → edit → New version. **Never create
+a second deployment** (the URL would change).
+Actions: `leg` (one traffic-aware duration), `legs` (up to 40 in one
+execution — what the planner uses, 12 at a time, sequentially, because
+Apps Script answers bursts of parallel calls with an HTML error page),
+`geocode`, `load`, `save`. No personal data passes through it.
 
 ## Known limits
 

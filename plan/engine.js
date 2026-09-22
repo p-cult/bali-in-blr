@@ -38,7 +38,7 @@
     DEFAULTS: "../data/logistics.json",
     // The logistics web app (Logistics.gs). Empty until deployed; the
     // planner then falls back to OSRM + the traffic profile.
-    LOGISTICS_URL: "",
+    LOGISTICS_URL: "https://script.google.com/macros/s/AKfycbytjLT1kfJIMnsFKQPm_ydoWQAGw7art807TKDe6d4NtnRztKppfgonpxJNpCdLwIPVWA/exec",
     OSRM: "https://router.project-osrm.org",
     ROAD_FACTOR: 1.35,     // straight line → road distance, Bengaluru
     CITY_KMH: 27,          // free-flow-ish average for a tempo traveller
@@ -137,7 +137,7 @@
     for (const u of urls) { try { const t = await fetchText(u); if (t && t.trim()) return t; } catch (e) { /* next */ } }
     return "";
   }
-  async function fetchJSON(url) { return JSON.parse(await fetchText(url)); }
+  async function fetchJSON(url, ms) { return JSON.parse(await fetchText(url, ms)); }
 
   /* ---------- schedule ---------- */
   function rowsOf(tsv) { return String(tsv || "").replace(/\r/g, "").split("\n").map(function (l) { return l.split("\t"); }); }
@@ -279,7 +279,13 @@
         if (!CONFIG.LOGISTICS_URL) throw new Error("No logistics web app configured");
         const url = CONFIG.LOGISTICS_URL + "?action=leg&from=" + encodeURIComponent(from.lat + "," + from.lon) +
           "&to=" + encodeURIComponent(to.lat + "," + to.lon) + "&depart=" + encodeURIComponent(departISO);
-        const r = await fetchJSON(url);
+        // Apps Script now and then answers a request with an HTML
+        // interstitial instead of JSON (more so under parallel load): retry.
+        let r = null;
+        for (let attempt = 0; attempt < 4 && !r; attempt++) {
+          try { r = await fetchJSON(url, 15000); }
+          catch (e) { if (attempt === 3) throw e; await new Promise(function (res) { setTimeout(res, 400 * (attempt + 1)); }); }
+        }
         if (!r.ok) throw new Error(r.error || "bridge");
         return { min: r.minutes, km: r.km, source: "google-traffic", mode: r.mode || "typical" };
       },
@@ -432,7 +438,7 @@
       timeline.push(block("leg", depart, leg.arrive, "Leave " + hereLabel + " for " + (x.venue ? x.venue.name : x.ev.venue), {
         travel: leg.travel, loadOut: fromStay ? D.loadOut : 0, dest: x.venue, detail: legDetail(leg.travel, fromStay && notBefore == null ? D.loadOut : 0),
       }));
-      day.legs.push({ from: hereLabel, to: x.venue ? x.venue.name : x.ev.venue, depart: depart, arrive: leg.arrive, travel: leg.travel });
+      day.legs.push({ from: hereLabel, to: x.venue ? x.venue.name : x.ev.venue, depart: depart, travelDepart: leg.depart, arrive: leg.arrive, travel: leg.travel });
       if (leg.travel.min != null) { day.travelMin += leg.travel.min; day.km += leg.travel.km || 0; }
       if (!x.meal && leg.arrive > wanted + 5) day.flags.push("“" + x.ev.title + "”: arrives " + hm(arrive) + ", " + dur(leg.arrive - wanted) + " into the " + x.b.before + " min buffer — the previous event runs too close.");
       if (!x.meal && leg.arrive > x.b.start) day.flags.push("“" + x.ev.title + "” cannot be reached before it starts (" + hm(leg.arrive) + ").");
@@ -825,30 +831,60 @@
   }
 
   /* ---------- live-traffic refinement (async, optional) ---------- */
-  // For every leg in a plan, ask the bridge for the traffic-aware time at that
-  // departure, fill the leg cache, and return true if anything changed. The
-  // caller then re-plans synchronously.
-  async function refineWithBridge(ctx, plan) {
+  // For every leg in a plan, ask the bridge for the traffic-aware time at
+  // that departure (six requests at a time), fill the leg cache and call
+  // onProgress after each batch so the page can re-plan and re-render as
+  // figures arrive. Returns true if anything changed.
+  async function refineWithBridge(ctx, plan, onProgress) {
     if (!CONFIG.LOGISTICS_URL) return false;
-    let changed = false;
-    for (const day of plan.days) {
-      for (const leg of day.legs) {
-        if (!leg.travel || leg.travel.source === "google-traffic") continue;
+    const jobs = [];
+    plan.days.forEach(function (day) {
+      day.legs.forEach(function (leg) {
+        if (!leg.travel || leg.travel.source === "google-traffic") return;
         const a = ctx.points.findIndex(function (p) { return p.key === pointKeyFor(ctx, leg, day, true); });
         const b = ctx.points.findIndex(function (p) { return p.key === pointKeyFor(ctx, leg, day, false); });
-        if (a < 0 || b < 0) continue;
-        const bucket = Math.floor(leg.depart / 15);
-        const ck = ctx.points[a].key + "|" + ctx.points[b].key + "|" + day.date + "|" + bucket;
-        if (ctx.legCache[ck]) continue;
-        try {
-          const departISO = day.date + "T" + pad(Math.floor(leg.depart / 60) % 24) + ":" + pad(leg.depart % 60) + ":00+05:30";
-          const r = await providers.bridge.leg(ctx.points[a], ctx.points[b], departISO);
-          ctx.legCache[ck] = { min: r.min, km: r.km, source: "google-traffic", mode: r.mode };
-          changed = true;
-        } catch (e) { ctx.warnings.push("Live traffic unavailable for one leg: " + e.message); return changed; }
+        if (a < 0 || b < 0 || a === b) return;
+        const td = leg.travelDepart != null ? leg.travelDepart : leg.depart;
+        const dep = ((Math.round(td) % 1440) + 1440) % 1440;
+        const date = td >= 1440 ? addDays(day.date, 1) : td < 0 ? addDays(day.date, -1) : day.date;
+        const ck = ctx.points[a].key + "|" + ctx.points[b].key + "|" + day.date + "|" + Math.floor(td / 15);
+        if (ctx.legCache[ck] || jobs.some(function (j) { return j.ck === ck; })) return;
+        jobs.push({ ck: ck, a: a, b: b, departISO: date + "T" + pad(Math.floor(dep / 60)) + ":" + pad(dep % 60) + ":00+05:30" });
+      });
+    });
+    let changed = false, failed = 0;
+    // One backend execution prices up to 12 legs; requests go one after
+    // another (Apps Script dislikes concurrency), with retries on its
+    // occasional HTML answer.
+    const BATCH = 12;
+    for (let i = 0; i < jobs.length; i += BATCH) {
+      const chunk = jobs.slice(i, i + BATCH);
+      const spec = chunk.map(function (j) { return ctx.points[j.a].lat + "," + ctx.points[j.a].lon + "~" + ctx.points[j.b].lat + "," + ctx.points[j.b].lon + "~" + j.departISO; }).join("|");
+      const url = CONFIG.LOGISTICS_URL + "?action=legs&legs=" + encodeURIComponent(spec);
+      let r = null;
+      for (let attempt = 0; attempt < 4 && !r; attempt++) {
+        try { r = await fetchJSON(url, 60000); if (!r.ok) throw new Error(r.error || "bridge"); }
+        catch (e) { r = null; if (attempt === 3) { failed += chunk.length; } else await new Promise(function (res) { setTimeout(res, 800 * (attempt + 1)); }); }
       }
+      if (r) chunk.forEach(function (j, k) {
+        const x = r.results[k];
+        if (x && x.ok) { ctx.legCache[j.ck] = { min: x.minutes, km: x.km, source: "google-traffic", mode: x.mode }; changed = true; }
+        else failed++;
+      });
+      if (onProgress) onProgress(i + BATCH, jobs.length);
     }
+    if (failed) ctx.warnings.push("Google traffic unavailable for " + failed + " leg" + (failed > 1 ? "s" : "") + "; those use the estimate.");
     return changed;
+  }
+  // Refine, re-plan, and refine again until departures settle (max 3 passes).
+  async function refineTour(ctx, events, stay, onProgress) {
+    let plan = planTour(ctx, events, stay);
+    for (let pass = 0; pass < 3; pass++) {
+      const changed = await refineWithBridge(ctx, plan, function (done, total) { if (onProgress) onProgress(planTour(ctx, events, stay), done, total, pass); });
+      plan = planTour(ctx, events, stay);
+      if (!changed) break;
+    }
+    return plan;
   }
   function pointKeyFor(ctx, leg, day, isFrom) {
     const name = isFrom ? leg.from : leg.to;
@@ -940,7 +976,7 @@
   global.Logistics = { PURPOSE: PURPOSE,
     CONFIG: CONFIG, providers: providers, Ctx: Ctx, VenueBook: VenueBook,
     load: load, parseSchedule: parseSchedule, planDay: planDay, planTour: planTour, compareStays: compareStays,
-    refineWithBridge: refineWithBridge, activeStays: activeStays, registerPoints: registerPoints, encodeShare: encodeShare, decodeShare: decodeShare,
+    refineWithBridge: refineWithBridge, refineTour: refineTour, activeStays: activeStays, registerPoints: registerPoints, encodeShare: encodeShare, decodeShare: decodeShare,
     parseLatLon: parseLatLon, placeNameFromLink: placeNameFromLink, geocode: geocode, deepMerge: deepMerge, clone: clone,
     esc: esc, hm: hm, dur: dur, toMin: toMin, dateLabel: dateLabel, slug: slug, pad: pad,
   };

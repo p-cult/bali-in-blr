@@ -17,6 +17,12 @@
  *       quota; the cache lifetime shortens as the departure approaches. Apps Script's Maps service has a
  *       daily quota (1,000 direction calls on consumer accounts, more on
  *       Workspace) — the planner only asks for legs it has not cached.
+ *   GET ?action=legs&legs=<from>~<to>~<depart>|<from>~<to>~<depart>|…
+ *       → { ok, results:[{ok, minutes, km, mode} | {ok:false, error}] }
+ *       Many legs in ONE execution (the planner sends a tour in a few
+ *       requests). Apps Script's front door refuses concurrent calls now
+ *       and then with a "unable to open the file" page, so batching beats
+ *       parallel single requests.
  *   GET ?action=geocode&q=<address>
  *       → { ok, lat, lon, label }
  *   GET ?action=load
@@ -27,7 +33,8 @@
  * Setup
  *   1. Create a Google Sheet "Bali in Bengaluru — Logistics" (or reuse the
  *      planning workbook) and paste this file into Extensions → Apps Script.
- *   2. Set SHEET_ID below. Tabs are created on first use.
+ *   2. SHEET_NAME names the workbook (or set SHEET_ID). Tabs are created on
+ *      first use.
  *   3. Deploy → New deployment → Web app: Execute as *Me*, Who has access
  *      *Anyone*. Copy the /exec URL into CONFIG.LOGISTICS_URL in
  *      plan/engine.js and bump the ?v= on both pages.
@@ -38,7 +45,11 @@
  * plan configuration only.
  */
 
-var SHEET_ID = "PASTE_SHEET_ID_HERE";
+// The workbook that holds the TravelCache and Plan tabs: the planning
+// workbook, found by name so no id has to be pasted here (the id is then
+// remembered in script properties).
+var SHEET_NAME = "All things - Bali in Bengaluru";
+var SHEET_ID = "";
 var CACHE_TAB = "TravelCache";
 var PLAN_TAB = "Plan";
 var TZ = "Asia/Kolkata";
@@ -48,6 +59,7 @@ function doGet(e) {
   try {
     switch (p.action) {
       case "leg": return json_(leg_(p.from, p.to, p.depart));
+      case "legs": return json_(legs_(p.legs));
       case "geocode": return json_(geocode_(p.q));
       case "load": return json_({ ok: true, cfg: loadPlan_() });
       default: return json_({ ok: true, service: "bali-logistics", actions: ["leg", "geocode", "load", "save"] });
@@ -98,6 +110,17 @@ function leg_(from, to, departISO) {
   var out = { minutes: Math.round(sec / 60), km: Math.round(m / 100) / 10 };
   cachePut_(key, out, tier.ttlMs);
   return { ok: true, minutes: out.minutes, km: out.km, source: "google-traffic", mode: tier.mode, cached: false };
+}
+
+function legs_(spec) {
+  var items = String(spec || "").split("|").filter(function (x) { return x; });
+  if (items.length > 40) throw new Error("at most 40 legs per request");
+  var results = items.map(function (item) {
+    var parts = item.split("~");
+    try { var r = leg_(parts[0], parts[1], parts[2]); return { ok: true, minutes: r.minutes, km: r.km, mode: r.mode, cached: r.cached }; }
+    catch (err) { return { ok: false, error: String(err && err.message || err) }; }
+  });
+  return { ok: true, results: results };
 }
 
 // How fresh a figure must be, by how far away the departure is.
@@ -165,8 +188,19 @@ function parseLatLon_(s) {
   var m = /^\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*$/.exec(String(s || ""));
   return m ? { lat: +m[1], lon: +m[2] } : null;
 }
+function book_() {
+  var props = PropertiesService.getScriptProperties();
+  var id = SHEET_ID || props.getProperty("SHEET_ID");
+  if (!id) {
+    var files = DriveApp.getFilesByName(SHEET_NAME);
+    if (!files.hasNext()) throw new Error("Workbook not found: " + SHEET_NAME);
+    id = files.next().getId();
+    props.setProperty("SHEET_ID", id);
+  }
+  return SpreadsheetApp.openById(id);
+}
 function tab_(name, header) {
-  var ss = SpreadsheetApp.openById(SHEET_ID);
+  var ss = book_();
   var sh = ss.getSheetByName(name);
   if (!sh) { sh = ss.insertSheet(name); sh.appendRow(header); sh.setFrozenRows(1); }
   return sh;

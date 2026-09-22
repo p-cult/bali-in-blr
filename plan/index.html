@@ -33,7 +33,7 @@
   </footer>
 </div>
 
-<script src="engine.js?v=9"></script>
+<script src="engine.js?v=11"></script>
 <script src="render.js?v=6"></script>
 <script>
 (function () {
@@ -45,6 +45,10 @@
 
   let data, ctx, plan;
 
+  function currentStay() {
+    const stays = L.activeStays(data.cfg), pick = $("stay-pick");
+    return stays.find(function (s) { return s.id === (pick.value || params.get("stay")); }) || stays[0];
+  }
   function render() {
     const stays = L.activeStays(data.cfg);
     const pick = $("stay-pick");
@@ -78,7 +82,11 @@
       await ctx.ensureMatrix();
       render();
       if (L.CONFIG.LOGISTICS_URL && data.cfg.provider === "bridge") {
-        if (await L.refineWithBridge(ctx, plan)) render();
+        const stays = L.activeStays(data.cfg);
+        for (const s of stays) {
+          await L.refineTour(ctx, data.events, s, function () { if (currentStay() === s) render(); });
+        }
+        render();
       }
     } catch (e) {
       $("sub").textContent = "Could not load the plan: " + e.message;

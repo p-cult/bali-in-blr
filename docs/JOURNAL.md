@@ -1132,6 +1132,40 @@ Nagar) on the user's request: 22 h 48 of road time over the tour against
 planner now reads a place name or q= from such links and geocodes it, and
 says clearly when a link has neither.
 
+### 22 Sep 2026 — logistics backend deployed; traffic goes Google
+
+Deployed `docs/apps-script/Logistics.gs` as a third standalone Apps Script
+("Bali-in-Blr Logistics", deployment "Logistics web app v1"), driven from
+the browser pane with the user signed in; the user authorised the Maps /
+Sheets / Drive scopes. The script finds the planning workbook **by name**
+(DriveApp) and caches the id in script properties, so no sheet id had to be
+typed or pasted anywhere — the lesson of 17 Sep applied in advance.
+
+Traffic policy (user's ask): far from the date, Google's typical traffic
+for that weekday and hour; inside 48 h refreshed hourly; inside 2 h live,
+refreshed every 10 min. The cache lifetime shortens with the horizon and the
+plan labels each leg's mode. First live figure: 20th Mile → Chowdiah at
+3.30pm on a Tuesday, 51 min against the profile's 60.
+
+The `/exec` URL is in `plan/engine.js` (public by necessity, like the
+bridge) and recorded in the vault under `apps_script_logistics`. Update the
+existing deployment, never create a new one.
+
+Problem on the way: pricing ~35 legs as parallel single requests made
+Google's front door answer many of them with a "Sorry, unable to open the
+file at present" HTML page (the request still executed server-side — the
+figure was in the cache afterwards). Fix: an `action=legs` batch endpoint
+that prices up to 40 legs in one execution (Version 2 of the same
+deployment), the planner sending 12 at a time, one request after another,
+retrying an HTML answer. A whole stay now prices in about 30 s and the page
+re-renders as batches land; three passes settle departures that moved.
+Lesson: Apps Script web apps want few, fat requests, never a burst of thin
+ones. Also: the leg cache key must use the departure the planner actually
+priced (before the loading allowance), or refined figures never match.
+
+Google's typical figures make the tour slower than the profile guessed:
+about 35 h on the road from 20th Mile against 29 h estimated.
+
 Lesson: the first pass let a leg depart before the previous event had
 wrapped (arrival was fixed at start − buffer). Legs now leave no earlier
 than the previous wrap and the day is flagged with the minutes lost from
