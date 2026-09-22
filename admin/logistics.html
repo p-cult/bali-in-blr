@@ -147,7 +147,7 @@
 </div>
 
 <script src="auth.js?v=7"></script>
-<script src="../plan/engine.js?v=22"></script>
+<script src="../plan/engine.js?v=23"></script>
 <script src="../plan/render.js?v=18"></script>
 <script>
 (function () {
@@ -560,7 +560,7 @@
     });
     $("reload-sheet").addEventListener("click", async function () {
       $("status").textContent = "Reading the Google Sheet…"; loading("Reading the Google Sheet…", 0.15);
-      const sheet = await L.fetchSheetPlan();
+      const sheet = await L.fetchSheetPlan({ fresh: true });
       if (!sheet) { ctx.warnings.push("Could not read the planner sheet."); render(); return; }
       L.applySheetPlan(cfg(), sheet);
       await rebuildEvents(); await rebuild(true); await refreshTraffic();

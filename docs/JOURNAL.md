@@ -1223,6 +1223,15 @@ eight buttons to four ("Sync everything" does re-pull + fetch + traffic +
 write-back). The Internal engagements panel went (the sheet's Engagement
 add-on rows do it) and so did the per-event inline editors.
 
+Quick loads (user's ask, 22 Sep evening): the browser now keeps both the
+sheet read and every Google leg price (localStorage, with the traffic
+tiers as expiry), so a refresh shows the priced plan at once and only stale
+legs are re-asked in the background. Measured: a reload went from about
+80–190 s of backend waiting to a couple of seconds. Also removed the public
+page's read of the old "saved plan" tab (18 s for nothing).
+Open item: the backend answers even a cached single leg in ~14 s; the sheet
+read is 30 s. Worth profiling with a timing field in the responses.
+
 Lesson: the first pass let a leg depart before the previous event had
 wrapped (arrival was fixed at start − buffer). Legs now leave no earlier
 than the previous wrap and the day is flagged with the minutes lost from

@@ -1092,9 +1092,34 @@
 
   // Inputs from the Google Sheet planner (the source of truth for per-event
   // and per-day inputs once the backend is connected).
-  async function fetchSheetPlan() {
+  // The sheet read takes the backend 15–40 s (17 tabs), so the last answer
+  // is kept in the browser: a load uses it at once when it is under an hour
+  // old and asks for a fresh one in the background (opts.onFresh).
+  const SHEET_STORE = "bali-sheetplan-v1", SHEET_FRESH_MS = 60 * 60000;
+  function storedSheetPlan() {
+    try { const s = JSON.parse(localStorage.getItem(SHEET_STORE) || "null"); return s && s.at && s.data ? s : null; } catch (e) { return null; }
+  }
+  async function fetchSheetPlanLive() {
     if (!CONFIG.LOGISTICS_URL) return null;
-    try { const r = await fetchJSON(CONFIG.LOGISTICS_URL + "?action=sheetplan", 30000); return r && r.ok ? r : null; } catch (e) { return null; }
+    try {
+      const r = await fetchJSON(CONFIG.LOGISTICS_URL + "?action=sheetplan", 90000);
+      if (r && r.ok) { try { localStorage.setItem(SHEET_STORE, JSON.stringify({ at: Date.now(), data: r })); } catch (e) { /* ignore */ } return r; }
+    } catch (e) { /* fall through */ }
+    return null;
+  }
+  // opts.fresh forces a live read; otherwise a recent stored copy is returned
+  // and, if onFresh is given, a live read follows and is handed to it when
+  // it differs.
+  async function fetchSheetPlan(opts) {
+    opts = opts || {};
+    if (!CONFIG.LOGISTICS_URL) return null;
+    const stored = storedSheetPlan();
+    if (!opts.fresh && stored && Date.now() - stored.at < SHEET_FRESH_MS) {
+      if (opts.onFresh) fetchSheetPlanLive().then(function (live) { if (live && JSON.stringify(live.cfg) !== JSON.stringify(stored.data.cfg)) opts.onFresh(live); });
+      return stored.data;
+    }
+    const live = await fetchSheetPlanLive();
+    return live || (stored ? stored.data : null);
   }
   function applySheetPlan(cfg, sheet) {
     if (!sheet || !sheet.cfg) return cfg;
@@ -1130,7 +1155,7 @@
       events = local.map(function (e) { return { id: slug(e.title) + "@" + e.date, title: e.title, category: e.category, date: e.date, start: parseClock(e.time), end: null, shows: [], venue: e.venue, status: e.status, notPublic: false, timeText: e.time || "" }; })
         .map(function (e) { if (e.start != null) { e.end = e.start + 120; e.shows = [{ start: e.start, end: e.end }]; } return e; });
     }
-    if (opts.sheet !== false) { const sheet = await fetchSheetPlan(); if (sheet) applySheetPlan(cfg, sheet); }
+    if (opts.sheet !== false) { const sheet = await fetchSheetPlan({ fresh: opts.freshSheet, onFresh: opts.onFreshSheet }); if (sheet) applySheetPlan(cfg, sheet); }
     events = events.concat(extraEvents(cfg));
     events.sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : (a.start || 0) - (b.start || 0); });
     return { cfg: cfg, venues: venues, events: events, fromSheet: !!tsv };

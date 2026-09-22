@@ -38,7 +38,7 @@
   </footer>
 </div>
 
-<script src="engine.js?v=22"></script>
+<script src="engine.js?v=23"></script>
 <script src="render.js?v=18"></script>
 <script>
 (function () {
@@ -86,11 +86,14 @@
   async function start() {
     try {
       loading("Loading the festival schedule and the planner sheet…", 0.1);
-      data = await L.load({ cfg: shared || undefined });
-      if (!shared && L.CONFIG.LOGISTICS_URL) {
-        // A saved plan from the planner, when the backend is deployed.
-        try { const r = await fetch(L.CONFIG.LOGISTICS_URL + "?action=load").then(function (x) { return x.json(); }); if (r.ok && r.cfg) data.cfg = L.deepMerge(data.cfg, r.cfg); } catch (e) { /* defaults */ }
-      }
+      data = await L.load({ cfg: shared || undefined, onFreshSheet: function (live) {
+        // The sheet changed since the stored copy: apply and re-plan quietly.
+        L.applySheetPlan(data.cfg, live);
+        L.load({ cfg: data.cfg, sheet: false }).then(function (fresh) {
+          data.events = fresh.events.filter(function (e) { return (data.cfg.excludeStatuses || []).indexOf((e.status || "").toLowerCase()) === -1; });
+          L.registerPoints(ctx, data.cfg, data.venues, data.events); ctx.ensureMatrix().then(render);
+        });
+      } });
       const ex = data.cfg.excludeStatuses || [];
       data.events = data.events.filter(function (e) { return ex.indexOf((e.status || "").toLowerCase()) === -1; });
       ctx = new L.Ctx(data.cfg, data.venues);
