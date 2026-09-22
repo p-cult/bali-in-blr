@@ -1066,6 +1066,51 @@ edit is never baked; bake time is therefore 1-2 hours, the live swap covers the
 wait. Manual runs can tick "Bake straight away". First bake only reformatted (entities to characters, one line per element);
 visible text was verified identical.
 
+### 22 Sep 2026 — artist logistics planner (admin tool + link-only public plan)
+
+Ask: a planning tool that builds each day for the touring company (20
+artists) from the latest calendar — wake-up to lights out, broad outside the
+working day and detailed from breakfast to dinner — with travel times that
+follow traffic, custom buffers before and after each show, a printable
+day-by-day plan, a public page reachable only by link, and the ability to add
+other places of stay and compare the whole tour's logistics.
+
+Built: `/admin/logistics.html` (gated, tool `logistics`) and `/plan/` (noindex,
+robots-blocked, unlinked). One engine, `plan/engine.js`, does the work:
+- Schedule is the live Event List feed (same as the site). Multi-day
+  workshops expand per day; "3.30pm and 7.30pm" becomes two shows.
+- Venues resolve through `data/venues.json` (positions from OpenStreetMap or
+  the venue's published address; five venues are only locality-precise and
+  can be pinned from the planner).
+- Travel: OSRM road routing (no key) for free-flow, shaped by an hour-of-day
+  Bengaluru traffic profile; or Google Maps predicted traffic per departure
+  via a third Apps Script web app (`docs/apps-script/Logistics.gs`) when
+  deployed. Straight-line fallback if the routing service is down.
+- The planner re-plans synchronously on every edit; live traffic is an async
+  pass that fills a leg cache and re-plans.
+- Comparison of stays: every active stay is planned in full; totals table
+  plus a leave/back per day table. First draft shows a Jayanagar stay saving
+  ~10 h of road time over the tour against 20th Mile, Magadi Road.
+- The public link carries the whole plan in the URL hash, so no backend is
+  needed for sharing; the bridge adds Save/Load when deployed.
+
+Decisions:
+- A **separate** Apps Script for logistics, as with tickets: planning calls
+  must never queue behind signups.
+- No PII anywhere: venue coordinates and a plan configuration only. Artists
+  are a party size, not names.
+- OSRM's public server is used as the keyless default because the tool must
+  give a useful draft before anyone deploys anything. It is best effort; the
+  warnings bar says when it fell back.
+- Out-of-town days (Manipal) with no time in the sheet are planned as a day
+  trip from the earliest sensible departure, flagged to consider an
+  overnight, rather than guessing a start.
+
+Lesson: the first pass let a leg depart before the previous event had
+wrapped (arrival was fixed at start − buffer). Legs now leave no earlier
+than the previous wrap and the day is flagged with the minutes lost from
+the buffer — the tool's job is to expose the squeeze, not hide it.
+
 ## 2. Lessons and standing rules (the "why" behind the rules)
 
 **Data and privacy**

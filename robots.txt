@@ -13,4 +13,7 @@ Disallow: /brand/
 # Stakeholder progress dashboard — shared by link, not indexed
 Disallow: /progress/
 
+# Artist tour plan — shared with the touring company by link, not indexed
+Disallow: /plan/
+
 Sitemap: https://bali-in-blr.paramfoundation.org/sitemap.xml

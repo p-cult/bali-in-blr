@@ -51,6 +51,12 @@ admin/              Internal, login-gated tools (not for the public):
   campaign-links.html Campaign Link Builder (UTM links + QR → 'links' sheet tab).
   report.html         Project report (programme, venues, costing, live counts).
   tickets.html        Ticket sales entry → the Tickets workbook's own script.
+  logistics.html      Artist logistics planner: day-by-day tour plan with travel
+                      times, buffers, meals; compares places of stay; prints;
+                      mints the public /plan/ link. See docs/LOGISTICS.md.
+plan/               Public, link-only tour plan for the touring company (noindex):
+                      index.html (read-only day by day), engine.js (planner
+                      engine), render.js, plan.css. Shared with the admin planner.
   auth.js             Shared sign-in gate (username+password, SHA-256 hashes);
                       ACCESS limits a user to certain tools and the hub hides
                       the rest.
@@ -59,11 +65,17 @@ data/
   events.json       Calendar FALLBACK when the schedule sheet is unreachable (§4).
   partners.json     Partners data — LOCAL STAND-IN for the Google Sheet (see §4).
   questions.json    The signup/volunteer onboarding questions (carousel).
+  venues.json       Venue positions (lat/lon, precision, aliases) for the planner.
+  logistics.json    Default plan configuration: stay, party, buffers, day rhythm,
+                    Bengaluru traffic profile.
 robots.txt          SEO. Disallows /admin/ and /v1.html.
 sitemap.xml         SEO.
 docs/
   BRIDGE-SETUP.md   Step-by-step Google Sheets + Apps Script setup (the backend).
   apps-script/Code.gs  The Apps Script "bridge" code, ready to paste & deploy.
+  apps-script/Logistics.gs  Third web app: Google Maps traffic per leg, geocoding,
+                    saved plan. Optional; the planner works without it.
+  LOGISTICS.md      How the planner builds a day, the travel providers, setup.
 .github/workflows/
   sync-drive-images.yml  Hourly job: pulls any newly linked Drive image into
                     assets/drive/ and commits it, so images keep up with the
@@ -293,6 +305,9 @@ reports success — reload before assuming a file is missing.
       occupancy/waitlist copy is wanted globally.
 - [x] **Internal project report** — `/admin/report.html` (login-gated): programme
       vs Event Brief, venues, indicative costing, live registration counts.
+- [x] **Artist logistics planner** — `/admin/logistics.html` + public `/plan/`.
+      Deploy `docs/apps-script/Logistics.gs` and set `CONFIG.LOGISTICS_URL`
+      in `plan/engine.js` to switch travel times to live Google traffic.
 - [ ] **Phase 4 — Post-event media:** build a Gallery section; set concluded events'
       link to a media/album, or add a dedicated `Media` sheet + renderer.
       Unused images `assets/carvings.jpg` and `assets/batik.jpg` are available.

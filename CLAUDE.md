@@ -48,6 +48,10 @@ dependencies. Hosted on **GitHub Pages**, auto-deploys on push to `main`.
   "Param"), which is inlined in `index.html` only — its source file is **not** in the repo,
   it lives in the vault under `memory.brand_assets`
 - `docs/BRIDGE-SETUP.md` + `docs/apps-script/Code.gs` — the backend bridge (see below)
+- `admin/logistics.html` + `plan/` — artist tour planner (admin) and its link-only
+  public page; engine in `plan/engine.js`, data in `data/venues.json` +
+  `data/logistics.json`, optional backend `docs/apps-script/Logistics.gs`.
+  See `docs/LOGISTICS.md`
 - `docs/ANOTHER-MACHINE.md` — working from the drive on a new computer
 - `tools/doctor.sh` — checks a machine can carry on (reads only)
 - `docs/JOURNAL.md` — decisions, problems solved, lessons (the project's memory)
