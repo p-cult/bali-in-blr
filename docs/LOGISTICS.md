@@ -59,7 +59,7 @@ to that are not on the public calendar live in the plan configuration
 engagements" panel), never in the schedule sheet. They plan exactly like
 public events, with their own buffer row ("Internal"), and are marked as
 internal on the plan. First entry: the photoshoot at Mandala Cultural
-Centre, Kanakapura Road, on 2 Oct 2026 (time assumed 10am–2pm).
+Centre, Kanakapura Road, on 2 Oct 2026, 7am–2pm.
 
 ## Travel time — three providers
 
