@@ -56,6 +56,12 @@ h2{font-family:var(--display);font-weight:700;text-transform:uppercase;font-size
 input[type=time],input[type=date]{color-scheme:dark}
 input[type=time]::-webkit-calendar-picker-indicator,input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.92) sepia(.35) saturate(.6) brightness(1.05);opacity:.9;cursor:pointer}
 @media (max-width:760px){.show-form,.field-group{grid-template-columns:1fr 1fr}.show-form .span-3{grid-column:span 2}}
+.dur{display:inline-flex;align-items:center;gap:.25rem}
+.dur select{width:auto;min-width:3.6rem;padding:.4rem .4rem}
+.dur b{color:var(--muted2)}
+.defaults{margin-top:1rem;border-top:1px solid var(--line);padding-top:.6rem}
+.defaults summary{cursor:pointer;font-size:.8rem;color:var(--muted2)}
+.defaults table{margin-top:.6rem}
 .stays{display:grid;gap:.6rem}
 .stay{display:grid;grid-template-columns:auto 1fr auto;gap:.8rem;align-items:center;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:.6rem .8rem}
 .stay-pick{display:flex;flex-direction:column;gap:.3rem;font-size:.75rem;color:var(--muted);white-space:nowrap}

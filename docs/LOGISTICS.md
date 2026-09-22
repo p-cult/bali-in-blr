@@ -207,8 +207,10 @@ sheet, read the sheet's inputs, re-price every leg with Google traffic,
 write the plan back), **Open the Google Sheet**, **Print / PDF**, **Reset my
 draft** (discard this browser's edits and reload the shipped defaults).
 Panels: places of stay (main-plan radio, compare checkbox, guarded Delete,
-Restore), group and vehicles, day rhythm, buffers by event type,
-**per-show settings** (pick a show from the dropdown, enter its cast, artist
+Restore), group and vehicles, day rhythm (durations as HH : MM pickers,
+clock times as time fields), **per-show settings** (with the type defaults
+table folded in as a collapsed section, since a show uses them only until
+it has its own settings) (pick a show from the dropdown, enter its cast, artist
 count and timings, Submit replaces the type defaults for that show and
 recalibrates; "Back to type defaults" clears it), comparison, the day cards
 (each with "Print this day", meal lines and add-ons), venues, and the public

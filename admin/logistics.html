@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@125,600;125,700;125,900&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="../plan/plan.css?v=12" />
+<link rel="stylesheet" href="../plan/plan.css?v=13" />
 </head>
 <body>
 <div class="wrap" id="admin-app" hidden>
@@ -69,14 +69,8 @@
   </div>
 
   <div class="panel no-print">
-    <h2 style="margin-top:0">Day rhythm (minutes)</h2>
+    <h2 style="margin-top:0">Day rhythm</h2>
     <div class="grid" id="day-grid"></div>
-  </div>
-
-  <div class="panel no-print buffers">
-    <h2 style="margin-top:0">Buffers by event type</h2>
-    <table id="buffers"></table>
-    <p class="muted" style="font-size:.8rem;margin:.6rem 0 0">The group arrives set-up + sound check + ready minutes before the scheduled start; after the show comes costume off and make-up removal, then wrap (pack-down, meeting people) — meals and the drive home follow both. Instruments travel in their own vehicle, so set-up here is the artists' time on stage, not loading. Override any single event inside its day below.</p>
   </div>
 
   <div class="panel no-print" id="show-panel">
@@ -106,6 +100,10 @@
       <button class="btn" type="button" id="sh-reset">Back to type defaults</button>
       <span class="status" id="sh-status"></span>
     </div>
+    <details class="defaults buffers">
+      <summary>Type defaults — what a show uses until it has its own settings (minutes)</summary>
+      <table id="buffers"></table>
+    </details>
   </div>
 
   <h2>Comparison of stays</h2>
@@ -160,8 +158,8 @@
   const DAY_FIELDS = [
     ["wake", "Wake → breakfast"], ["breakfast", "Breakfast"], ["prep", "Get ready"], ["loadOut", "Load vehicle"], ["loadIn", "Unload on return"],
     ["lunch", "Lunch"], ["dinner", "Dinner"], ["windDown", "Dinner → lights out"], ["returnThresholdMin", "Return to stay if gap ≥"],
-    ["earliestWake", "Earliest wake (hh:mm)"], ["latestSleep", "Latest lights out (hh:mm)"], ["restDayWake", "Rest-day wake (hh:mm)"],
-    ["outstationDepart", "Out-of-town: night coach leaves after (hh:mm)"], ["freshenUp", "Out-of-town: freshen up on arrival"],
+    ["earliestWake", "Earliest wake"], ["latestSleep", "Latest lights out"], ["restDayWake", "Rest-day wake"],
+    ["outstationDepart", "Out-of-town: night coach leaves after"], ["freshenUp", "Out-of-town: freshen up on arrival"],
   ];
 
   function cfg() { return data.cfg; }
@@ -187,7 +185,13 @@
     $("provider").value = c.provider; $("safety").value = c.traffic.safety;
     $("day-grid").innerHTML = DAY_FIELDS.map(function (f) {
       const val = c.day[f[0]]; const isTime = typeof val === "string";
-      return "<label class='field'>" + L.esc(f[1]) + " <input data-day='" + f[0] + "' type='" + (isTime ? "time" : "number") + "' value='" + L.esc(val) + "'" + (isTime ? "" : " min='0' step='5'") + "></label>";
+      if (isTime) return "<label class='field'>" + L.esc(f[1]) + " <input data-day='" + f[0] + "' type='time' value='" + L.esc(val) + "'></label>";
+      // Durations as an HH : MM picker (hours 0–5, minutes in fives).
+      const m = Math.max(0, Math.round(+val || 0)), h = Math.floor(m / 60), mm = m % 60;
+      const hs = [0, 1, 2, 3, 4, 5].map(function (x) { return "<option value='" + x + "'" + (x === h ? " selected" : "") + ">" + L.pad(x) + "</option>"; }).join("");
+      let ms = "";
+      for (let x = 0; x < 60; x += 5) ms += "<option value='" + x + "'" + (x === mm ? " selected" : "") + ">" + L.pad(x) + "</option>";
+      return "<label class='field'>" + L.esc(f[1]) + "<span class='dur' data-day='" + f[0] + "'><select data-part='h'>" + hs + "</select><b>:</b><select data-part='m'>" + ms + "</select></span></label>";
     }).join("");
     const cats = Object.keys(c.buffers).filter(function (k) { return k[0] !== "_"; });
     $("buffers").innerHTML = "<thead><tr><th>Type</th><th>Instrument set-up</th><th>Sound check</th><th>Costume, make-up, warm-up</th><th>Costume off after</th><th>Wrap</th><th>Default length</th></tr></thead><tbody>" +
@@ -207,7 +211,10 @@
     const v = c.party.vehicles[0];
     v.seats = +$("veh-seats").value || 0; v.ratePerKm = +$("veh-rate").value || 0; v.minPerDay = +$("veh-min").value || 0; v.count = +$("veh-count").value || 1;
     c.provider = $("provider").value; c.traffic.safety = +$("safety").value || 1;
-    document.querySelectorAll("[data-day]").forEach(function (i) { c.day[i.dataset.day] = i.type === "time" ? i.value : (+i.value || 0); });
+    document.querySelectorAll("[data-day]").forEach(function (i) {
+      if (i.classList.contains("dur")) c.day[i.dataset.day] = (+i.querySelector("[data-part=h]").value || 0) * 60 + (+i.querySelector("[data-part=m]").value || 0);
+      else c.day[i.dataset.day] = i.type === "time" ? i.value : (+i.value || 0);
+    });
     document.querySelectorAll("[data-buf]").forEach(function (i) { c.buffers[i.dataset.buf][i.dataset.k] = +i.value || 0; });
   }
   function renderStays() {
@@ -340,6 +347,7 @@
     document.querySelectorAll("#party-artists,#party-volunteers,#party-label,#veh-seats,#veh-rate,#veh-min,#veh-count,#safety").forEach(function (i) { i.addEventListener("input", function () { scheduleRebuild(false); }); });
     $("provider").addEventListener("change", function () { scheduleRebuild(true); });
     $("day-grid").addEventListener("input", function () { scheduleRebuild(false); });
+    $("day-grid").addEventListener("change", function () { scheduleRebuild(false); });
     $("buffers").addEventListener("input", function () { scheduleRebuild(false); });
 
     $("stays").addEventListener("click", function (e) {
