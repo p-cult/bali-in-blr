@@ -58,8 +58,8 @@ function doGet(e) {
   var p = (e && e.parameter) || {};
   try {
     switch (p.action) {
-      case "leg": return json_(leg_(p.from, p.to, p.depart));
-      case "legs": return json_(legs_(p.legs));
+      case "leg": { var one = leg_(p.from, p.to, p.depart); cacheFlush_(); return json_(one); }
+      case "legs": { var many = legs_(p.legs); cacheFlush_(); return json_(many); }
       case "buildsheet": return json_(buildsheet_());
       case "sheetplan": return json_(sheetplan_());
       case "geocode": return json_(geocode_(p.q));
@@ -166,12 +166,22 @@ function cacheGet_(key, ttlMs) {
   }
   return null;
 }
+// New rows are queued and written in ONE setValues at the end of the
+// request (cacheFlush_): an appendRow per leg was the slow part.
+var cachePending_ = [];
 function cachePut_(key, v, ttlMs) {
   var rec = { minutes: v.minutes, km: v.km, at: Date.now() };
   CacheService.getScriptCache().put(key, JSON.stringify(rec), Math.min(21600, Math.max(60, Math.floor(ttlMs / 1000))));
   cacheLoad_();
   cacheIndex_[key] = rec;
-  cacheSheet_.appendRow([key, v.minutes, v.km, new Date()]);
+  cachePending_.push([key, v.minutes, v.km, new Date()]);
+}
+function cacheFlush_() {
+  if (!cachePending_.length) return;
+  cacheLoad_();
+  var row = cacheSheet_.getLastRow() + 1;
+  cacheSheet_.getRange(row, 1, cachePending_.length, 4).setValues(cachePending_);
+  cachePending_ = [];
 }
 
 /* ---------- geocoding ---------- */
