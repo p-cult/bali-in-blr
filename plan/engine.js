@@ -421,7 +421,10 @@
         tr = ctx.travel(here, x.idx, dateISO, depart);
         depart = mustArrive - (tr.min == null ? 45 : tr.min);
       }
-      if (notBefore != null && depart < notBefore) { depart = notBefore; tr = ctx.travel(here, x.idx, dateISO, depart); }
+      if (notBefore != null && depart < notBefore) depart = notBefore;
+      // Price at the departure we actually return, so a later Google
+      // refinement of this leg is keyed the same way.
+      tr = ctx.travel(here, x.idx, dateISO, depart);
       return { depart: depart, arrive: depart + (tr.min == null ? 45 : tr.min), travel: tr };
     }
 
@@ -580,11 +583,13 @@
     // never depart after midnight (it stops being a night drive).
     const wanted = Math.min(first.b.start - first.b.before - fresh, morning);
     let departOut = Math.min(1425, Math.max(notBefore, wanted + 1440 - outMin));
+    const outFinal = ctx.travel(originIdx, destIdx, prevDate, departOut);
+    const outMinFinal = outFinal.min == null ? outMin : outFinal.min;
     if (departOut + outMin - 1440 > first.b.start - first.b.before - fresh) day.flags.push("Leaving " + originLabel + " at " + hm(departOut) + " the night before arrives " + hm(departOut + outMin - 1440) + " — later than the venue call.");
-    const arriveOut = departOut + outMin - 1440; // minutes into this day
-    day.nightOut = { date: prevDate, depart: departOut, arrive: arriveOut, travel: out, to: dest ? dest.name : first.ev.venue, fromVenue: fromVenue, fromLabel: originLabel };
-    timeline.push(block("leg", arriveOut, null, "Arrive " + (dest ? dest.name : first.ev.venue) + " after the overnight drive", { travel: out, detail: legDetail(out, 0) + " · left " + originLabel + " " + hm(departOut) + " on " + dateLabel(prevDate), overnight: true }));
-    if (out.min != null) { day.travelMin += out.min; day.km += out.km || 0; }
+    const arriveOut = departOut + outMinFinal - 1440; // minutes into this day
+    day.nightOut = { date: prevDate, depart: departOut, arrive: arriveOut, travel: outFinal, to: dest ? dest.name : first.ev.venue, fromVenue: fromVenue, fromLabel: originLabel };
+    timeline.push(block("leg", arriveOut, null, "Arrive " + (dest ? dest.name : first.ev.venue) + " after the overnight drive", { travel: outFinal, detail: legDetail(outFinal, 0) + " · left " + originLabel + " " + hm(departOut) + " on " + dateLabel(prevDate), overnight: true }));
+    if (outFinal.min != null) { day.travelMin += outFinal.min; day.km += outFinal.km || 0; }
     const bfEnd = arriveOut + fresh;
     timeline.push(block("meal", arriveOut, bfEnd, "Freshen up & breakfast on arrival", { broad: true, meal: "breakfast", at: "on arrival" }));
     let here = bfEnd;
@@ -617,14 +622,14 @@
     if (back.min != null) { day.travelMin += back.min; day.km += back.km || 0; }
     day.nightBack = { date: nextDate, depart: departBack, arrive: arriveHome - 1440, travel: back, from: last.venue ? last.venue.name : last.ev.venue };
     day.legs = [
-      { from: originLabel, to: dest ? dest.name : first.ev.venue, depart: departOut - 1440, arrive: arriveOut, travel: out },
+      { from: originLabel, to: dest ? dest.name : first.ev.venue, depart: departOut - 1440, travelDepart: departOut, travelDate: prevDate, arrive: arriveOut, travel: outFinal },
       { from: last.venue ? last.venue.name : last.ev.venue, to: "the stay", depart: departBack, arrive: arriveHome, travel: back },
     ];
     day.blocks = timeline.sort(function (a, b) { return a.from - b.from; });
     if (!day.blocks.some(function (b) { return b.meal === "lunch"; })) placeDefaultLunch(day, D, lo, lc);
     applyMealPlan(cfg, dateISO, day);
     day.wake = arriveOut; day.leave = departOut - 1440; day.back = arriveHome; day.sleep = departBack;
-    day.flags.push("Overnight travel both ways: sleep on the road out (" + dur(outMin) + ") and back (" + dur(backMin) + "). A sleeper coach is worth booking for these two nights.");
+    day.flags.push("Overnight travel both ways: sleep on the road out (" + dur(outMinFinal) + ") and back (" + dur(backMin) + "). A sleeper coach is worth booking for these two nights.");
     return day;
   }
   // Called by planTour: fold an out-of-town day's night legs into the day
@@ -848,9 +853,13 @@
         const b = ctx.points.findIndex(function (p) { return p.key === pointKeyFor(ctx, leg, day, false); });
         if (a < 0 || b < 0 || a === b) return;
         const td = leg.travelDepart != null ? leg.travelDepart : leg.depart;
-        const dep = ((Math.round(td) % 1440) + 1440) % 1440;
-        const date = td >= 1440 ? addDays(day.date, 1) : td < 0 ? addDays(day.date, -1) : day.date;
-        const ck = ctx.points[a].key + "|" + ctx.points[b].key + "|" + day.date + "|" + Math.floor(td / 15);
+        // A night leg belongs to the previous calendar day (negative minutes)
+        // and was priced with that day and a positive minute; match that.
+        const keyDate = leg.travelDate || (td < 0 ? addDays(day.date, -1) : day.date);
+        const keyMin = leg.travelDate ? td : (td < 0 ? td + 1440 : td);
+        const dep = ((Math.round(keyMin) % 1440) + 1440) % 1440;
+        const date = keyMin >= 1440 ? addDays(keyDate, 1) : keyDate;
+        const ck = ctx.points[a].key + "|" + ctx.points[b].key + "|" + keyDate + "|" + Math.floor(keyMin / 15);
         if (ctx.legCache[ck] || jobs.some(function (j) { return j.ck === ck; })) return;
         jobs.push({ ck: ck, a: a, b: b, departISO: date + "T" + pad(Math.floor(dep / 60)) + ":" + pad(dep % 60) + ":00+05:30" });
       });
