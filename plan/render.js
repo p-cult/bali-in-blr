@@ -22,7 +22,7 @@
     if (b.type === "leg") body += "<span class='tl-detail'>" + esc(b.detail) + "</span>";
     if (b.type === "show") {
       body += "<span class='tl-detail'>" + esc((b.ev && b.ev.category) || "") + (b.venue ? " · " + esc(b.venue.name) + (b.venue.area ? ", " + esc(b.venue.area) : "") : "") +
-        (b.ev && b.ev.notPublic ? " · not public" : "") + "</span>";
+        (b.ev && b.ev.extra ? " · internal engagement" : b.ev && b.ev.notPublic ? " · not public" : "") + (b.ev && b.ev.note ? " · " + esc(b.ev.note) : "") + "</span>";
       if (opts.editable && b.ev && !b.showIndex) body += bufferEditor(b.ev, opts.cfg);
     }
     if (b.type === "buffer") body += "<span class='tl-detail'>" + b.minutes + " min buffer</span>";

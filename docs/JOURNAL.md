@@ -1107,6 +1107,12 @@ Decisions:
   home. When the previous show ends late the coach leaves straight from that
   venue. A day with no time in the sheet assumes a 10am–4pm programme.
 
+Same day, later: a photoshoot at Mandala Cultural Centre (Kanakapura Road)
+on 2 Oct is not a public event, so the planner grew an "Internal
+engagements" list in the plan config rather than a row in the schedule
+sheet — the sheet stays the public calendar's source of truth, and the
+planner merges the two.
+
 Lesson: the first pass let a leg depart before the previous event had
 wrapped (arrival was fixed at start − buffer). Legs now leave no earlier
 than the previous wrap and the day is flagged with the minutes lost from

@@ -710,7 +710,7 @@
   /* ---------- config helpers ---------- */
   function activeStays(cfg) { return (cfg.stays || []).filter(function (s) { return s.active !== false && s.lat != null; }); }
   function encodeShare(cfg) {
-    const slim = { v: cfg.version || 1, party: cfg.party, stays: cfg.stays, day: cfg.day, buffers: cfg.buffers, overrides: cfg.overrides, provider: cfg.provider, traffic: cfg.traffic, excludeStatuses: cfg.excludeStatuses, venueOverrides: cfg.venueOverrides || [] };
+    const slim = { v: cfg.version || 1, extras: cfg.extras || [], party: cfg.party, stays: cfg.stays, day: cfg.day, buffers: cfg.buffers, overrides: cfg.overrides, provider: cfg.provider, traffic: cfg.traffic, excludeStatuses: cfg.excludeStatuses, venueOverrides: cfg.venueOverrides || [] };
     return btoa(unescape(encodeURIComponent(JSON.stringify(slim)))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
   }
   function decodeShare(s) {
@@ -732,6 +732,21 @@
     return null;
   }
 
+  // Internal engagements from the plan config (photoshoots, rehearsals…):
+  // not on the public calendar, but the group still has to get there.
+  function extraEvents(cfg) {
+    return (cfg.extras || []).filter(function (x) { return x && x.title && parseDate(x.date); }).map(function (x) {
+      const start = toMin(x.start) != null ? toMin(x.start) : parseClock(x.start);
+      let end = toMin(x.end) != null ? toMin(x.end) : parseClock(x.end);
+      const cat = x.category || "Internal";
+      const len = ((cfg.buffers || {})[cat] || cfg.buffers.default || {}).defaultDuration || 120;
+      if (start != null && (end == null || end <= start)) end = start + len;
+      return { id: x.id || (slug(x.title) + "@" + parseDate(x.date)), title: x.title, category: cat, date: parseDate(x.date),
+        start: start, end: end, shows: start != null ? [{ start: start, end: end }] : [], timeText: (x.start || "") + (x.end ? " – " + x.end : ""),
+        venue: x.venue || "", status: "internal", notPublic: true, extra: true, note: x.note || "" };
+    });
+  }
+
   /* ---------- loading everything ---------- */
   async function load(opts) {
     opts = opts || {};
@@ -751,6 +766,8 @@
       events = local.map(function (e) { return { id: slug(e.title) + "@" + e.date, title: e.title, category: e.category, date: e.date, start: parseClock(e.time), end: null, shows: [], venue: e.venue, status: e.status, notPublic: false, timeText: e.time || "" }; })
         .map(function (e) { if (e.start != null) { e.end = e.start + 120; e.shows = [{ start: e.start, end: e.end }]; } return e; });
     }
+    events = events.concat(extraEvents(cfg));
+    events.sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : (a.start || 0) - (b.start || 0); });
     return { cfg: cfg, venues: venues, events: events, fromSheet: !!tsv };
   }
 

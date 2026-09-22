@@ -44,6 +44,21 @@
   </div>
 
   <div class="panel no-print">
+    <h2 style="margin-top:0">Internal engagements</h2>
+    <p class="muted" style="font-size:.8rem;margin:0 0 .6rem">Photoshoots, rehearsals, receptions — anything the group must travel to that is not on the public calendar. Public events come from the schedule sheet.</p>
+    <table class="cmp" id="extras"></table>
+    <div class="grid">
+      <label class="field">Title <input type="text" id="x-title" placeholder="e.g. Photoshoot" /></label>
+      <label class="field">Date <input type="date" id="x-date" min="2026-09-01" /></label>
+      <label class="field">Start <input type="time" id="x-start" /></label>
+      <label class="field">End <input type="time" id="x-end" /></label>
+      <label class="field">Venue (name, or paste a maps link) <input type="text" id="x-venue" placeholder="e.g. Mandala Cultural Centre" /></label>
+      <label class="field">Note <input type="text" id="x-note" /></label>
+      <label class="field">&nbsp;<button class="btn" type="button" id="x-add">Add engagement</button></label>
+    </div>
+  </div>
+
+  <div class="panel no-print">
     <div class="grid">
       <label class="field">Group size <input type="number" id="party-size" min="1" /></label>
       <label class="field">Group label <input type="text" id="party-label" /></label>
@@ -104,8 +119,8 @@
 </div>
 
 <script src="auth.js?v=6"></script>
-<script src="../plan/engine.js?v=3"></script>
-<script src="../plan/render.js?v=2"></script>
+<script src="../plan/engine.js?v=4"></script>
+<script src="../plan/render.js?v=3"></script>
 <script>
 (function () {
   "use strict";
@@ -167,6 +182,20 @@
         "<button class='btn btn-sm' data-act='remove' type='button'>remove</button></div></div>";
     }).join("");
   }
+  function renderExtras() {
+    const xs = cfg().extras || [];
+    $("extras").innerHTML = xs.length ? "<thead><tr><th>Title</th><th>Date</th><th>Time</th><th>Venue</th><th>Note</th><th></th></tr></thead><tbody>" + xs.map(function (x, i) {
+      const v = data.venues.resolve(x.venue);
+      return "<tr><td>" + L.esc(x.title) + "</td><td>" + L.esc(L.dateLabel(x.date)) + "</td><td>" + L.esc((x.start || "") + (x.end ? " – " + x.end : "")) + "</td><td>" + L.esc(x.venue) +
+        (v ? "" : " <span class='prec low'>NOT LOCATED</span>") + "</td><td>" + L.esc(x.note || "") + "</td><td><button class='btn btn-sm' data-xrm='" + i + "' type='button'>remove</button></td></tr>";
+    }).join("") + "</tbody>" : "";
+  }
+  async function rebuildEvents() {
+    // Re-merge sheet events with the current internal engagements.
+    data.events = data.events.filter(function (e) { return !e.extra; });
+    const fresh = await L.load({ cfg: cfg() });
+    data.events = fresh.events.filter(function (e) { return (cfg().excludeStatuses || []).indexOf((e.status || "").toLowerCase()) === -1; });
+  }
   function renderVenues() {
     const names = {};
     data.events.forEach(function (e) { names[e.venue] = true; });
@@ -210,7 +239,7 @@
       open.forEach(function (d) { const el = document.querySelector(".day[data-date='" + d + "']"); if (el) el.open = true; });
       $("share-url").textContent = shareUrl(stay);
     } else { $("days").innerHTML = "<p class='muted'>Add a stay to start.</p>"; }
-    renderStays(); renderVenues();
+    renderStays(); renderVenues(); renderExtras();
     const prov = L.providers[c.provider] ? L.providers[c.provider].label : c.provider;
     $("status").innerHTML = "<span class='ok'>●</span> " + data.events.length + " schedule entries" + (data.fromSheet ? " from the live sheet" : " (fallback file)") + " · " + L.esc(prov) + (ctx.matrix ? " · distances via " + L.esc(ctx.matrix.source) : "");
     $("warnings").innerHTML = ctx.warnings.map(L.esc).join("<br>"); ctx.warnings = [];
@@ -271,6 +300,25 @@
       cfg().venueOverrides = (cfg().venueOverrides || []).filter(function (x) { return x.key !== v.key; }).concat([v]);
       $("fix-venue").value = ""; $("fix-pos").value = "";
       scheduleRebuild(true);
+    });
+
+    $("x-add").addEventListener("click", async function () {
+      const t = $("x-title").value.trim(), d = $("x-date").value, venue = $("x-venue").value.trim();
+      if (!t || !d || !venue) { ctx.warnings.push("An engagement needs a title, a date and a venue."); render(); return; }
+      let venueName = venue;
+      const ll = L.parseLatLon(venue);
+      if (ll) { venueName = t + " location"; data.venues.upsert({ key: L.slug(venueName), name: venueName, lat: ll.lat, lon: ll.lon, precision: "pinned" }); cfg().venueOverrides = (cfg().venueOverrides || []).concat([{ key: L.slug(venueName), name: venueName, lat: ll.lat, lon: ll.lon, precision: "pinned" }]); }
+      else if (!data.venues.resolve(venue)) {
+        try { const g = await L.geocode(venue + ", Bengaluru"); if (g) { const v = { key: L.slug(venue), name: venue, lat: g.lat, lon: g.lon, precision: "geocoded", area: (g.label || "").split(",").slice(1, 3).join(",").trim() }; data.venues.upsert(v); cfg().venueOverrides = (cfg().venueOverrides || []).concat([v]); } } catch (e) { /* flagged as not located */ }
+      }
+      cfg().extras = (cfg().extras || []).concat([{ id: L.slug(t) + "@" + d + "-" + Date.now().toString(36).slice(-3), title: t, category: "Internal", date: d, start: $("x-start").value, end: $("x-end").value, venue: venueName, note: $("x-note").value.trim() }]);
+      ["x-title", "x-venue", "x-note", "x-start", "x-end"].forEach(function (id) { $(id).value = ""; });
+      await rebuildEvents(); scheduleRebuild(true);
+    });
+    $("extras").addEventListener("click", async function (e) {
+      if (e.target.dataset.xrm == null) return;
+      cfg().extras.splice(+e.target.dataset.xrm, 1);
+      await rebuildEvents(); scheduleRebuild(true);
     });
 
     // Per-event overrides inside the day cards.
