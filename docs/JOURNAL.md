@@ -1219,6 +1219,25 @@ wrapped (arrival was fixed at start − buffer). Legs now leave no earlier
 than the previous wrap and the day is flagged with the minutes lost from
 the buffer — the tool's job is to expose the squeeze, not hide it.
 
+### 22 Sep 2026 — days and events synced site-wide
+- Truth from the sheet: **3–18 Oct, 16 days, 17 events (two not public),
+  15 venues**. The live hero already computed these and the copy already said
+  sixteen days. What had drifted was everything *not* read live:
+  - `data/events.json` (the fallback) held 12 events from 4 Oct — a different
+    festival on a bad connection. Rewritten from the sheet by the new
+    `tools/sync-events-fallback.py`: 17 events, 3–18 Oct, carrying both the
+    sheet-parser keys and the older keys the PDF tools read.
+  - The hero's built-in fallback figures said 16 events and 14 venues; now 17
+    and 15, matching what the page computes.
+  - `tools/build-event-posters.py` had "1–18 Oct" typed in; it now derives
+    the span from the events. Both posters rebuilt; the wide one needed a
+    fifth column for 17 events, or its footer was clipped.
+  - `assets/bali-in-bengaluru-calendar.pdf` was a 6 Sep snapshot; rebuilt.
+- Verified by blocking the sheet in the browser: the fallback renders the
+  same 17 events and the same hero as the live page.
+- Left alone: `v1.html` still says eighteen days — the frozen backup,
+  noindex, by design.
+
 ## 2. Lessons and standing rules (the "why" behind the rules)
 
 **Data and privacy**
@@ -1302,6 +1321,9 @@ the buffer — the tool's job is to expose the squeeze, not hide it.
   palette without showing a preview first.
 
 **Working practice**
+- **Fallbacks and PDFs drift; the page does not.** After a schedule change,
+  run `tools/sync-events-fallback.py` and the two PDF tools. Derive dates in
+  code rather than typing them into a template.
 - **Derived numbers are not copy.** Anything the site computes from the
   sheet (the hero's days/events/venues, ticket-button counts) is only ever
   true on the page. §0 once recorded them as fixed client copy; a later
