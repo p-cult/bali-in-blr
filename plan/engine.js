@@ -417,7 +417,7 @@
     // arrive late — the caller flags the lost buffer.
     function legTo(x, mustArrive, notBefore) {
       let depart = mustArrive - 45, tr = null;
-      for (let pass = 0; pass < 3; pass++) {
+      for (let pass = 0; pass < 4; pass++) {
         tr = ctx.travel(here, x.idx, dateISO, depart);
         depart = mustArrive - (tr.min == null ? 45 : tr.min);
       }
@@ -616,11 +616,14 @@
     timeline.push(block("leg", departBack, null, "Leave for the stay — overnight drive", { travel: back, detail: legDetail(back, 0) + " · home about " + hm(arriveHome), overnight: true }));
     if (back.min != null) { day.travelMin += back.min; day.km += back.km || 0; }
     day.nightBack = { date: nextDate, depart: departBack, arrive: arriveHome - 1440, travel: back, from: last.venue ? last.venue.name : last.ev.venue };
+    day.legs = [
+      { from: originLabel, to: dest ? dest.name : first.ev.venue, depart: departOut - 1440, arrive: arriveOut, travel: out },
+      { from: last.venue ? last.venue.name : last.ev.venue, to: "the stay", depart: departBack, arrive: arriveHome, travel: back },
+    ];
     day.blocks = timeline.sort(function (a, b) { return a.from - b.from; });
     if (!day.blocks.some(function (b) { return b.meal === "lunch"; })) placeDefaultLunch(day, D, lo, lc);
     applyMealPlan(cfg, dateISO, day);
     day.wake = arriveOut; day.leave = departOut - 1440; day.back = arriveHome; day.sleep = departBack;
-    day.legs = [];
     day.flags.push("Overnight travel both ways: sleep on the road out (" + dur(outMin) + ") and back (" + dur(backMin) + "). A sleeper coach is worth booking for these two nights.");
     return day;
   }
@@ -879,7 +882,7 @@
   // Refine, re-plan, and refine again until departures settle (max 3 passes).
   async function refineTour(ctx, events, stay, onProgress) {
     let plan = planTour(ctx, events, stay);
-    for (let pass = 0; pass < 3; pass++) {
+    for (let pass = 0; pass < 4; pass++) {
       const changed = await refineWithBridge(ctx, plan, function (done, total) { if (onProgress) onProgress(planTour(ctx, events, stay), done, total, pass); });
       plan = planTour(ctx, events, stay);
       if (!changed) break;
