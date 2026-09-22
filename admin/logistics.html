@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@125,600;125,700;125,900&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="../plan/plan.css?v=5" />
+<link rel="stylesheet" href="../plan/plan.css?v=6" />
 </head>
 <body>
 <div class="wrap" id="admin-app" hidden>
@@ -27,6 +27,9 @@
     <span class="grow"></span>
     <button class="btn btn-sm" type="button" id="traffic">Refresh live traffic</button>
     <button class="btn btn-sm" type="button" id="reset">Reset to defaults</button>
+    <a class="btn btn-sm" id="sheet-link" href="#" target="_blank" rel="noopener" hidden>Open the Google Sheet</a>
+    <button class="btn btn-sm" type="button" id="reload-sheet" hidden>Fetch sheet inputs</button>
+    <button class="btn btn-sm" type="button" id="repull-sheet" hidden>Re-pull events into sheet</button>
     <button class="btn btn-sm" type="button" id="save" hidden>Save plan</button>
     <button class="btn btn-sm" type="button" id="share">Copy public link</button>
     <button class="btn btn-sm btn-primary" type="button" id="print">Print / PDF</button>
@@ -121,8 +124,8 @@
 </div>
 
 <script src="auth.js?v=6"></script>
-<script src="../plan/engine.js?v=19"></script>
-<script src="../plan/render.js?v=13"></script>
+<script src="../plan/engine.js?v=20"></script>
+<script src="../plan/render.js?v=14"></script>
 <script>
 (function () {
   "use strict";
@@ -435,8 +438,36 @@
         });
       }
       render();
+      await writeBack();
     };
     $("traffic").addEventListener("click", function () { refreshTraffic(); });
+    $("repull-sheet").addEventListener("click", async function () {
+      $("status").textContent = "Re-pulling the Event List into the planner sheet (keeps your inputs)…";
+      try { await fetch(L.CONFIG.LOGISTICS_URL + "?action=buildsheet", { cache: "no-store" }); } catch (e) { /* the build usually completes even when the reply is not JSON */ }
+      $("reload-sheet").click();
+    });
+    $("reload-sheet").addEventListener("click", async function () {
+      $("status").textContent = "Reading the Google Sheet…";
+      const sheet = await L.fetchSheetPlan();
+      if (!sheet) { ctx.warnings.push("Could not read the planner sheet."); render(); return; }
+      L.applySheetPlan(cfg(), sheet);
+      await rebuildEvents(); await rebuild(true); await refreshTraffic();
+    });
+    // After pricing, send the day's departure and the instrument vehicle
+    // times back to the sheet (the grey "Vehicle leaves storage" column).
+    async function writeBack() {
+      if (!L.CONFIG.LOGISTICS_URL || !cfg().sheetUrl) return;
+      const stay = L.activeStays(cfg()).find(function (s) { return s.id === selectedStay; }); if (!stay) return;
+      const plan = L.planTour(ctx, data.events, stay);
+      const days = {};
+      plan.days.forEach(function (d) {
+        const ev = {};
+        (d.trucks || []).forEach(function (t) { ev[t.id] = { instrAt: R.hhmm(t.instrAt), instrLeave: t.instrLeave != null ? R.hhmm(t.instrLeave) : "" }; });
+        days[d.date] = { leave: d.leave != null && d.kind !== "rest" ? R.hhmm(d.leave) : "", events: ev };
+      });
+      try { await fetch(L.CONFIG.LOGISTICS_URL, { method: "POST", body: JSON.stringify({ action: "writeback", days: days }) }); $("status").textContent += " · sheet updated"; }
+      catch (e) { /* the write usually lands even when the reply is not JSON */ }
+    }
     $("save").addEventListener("click", async function () {
       $("status").textContent = "Saving…";
       try {
@@ -456,7 +487,8 @@
       if (L.CONFIG.LOGISTICS_URL) $("save").hidden = false;
       const ex = data.cfg.excludeStatuses || [];
       data.events = data.events.filter(function (e) { return ex.indexOf((e.status || "").toLowerCase()) === -1; });
-      selectedStay = (L.activeStays(data.cfg)[0] || {}).id || null;
+      selectedStay = data.cfg.selectedStay || (L.activeStays(data.cfg)[0] || {}).id || null;
+      if (data.cfg.sheetUrl) { $("sheet-link").href = data.cfg.sheetUrl; $("sheet-link").hidden = false; $("reload-sheet").hidden = false; $("repull-sheet").hidden = false; }
       bindForms(); wire();
       await rebuild(true);
       if (L.CONFIG.LOGISTICS_URL && cfg().provider === "bridge") await refreshTraffic();

@@ -60,9 +60,11 @@ function doGet(e) {
     switch (p.action) {
       case "leg": return json_(leg_(p.from, p.to, p.depart));
       case "legs": return json_(legs_(p.legs));
+      case "buildsheet": return json_(buildsheet_());
+      case "sheetplan": return json_(sheetplan_());
       case "geocode": return json_(geocode_(p.q));
       case "load": return json_({ ok: true, cfg: loadPlan_() });
-      default: return json_({ ok: true, service: "bali-logistics", actions: ["leg", "geocode", "load", "save"] });
+      default: return json_({ ok: true, service: "bali-logistics", actions: ["leg", "legs", "geocode", "load", "save", "buildsheet", "sheetplan", "writeback"] });
     }
   } catch (err) {
     return json_({ ok: false, error: String(err && err.message || err) });
@@ -73,6 +75,7 @@ function doPost(e) {
   try {
     var body = JSON.parse((e && e.postData && e.postData.contents) || "{}");
     if (body.action === "save") { savePlan_(body.cfg || {}); return json_({ ok: true }); }
+    if (body.action === "writeback") return json_(writeback_(body.days || {}));
     return json_({ ok: false, error: "unknown action" });
   } catch (err) {
     return json_({ ok: false, error: String(err && err.message || err) });
@@ -207,4 +210,293 @@ function tab_(name, header) {
 }
 function json_(obj) {
   return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
+}
+
+/* ============================================================
+   PLANNER SHEET — "Bali in Bengaluru — Logistics Planner"
+   One tab per tour day. Rows 1–9: title block (date as DD MMM | DAY |
+   HH:MM, stay, links). Row 10: headers. Row 11+: the day's events pulled
+   from the planning workbook's Event List (protected, not editable) with
+   the editable inputs beside them, then an add-ons block (meals out,
+   sightseeing, shopping, engagements) with dropdowns and HH:MM times.
+   The planner web pages read it through ?action=sheetplan.
+     GET  ?action=buildsheet   create the workbook (once) / re-pull events
+                               (on demand from the admin planner; no timer)
+     GET  ?action=sheetplan    → { ok, url, cfg } inputs for the planner
+     POST {action:"writeback", days:{date:{leave:"HH:MM", events:{id:{instrLeave,instrAt}}}}}
+   ============================================================ */
+var PLANNER_NAME = "Bali in Bengaluru — Logistics Planner";
+var HEADER_ROW = 10;
+var EVENT_HEADERS = ["#", "Type", "Title", "Venue", "Start", "End", "Status", "Artists", "Set-up", "Sound check", "Costume & make-up", "Costume off", "Wrap", "Skip?", "Instruments at venue by", "Vehicle leaves storage", "Note"];
+var ADDON_HEADERS = ["#", "Purpose", "Location (Maps link or address)", "Start", "End", "Include?", "Note"];
+var PURPOSES = ["Breakfast", "Lunch", "Dinner", "Sightseeing", "Shopping", "Engagement", "Other"];
+var ADDON_ROWS = 6;
+var DEFAULT_SEG = { Performance: [30, 30, 60, 20, 30], Workshop: [10, 10, 15, 5, 15], Talk: [10, 10, 20, 5, 15], Internal: [10, 0, 15, 10, 10], default: [15, 10, 20, 5, 15] };
+var SEED_ENGAGEMENTS = [{ date: "2026-10-02", title: "Photoshoot", venue: "Mandala Cultural Centre", start: "07:00", end: "14:00" }];
+var STAYS = ["20th Mile, Magadi Road", "Citadel Sarovar Portico"];
+
+function plannerBook_() {
+  var props = PropertiesService.getScriptProperties();
+  var id = props.getProperty("PLANNER_ID");
+  if (id) { try { return SpreadsheetApp.openById(id); } catch (e) { /* recreate */ } }
+  var files = DriveApp.getFilesByName(PLANNER_NAME);
+  var ss = files.hasNext() ? SpreadsheetApp.open(files.next()) : SpreadsheetApp.create(PLANNER_NAME);
+  props.setProperty("PLANNER_ID", ss.getId());
+  return ss;
+}
+function tabName_(iso) { return Utilities.formatDate(new Date(iso + "T00:00:00+05:30"), TZ, "dd MMM"); }
+function dayLabel_(iso) { return Utilities.formatDate(new Date(iso + "T00:00:00+05:30"), TZ, "dd MMM | EEE"); }
+function hhmm_(min) { min = Math.round(min); return ("0" + Math.floor(min / 60)).slice(-2) + ":" + ("0" + (min % 60)).slice(-2); }
+function parseClock_(s) {
+  var m = /(\d{1,2})(?:[.:](\d{2}))?\s*(am|pm)?/i.exec(String(s || "").trim());
+  if (!m) return null;
+  var h = +m[1], mm = m[2] ? +m[2] : 0, ap = (m[3] || "").toLowerCase();
+  if (ap === "pm" && h < 12) h += 12; if (ap === "am" && h === 12) h = 0;
+  if (!ap && h < 8 && String(s).indexOf(":") === -1) h += 12;
+  return h * 60 + mm;
+}
+function parseDate_(s) {
+  s = String(s || "").trim();
+  var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(s); if (m) return s.slice(0, 10);
+  var months = { jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5, jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11 };
+  m = /^(\d{1,2})\s+([a-z]+)\.?\s+(\d{2,4})/i.exec(s);
+  if (m && months[m[2].toLowerCase().slice(0, 3)] != null) { var y = +m[3]; if (y < 100) y += 2000; return y + "-" + ("0" + (months[m[2].toLowerCase().slice(0, 3)] + 1)).slice(-2) + "-" + ("0" + +m[1]).slice(-2); }
+  if (Object.prototype.toString.call(s) === "[object Date]") return Utilities.formatDate(s, TZ, "yyyy-MM-dd");
+  return "";
+}
+function slug_(s) { return String(s || "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim().replace(/ /g, "-"); }
+function addDays_(iso, n) { var d = new Date(iso + "T00:00:00+05:30"); d.setDate(d.getDate() + n); return Utilities.formatDate(d, TZ, "yyyy-MM-dd"); }
+
+// Events per day from the planning workbook's Event List tab.
+function eventsByDay_() {
+  var sh = book_().getSheetByName("Event List");
+  if (!sh) throw new Error("Event List tab not found");
+  var rows = sh.getDataRange().getDisplayValues();
+  var hi = -1, header = [];
+  for (var i = 0; i < rows.length; i++) { var low = rows[i].map(function (c) { return String(c).trim().toLowerCase(); }); if (low.indexOf("title") !== -1 && low.indexOf("venue") !== -1) { hi = i; header = low; break; } }
+  if (hi < 0) throw new Error("Event List header not found");
+  var col = function (n) { return header.indexOf(n); };
+  var out = {};
+  for (var r = hi + 1; r < rows.length; r++) {
+    var row = rows[r]; var title = String(row[col("title")] || "").trim(); if (!title) continue;
+    var d0 = parseDate_(row[col("start date")]); if (!d0) continue;
+    var d1 = parseDate_(row[col("end date")]) || d0;
+    var guard = 0;
+    for (var d = d0; d <= d1 && guard++ < 31; d = addDays_(d, 1)) {
+      (out[d] = out[d] || []).push({
+        id: slug_(title) + "@" + d, title: title, category: String(row[col("category")] || ""), venue: String(row[col("venue")] || ""),
+        start: String(row[col("start time")] || ""), end: String(row[col("end time")] || ""), status: String(row[col("status")] || ""),
+      });
+    }
+  }
+  return out;
+}
+
+function buildsheet_() {
+  var ss = plannerBook_();
+  var byDay = eventsByDay_();
+  var dates = Object.keys(byDay);
+  SEED_ENGAGEMENTS.forEach(function (e) { if (dates.indexOf(e.date) === -1) dates.push(e.date); });
+  dates.sort();
+  var first = dates[0], last = dates[dates.length - 1];
+  var settings = settingsTab_(ss);
+  var made = [];
+  for (var d = first; d <= last; d = addDays_(d, 1)) { dayTab_(ss, d, byDay[d] || []); made.push(tabName_(d)); }
+  // Tidy: settings first, then days in order; drop the default "Sheet1".
+  var s1 = ss.getSheetByName("Sheet1"); if (s1 && ss.getSheets().length > 1) ss.deleteSheet(s1);
+  ss.setActiveSheet(settings); ss.moveActiveSheet(1);
+  made.forEach(function (n, i) { ss.setActiveSheet(ss.getSheetByName(n)); ss.moveActiveSheet(i + 2); });
+  return { ok: true, url: ss.getUrl(), days: made.length };
+}
+
+function settingsTab_(ss) {
+  var sh = ss.getSheetByName("Settings") || ss.insertSheet("Settings");
+  if (sh.getLastRow() < HEADER_ROW) {
+    sh.getRange(1, 1).setValue("Bali in Bengaluru — Logistics Planner").setFontWeight("bold").setFontSize(14);
+    sh.getRange(2, 1).setValue("Inputs for the artist tour plan. Grey cells are pulled from the planning workbook and are not editable; white cells are yours. Times are HH:MM (a 30-minute allowance is 00:30).");
+    sh.getRange(3, 1).setValue("Public plan: https://bali-in-blr.paramfoundation.org/plan/   ·   Planner: https://bali-in-blr.paramfoundation.org/admin/logistics.html");
+    sh.getRange(HEADER_ROW, 1, 1, 3).setValues([["Setting", "Value", "Notes"]]).setFontWeight("bold").setBackground("#EFE7D8");
+    sh.getRange(HEADER_ROW + 1, 1, 5, 3).setValues([
+      ["Place of stay", STAYS[0], "Which stay the day tabs and the public plan use"],
+      ["Instrument storage", "", "Address or Google Maps link of where instruments and sets are kept; used for the instrument vehicle's departure time"],
+      ["Artists", 25, ""],
+      ["Volunteers travelling", 2, ""],
+      ["Instruments needed at venue", "00:30", "Default lead before the artists' set-up starts (HH:MM); override per event on the day tabs"],
+    ]);
+    sh.getRange(HEADER_ROW + 1, 2).setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(STAYS, true).build());
+    sh.getRange(HEADER_ROW + 5, 2).setNumberFormat("[hh]:mm");
+    sh.setColumnWidth(1, 220); sh.setColumnWidth(2, 320); sh.setColumnWidth(3, 520);
+    sh.setFrozenRows(HEADER_ROW);
+  }
+  return sh;
+}
+
+function dayTab_(ss, iso, events) {
+  var name = tabName_(iso);
+  var sh = ss.getSheetByName(name);
+  var fresh = !sh;
+  if (fresh) sh = ss.insertSheet(name);
+  // Title block, rows 1–9. Row 2 carries DD MMM | DAY | HH:MM (leave time, written back by the planner).
+  sh.getRange(1, 1).setValue("Bali in Bengaluru — artist logistics").setFontWeight("bold").setFontSize(13);
+  // A2:D2 merged: "04 Oct | Sun | 07:30" — the time is the departure from
+  // the stay, filled in by the planner (writeback); "—" until then.
+  var prev = String(sh.getRange(2, 1).getDisplayValue() || "");
+  var leave = (/\|\s*(\d{2}:\d{2})\s*$/.exec(prev) || [])[1] || "—";
+  sh.getRange(2, 1, 1, 4).merge();
+  sh.getRange(2, 1).setValue(dayLabel_(iso) + " | " + leave).setFontSize(16).setFontWeight("bold");
+  sh.getRange(3, 1).setValue("Stay: see Settings · times are HH:MM · a 30-minute allowance is 00:30 · grey cells come from the planning workbook and cannot be edited here.");
+  sh.getRange(4, 1).setValue("Public plan for this day: https://bali-in-blr.paramfoundation.org/plan/?day=" + iso);
+  sh.getRange(1, 1, 9, 17).setBackground("#F7F3EA");
+
+  // Events block.
+  var h = HEADER_ROW;
+  sh.getRange(h, 1, 1, EVENT_HEADERS.length).setValues([EVENT_HEADERS]).setFontWeight("bold").setBackground("#EFE7D8").setWrap(true);
+  var keep = {};
+  if (!fresh) {
+    var old = sh.getRange(h + 1, 1, Math.max(1, sh.getLastRow() - h), EVENT_HEADERS.length).getDisplayValues();
+    old.forEach(function (r) { if (r[2] && r[0] !== "" && !/^add-on/i.test(r[0])) keep[slug_(r[2])] = r; });
+  }
+  var rows = events.map(function (e, i) {
+    var seg = DEFAULT_SEG[e.category] || DEFAULT_SEG.default;
+    var k = keep[slug_(e.title)];
+    var t = function (m) { return hhmm_(m); };
+    return [i + 1, e.category, e.title, e.venue, e.start ? hhmm_(parseClock_(e.start)) : "", e.end ? hhmm_(parseClock_(e.end)) : "", e.status,
+      k ? k[7] : "", k ? k[8] : t(seg[0]), k ? k[9] : t(seg[1]), k ? k[10] : t(seg[2]), k ? k[11] : t(seg[3]), k ? k[12] : t(seg[4]), k ? k[13] : "No", k ? k[14] : "", k ? k[15] : "", k ? k[16] : ""];
+  });
+  var n = Math.max(rows.length, 1);
+  if (!rows.length) rows = [["", "", "(no programme this day)", "", "", "", "", "", "", "", "", "", "", "", "", "", ""]];
+  var eventsRange = sh.getRange(h + 1, 1, n, EVENT_HEADERS.length);
+  eventsRange.setValues(rows);
+  sh.getRange(h + 1, 1, n, 7).setBackground("#E9E4DA").setFontColor("#444444");
+  sh.getRange(h + 1, 16, n, 1).setBackground("#E9E4DA").setFontColor("#444444");
+  sh.getRange(h + 1, 8, n, 9).setBackground("#FFFFFF");
+  sh.getRange(h + 1, 5, n, 2).setNumberFormat("@");
+  sh.getRange(h + 1, 9, n, 5).setNumberFormat("[hh]:mm");
+  sh.getRange(h + 1, 15, n, 2).setNumberFormat("hh:mm");
+  sh.getRange(h + 1, 14, n, 1).setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(["No", "Yes"], true).build());
+  sh.getRange(h + 1, 8, n, 1).setNumberFormat("0");
+
+  // Add-ons block.
+  var a = h + n + 2;
+  sh.getRange(a - 1, 1).setValue("Add-ons — meals out, sightseeing, shopping, engagements (blank = none; a meal with no row is taken wherever the group is)").setFontStyle("italic");
+  sh.getRange(a, 1, 1, ADDON_HEADERS.length).setValues([ADDON_HEADERS]).setFontWeight("bold").setBackground("#EFE7D8");
+  var oldAdd = [];
+  if (!fresh) {
+    var all = sh.getDataRange().getDisplayValues();
+    for (var r = 0; r < all.length; r++) if (all[r][0] === "#" && all[r][1] === "Purpose") { oldAdd = all.slice(r + 1, r + 1 + ADDON_ROWS); break; }
+  }
+  var addRows = [];
+  for (var i = 0; i < ADDON_ROWS; i++) {
+    var o = oldAdd[i];
+    if (o && o[1]) addRows.push([i + 1, o[1], o[2], o[3], o[4], o[5] || "Yes", o[6]]);
+    else addRows.push([i + 1, "", "", "", "", "Yes", ""]);
+  }
+  if (fresh) SEED_ENGAGEMENTS.forEach(function (e) { if (e.date === iso) addRows[0] = [1, "Engagement", e.title + " — " + e.venue, e.start, e.end, "Yes", ""]; });
+  sh.getRange(a + 1, 1, ADDON_ROWS, ADDON_HEADERS.length).setValues(addRows).setBackground("#FFFFFF");
+  sh.getRange(a + 1, 2, ADDON_ROWS, 1).setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(PURPOSES, true).build());
+  sh.getRange(a + 1, 6, ADDON_ROWS, 1).setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(["Yes", "No"], true).build());
+  sh.getRange(a + 1, 4, ADDON_ROWS, 2).setNumberFormat("hh:mm");
+  sh.getRange(a + 1, 1, ADDON_ROWS, 1).setBackground("#E9E4DA");
+
+  // Widths, freeze, protection of the pulled cells.
+  [4, 11, 30, 26, 8, 8, 12, 8, 9, 10, 12, 10, 8, 7, 14, 14, 30].forEach(function (w, i) { sh.setColumnWidth(i + 1, w * 8); });
+  sh.setFrozenRows(HEADER_ROW);
+  sh.getProtections(SpreadsheetApp.ProtectionType.RANGE).forEach(function (p) { p.remove(); });
+  var prot = function (range, desc) { var p = range.protect().setDescription(desc); p.removeEditors(p.getEditors()); if (p.canDomainEdit()) p.setDomainEdit(false); };
+  prot(sh.getRange(1, 1, HEADER_ROW, EVENT_HEADERS.length), "Title block and headers — from the planner");
+  prot(sh.getRange(h + 1, 1, n, 7), "Pulled from the planning workbook's Event List — edit there");
+  prot(sh.getRange(h + 1, 16, n, 1), "Computed by the planner");
+  prot(sh.getRange(a, 1, 1, ADDON_HEADERS.length), "Headers");
+}
+
+// Read the inputs back for the planner.
+function dispMin_(s) {
+  s = String(s || "").trim(); if (!s || s === "—") return null;
+  var m = /^(\d{1,3}):(\d{2})/.exec(s); if (m) return +m[1] * 60 + +m[2];
+  var c = parseClock_(s); return c;
+}
+function sheetplan_() {
+  var ss = plannerBook_();
+  var cfg = { overrides: {}, stops: {}, extras: [], mealPlan: {} };
+  var st = ss.getSheetByName("Settings");
+  if (st) {
+    var sv = st.getRange(HEADER_ROW + 1, 1, 5, 2).getDisplayValues();
+    var get = function (k) { for (var i = 0; i < sv.length; i++) if (sv[i][0] === k) return sv[i][1]; return ""; };
+    cfg.stayName = get("Place of stay");
+    cfg.party = { artists: +get("Artists") || 25, volunteers: +get("Volunteers travelling") || 0 };
+    cfg.instrumentLead = dispMin_(get("Instruments needed at venue"));
+    var store = get("Instrument storage");
+    if (store) cfg.instrumentStore = locate_(store);
+  }
+  ss.getSheets().forEach(function (sh) {
+    var name = sh.getName(); if (name === "Settings") return;
+    var all = sh.getDataRange().getDisplayValues();
+    if (all.length <= HEADER_ROW) return;
+    var iso = null;
+    var m = /plan\/\?day=(\d{4}-\d{2}-\d{2})/.exec(String(all[3] && all[3][0] || "")); if (m) iso = m[1];
+    if (!iso) return;
+    var r = HEADER_ROW;
+    for (; r < all.length; r++) {
+      var row = all[r];
+      if (row[0] === "#" && row[1] === "Purpose") break;
+      if (!row[2] || row[0] === "#" || /^add-on/i.test(row[0]) || /no programme/i.test(row[2])) continue;
+      var id = slug_(row[2]) + "@" + iso;
+      var o = {};
+      if (row[7]) o.artists = +row[7];
+      var seg = ["setup", "soundcheck", "ready", "change", "after"];
+      seg.forEach(function (k, i) { var v = dispMin_(row[8 + i]); if (v != null) o[k] = v; });
+      if (/^y/i.test(row[13])) o.skip = true;
+      if (row[14] && row[14] !== "—") o.instrAt = dispMin_(row[14]);
+      if (row[16]) o.note = row[16];
+      cfg.overrides[id] = o;
+    }
+    for (r = r + 1; r < all.length; r++) {
+      var a = all[r]; if (!a[1]) continue;
+      if (!/^y/i.test(a[5] || "Yes")) continue;
+      var purpose = String(a[1]).toLowerCase();
+      var start = a[3] && a[3] !== "—" ? hhmm_(dispMin_(a[3])) : "", end = a[4] && a[4] !== "—" ? hhmm_(dispMin_(a[4])) : "";
+      if (purpose === "engagement") {
+        var parts = String(a[2]).split(/\s+—\s+|\s+-\s+/);
+        cfg.extras.push({ id: slug_(parts[0]) + "@" + iso, title: parts[0], category: "Internal", date: iso, start: start, end: end, venue: parts[1] || parts[0], note: a[6] || "" });
+      } else {
+        var loc = locate_(a[2]); if (!loc) continue;
+        (cfg.stops[iso] = cfg.stops[iso] || []).push({ purpose: purpose, name: loc.name, lat: loc.lat, lon: loc.lon, link: /^https?:/.test(a[2]) ? a[2] : "", start: start, end: end, note: a[6] || "" });
+      }
+    }
+  });
+  return { ok: true, url: ss.getUrl(), cfg: cfg };
+}
+// Address / Maps link / "lat, lon" → {name, lat, lon}; geocodes through Maps and remembers the answer.
+function locate_(text) {
+  text = String(text || "").trim(); if (!text) return null;
+  var m = /@(-?\d+\.\d+),(-?\d+\.\d+)/.exec(text) || /[?&](?:q|query|ll)=(-?\d+\.\d+),(-?\d+\.\d+)/.exec(text) || /^\s*(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)\s*$/.exec(text);
+  var name = "";
+  var pm = /\/place\/([^\/@?]+)/.exec(text); if (pm) name = decodeURIComponent(pm[1]).replace(/\+/g, " ");
+  if (m) return { name: name || text.slice(0, 40), lat: +m[1], lon: +m[2] };
+  var q = name || (/^https?:/.test(text) ? "" : text);
+  if (!q) return null;
+  var cache = CacheService.getScriptCache(); var hit = cache.get("geo|" + q); if (hit) return JSON.parse(hit);
+  var g = geocode_(q + (/bengaluru|bangalore|manipal/i.test(q) ? "" : ", Bengaluru"));
+  if (!g.ok) return null;
+  var out = { name: name || q, lat: g.lat, lon: g.lon, area: (g.label || "").split(",").slice(1, 3).join(",").trim() };
+  cache.put("geo|" + q, JSON.stringify(out), 21600);
+  return out;
+}
+// Planner → sheet: the day's leave time (row 2) and the instrument vehicle's computed times.
+function writeback_(days) {
+  var ss = plannerBook_();
+  Object.keys(days || {}).forEach(function (iso) {
+    var sh = ss.getSheetByName(tabName_(iso)); if (!sh) return;
+    var d = days[iso];
+    if (d.leave) sh.getRange(2, 1).setValue(dayLabel_(iso) + " | " + d.leave);
+    var all = sh.getDataRange().getDisplayValues();
+    for (var r = HEADER_ROW; r < all.length; r++) {
+      var row = all[r]; if (row[0] === "#" && row[1] === "Purpose") break;
+      var id = row[2] ? slug_(row[2]) + "@" + iso : null;
+      var ev = id && d.events && d.events[id]; if (!ev) continue;
+      if (ev.instrLeave) sh.getRange(r + 1, 16).setValue(ev.instrLeave);
+      if (ev.instrAt && !row[14]) sh.getRange(r + 1, 15).setValue(ev.instrAt);
+    }
+  });
+  return { ok: true };
 }

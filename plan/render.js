@@ -20,7 +20,7 @@
     const cls = ["tl-row", "tl-" + b.type, b.broad ? "tl-broad" : ""].join(" ");
     let when = hm(b.from) + (b.to != null ? " – " + hm(b.to) : "");
     let body = "<b>" + esc(b.label) + "</b>";
-    if (b.type === "leg") body += "<span class='tl-detail'>" + esc(b.detail) + "</span>";
+    if (b.type === "leg" || b.type === "truck") body += "<span class='tl-detail'>" + esc(b.detail) + "</span>";
     if (b.type === "show") {
       body += "<span class='tl-detail'>" + esc((b.ev && b.ev.category) || "") + (b.venue ? " · " + esc(b.venue.name) + (b.venue.area ? ", " + esc(b.venue.area) : "") : "") +
         (b.ev && b.ev.extra ? " · internal engagement" : b.ev && b.ev.notPublic ? " · not public" : "") + (b.ev && b.ev.note ? " · " + esc(b.ev.note) : "") + "</span>";
@@ -154,5 +154,5 @@
     return "<table class='cmp cmp-days'>" + head + "<tbody>" + body + "</tbody></table>";
   }
 
-  global.LogisticsRender = { dayCard: dayCard, tour: tour, totalsCard: totalsCard, compareTable: compareTable, compareDays: compareDays, summaryLine: summaryLine };
+  global.LogisticsRender = { hhmm: hhmm, dayCard: dayCard, tour: tour, totalsCard: totalsCard, compareTable: compareTable, compareDays: compareDays, summaryLine: summaryLine };
 })(window);

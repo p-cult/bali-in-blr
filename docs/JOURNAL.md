@@ -1193,6 +1193,22 @@ segments trimmed to 30/30/60 for a performance (10/10/15 workshop,
 10/10/20 talk), costume off 20/5, wrap 30/15. Rest-day and late-start wake
 is 7am.
 
+### 22 Sep 2026 — the Google Sheet planner
+
+The inputs moved into a Google Sheet, "Bali in Bengaluru — Logistics
+Planner", built by the logistics web app rather than by hand or
+IMPORTRANGE: Settings tab + one tab per day, headers on row 10, data from
+row 11, pulled Event List cells grey and protected, inputs as HH:MM with
+dropdowns for Yes/No and add-on purposes, two instrument-vehicle columns
+per event (at venue by / leaves storage, the second computed). The planner
+reads it on load and writes departure and vehicle times back. Deployed as
+Versions 3–6 of the same web app. The first build failed at the last step
+because installing a time trigger needs a scope the deployment was not
+granted; the user then said no timer at all, so it is an on-demand
+"Re-pull events into sheet" button instead. The instrument vehicle's
+departure needs the storage location in Settings; until it is filled the
+plan shows only "instruments at venue by".
+
 Lesson: the first pass let a leg depart before the previous event had
 wrapped (arrival was fixed at start − buffer). Legs now leave no earlier
 than the previous wrap and the day is flagged with the minutes lost from

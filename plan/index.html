@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@125,600;125,700;125,900&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="plan.css?v=5" />
+<link rel="stylesheet" href="plan.css?v=6" />
 </head>
 <body>
 <div class="wrap">
@@ -33,8 +33,8 @@
   </footer>
 </div>
 
-<script src="engine.js?v=19"></script>
-<script src="render.js?v=13"></script>
+<script src="engine.js?v=20"></script>
+<script src="render.js?v=14"></script>
 <script>
 (function () {
   "use strict";
@@ -47,7 +47,7 @@
 
   function currentStay() {
     const stays = L.activeStays(data.cfg), pick = $("stay-pick");
-    return stays.find(function (s) { return s.id === (pick.value || params.get("stay")); }) || stays[0];
+    return stays.find(function (s) { return s.id === (pick.value || params.get("stay") || data.cfg.selectedStay); }) || stays[0];
   }
   function render() {
     const stays = L.activeStays(data.cfg);
@@ -56,7 +56,7 @@
       $("stay-pick-wrap").hidden = false;
       if (!pick.options.length) stays.forEach(function (s) { const o = document.createElement("option"); o.value = s.id; o.textContent = s.name; pick.appendChild(o); });
     }
-    const stay = stays.find(function (s) { return s.id === (pick.value || params.get("stay")); }) || stays[0];
+    const stay = stays.find(function (s) { return s.id === (pick.value || params.get("stay") || data.cfg.selectedStay); }) || stays[0];
     if (!stay) { $("sub").textContent = "No stay is configured for this plan."; return; }
     if (pick.value !== stay.id) pick.value = stay.id;
     plan = L.planTour(ctx, data.events, stay);

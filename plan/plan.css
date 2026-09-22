@@ -95,6 +95,10 @@ h2{font-family:var(--display);font-weight:700;text-transform:uppercase;font-size
 .tl-show .tl-body b{font-family:var(--display);text-transform:uppercase;letter-spacing:.03em;font-size:.85rem}
 .tl-leg .tl-body b::before{content:"→ ";color:var(--copper)}
 .tl-hold .tl-body b{color:var(--muted)}
+.tl-truck{opacity:.7;font-size:.85rem}
+.tl-truck .tl-when{color:var(--muted)}
+.tl-truck .tl-body b{font-weight:500;color:var(--muted)}
+.tl-truck .tl-body b::before{content:"▮ ";color:var(--copper)}
 .tl-sleep .tl-when::after{content:""}
 .tl-edit{display:flex;flex-wrap:wrap;gap:.5rem .9rem;margin-top:.35rem;font-size:.78rem;color:var(--muted)}
 .tl-edit input[type=number]{width:4.2rem}

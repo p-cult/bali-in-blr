@@ -469,6 +469,7 @@
         else if (costumeLeft < x.b.ready / 2) red(day, msg + " Costume / make-up cut to " + Math.round(costumeLeft) + " min.");
         else day.flags.push(msg);
       }
+      if (!x.meal) truckFor(ctx, day, timeline, x, arrive, dateISO);
       if (x.meal) {
         // A meal out: no venue buffers, the meal itself, then move on.
         if (x.b.start > arrive + 5) timeline.push(block("hold", arrive, x.b.start, "Arrive early at " + x.venue.name, { inTown: true }));
@@ -633,6 +634,7 @@
       }
       if (arrive > here + 15) timeline.push(block("hold", here, arrive, "Free time in town" + mealHint(here, arrive, D), { inTown: true }));
       if (arrive > x.b.start) red(day, "“" + x.ev.title + "” starts before the group can be ready (" + hm(arrive) + ").");
+      truckFor(ctx, day, timeline, x, arrive, dateISO);
       pushPrep(timeline, arrive, x);
       timeline.push(block("show", x.b.start, x.b.end, x.ev.title, { ev: x.ev, venue: x.venue }));
       here = x.b.end + x.b.change + x.b.after;
@@ -822,6 +824,28 @@
     day.blocks.sort(function (a, b) { return a.from - b.from; });
   }
 
+  // The instrument vehicle (production, not artist time): must be at the
+  // venue `instrumentLead` minutes before the artists' set-up, or at the
+  // time given for the event; leaves the storage place travel-time earlier.
+  function truckFor(ctx, day, timeline, x, artistsArrive, dateISO) {
+    const cfg = ctx.cfg, o = (cfg.overrides || {})[x.ev.id] || {};
+    const lead = cfg.instrumentLead != null ? +cfg.instrumentLead : 30;
+    const at = o.instrAt != null ? +o.instrAt : artistsArrive - lead;
+    const store = cfg.instrumentStore && cfg.instrumentStore.lat != null ? cfg.instrumentStore : null;
+    let leave = null, tr = null;
+    if (store && x.idx >= 0) {
+      const sIdx = ctx.point(store);
+      let dep = at - 45;
+      for (let i = 0; i < 3; i++) { tr = ctx.travel(sIdx, x.idx, dateISO, dep); dep = at - (tr.min == null ? 45 : tr.min); }
+      leave = dep;
+      timeline.push(block("truck", leave, at, "Instrument vehicle: leave " + (store.name || "storage") + " for " + (x.venue ? x.venue.name : x.ev.venue), { detail: legDetail(tr, 0) + " · production vehicle, not artist time" }));
+    } else {
+      timeline.push(block("truck", at, null, "Instruments at " + (x.venue ? x.venue.name : x.ev.venue) + " by now", { detail: store ? "" : "set the instrument storage location in the planner sheet to get the departure time" }));
+    }
+    day.trucks = day.trucks || [];
+    day.trucks.push({ id: x.ev.id, instrAt: at, instrLeave: leave });
+  }
+
   // The pre-show segments between arrival and the start. A late arrival
   // squeezes them in order: setup first (it cannot be skipped), then sound
   // check, then whatever is left for costume and warm-up.
@@ -968,13 +992,14 @@
     activeStays(cfg).forEach(function (s) { ctx.point(s); });
     events.forEach(function (e) { const v = venues.resolve(e.venue); if (v) ctx.point(v); });
     Object.keys(cfg.stops || {}).forEach(function (d) { (cfg.stops[d] || []).forEach(function (p) { if (p && p.lat != null) ctx.point(p); }); });
+    if (cfg.instrumentStore && cfg.instrumentStore.lat != null) ctx.point(cfg.instrumentStore);
     Object.keys(cfg.mealStops || {}).forEach(function (d) {
       ["lunch", "dinner"].forEach(function (k) { const p = cfg.mealStops[d][k]; if (p && p.lat != null) ctx.point(p); });
     });
   }
   function activeStays(cfg) { return (cfg.stays || []).filter(function (s) { return s.active !== false && s.lat != null; }); }
   function encodeShare(cfg) {
-    const slim = { v: cfg.version || 1, extras: cfg.extras || [], stops: cfg.stops || {}, mealPlan: cfg.mealPlan || {}, party: cfg.party, stays: cfg.stays, day: cfg.day, buffers: cfg.buffers, overrides: cfg.overrides, provider: cfg.provider, traffic: cfg.traffic, excludeStatuses: cfg.excludeStatuses, venueOverrides: cfg.venueOverrides || [] };
+    const slim = { v: cfg.version || 1, instrumentStore: cfg.instrumentStore || null, instrumentLead: cfg.instrumentLead, selectedStay: cfg.selectedStay, extras: cfg.extras || [], stops: cfg.stops || {}, mealPlan: cfg.mealPlan || {}, party: cfg.party, stays: cfg.stays, day: cfg.day, buffers: cfg.buffers, overrides: cfg.overrides, provider: cfg.provider, traffic: cfg.traffic, excludeStatuses: cfg.excludeStatuses, venueOverrides: cfg.venueOverrides || [] };
     return btoa(unescape(encodeURIComponent(JSON.stringify(slim)))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
   }
   function decodeShare(s) {
@@ -1017,6 +1042,27 @@
     });
   }
 
+  // Inputs from the Google Sheet planner (the source of truth for per-event
+  // and per-day inputs once the backend is connected).
+  async function fetchSheetPlan() {
+    if (!CONFIG.LOGISTICS_URL) return null;
+    try { const r = await fetchJSON(CONFIG.LOGISTICS_URL + "?action=sheetplan", 30000); return r && r.ok ? r : null; } catch (e) { return null; }
+  }
+  function applySheetPlan(cfg, sheet) {
+    if (!sheet || !sheet.cfg) return cfg;
+    const sc = sheet.cfg;
+    cfg.overrides = Object.assign({}, cfg.overrides || {}, sc.overrides || {});
+    cfg.stops = sc.stops || {};
+    cfg.mealStops = {};
+    cfg.extras = sc.extras || [];
+    if (sc.party) { cfg.party.artists = sc.party.artists; cfg.party.volunteers = sc.party.volunteers; cfg.party.size = (sc.party.artists || 0) + (sc.party.volunteers || 0); }
+    if (sc.instrumentLead != null) cfg.instrumentLead = sc.instrumentLead;
+    if (sc.instrumentStore) cfg.instrumentStore = sc.instrumentStore;
+    if (sc.stayName) { const st = (cfg.stays || []).find(function (s) { return s.name === sc.stayName; }); if (st) cfg.selectedStay = st.id; }
+    cfg.sheetUrl = sheet.url;
+    return cfg;
+  }
+
   /* ---------- loading everything ---------- */
   async function load(opts) {
     opts = opts || {};
@@ -1036,6 +1082,7 @@
       events = local.map(function (e) { return { id: slug(e.title) + "@" + e.date, title: e.title, category: e.category, date: e.date, start: parseClock(e.time), end: null, shows: [], venue: e.venue, status: e.status, notPublic: false, timeText: e.time || "" }; })
         .map(function (e) { if (e.start != null) { e.end = e.start + 120; e.shows = [{ start: e.start, end: e.end }]; } return e; });
     }
+    if (opts.sheet !== false) { const sheet = await fetchSheetPlan(); if (sheet) applySheetPlan(cfg, sheet); }
     events = events.concat(extraEvents(cfg));
     events.sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : (a.start || 0) - (b.start || 0); });
     return { cfg: cfg, venues: venues, events: events, fromSheet: !!tsv };
@@ -1044,7 +1091,7 @@
   global.Logistics = { PURPOSE: PURPOSE,
     CONFIG: CONFIG, providers: providers, Ctx: Ctx, VenueBook: VenueBook,
     load: load, parseSchedule: parseSchedule, planDay: planDay, planTour: planTour, compareStays: compareStays,
-    refineWithBridge: refineWithBridge, refineTour: refineTour, activeStays: activeStays, registerPoints: registerPoints, encodeShare: encodeShare, decodeShare: decodeShare,
+    refineWithBridge: refineWithBridge, refineTour: refineTour, fetchSheetPlan: fetchSheetPlan, applySheetPlan: applySheetPlan, activeStays: activeStays, registerPoints: registerPoints, encodeShare: encodeShare, decodeShare: decodeShare,
     parseLatLon: parseLatLon, placeNameFromLink: placeNameFromLink, geocode: geocode, deepMerge: deepMerge, clone: clone,
     esc: esc, hm: hm, dur: dur, toMin: toMin, dateLabel: dateLabel, slug: slug, pad: pad,
   };

@@ -148,6 +148,39 @@ schedule with its precision; a `locality` or `NOT LOCATED` venue can be
 pinned from the planner (kept in the plan as `venueOverrides`), and should
 then be written back into `venues.json` for good.
 
+## The Google Sheet planner (inputs)
+
+**Bali in Bengaluru — Logistics Planner** (link in the vault and on the
+admin planner's "Open the Google Sheet" button) is where staff enter the
+inputs. It is created and refreshed by the logistics web app
+(`?action=buildsheet`, on demand from the planner's "Re-pull events into
+sheet" button; no timer), so no IMPORTRANGE permissions are involved.
+
+- **Settings** tab: place of stay (dropdown), instrument storage location
+  (address or Maps link), artists, volunteers, and the default lead for
+  instruments at the venue (HH:MM). Headers on row 10, values from row 11.
+- **One tab per tour day** ("02 Oct" … "18 Oct"). Rows 1–9 are the title
+  block; A2 reads `DD MMM | DAY | HH:MM` where the time is the day's
+  departure from the stay, written by the planner. Row 10 holds the
+  headers, row 11 onward the day's events pulled from the planning
+  workbook's Event List (grey, protected: type, title, venue, start, end,
+  status). Beside them the inputs: artists on that show, set-up, sound
+  check, costume & make-up, costume off, wrap (all HH:MM, so 30 minutes is
+  `00:30`), Skip? (Yes/No), **Instruments at venue by** (HH:MM, blank =
+  the default lead before set-up) and **Vehicle leaves storage** (grey,
+  computed by the planner from the storage location and traffic), plus a
+  note. Below, an **add-ons** block: purpose dropdown (Breakfast, Lunch,
+  Dinner, Sightseeing, Shopping, Engagement, Other), location (Maps link or
+  address), start and end (HH:MM), Include? (Yes/No), note. An Engagement
+  row ("Photoshoot — Mandala Cultural Centre") becomes an internal event.
+- Re-pulling keeps every input; it only refreshes the grey cells and adds
+  new days or events.
+
+The planner and the public page read the sheet on load
+(`?action=sheetplan`); "Fetch sheet inputs" re-reads it without a page
+reload. After pricing, the planner writes back the departure time and the
+instrument vehicle's times (`writeback`).
+
 ## Sharing and saving
 
 - **Copy public link** puts the entire plan (stays, buffers, overrides,
