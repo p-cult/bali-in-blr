@@ -142,7 +142,8 @@
   ];
 
   function cfg() { return data.cfg; }
-  function persist() { try { localStorage.setItem(STORE, JSON.stringify(cfg())); } catch (e) { /* ignore */ } }
+  let syncHook = null;
+  function persist() { try { localStorage.setItem(STORE, JSON.stringify(cfg())); } catch (e) { /* ignore */ } if (syncHook) syncHook(); }
   function stored() { try { return JSON.parse(localStorage.getItem(STORE) || "null"); } catch (e) { return null; } }
 
   /* ---- forms ---- */
@@ -453,21 +454,47 @@
       L.applySheetPlan(cfg(), sheet);
       await rebuildEvents(); await rebuild(true); await refreshTraffic();
     });
-    // After pricing, send the day's departure and the instrument vehicle
-    // times back to the sheet (the grey "Vehicle leaves storage" column).
-    async function writeBack() {
-      if (!L.CONFIG.LOGISTICS_URL || !cfg().sheetUrl) return;
-      const stay = L.activeStays(cfg()).find(function (s) { return s.id === selectedStay; }); if (!stay) return;
+    // Two-way sync: everything the planner knows for each day goes to the
+    // sheet — after pricing, and (debounced) after any edit here.
+    const PURPOSE_LABEL = { breakfast: "Breakfast", lunch: "Lunch", dinner: "Dinner", sightseeing: "Sightseeing", shopping: "Shopping", other: "Other" };
+    let syncTimer = null;
+    function sheetPayload() {
+      const c = cfg();
+      const stay = L.activeStays(c).find(function (s) { return s.id === selectedStay; }); if (!stay) return null;
       const plan = L.planTour(ctx, data.events, stay);
       const days = {};
       plan.days.forEach(function (d) {
-        const ev = {};
-        (d.trucks || []).forEach(function (t) { ev[t.id] = { instrAt: R.hhmm(t.instrAt), instrLeave: t.instrLeave != null ? R.hhmm(t.instrLeave) : "" }; });
-        days[d.date] = { leave: d.leave != null && d.kind !== "rest" ? R.hhmm(d.leave) : "", events: ev };
+        const trucks = {}; (d.trucks || []).forEach(function (t) { trucks[t.id] = t; });
+        const events = {};
+        data.events.filter(function (e) { return e.date === d.date && !e.extra; }).forEach(function (e) {
+          const b = c.buffers[e.category] || c.buffers.default, o = (c.overrides || {})[e.id] || {}, t = trucks[e.id];
+          const pick = function (k) { return o[k] != null ? o[k] : (b[k] != null ? b[k] : 0); };
+          events[e.id] = {
+            artists: o.artists != null ? o.artists : c.party.artists,
+            setup: R.hhmm(pick("setup")), soundcheck: R.hhmm(pick("soundcheck")), ready: R.hhmm(pick("ready")), change: R.hhmm(pick("change")), after: R.hhmm(pick("after")),
+            skip: !!o.skip, note: o.note || "",
+            instrAt: t ? R.hhmm(t.instrAt) : "", instrLeave: t && t.instrLeave != null ? R.hhmm(t.instrLeave) : "",
+          };
+        });
+        const addons = [];
+        (c.extras || []).filter(function (x) { return x.date === d.date; }).forEach(function (x) {
+          addons.push({ purpose: "Engagement", location: x.title + " — " + x.venue, start: x.start || "", end: x.end || "", include: true, note: x.note || "" });
+        });
+        ((c.stops || {})[d.date] || []).forEach(function (p) {
+          addons.push({ purpose: PURPOSE_LABEL[p.purpose] || "Other", location: p.link || p.name, start: p.start || "", end: p.end || "", include: true, note: p.note || "" });
+        });
+        days[d.date] = { leave: d.leave != null && d.kind !== "rest" ? R.hhmm(d.leave) : "", events: events, addons: addons };
       });
-      try { await fetch(L.CONFIG.LOGISTICS_URL, { method: "POST", body: JSON.stringify({ action: "writeback", days: days }) }); $("status").textContent += " · sheet updated"; }
+      return { action: "writeback", days: days, settings: { stay: stay.name, artists: c.party.artists, volunteers: c.party.volunteers, storage: c.instrumentStore && c.instrumentStore.link ? c.instrumentStore.link : "", lead: c.instrumentLead != null ? R.hhmm(c.instrumentLead) : "" } };
+    }
+    async function writeBack() {
+      if (!L.CONFIG.LOGISTICS_URL || !cfg().sheetUrl) return;
+      const payload = sheetPayload(); if (!payload) return;
+      try { await fetch(L.CONFIG.LOGISTICS_URL, { method: "POST", body: JSON.stringify(payload) }); $("status").textContent = $("status").textContent.replace(/ · sheet updated.*$/, "") + " · sheet updated " + new Date().toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit" }); }
       catch (e) { /* the write usually lands even when the reply is not JSON */ }
     }
+    function syncSoon() { if (!cfg().sheetUrl) return; clearTimeout(syncTimer); syncTimer = setTimeout(writeBack, 2500); }
+    syncHook = syncSoon;
     $("save").addEventListener("click", async function () {
       $("status").textContent = "Saving…";
       try {

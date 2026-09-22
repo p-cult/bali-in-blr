@@ -1209,6 +1209,11 @@ granted; the user then said no timer at all, so it is an on-demand
 departure needs the storage location in Settings; until it is filled the
 plan shows only "instruments at venue by".
 
+Two-way sync (user's ask, same day): the planner now fills the sheet with
+the whole default plan and keeps writing after every edit (debounced), and
+reads the sheet on load / on "Fetch sheet inputs". Last writer wins.
+Version 7 of the same deployment.
+
 Lesson: the first pass let a leg depart before the previous event had
 wrapped (arrival was fixed at start − buffer). Legs now leave no earlier
 than the previous wrap and the day is flagged with the minutes lost from

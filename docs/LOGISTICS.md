@@ -176,10 +176,15 @@ sheet" button; no timer), so no IMPORTRANGE permissions are involved.
 - Re-pulling keeps every input; it only refreshes the grey cells and adds
   new days or events.
 
-The planner and the public page read the sheet on load
+**Two-way sync.** The planner and the public page read the sheet on load
 (`?action=sheetplan`); "Fetch sheet inputs" re-reads it without a page
-reload. After pricing, the planner writes back the departure time and the
-instrument vehicle's times (`writeback`).
+reload. In the other direction the planner writes every day to the sheet
+after pricing and about three seconds after any edit made in the planner:
+artists per show, the five segments, Skip?, notes, both instrument-vehicle
+times, the add-on rows (engagements and stops) and the Settings values
+(`writeback`). Last writer wins; there is no merge. A value written by the
+planner into an input cell (for example "Instruments at venue by") is from
+then on the sheet's value, so change it in either place.
 
 ## Sharing and saving
 

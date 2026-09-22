@@ -75,7 +75,7 @@ function doPost(e) {
   try {
     var body = JSON.parse((e && e.postData && e.postData.contents) || "{}");
     if (body.action === "save") { savePlan_(body.cfg || {}); return json_({ ok: true }); }
-    if (body.action === "writeback") return json_(writeback_(body.days || {}));
+    if (body.action === "writeback") return json_(writeback_(body.days || {}, body.settings || null));
     return json_({ ok: false, error: "unknown action" });
   } catch (err) {
     return json_({ ok: false, error: String(err && err.message || err) });
@@ -482,20 +482,49 @@ function locate_(text) {
   cache.put("geo|" + q, JSON.stringify(out), 21600);
   return out;
 }
-// Planner → sheet: the day's leave time (row 2) and the instrument vehicle's computed times.
-function writeback_(days) {
+// Planner → sheet (two-way sync). days[iso] = { leave, events:{id:{artists, setup,
+// soundcheck, ready, change, after, skip, note, instrAt, instrLeave}},
+// addons:[{purpose, location, start, end, include, note}] }; settings =
+// { stay, artists, volunteers, storage, lead }. Every value is written as
+// the cell's display text (HH:MM for times) so the sheet stays readable.
+function writeback_(days, settings) {
   var ss = plannerBook_();
+  if (settings) {
+    var st = ss.getSheetByName("Settings");
+    if (st) {
+      var vals = st.getRange(HEADER_ROW + 1, 1, 5, 2).getDisplayValues();
+      var put = function (k, v) { for (var i = 0; i < vals.length; i++) if (vals[i][0] === k && v != null && v !== "") st.getRange(HEADER_ROW + 1 + i, 2).setValue(v); };
+      put("Place of stay", settings.stay); put("Artists", settings.artists); put("Volunteers travelling", settings.volunteers);
+      if (settings.storage) put("Instrument storage", settings.storage);
+      if (settings.lead) put("Instruments needed at venue", settings.lead);
+    }
+  }
   Object.keys(days || {}).forEach(function (iso) {
     var sh = ss.getSheetByName(tabName_(iso)); if (!sh) return;
     var d = days[iso];
     if (d.leave) sh.getRange(2, 1).setValue(dayLabel_(iso) + " | " + d.leave);
     var all = sh.getDataRange().getDisplayValues();
-    for (var r = HEADER_ROW; r < all.length; r++) {
-      var row = all[r]; if (row[0] === "#" && row[1] === "Purpose") break;
+    var r = HEADER_ROW, addonHeader = -1;
+    for (; r < all.length; r++) {
+      var row = all[r]; if (row[0] === "#" && row[1] === "Purpose") { addonHeader = r; break; }
       var id = row[2] ? slug_(row[2]) + "@" + iso : null;
       var ev = id && d.events && d.events[id]; if (!ev) continue;
-      if (ev.instrLeave) sh.getRange(r + 1, 16).setValue(ev.instrLeave);
-      if (ev.instrAt && !row[14]) sh.getRange(r + 1, 15).setValue(ev.instrAt);
+      var cells = [
+        ev.artists != null ? ev.artists : row[7],
+        ev.setup != null ? ev.setup : row[8], ev.soundcheck != null ? ev.soundcheck : row[9], ev.ready != null ? ev.ready : row[10],
+        ev.change != null ? ev.change : row[11], ev.after != null ? ev.after : row[12],
+        ev.skip != null ? (ev.skip ? "Yes" : "No") : row[13],
+        ev.instrAt || row[14], ev.instrLeave || row[15], ev.note != null ? ev.note : row[16],
+      ];
+      sh.getRange(r + 1, 8, 1, 10).setValues([cells]);
+    }
+    if (addonHeader >= 0 && d.addons) {
+      var rows = [];
+      for (var i = 0; i < ADDON_ROWS; i++) {
+        var x = d.addons[i];
+        rows.push(x ? [i + 1, x.purpose || "", x.location || "", x.start || "", x.end || "", x.include === false ? "No" : "Yes", x.note || ""] : [i + 1, "", "", "", "", "Yes", ""]);
+      }
+      sh.getRange(addonHeader + 2, 1, ADDON_ROWS, ADDON_HEADERS.length).setValues(rows);
     }
   });
   return { ok: true };
