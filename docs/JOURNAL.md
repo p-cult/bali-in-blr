@@ -1317,6 +1317,9 @@ the buffer — the tool's job is to expose the squeeze, not hide it.
   component, so calendar rows and event pages both get it: on a phone the
   buttons sit side by side at equal width, one alone takes the full width, and
   the rule sets size only, never display.
+- Verified live at 375px: all 8 calendar rows with two buttons have them on
+  one line with logos centred, none misaligned; the event pages match; no
+  sideways scroll on the home page, the calendar or an event page.
 
 ## 2. Lessons and standing rules (the "why" behind the rules)
 
