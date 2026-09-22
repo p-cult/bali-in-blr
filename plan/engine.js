@@ -488,18 +488,33 @@
 
     // Morning, walked back from the first departure.
     const prepStart = leaveStay - D.prep;
-    const bfStart = prepStart - D.breakfast;
-    const wake = bfStart - D.wake;
-    const morning = [
-      block("wake", wake, bfStart, "Wake up", { broad: true }),
-      block("meal", bfStart, prepStart, "Breakfast at the stay", { broad: true }),
-      block("prep", prepStart, leaveStay, "Get ready · costumes & instruments to the vehicle", {}),
-    ];
-    // Lunch: if the group is out through the lunch window, mark where.
+    const normalWake = toMin(D.restDayWake) || 480;
+    let bfStart = prepStart - D.breakfast;
+    let wake = bfStart - D.wake;
+    const morning = [];
     const lo = toMin(D.lunchWindow[0]), lc = toMin(D.lunchWindow[1]);
+    if (wake > normalWake) {
+      // A late departure does not mean a late morning: wake at the usual
+      // hour and show the free time, with lunch at the stay if it fits.
+      wake = normalWake; bfStart = wake + D.wake;
+      morning.push(block("wake", wake, bfStart, "Wake up", { broad: true }));
+      morning.push(block("meal", bfStart, bfStart + D.breakfast, "Breakfast at the stay", { broad: true }));
+      const lunchAt = prepStart - D.lunch >= lo ? Math.min(prepStart - D.lunch, lo + 30) : null;
+      const freeTo = lunchAt != null ? lunchAt : prepStart;
+      if (freeTo - (bfStart + D.breakfast) >= 30) morning.push(block("free", bfStart + D.breakfast, freeTo, "Free at the stay — rehearsal, rest", { broad: true }));
+      if (lunchAt != null) {
+        morning.push(block("meal", lunchAt, lunchAt + D.lunch, "Lunch at the stay before leaving", { broad: true }));
+        if (prepStart - (lunchAt + D.lunch) >= 30) morning.push(block("free", lunchAt + D.lunch, prepStart, "Free at the stay", { broad: true }));
+      }
+    } else {
+      morning.push(block("wake", wake, bfStart, "Wake up", { broad: true }));
+      morning.push(block("meal", bfStart, prepStart, "Breakfast at the stay", { broad: true }));
+    }
+    morning.push(block("prep", prepStart, leaveStay, "Get ready · costumes & instruments to the vehicle", {}));
+    // Lunch on the road: if a show sits inside the lunch window, say so.
     const busy = timeline.filter(function (b) { return b.type === "show" && b.from < lc && b.to > lo; });
-    if (leaveStay > lc - 30) morning.splice(2, 0, block("meal", lo, lo + D.lunch, "Lunch at the stay before leaving", { broad: true }));
-    else if (busy.length) day.flags.push("Lunch falls inside “" + busy[0].label + "” — arrange packed lunch at the venue.");
+    const lunchDone = morning.some(function (b) { return b.type === "meal" && /Lunch/.test(b.label); });
+    if (!lunchDone && busy.length) day.flags.push("Lunch falls inside “" + busy[0].label + "” — arrange packed lunch at the venue.");
 
     day.blocks = morning.concat(timeline).sort(function (a, b) { return a.from - b.from; });
     day.wake = wake; day.leave = leaveStay; day.back = home; day.sleep = sleepAt;
