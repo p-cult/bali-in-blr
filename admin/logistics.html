@@ -20,6 +20,11 @@
   <h1>Artist logistics planner</h1>
   <p class="sub">Day-by-day tour plan for the touring company, computed from the live festival schedule and road conditions. Every change below re-plans instantly.</p>
 
+  <div class="loader no-print" id="loader" role="status" aria-live="polite">
+    <span class="loader-spin" aria-hidden="true"></span>
+    <span id="loader-text">Loading the festival schedule…</span>
+    <span class="loader-bar" aria-hidden="true"><i id="loader-fill"></i></span>
+  </div>
   <div class="warnings" id="warnings"></div>
 
   <div class="bar no-print">
@@ -143,6 +148,15 @@
   ];
 
   function cfg() { return data.cfg; }
+  let loaderHide = null;
+  function loading(text, frac, done) {
+    const el = $("loader"); if (!el) return;
+    clearTimeout(loaderHide);
+    el.classList.remove("hide"); el.classList.toggle("done", !!done);
+    $("loader-text").textContent = text;
+    $("loader-fill").style.width = Math.round((frac || 0) * 100) + "%";
+    if (done) loaderHide = setTimeout(function () { el.classList.add("hide"); }, 2500);
+  }
   let syncHook = null;
   function persist() { try { localStorage.setItem(STORE, JSON.stringify(cfg())); } catch (e) { /* ignore */ } if (syncHook) syncHook(); }
   function stored() { try { return JSON.parse(localStorage.getItem(STORE) || "null"); } catch (e) { return null; } }
@@ -229,6 +243,7 @@
       ctx.legCache = oldCache;
       L.registerPoints(ctx, c, data.venues, data.events);
       $("status").textContent = "Fetching road distances…";
+      loading("Working out road distances…", 0.25);
       await ctx.ensureMatrix();
     } else ctx.cfg = c;
     render();
@@ -441,28 +456,32 @@
       bindForms(); scheduleRebuild(true);
     });
     refreshTraffic = async function () {
-      if (!L.CONFIG.LOGISTICS_URL) { ctx.warnings.push("Live traffic needs the logistics backend (docs/LOGISTICS.md). Until then, times use road routing plus the Bengaluru hour-by-hour profile."); render(); return; }
+      if (!L.CONFIG.LOGISTICS_URL) { ctx.warnings.push("Live traffic needs the logistics backend (docs/LOGISTICS.md). Until then, times use road routing plus the Bengaluru hour-by-hour profile."); render(); loading("Loaded · times are estimates", 1, true); return; }
       cfg().provider = "bridge"; $("provider").value = "bridge";
       const stays = L.activeStays(cfg());
       const selected = stays.find(function (s) { return s.id === selectedStay; }) || stays[0];
       for (const s of [selected].concat(stays.filter(function (x) { return x !== selected; }))) {
         if (!s) continue;
+        const idx = stays.indexOf(s), n = stays.length;
         await L.refineTour(ctx, data.events, s, function (plan, done, total, pass) {
-          $("status").textContent = "Google traffic for " + s.name + ": " + Math.min(done, total) + "/" + total + " legs" + (pass ? " (pass " + (pass + 1) + ")" : "") + "…";
+          const frac = 0.3 + 0.6 * ((idx + Math.min(done, total) / Math.max(total, 1)) / n);
+          loading("Google traffic for " + s.name + ": " + Math.min(done, total) + " of " + total + " legs" + (pass ? ", settling" : "") + "…", frac);
           if (s === selected) render();
         });
       }
       render();
+      loading("Writing the plan to the Google Sheet…", 0.95);
       await writeBack();
+      loading("Everything is loaded · Google traffic · sheet in step", 1, true);
     };
     $("traffic").addEventListener("click", function () { refreshTraffic(); });
     $("repull-sheet").addEventListener("click", async function () {
-      $("status").textContent = "Re-pulling the Event List into the planner sheet (keeps your inputs)…";
+      $("status").textContent = "Re-pulling the Event List into the planner sheet (keeps your inputs)…"; loading("Re-pulling events into the sheet…", 0.1);
       try { await fetch(L.CONFIG.LOGISTICS_URL + "?action=buildsheet", { cache: "no-store" }); } catch (e) { /* the build usually completes even when the reply is not JSON */ }
       $("reload-sheet").click();
     });
     $("reload-sheet").addEventListener("click", async function () {
-      $("status").textContent = "Reading the Google Sheet…";
+      $("status").textContent = "Reading the Google Sheet…"; loading("Reading the Google Sheet…", 0.15);
       const sheet = await L.fetchSheetPlan();
       if (!sheet) { ctx.warnings.push("Could not read the planner sheet."); render(); return; }
       L.applySheetPlan(cfg(), sheet);
@@ -521,6 +540,7 @@
   async function start(user) {
     $("who").textContent = user;
     try {
+      loading("Loading the festival schedule and the planner sheet…", 0.1);
       const draft = stored();
       data = await L.load({ cfg: draft || undefined });
       defaults = L.clone(await fetch(L.CONFIG.DEFAULTS).then(function (r) { return r.json(); }));
@@ -533,7 +553,8 @@
       bindForms(); wire();
       await rebuild(true);
       if (L.CONFIG.LOGISTICS_URL && cfg().provider === "bridge") await refreshTraffic();
-    } catch (e) { $("status").textContent = "Failed to load: " + e.message; }
+      if (!(L.CONFIG.LOGISTICS_URL && cfg().provider === "bridge")) loading("Everything is loaded · times are estimates", 1, true);
+    } catch (e) { $("status").textContent = "Failed to load: " + e.message; loading("Could not load: " + e.message, 0, true); }
   }
   AdminAuth.protect({ tool: "logistics", onUnlock: start });
   $("signout").addEventListener("click", AdminAuth.signOut);

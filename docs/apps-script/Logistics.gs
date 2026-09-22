@@ -140,24 +140,38 @@ function cacheKey_(a, b, depart) {
   var slot = Utilities.formatDate(depart, TZ, "u-HH") + ":" + (Math.floor(depart.getMinutes() / 15) * 15);
   return [a.lat.toFixed(4), a.lon.toFixed(4), b.lat.toFixed(4), b.lon.toFixed(4), slot].join("|");
 }
+// The TravelCache tab is read ONCE per execution (a batch of 40 legs used to
+// re-read the whole tab per leg, which is what made pricing slow as the tab
+// grew) and indexed by key; new rows are appended and added to the index.
+var cacheIndex_ = null, cacheSheet_ = null;
+function cacheLoad_() {
+  if (cacheIndex_) return;
+  cacheSheet_ = tab_(CACHE_TAB, ["key", "minutes", "km", "fetched"]);
+  cacheIndex_ = {};
+  var data = cacheSheet_.getDataRange().getValues();
+  for (var i = 1; i < data.length; i++) {
+    var at = new Date(data[i][3]).getTime();
+    var cur = cacheIndex_[data[i][0]];
+    if (!cur || at > cur.at) cacheIndex_[data[i][0]] = { minutes: +data[i][1], km: +data[i][2], at: at };
+  }
+}
 function cacheGet_(key, ttlMs) {
   var hit = CacheService.getScriptCache().get(key);
   if (hit) { var h = JSON.parse(hit); if (Date.now() - h.at < ttlMs) return h; }
-  var sh = tab_(CACHE_TAB, ["key", "minutes", "km", "fetched"]);
-  var data = sh.getDataRange().getValues();
-  for (var i = data.length - 1; i >= 1; i--) {
-    if (data[i][0] === key && Date.now() - new Date(data[i][3]).getTime() < ttlMs) {
-      var v = { minutes: +data[i][1], km: +data[i][2], at: new Date(data[i][3]).getTime() };
-      CacheService.getScriptCache().put(key, JSON.stringify(v), Math.min(21600, Math.max(60, Math.floor(ttlMs / 1000))));
-      return v;
-    }
+  cacheLoad_();
+  var v = cacheIndex_[key];
+  if (v && Date.now() - v.at < ttlMs) {
+    CacheService.getScriptCache().put(key, JSON.stringify(v), Math.min(21600, Math.max(60, Math.floor(ttlMs / 1000))));
+    return v;
   }
   return null;
 }
 function cachePut_(key, v, ttlMs) {
   var rec = { minutes: v.minutes, km: v.km, at: Date.now() };
   CacheService.getScriptCache().put(key, JSON.stringify(rec), Math.min(21600, Math.max(60, Math.floor(ttlMs / 1000))));
-  tab_(CACHE_TAB, ["key", "minutes", "km", "fetched"]).appendRow([key, v.minutes, v.km, new Date()]);
+  cacheLoad_();
+  cacheIndex_[key] = rec;
+  cacheSheet_.appendRow([key, v.minutes, v.km, new Date()]);
 }
 
 /* ---------- geocoding ---------- */
