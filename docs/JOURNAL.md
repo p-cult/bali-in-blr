@@ -1266,6 +1266,35 @@ the buffer — the tool's job is to expose the squeeze, not hide it.
   not public. If a *public* event is ever held outside the city, its venue
   will count — revisit then.
 
+### 22 Sep 2026 — a page for every ticketed event
+- **Address:** `event/?e=<slug>`, the slug built from the title (a duplicate
+  title gets its date appended). Reached by clicking anywhere on a calendar
+  row, or its title, or directly by URL. Only events with tickets live are
+  linked from the calendar (`ticketsLive()`: status live / fast / sold out,
+  and public); the address works for any event.
+- **Live data, one data layer.** The page loads the same `main.js` as the home
+  page and reads the event through `loadEvents()` → `normaliseEvent()`, so
+  dates, times, venue, description, booking buttons and status come from the
+  sheet exactly as the calendar shows them. No copy of the parser. `event/`
+  uses `<base href="../">` so every relative path resolves from the root. The
+  one line in `main.js` that assumed the home page (the footer year) is now
+  guarded.
+- **Banners:** one Drive folder per event, mapped in
+  `data/event-banners.json`. `tools/sync-event-banners.py` takes a file named
+  `banner*` if there is one, otherwise the widest landscape image; PSDs,
+  portraits and subfolders are ignored. Saved shrink-only to
+  `assets/events/<slug>.jpg`. The folders hold ticket-platform artwork with the
+  title set in, so the page shows it whole at its own 2:1 ratio, never cropped.
+- **Stand-in:** drawn under every banner — the title and the block motif on a
+  raised ground. An image covers it when it loads; with no image it is what
+  shows. Dropping a banner in the event's Drive folder is all it takes: the
+  hourly workflow now runs the banner sync too, and the page busts the cache
+  with the version the tool records.
+- The sync keeps a working banner if Drive is unreachable (it had crashed on a
+  transient 500 on its second run, and would have cleared a good banner).
+- At launch: 9 events with tickets live, 9 banners; IME's folder is empty, and
+  Kecak Performance has no folder, so both show the stand-in.
+
 ## 2. Lessons and standing rules (the "why" behind the rules)
 
 **Data and privacy**

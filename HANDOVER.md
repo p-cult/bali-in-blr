@@ -87,6 +87,7 @@ tools/
   ANALYTICS-SETUP.md (docs/) What the site reports, and the GTM work left to do.
   build-event-posters.py  Print-ready event listing, 1:2 and 2:1, into assets/print/.
   sync-events-fallback.py Rewrite data/events.json from the live sheet (the fallback).
+  sync-event-banners.py   Event page banners from Drive folders into assets/events/.
   sync-images.sh    Pull Drive event images AND collaborator logos → optimise
                     → assets/drive/ (.jpg for photos, .png keeps a logo's
                     alpha). Run when a Drive link in the sheet changes.

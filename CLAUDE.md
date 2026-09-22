@@ -52,6 +52,9 @@ dependencies. Hosted on **GitHub Pages**, auto-deploys on push to `main`.
   public page; engine in `plan/engine.js`, data in `data/venues.json` +
   `data/logistics.json`, optional backend `docs/apps-script/Logistics.gs`.
   See `docs/LOGISTICS.md`
+- `event/index.html` + `event.js` — one page per event at `event/?e=<slug>`, live from
+  the sheet via main.js; banners in `assets/events/`, mapped in `data/event-banners.json`,
+  synced hourly by `tools/sync-event-banners.py`
 - `docs/ANOTHER-MACHINE.md` — working from the drive on a new computer
 - `tools/doctor.sh` — checks a machine can carry on (reads only)
 - `docs/JOURNAL.md` — decisions, problems solved, lessons (the project's memory)
