@@ -8,7 +8,9 @@
 
   function summaryLine(day) {
     if (day.kind === "rest") return "Rest day · no travel";
+    if (day.kind === "outstation") return day.events.length + " event · out of town · arrive " + hm(day.wake) + " after the overnight drive · leave " + hm(day.sleep) + " for the night drive home · " + dur(day.travelMin) + " on the road";
     const n = day.events.length;
+    if (day.nightDeparture) return (n === 1 ? "1 event" : n + " events") + " · leave " + hm(day.leave) + " · overnight coach to " + day.nightTo + " at " + hm(day.sleep) + (day.back == null ? " straight from the venue" : "") + " · " + dur(day.travelMin) + " in town";
     return (n === 1 ? "1 event" : n + " events") + " · leave " + hm(day.leave) + " · back " + hm(day.back) +
       " · " + dur(day.travelMin) + " on the road" + (day.km ? " · " + Math.round(day.km) + " km" : "");
   }

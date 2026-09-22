@@ -104,8 +104,8 @@
 </div>
 
 <script src="auth.js?v=6"></script>
-<script src="../plan/engine.js?v=2"></script>
-<script src="../plan/render.js?v=1"></script>
+<script src="../plan/engine.js?v=3"></script>
+<script src="../plan/render.js?v=2"></script>
 <script>
 (function () {
   "use strict";
@@ -118,6 +118,7 @@
     ["wake", "Wake → breakfast"], ["breakfast", "Breakfast"], ["prep", "Get ready"], ["loadOut", "Load vehicle"], ["loadIn", "Unload on return"],
     ["lunch", "Lunch"], ["dinner", "Dinner"], ["windDown", "Dinner → lights out"], ["returnThresholdMin", "Return to stay if gap ≥"],
     ["earliestWake", "Earliest wake (hh:mm)"], ["latestSleep", "Latest lights out (hh:mm)"], ["restDayWake", "Rest-day wake (hh:mm)"],
+    ["outstationDepart", "Out-of-town: night coach leaves after (hh:mm)"], ["freshenUp", "Out-of-town: freshen up on arrival"],
   ];
 
   function cfg() { return data.cfg; }

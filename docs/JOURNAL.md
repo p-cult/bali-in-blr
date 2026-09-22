@@ -1102,9 +1102,10 @@ Decisions:
 - OSRM's public server is used as the keyless default because the tool must
   give a useful draft before anyone deploys anything. It is best effort; the
   warnings bar says when it fell back.
-- Out-of-town days (Manipal) with no time in the sheet are planned as a day
-  trip from the earliest sensible departure, flagged to consider an
-  overnight, rather than guessing a start.
+- Out-of-town days (Manipal) travel overnight both ways (user's call, same
+  day): leave the night before, arrive ~6am, programme, dinner, night coach
+  home. When the previous show ends late the coach leaves straight from that
+  venue. A day with no time in the sheet assumes a 10am–4pm programme.
 
 Lesson: the first pass let a leg depart before the previous event had
 wrapped (arrival was fixed at start − buffer). Legs now leave no earlier

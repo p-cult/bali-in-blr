@@ -1,27 +1,132 @@
 {
   "_about": "Default plan configuration for the logistics planner. The admin planner edits a live copy of this (saved to the Logistics sheet through the bridge, or carried in a share link); this file is the fallback and the starting point.",
   "version": 1,
-  "party": { "label": "Balinese artist group", "size": 20, "vehicles": [ { "name": "Tempo Traveller (26 seats)", "seats": 26, "count": 1, "ratePerKm": 28, "minPerDay": 3000 } ], "notes": "Gamelan and puppet sets travel with the group: add load time on show days." },
+  "party": {
+    "label": "Balinese artist group",
+    "size": 20,
+    "vehicles": [
+      {
+        "name": "Tempo Traveller (26 seats)",
+        "seats": 26,
+        "count": 1,
+        "ratePerKm": 28,
+        "minPerDay": 3000
+      }
+    ],
+    "notes": "Gamelan and puppet sets travel with the group: add load time on show days."
+  },
   "stays": [
-    { "id": "20th-mile", "name": "20th Mile, Magadi Road", "address": "20th Mile, Magadi Road, Channenahalli, Bengaluru 562130", "lat": 12.9778584, "lon": 77.4305523, "precision": "locality", "active": true }
+    {
+      "id": "20th-mile",
+      "name": "20th Mile, Magadi Road",
+      "address": "20th Mile, Magadi Road, Channenahalli, Bengaluru 562130",
+      "lat": 12.9778584,
+      "lon": 77.4305523,
+      "precision": "locality",
+      "active": true
+    }
   ],
   "day": {
-    "wake": 60, "breakfast": 45, "prep": 45, "loadOut": 20, "loadIn": 15,
-    "lunch": 60, "dinner": 60, "windDown": 60,
-    "earliestWake": "05:30", "latestSleep": "01:00",
-    "lunchWindow": ["12:00", "15:00"], "dinnerWindow": ["19:00", "22:30"],
-    "returnThresholdMin": 240, "restDayWake": "08:00"
+    "wake": 60,
+    "breakfast": 45,
+    "prep": 45,
+    "loadOut": 20,
+    "loadIn": 15,
+    "lunch": 60,
+    "dinner": 60,
+    "windDown": 60,
+    "earliestWake": "05:30",
+    "latestSleep": "01:00",
+    "lunchWindow": [
+      "12:00",
+      "15:00"
+    ],
+    "dinnerWindow": [
+      "19:00",
+      "22:30"
+    ],
+    "returnThresholdMin": 240,
+    "restDayWake": "08:00",
+    "outstationDepart": "21:30",
+    "freshenUp": 90,
+    "_outstation": "Out-of-town venues (Manipal): travel overnight both ways, leaving after outstationDepart; freshenUp minutes on arrival."
   },
   "buffers": {
-    "Performance": { "before": 150, "after": 60, "defaultDuration": 90 },
-    "Workshop":    { "before": 45,  "after": 30, "defaultDuration": 180 },
-    "Talk":        { "before": 60,  "after": 30, "defaultDuration": 90 },
-    "default":     { "before": 60,  "after": 30, "defaultDuration": 120 }
+    "Performance": {
+      "before": 150,
+      "after": 60,
+      "defaultDuration": 90
+    },
+    "Workshop": {
+      "before": 45,
+      "after": 30,
+      "defaultDuration": 180
+    },
+    "Talk": {
+      "before": 60,
+      "after": 30,
+      "defaultDuration": 90
+    },
+    "default": {
+      "before": 60,
+      "after": 30,
+      "defaultDuration": 120
+    }
   },
   "traffic": {
     "_about": "Multiplier over free-flow drive time by hour of departure, Bengaluru. Weekend column is lighter. Replaced by live Google traffic when the bridge provider is on.",
-    "weekday": [1.0,1.0,1.0,1.0,1.0,1.05,1.15,1.35,1.75,1.85,1.65,1.45,1.4,1.4,1.4,1.5,1.7,1.95,2.0,1.85,1.55,1.3,1.15,1.05],
-    "weekend": [1.0,1.0,1.0,1.0,1.0,1.0,1.05,1.15,1.3,1.4,1.45,1.5,1.5,1.5,1.5,1.5,1.55,1.65,1.7,1.65,1.5,1.3,1.15,1.05],
+    "weekday": [
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.05,
+      1.15,
+      1.35,
+      1.75,
+      1.85,
+      1.65,
+      1.45,
+      1.4,
+      1.4,
+      1.4,
+      1.5,
+      1.7,
+      1.95,
+      2.0,
+      1.85,
+      1.55,
+      1.3,
+      1.15,
+      1.05
+    ],
+    "weekend": [
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.05,
+      1.15,
+      1.3,
+      1.4,
+      1.45,
+      1.5,
+      1.5,
+      1.5,
+      1.5,
+      1.5,
+      1.55,
+      1.65,
+      1.7,
+      1.65,
+      1.5,
+      1.3,
+      1.15,
+      1.05
+    ],
     "safety": 1.1
   },
   "provider": "osrm",

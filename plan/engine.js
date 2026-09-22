@@ -349,7 +349,7 @@
 
   // Plans one date. `events` are that day's events (already filtered).
   // Returns {date, kind, blocks[], legs[], leave, back, wake, sleep, travelMin, km, flags[]}.
-  function planDay(ctx, dateISO, events, stay) {
+  function planDay(ctx, dateISO, events, stay, prev) {
     const cfg = ctx.cfg, D = cfg.day;
     const stayIdx = ctx.point(stay);
     const day = { date: dateISO, stay: stay, blocks: [], legs: [], flags: [], travelMin: 0, km: 0, events: [] };
@@ -360,13 +360,9 @@
       x.idx = x.venue ? ctx.point(x.venue) : -1;
       const defLen = (cfg.buffers[x.ev.category] || cfg.buffers.default || {}).defaultDuration || 120;
       if (x.b.start == null && x.venue && x.venue.outstation) {
-        // No time and far away: the day is the trip. Leave at the earliest
-        // sensible hour and the programme starts when the group arrives.
-        const dep = (toMin(D.earliestWake) || 330) + D.wake + D.breakfast + D.prep + D.loadOut;
-        const tr = ctx.travel(stayIdx, x.idx, dateISO, dep);
-        x.b.start = dep + (tr.min == null ? 300 : tr.min) + x.b.before;
-        x.b.end = x.b.start + Math.max(defLen, 240);
-        day.flags.push("“" + x.ev.title + "” has no time in the sheet; planned as a day trip leaving " + hm(dep) + ".");
+        // No time and far away: the programme fills the day there.
+        x.b.start = 600; x.b.end = x.b.start + Math.max(defLen, 360);
+        day.flags.push("“" + x.ev.title + "” has no time in the sheet; assumed a day programme from " + hm(x.b.start) + ".");
       } else if (x.b.start == null) {
         day.flags.push("“" + x.ev.title + "” has no start time in the sheet; assumed " + hm(1080) + ".");
         x.b.start = 1080; x.b.end = x.b.start + defLen;
@@ -388,7 +384,8 @@
       return day;
     }
 
-    day.kind = evs.some(function (x) { return x.venue && x.venue.outstation; }) ? "outstation" : "show";
+    if (evs.some(function (x) { return x.venue && x.venue.outstation; })) return planOutstationDay(ctx, dateISO, evs, stay, day, stayIdx, prev);
+    day.kind = "show";
     const timeline = [];
     let here = stayIdx, hereLabel = "the stay";
     let leaveStay = null;
@@ -462,6 +459,7 @@
     // Home run.
     const last = evs[evs.length - 1];
     const freeAt = last.b.end + last.b.after;
+    day.lastFreeAt = freeAt; day.lastIdx = here; day.lastLabel = hereLabel;
     let departHome = freeAt;
     const dinnerOpen = toMin(D.dinnerWindow[0]), dinnerClose = toMin(D.dinnerWindow[1]);
     let backLeg = ctx.travel(here, stayIdx, dateISO, departHome);
@@ -521,10 +519,115 @@
     const earliest = toMin(D.earliestWake), latest = toMin(D.latestSleep) + 1440;
     if (wake < earliest) day.flags.push("Early call: wake-up at " + hm(wake) + ".");
     if (sleepAt > latest) day.flags.push("Late night: lights out at " + hm(sleepAt) + ".");
-    if (day.kind === "outstation") day.flags.push("Out-of-town day — highway estimates; " + (day.travelMin > 480 ? "an overnight stay near the venue would avoid " + dur(day.travelMin) + " of driving in one day." : "check the return time."));
     evs.forEach(function (x) { if (x.b.note) day.flags.push("Note on “" + x.ev.title + "”: " + x.b.note); });
     return day;
   }
+  // Out-of-town day (e.g. Manipal): travel is overnight both ways. The
+  // group leaves the stay the previous night, sleeps on the road, freshens
+  // up on arrival, does the programme, eats, and leaves again at night to
+  // be home the next morning. planTour stitches the two night legs into
+  // the neighbouring days (day.nightOut / day.nightBack).
+  function planOutstationDay(ctx, dateISO, evs, stay, day, stayIdx, prev) {
+    const cfg = ctx.cfg, D = cfg.day;
+    const departAfter = toMin(D.outstationDepart) || 1260;
+    const fresh = D.freshenUp != null ? D.freshenUp : 90;
+    const morning = (toMin(D.earliestWake) || 330) + 60; // a civilised arrival hour
+    day.kind = "outstation";
+    const first = evs[0], last = evs[evs.length - 1];
+    const dest = first.venue, destIdx = first.idx;
+    const prevDate = addDays(dateISO, -1), nextDate = addDays(dateISO, 1);
+    const timeline = [];
+
+    // Night out: leave the previous evening, arrive early morning. If the
+    // previous day's show ends too late to go home first, leave straight
+    // from that venue after dinner.
+    let originIdx = stayIdx, originLabel = "the stay", notBefore = departAfter, fromVenue = false;
+    if (prev && prev.kind === "show" && prev.lastFreeAt != null && prev.back + 30 > departAfter) {
+      originIdx = prev.lastIdx; originLabel = prev.lastLabel; fromVenue = true;
+      notBefore = Math.max(departAfter, prev.lastFreeAt + D.dinner);
+    }
+    const out = ctx.travel(originIdx, destIdx, prevDate, notBefore);
+    const outMin = out.min == null ? 360 : out.min;
+    // Arrive by the first venue call, but no earlier than a civilised hour;
+    // never depart after midnight (it stops being a night drive).
+    const wanted = Math.min(first.b.start - first.b.before - fresh, morning);
+    let departOut = Math.min(1425, Math.max(notBefore, wanted + 1440 - outMin));
+    if (departOut + outMin - 1440 > first.b.start - first.b.before - fresh) day.flags.push("Leaving " + originLabel + " at " + hm(departOut) + " the night before arrives " + hm(departOut + outMin - 1440) + " — later than the venue call.");
+    const arriveOut = departOut + outMin - 1440; // minutes into this day
+    day.nightOut = { date: prevDate, depart: departOut, arrive: arriveOut, travel: out, to: dest ? dest.name : first.ev.venue, fromVenue: fromVenue, fromLabel: originLabel };
+    timeline.push(block("leg", arriveOut, null, "Arrive " + (dest ? dest.name : first.ev.venue) + " after the overnight drive", { travel: out, detail: legDetail(out, 0) + " · left " + originLabel + " " + hm(departOut) + " on " + dateLabel(prevDate), overnight: true }));
+    if (out.min != null) { day.travelMin += out.min; day.km += out.km || 0; }
+    const bfEnd = arriveOut + fresh;
+    timeline.push(block("meal", arriveOut, bfEnd, "Freshen up & breakfast on arrival", { broad: true }));
+    let here = bfEnd;
+    evs.forEach(function (x, i) {
+      const arrive = Math.max(here, x.b.start - x.b.before);
+      if (i > 0 && x.idx !== evs[i - 1].idx) {
+        const tr = ctx.travel(evs[i - 1].idx, x.idx, dateISO, here);
+        timeline.push(block("leg", here, here + (tr.min || 15), "To " + (x.venue ? x.venue.name : x.ev.venue), { travel: tr, detail: legDetail(tr, 0) }));
+        if (tr.min != null) { day.travelMin += tr.min; day.km += tr.km || 0; }
+        here += tr.min || 15;
+      }
+      if (arrive > here + 15) timeline.push(block("hold", here, arrive, "Free time in town" + mealHint(here, arrive, D), { inTown: true }));
+      if (arrive > x.b.start) day.flags.push("“" + x.ev.title + "” starts before the group can be ready (" + hm(arrive) + ").");
+      if (x.b.start > arrive) timeline.push(block("buffer", arrive, x.b.start, "At venue — set-up & settle", { minutes: Math.round(x.b.start - arrive) }));
+      timeline.push(block("show", x.b.start, x.b.end, x.ev.title, { ev: x.ev, venue: x.venue }));
+      here = x.b.end + x.b.after;
+      timeline.push(block("buffer", x.b.end, here, "Wrap — pack, meet people, load-out", { minutes: x.b.after }));
+    });
+    const lo = toMin(D.lunchWindow[0]), lc = toMin(D.lunchWindow[1]);
+    if (evs.some(function (x) { return x.b.start < lc && x.b.end > lo; })) day.flags.push("Lunch falls inside the programme — arrange it at the venue.");
+    // Dinner in town, then the night drive home.
+    const dinnerAt = Math.max(here, toMin(D.dinnerWindow[0]));
+    timeline.push(block("meal", dinnerAt, dinnerAt + D.dinner, "Dinner near " + (last.venue ? last.venue.name : last.ev.venue)));
+    const back0 = ctx.travel(last.idx, stayIdx, dateISO, departAfter);
+    const backMin = back0.min == null ? 360 : back0.min;
+    const departBack = Math.min(1425, Math.max(dinnerAt + D.dinner, departAfter, morning + 1440 - backMin));
+    if (departBack > dinnerAt + D.dinner + 15) timeline.push(block("hold", dinnerAt + D.dinner, departBack, "Rest before the night drive", { inTown: true }));
+    const back = ctx.travel(last.idx, stayIdx, dateISO, departBack);
+    const arriveHome = departBack + backMin; // > 1440 → next morning
+    timeline.push(block("leg", departBack, null, "Leave for the stay — overnight drive", { travel: back, detail: legDetail(back, 0) + " · home about " + hm(arriveHome), overnight: true }));
+    if (back.min != null) { day.travelMin += back.min; day.km += back.km || 0; }
+    day.nightBack = { date: nextDate, depart: departBack, arrive: arriveHome - 1440, travel: back, from: last.venue ? last.venue.name : last.ev.venue };
+    day.blocks = timeline.sort(function (a, b) { return a.from - b.from; });
+    day.wake = arriveOut; day.leave = departOut - 1440; day.back = arriveHome; day.sleep = departBack;
+    day.legs = [];
+    day.flags.push("Overnight travel both ways: sleep on the road out (" + dur(outMin) + ") and back (" + dur(backMin) + "). A sleeper coach is worth booking for these two nights.");
+    return day;
+  }
+  // Called by planTour: fold an out-of-town day's night legs into the day
+  // before (departure replaces lights out) and the day after (arrival
+  // replaces the wake-up).
+  function stitchOvernight(days, i) {
+    const day = days[i];
+    const prev = days[i - 1], next = days[i + 1];
+    if (prev && day.nightOut) {
+      const n = day.nightOut;
+      prev.blocks = prev.blocks.filter(function (b) { return b.type !== "sleep"; });
+      if (n.fromVenue) {
+        // Cut everything after the last wrap and go straight on from the venue.
+        const cut = prev.lastFreeAt;
+        prev.blocks = prev.blocks.filter(function (b) { return b.from < cut || (b.type === "buffer" && b.to <= cut); });
+        const dinnerLen = n.depart - cut >= 60 ? 60 : Math.max(30, n.depart - cut);
+        prev.blocks.push(block("meal", cut, cut + dinnerLen, "Dinner near " + n.fromLabel));
+        if (n.depart - (cut + dinnerLen) >= 15) prev.blocks.push(block("hold", cut + dinnerLen, n.depart, "Wait for the coach at " + n.fromLabel, { inTown: true }));
+        prev.back = null;
+        prev.flags.push("No return to the stay tonight: the overnight coach to " + n.to + " leaves from " + n.fromLabel + " at " + hm(n.depart) + " — pack for Manipal in the morning.");
+      }
+      prev.blocks.push(block("leg", n.depart, null, "Leave " + n.fromLabel + " for " + n.to + " — overnight drive", { travel: n.travel, detail: legDetail(n.travel, 0) + " · sleep on the road", overnight: true }));
+      prev.blocks.sort(function (a, b) { return a.from - b.from; });
+      prev.sleep = n.depart; prev.nightDeparture = true; prev.nightTo = n.to;
+    }
+    if (next && day.nightBack) {
+      const arr = day.nightBack.arrive;
+      next.blocks = next.blocks.filter(function (b) { return b.type !== "wake"; });
+      next.blocks.unshift(block("leg", arr, null, "Arrive back at the stay from " + day.nightBack.from, { travel: day.nightBack.travel, detail: "overnight drive · rest before the day starts", overnight: true }));
+      const firstAfter = next.blocks.find(function (b) { return b.type !== "leg" && b.from != null; });
+      if (firstAfter && firstAfter.from < arr + 120) next.flags.push("Only " + dur(Math.max(0, firstAfter.from - arr)) + " rest between arriving from " + day.nightBack.from + " and the day's start.");
+      next.wake = arr;
+    }
+  }
+
   function mealHint(from, to, D) {
     const lo = toMin(D.lunchWindow[0]), lc = toMin(D.lunchWindow[1]);
     if (from < lc && to > lo && (Math.min(to, lc) - Math.max(from, lo)) >= 45) return " · lunch here";
@@ -544,8 +647,9 @@
     const last = dates.reduce(function (a, b) { return a > b ? a : b; });
     const days = [];
     for (let d = first; d <= last; d = addDays(d, 1)) {
-      days.push(planDay(ctx, d, events.filter(function (e) { return e.date === d; }), stay));
+      days.push(planDay(ctx, d, events.filter(function (e) { return e.date === d; }), stay, days[days.length - 1]));
     }
+    days.forEach(function (day, i) { if (day.kind === "outstation") stitchOvernight(days, i); });
     const t = { travelMin: 0, km: 0, showDays: 0, restDays: 0, earlyCalls: 0, lateNights: 0, earliestWake: null, latestSleep: null, holdsInTown: 0, longestDay: 0 };
     const D = ctx.cfg.day;
     days.forEach(function (day) {

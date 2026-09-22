@@ -39,9 +39,14 @@ profile).
    early call; later than 1.00am as a late night. Lunch that falls inside an
    event is flagged (packed lunch).
 7. **Rest days** (no events) still appear so the tour is continuous.
-8. **Out-of-town days** (Manipal) with no time in the sheet are planned as
-   a day trip leaving at the earliest sensible hour, with a flag suggesting
-   an overnight if the driving exceeds eight hours.
+8. **Out-of-town days** (Manipal) travel **overnight both ways**: the group
+   leaves the stay the night before (after the "night coach leaves after"
+   time, default 9.30pm, timed to arrive around 6am and never later than
+   11.45pm), freshens up on arrival, does the programme, has dinner in town
+   and leaves again at night to be home by early morning. If the previous
+   day's show ends too late to go home first, the coach leaves straight from
+   that venue after dinner. The two night legs are shown on the days before
+   and after as well, and both days are flagged.
 
 Before breakfast and after dinner are rendered *broad* (dimmed); the working
 day is detailed to the minute.
