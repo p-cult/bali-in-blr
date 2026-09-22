@@ -26,7 +26,7 @@
         (b.ev && b.ev.extra ? " · internal engagement" : b.ev && b.ev.notPublic ? " · not public" : "") + (b.ev && b.ev.note ? " · " + esc(b.ev.note) : "") + "</span>";
       if (opts.editable && b.ev && !b.showIndex) body += bufferEditor(b.ev, opts.cfg);
     }
-    if (b.type === "buffer") body += "<span class='tl-detail'>" + b.minutes + " min buffer</span>";
+    if (b.type === "buffer") body += "<span class='tl-detail'>" + b.minutes + " min" + (b.short ? " · " + b.short + " min short — arrival is late" : "") + "</span>";
     if (b.meal && opts.editable) body += mealEditorRow(b, opts.date, opts.cfg);
     if (b.note) body += "<span class='tl-detail'>" + esc(b.note) + "</span>";
     return "<div class='" + cls + "'><span class='tl-when'>" + when + "</span><span class='tl-body'>" + body + "</span></div>";
@@ -52,33 +52,13 @@
   function bufferEditor(ev, cfg) {
     const o = (cfg.overrides || {})[ev.id] || {};
     const b = cfg.buffers[ev.category] || cfg.buffers.default;
+    const f = function (k, label) { return "<label>" + label + " <input type='number' min='0' step='5' data-k='" + k + "' value='" + esc(o[k] != null ? o[k] : (b[k] != null ? b[k] : 0)) + "'></label>"; };
     return "<span class='tl-edit' data-ev='" + esc(ev.id) + "'>" +
-      "<label>Before <input type='number' min='0' step='5' data-k='before' value='" + esc(o.before != null ? o.before : b.before) + "'> min</label>" +
-      "<label>After <input type='number' min='0' step='5' data-k='after' value='" + esc(o.after != null ? o.after : b.after) + "'> min</label>" +
-      "<label>Note <input type='text' data-k='note' value='" + esc(o.note || "") + "' placeholder='e.g. sound check 5pm'></label>" +
+      f("setup", "Set-up") + f("soundcheck", "Sound check") + f("ready", "Costume & warm-up") + f("change", "Costume off") + f("after", "Wrap") +
+      "<label>Note <input type='text' data-k='note' value='" + esc(o.note || "") + "' placeholder='e.g. gamelan on stage by 5pm'></label>" +
       "<label class='tl-skip'><input type='checkbox' data-k='skip'" + (o.skip ? " checked" : "") + "> skip</label>" +
       "</span>";
   }
-
-  // Day add-ons (planner only): stops with a purpose, a location and optional
-  // HH:MM times. Blank list = default day.
-  function stopEditor(day, cfg) {
-    const list = ((cfg.stops || {})[day.date]) || [];
-    const rows = list.map(function (p, i) {
-      const when = p.start ? p.start + (p.end ? " – " + p.end : "") : "auto";
-      return "<div class='addon-row'><span class='pill on'>" + esc(L.PURPOSE[p.purpose] || "Stop") + "</span><span class='addon-name'>" +
-        (p.link ? "<a href='" + esc(p.link) + "' target='_blank' rel='noopener'>" + esc(p.name) + "</a>" : esc(p.name)) + (p.area ? " <small>" + esc(p.area) + "</small>" : "") +
-        (p.lat == null ? " <small class='prec low'>NOT LOCATED</small>" : "") + "</span><span class='addon-when'>" + esc(when) + "</span>" +
-        "<button class='btn btn-sm' type='button' data-stoprm='" + i + "'>remove</button></div>";
-    }).join("");
-    const opts = Object.keys(L.PURPOSE).map(function (k) { return "<option value='" + k + "'>" + esc(L.PURPOSE[k]) + "</option>"; }).join("");
-    return "<div class='addons' data-date='" + day.date + "'>" + rows +
-      "<div class='addon-add'><select data-k='purpose'>" + opts + "</select>" +
-      "<input type='text' data-k='where' placeholder='Google Maps link, address or lat, lon'>" +
-      "<input type='time' data-k='start' title='Start (optional)'><input type='time' data-k='end' title='End (optional)'>" +
-      "<button class='btn btn-sm' type='button' data-stopadd>Add</button></div></div>";
-  }
-
   function dayCard(day, opts) {
     opts = opts || {};
     const open = opts.open ? " open" : "";

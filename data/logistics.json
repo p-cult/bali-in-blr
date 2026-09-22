@@ -13,7 +13,7 @@
         "minPerDay": 3000
       }
     ],
-    "notes": "25 artists + 2 volunteers travel together in two tempo travellers, with the gamelan and puppet sets: add load time on show days.",
+    "notes": "25 artists + 2 volunteers travel together in two tempo travellers. Instruments and sets go in a separate vehicle (not counted in artist time).",
     "artists": 25,
     "volunteers": 2
   },
@@ -42,8 +42,8 @@
     "wake": 60,
     "breakfast": 45,
     "prep": 45,
-    "loadOut": 20,
-    "loadIn": 15,
+    "loadOut": 10,
+    "loadIn": 5,
     "lunch": 60,
     "dinner": 60,
     "windDown": 60,
@@ -61,33 +61,50 @@
     "restDayWake": "08:00",
     "outstationDepart": "21:30",
     "freshenUp": 90,
-    "_outstation": "Out-of-town venues (Manipal): travel overnight both ways, leaving after outstationDepart; freshenUp minutes on arrival."
+    "_outstation": "Out-of-town venues (Manipal): travel overnight both ways, leaving after outstationDepart; freshenUp minutes on arrival.",
+    "_vehicles": "Instruments and sets travel in a separate vehicle arranged by production; loadOut/loadIn cover the group's personal kit only."
   },
   "buffers": {
+    "_about": "Minutes before a show: setup (instruments, stage), soundcheck, ready (costume, make-up, warm-up, call). After: change (costume off, make-up removal) then after (wrap: pack, meet people, load-out). Per-event overrides live in overrides[event id].",
     "Performance": {
-      "before": 150,
-      "after": 60,
-      "defaultDuration": 90
+      "setup": 45,
+      "soundcheck": 45,
+      "ready": 75,
+      "after": 30,
+      "defaultDuration": 90,
+      "change": 30
     },
     "Workshop": {
-      "before": 45,
-      "after": 30,
-      "defaultDuration": 180
+      "setup": 15,
+      "soundcheck": 10,
+      "ready": 20,
+      "after": 20,
+      "defaultDuration": 180,
+      "change": 10
     },
     "Talk": {
-      "before": 60,
-      "after": 30,
-      "defaultDuration": 90
-    },
-    "default": {
-      "before": 60,
-      "after": 30,
-      "defaultDuration": 120
+      "setup": 15,
+      "soundcheck": 15,
+      "ready": 30,
+      "after": 20,
+      "defaultDuration": 90,
+      "change": 10
     },
     "Internal": {
-      "before": 30,
-      "after": 30,
-      "defaultDuration": 180
+      "setup": 15,
+      "soundcheck": 0,
+      "ready": 15,
+      "after": 15,
+      "defaultDuration": 180,
+      "change": 15
+    },
+    "default": {
+      "setup": 20,
+      "soundcheck": 10,
+      "ready": 30,
+      "after": 20,
+      "defaultDuration": 120,
+      "change": 10
     }
   },
   "traffic": {

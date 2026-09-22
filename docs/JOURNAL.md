@@ -1166,6 +1166,17 @@ priced (before the loading allowance), or refined figures never match.
 Google's typical figures make the tour slower than the profile guessed:
 about 35 h on the road from 20th Mile against 29 h estimated.
 
+Later: party is 25 artists + 2 volunteers in two 17-seat tempo travellers
+(seat check warns if vehicles fall short). Instruments travel in a separate
+production vehicle, so loading time no longer sits in artist time. The
+single "before" buffer became three customisable segments — instrument &
+stage set-up, sound check, costume/make-up/warm-up — and "after" split into
+costume off/make-up removal and wrap, so a meal or the drive home never
+starts with the cast still in costume. With Google traffic the 4 Oct day
+(Drishti workshop → Jagriti double bill) leaves no costume time before the
+3.30pm show: the plan says so rather than hiding it; the fix is in the
+schedule (shorter wrap at Drishti or a later first show).
+
 Lesson: the first pass let a leg depart before the previous event had
 wrapped (arrival was fixed at start − buffer). Legs now leave no earlier
 than the previous wrap and the day is flagged with the minutes lost from

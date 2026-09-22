@@ -85,7 +85,7 @@
   <div class="panel no-print buffers">
     <h2 style="margin-top:0">Buffers by event type</h2>
     <table id="buffers"></table>
-    <p class="muted" style="font-size:.8rem;margin:.6rem 0 0">“Before” is when the group must be at the venue ahead of the scheduled start; “after” covers pack-down and meeting people. Override any single event inside its day below.</p>
+    <p class="muted" style="font-size:.8rem;margin:.6rem 0 0">The group arrives set-up + sound check + ready minutes before the scheduled start; after the show comes costume off and make-up removal, then wrap (pack-down, meeting people) — meals and the drive home follow both. Instruments travel in their own vehicle, so set-up here is the artists' time on stage, not loading. Override any single event inside its day below.</p>
   </div>
 
   <h2>Comparison of stays</h2>
@@ -121,8 +121,8 @@
 </div>
 
 <script src="auth.js?v=6"></script>
-<script src="../plan/engine.js?v=15"></script>
-<script src="../plan/render.js?v=8"></script>
+<script src="../plan/engine.js?v=17"></script>
+<script src="../plan/render.js?v=10"></script>
 <script>
 (function () {
   "use strict";
@@ -153,11 +153,12 @@
       const val = c.day[f[0]]; const isTime = typeof val === "string";
       return "<label class='field'>" + L.esc(f[1]) + " <input data-day='" + f[0] + "' type='" + (isTime ? "time" : "number") + "' value='" + L.esc(val) + "'" + (isTime ? "" : " min='0' step='5'") + "></label>";
     }).join("");
-    const cats = Object.keys(c.buffers);
-    $("buffers").innerHTML = "<thead><tr><th>Type</th><th>Before</th><th>After</th><th>Default length</th></tr></thead><tbody>" +
+    const cats = Object.keys(c.buffers).filter(function (k) { return k[0] !== "_"; });
+    $("buffers").innerHTML = "<thead><tr><th>Type</th><th>Instrument set-up</th><th>Sound check</th><th>Costume, make-up, warm-up</th><th>Costume off after</th><th>Wrap</th><th>Default length</th></tr></thead><tbody>" +
       cats.map(function (k) {
         const b = c.buffers[k];
-        return "<tr><td>" + L.esc(k) + "</td>" + ["before", "after", "defaultDuration"].map(function (f) {
+        if (b.setup == null && b.before != null) { b.setup = Math.round(b.before * .3); b.soundcheck = Math.round(b.before * .3); b.ready = b.before - b.setup - b.soundcheck; }
+        return "<tr><td>" + L.esc(k) + "</td>" + ["setup", "soundcheck", "ready", "change", "after", "defaultDuration"].map(function (f) {
           return "<td><input type='number' min='0' step='5' data-buf='" + L.esc(k) + "' data-k='" + f + "' value='" + L.esc(b[f]) + "'></td>";
         }).join("") + "</tr>";
       }).join("") + "</tbody>";

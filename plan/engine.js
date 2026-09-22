@@ -342,11 +342,22 @@
   };
 
   /* ---------- the day planner ---------- */
+  // Segments before a show: setup (instruments, stage), sound check, ready
+  // (costume, warm-up, call). Older configs carried one "before" number.
   function bufFor(cfg, ev) {
     const b = (cfg.buffers[ev.category] || cfg.buffers.default || {});
     const o = (cfg.overrides || {})[ev.id] || {};
+    const pick = function (k, d) { return o[k] != null ? +o[k] : (b[k] != null ? +b[k] : d); };
+    let setup = pick("setup", null), soundcheck = pick("soundcheck", null), ready = pick("ready", null);
+    if (setup == null && soundcheck == null && ready == null) {
+      const before = o.before != null ? +o.before : (b.before || 60);
+      setup = Math.round(before * 0.3); soundcheck = Math.round(before * 0.3); ready = before - setup - soundcheck;
+    }
+    setup = setup || 0; soundcheck = soundcheck || 0; ready = ready || 0;
     return {
-      before: o.before != null ? +o.before : (b.before || 60),
+      setup: setup, soundcheck: soundcheck, ready: ready,
+      before: setup + soundcheck + ready,
+      change: pick("change", ev.category === "Performance" ? 30 : 10),
       after: o.after != null ? +o.after : (b.after || 30),
       skip: !!o.skip,
       note: o.note || "",
@@ -451,13 +462,13 @@
         const isMeal = /^(breakfast|lunch|dinner)$/.test(x.meal);
         timeline.push(block(isMeal ? "meal" : "visit", x.b.start, x.b.end, x.stopLabel, { stop: x.venue, meal: isMeal ? x.meal : undefined, at: x.venue.name, out: true }));
       } else {
-        if (x.b.start > arrive + 1) timeline.push(block("buffer", arrive, x.b.start, "At venue — " + (x.ev.category === "Performance" ? "load-in, sound & costume, warm-up" : "set-up & settle") , { minutes: Math.round(x.b.start - arrive) }));
+        pushPrep(timeline, arrive, x);
         x.ev.shows.length > 1
           ? x.ev.shows.forEach(function (s, k) { timeline.push(block("show", s.start, s.end, x.ev.title + " — show " + (k + 1), { ev: x.ev, venue: x.venue, showIndex: k })); })
           : timeline.push(block("show", x.b.start, x.b.end, x.ev.title, { ev: x.ev, venue: x.venue }));
       }
-      const freeAt = x.b.end + x.b.after;
-      if (x.b.after > 0) timeline.push(block("buffer", x.b.end, freeAt, "Wrap — pack, meet people, load-out", { minutes: x.b.after }));
+      const freeAt = x.b.end + (x.meal ? 0 : x.b.change) + x.b.after;
+      if (!x.meal) pushWrap(timeline, x);
       here = x.idx; hereLabel = x.venue ? x.venue.name : x.ev.venue;
       notBefore = freeAt;
 
@@ -479,7 +490,8 @@
           timeline.push(block("hold", home, leaveAgain - D.loadOut, "At the stay — rest" + mealHint(home, leaveAgain - D.loadOut, D), { atStay: true }));
           here = stayIdx; hereLabel = "the stay"; notBefore = null;
         } else {
-          const slack = gap - (nx.idx === here ? 0 : (onward.min || 45));
+          const onward2 = nx.idx === here ? { min: 0 } : ctx.travel(here, nx.idx, dateISO, nxArrive - (onward.min || 45));
+          const slack = gap - (nx.idx === here ? 0 : (onward2.min || 45));
           if (slack >= 10) timeline.push(block("hold", freeAt, freeAt + slack, (nx.idx === here ? "Hold at " : "Hold in town near ") + hereLabel + mealHint(freeAt, freeAt + slack, D), { inTown: true, gap: slack }));
           if (slack >= 10) notBefore = freeAt + slack;
         }
@@ -488,7 +500,7 @@
 
     // Home run.
     const last = evs[evs.length - 1];
-    const freeAt = last.b.end + last.b.after;
+    const freeAt = last.b.end + (last.meal ? 0 : last.b.change) + last.b.after;
     day.lastFreeAt = freeAt; day.lastIdx = here; day.lastLabel = hereLabel;
     let departHome = freeAt;
     const dinnerOpen = toMin(D.dinnerWindow[0]), dinnerClose = toMin(D.dinnerWindow[1]);
@@ -541,7 +553,7 @@
       morning.push(block("wake", wake, bfStart, "Wake up", { broad: true }));
       if (!day.breakfastOut) morning.push(block("meal", bfStart, prepStart, "Breakfast at the stay", { broad: true, meal: "breakfast", at: "the stay" }));
     }
-    morning.push(block("prep", prepStart, leaveStay, "Get ready · costumes & instruments to the vehicle", {}));
+    morning.push(block("prep", prepStart, leaveStay, "Get ready · costumes & personal kit to the vehicle", {}));
     // Lunch on the road: if a show sits inside the lunch window, say so.
     day.blocks = morning.concat(timeline).sort(function (a, b) { return a.from - b.from; });
     if (!day.lunchOut && !day.blocks.some(function (b) { return b.meal === "lunch"; })) placeDefaultLunch(day, D, lo, lc);
@@ -603,10 +615,10 @@
       }
       if (arrive > here + 15) timeline.push(block("hold", here, arrive, "Free time in town" + mealHint(here, arrive, D), { inTown: true }));
       if (arrive > x.b.start) day.flags.push("“" + x.ev.title + "” starts before the group can be ready (" + hm(arrive) + ").");
-      if (x.b.start > arrive) timeline.push(block("buffer", arrive, x.b.start, "At venue — set-up & settle", { minutes: Math.round(x.b.start - arrive) }));
+      pushPrep(timeline, arrive, x);
       timeline.push(block("show", x.b.start, x.b.end, x.ev.title, { ev: x.ev, venue: x.venue }));
-      here = x.b.end + x.b.after;
-      timeline.push(block("buffer", x.b.end, here, "Wrap — pack, meet people, load-out", { minutes: x.b.after }));
+      here = x.b.end + x.b.change + x.b.after;
+      pushWrap(timeline, x);
     });
     const lo = toMin(D.lunchWindow[0]), lc = toMin(D.lunchWindow[1]);
     // Dinner in town, then the night drive home.
@@ -707,7 +719,7 @@
         const limit = next ? next.b.start - next.b.before - travel(p.idx, next.idx, start + len) : Infinity;
         if (start + len <= Math.min(limit, notAfter)) return start;
         if (!next) break;
-        t = next.b.end + next.b.after; hereIdx = next.idx;
+        t = next.b.end + (next.meal ? 0 : next.b.change || 0) + next.b.after; hereIdx = next.idx;
       }
       return null;
     }
@@ -732,7 +744,7 @@
         if (start == null) day.flags.push("Lunch at " + p.name + " does not fit around the programme; the stop is ignored.");
       } else if (p.purpose === "dinner") {
         const last = real().slice(-1)[0];
-        const after = last ? last.b.end + last.b.after : dOpen - 60;
+        const after = last ? last.b.end + (last.b.change || 0) + last.b.after : dOpen - 60;
         const from = last ? last.idx : stayIdx;
         start = Math.max(after + travel(from, p.idx, after), dOpen);
         if (start > toMin(D.dinnerWindow[1]) + 60) day.flags.push("Dinner at " + p.name + " would start " + hm(start) + " — late.");
@@ -790,6 +802,29 @@
       b.edited = true;
     });
     day.blocks.sort(function (a, b) { return a.from - b.from; });
+  }
+
+  // The pre-show segments between arrival and the start. A late arrival
+  // squeezes them in order: setup first (it cannot be skipped), then sound
+  // check, then whatever is left for costume and warm-up.
+  function pushPrep(timeline, arrive, x) {
+    let t = arrive, left = x.b.start - arrive;
+    if (left <= 1) return;
+    const segs = [["setup", "Instrument & stage set-up"], ["soundcheck", "Sound check"], ["ready", "Costume, make-up, warm-up & call"]];
+    segs.forEach(function (sg) {
+      const want = x.b[sg[0]] || 0; if (!want) return;
+      const got = Math.max(0, Math.min(want, left));
+      if (got >= 1) timeline.push(block("buffer", t, t + got, sg[1], { minutes: Math.round(got), seg: sg[0], short: got < want - 1 ? Math.round(want - got) : 0 }));
+      t += got; left -= got;
+    });
+    if (left > 1) timeline.push(block("buffer", t, x.b.start, "Spare time at the venue", { minutes: Math.round(left) }));
+  }
+
+  // After a show: costume off and make-up removal, then wrap.
+  function pushWrap(timeline, x) {
+    let t = x.b.end;
+    if (x.b.change > 0) { timeline.push(block("buffer", t, t + x.b.change, "Costume off, make-up removal & change", { minutes: x.b.change, seg: "change" })); t += x.b.change; }
+    if (x.b.after > 0) timeline.push(block("buffer", t, t + x.b.after, "Wrap — pack, meet people, load-out", { minutes: x.b.after, seg: "after" }));
   }
 
   function mealHint(from, to, D) {

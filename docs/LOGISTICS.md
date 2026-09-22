@@ -20,9 +20,17 @@ profile).
    site calendar). Multi-day workshops become one entry per day; "3.30pm and
    7.30pm" becomes two shows in one block. An event with no end time gets the
    category's default length.
-2. **Arrival** at the venue = scheduled start − *before* buffer (per
-   category: Performance 150 min, Workshop 45, Talk 60; editable globally
-   and per event).
+2. **Arrival** at the venue = scheduled start − (instrument & stage
+   set-up + sound check + costume/make-up/warm-up). Defaults per category
+   (Performance 45 + 45 + 75 min; Workshop 15 + 10 + 20; Talk 15 + 15 + 30),
+   editable globally and per event. A late arrival squeezes them in order:
+   set-up is protected first, then sound check, then whatever is left for
+   costume, and the day is flagged with the minutes lost. After a show:
+   costume off and make-up removal (Performance 30 min, others 10), then
+   wrap (pack, meet people, load-out); meals and the drive home follow both.
+   Instruments and sets travel in a separate production vehicle, so the
+   group's own loading allowance is only its personal kit (10 min out,
+   5 min back).
 3. **Departure** = arrival − travel time at that departure hour, − 20 min
    loading when leaving the stay. Travel is recomputed until the departure
    hour used for traffic matches the actual departure.
