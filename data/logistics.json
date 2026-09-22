@@ -39,9 +39,9 @@
     }
   ],
   "day": {
-    "wake": 60,
-    "breakfast": 45,
-    "prep": 45,
+    "wake": 30,
+    "breakfast": 40,
+    "prep": 30,
     "loadOut": 10,
     "loadIn": 5,
     "lunch": 60,
@@ -58,53 +58,54 @@
       "22:30"
     ],
     "returnThresholdMin": 240,
-    "restDayWake": "08:00",
+    "restDayWake": "07:00",
     "outstationDepart": "21:30",
     "freshenUp": 90,
     "_outstation": "Out-of-town venues (Manipal): travel overnight both ways, leaving after outstationDepart; freshenUp minutes on arrival.",
-    "_vehicles": "Instruments and sets travel in a separate vehicle arranged by production; loadOut/loadIn cover the group's personal kit only."
+    "_vehicles": "Instruments and sets travel in a separate vehicle arranged by production; loadOut/loadIn cover the group's personal kit only.",
+    "_rhythm": "Instruments travel separately, so mornings are: wake → breakfast (typically 7.30–8.30, 30–45 min) → get ready 30 → personal kit into the vehicle 10 → go. On a late-start day the group still wakes at restDayWake and eats at 7.30."
   },
   "buffers": {
     "_about": "Minutes before a show: setup (instruments, stage), soundcheck, ready (costume, make-up, warm-up, call). After: change (costume off, make-up removal) then after (wrap: pack, meet people, load-out). Per-event overrides live in overrides[event id].",
     "Performance": {
-      "setup": 45,
-      "soundcheck": 45,
-      "ready": 75,
+      "setup": 30,
+      "soundcheck": 30,
+      "ready": 60,
+      "change": 20,
       "after": 30,
-      "defaultDuration": 90,
-      "change": 30
+      "defaultDuration": 90
     },
     "Workshop": {
+      "setup": 10,
+      "soundcheck": 10,
+      "ready": 15,
+      "change": 5,
+      "after": 15,
+      "defaultDuration": 180
+    },
+    "Talk": {
+      "setup": 10,
+      "soundcheck": 10,
+      "ready": 20,
+      "change": 5,
+      "after": 15,
+      "defaultDuration": 90
+    },
+    "Internal": {
+      "setup": 10,
+      "soundcheck": 0,
+      "ready": 15,
+      "change": 10,
+      "after": 10,
+      "defaultDuration": 180
+    },
+    "default": {
       "setup": 15,
       "soundcheck": 10,
       "ready": 20,
-      "after": 20,
-      "defaultDuration": 180,
-      "change": 10
-    },
-    "Talk": {
-      "setup": 15,
-      "soundcheck": 15,
-      "ready": 30,
-      "after": 20,
-      "defaultDuration": 90,
-      "change": 10
-    },
-    "Internal": {
-      "setup": 15,
-      "soundcheck": 0,
-      "ready": 15,
+      "change": 5,
       "after": 15,
-      "defaultDuration": 180,
-      "change": 15
-    },
-    "default": {
-      "setup": 20,
-      "soundcheck": 10,
-      "ready": 30,
-      "after": 20,
-      "defaultDuration": 120,
-      "change": 10
+      "defaultDuration": 120
     }
   },
   "traffic": {

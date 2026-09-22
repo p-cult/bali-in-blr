@@ -1186,6 +1186,13 @@ single-event days were reporting "11 min late" because the departure was
 computed from one traffic slot and priced at another; departures now walk
 back until the priced leg really arrives in time.
 
+Recalibration (user, 22 Sep): with instruments in their own vehicle the
+morning is wake 30 → breakfast 40 (typically 7.30–8.30) → get ready 30 →
+kit 10 → go, about 1 h 50 before departure instead of 2 h 50; pre-show
+segments trimmed to 30/30/60 for a performance (10/10/15 workshop,
+10/10/20 talk), costume off 20/5, wrap 30/15. Rest-day and late-start wake
+is 7am.
+
 Lesson: the first pass let a leg depart before the previous event had
 wrapped (arrival was fixed at start − buffer). Legs now leave no earlier
 than the previous wrap and the day is flagged with the minutes lost from

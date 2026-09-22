@@ -58,6 +58,8 @@ h2{font-family:var(--display);font-weight:700;text-transform:uppercase;font-size
 .stat{background:var(--bg3);border:1px solid var(--line);border-radius:6px;padding:.6rem .7rem}
 .stat-k{display:block;font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted2)}
 .stat-v{display:block;font-family:var(--display);font-weight:700;font-size:1.05rem;margin-top:.15rem}
+.stat-v small{display:block;font-family:var(--sans);font-weight:400;font-size:.74rem;color:var(--muted2);margin-top:.1rem}
+.stat-wide{grid-column:span 2}
 
 /* days */
 .day{background:var(--bg3);border:1px solid var(--line);border-radius:var(--radius);margin:0 0 .6rem;overflow:hidden}

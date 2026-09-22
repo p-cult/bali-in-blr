@@ -22,15 +22,15 @@ profile).
    category's default length.
 2. **Arrival** at the venue = scheduled start − (instrument & stage
    set-up + sound check + costume/make-up/warm-up). Defaults per category
-   (Performance 45 + 45 + 75 min; Workshop 15 + 10 + 20; Talk 15 + 15 + 30),
+   (Performance 30 + 30 + 60 min; Workshop 10 + 10 + 15; Talk 10 + 10 + 20),
    editable globally and per event. A late arrival squeezes them in order:
    set-up is protected first, then sound check, then whatever is left for
-   costume, and the day is flagged with the minutes lost. After a show:
-   costume off and make-up removal (Performance 30 min, others 10), then
-   wrap (pack, meet people, load-out); meals and the drive home follow both.
-   Instruments and sets travel in a separate production vehicle, so the
-   group's own loading allowance is only its personal kit (10 min out,
-   5 min back).
+   costume, and the day is red-flagged when costume time is lost.
+   After a show: costume off and make-up removal (Performance 20 min,
+   others 5), then wrap (pack, meet people, load-out; 30 / 15); meals and
+   the drive home follow both. Instruments and sets travel in a separate
+   production vehicle, so the group's own loading allowance is only its
+   personal kit (10 min out, 5 min back).
 3. **Departure** = arrival − travel time at that departure hour, − 20 min
    loading when leaving the stay. Travel is recomputed until the departure
    hour used for traffic matches the actual departure.
@@ -42,10 +42,11 @@ profile).
 5. **Evening**: wrap (*after* buffer) → return → dinner at the stay if home by
    10.30pm, else dinner near the venue before the drive → lights out 60 min
    after dinner.
-6. **Morning**, walked back from the first departure: get ready 45 min,
-   breakfast 45, wake 60 before that. Earlier than 5.30am is flagged as an
-   early call; later than 1.00am as a late night. Lunch that falls inside an
-   event is flagged (packed lunch).
+6. **Morning**, walked back from the first departure: personal kit into
+   the vehicle 10 min, get ready 30, breakfast 40, wake 30 before that
+   (about 1 h 50 before leaving). On a later start the group wakes at 7am
+   and eats around 7.30 anyway, with the free time shown. Earlier than
+   5.30am is flagged as an early call; later than 1.00am as a late night.
 7. **Rest days** (no events) still appear so the tour is continuous.
 8. **Out-of-town days** (Manipal) travel **overnight both ways**: the group
    leaves the stay the night before (after the "night coach leaves after"

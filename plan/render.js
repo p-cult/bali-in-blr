@@ -87,9 +87,11 @@
     if (!plan.days.length) return "";
     const party = plan.party || {};
     const seats = (party.vehicles || []).reduce(function (n, v) { return n + (v.seats || 0) * (v.count || 1); }, 0);
-    const who = party.artists != null ? party.artists + " artists + " + (party.volunteers || 0) + " volunteers" : (party.size || "—") + " people";
+    const veh = party.vehicles && party.vehicles[0] ? " · " + (party.vehicles[0].count || 1) + " × " + esc(party.vehicles[0].name) : "";
+    const whoBig = party.artists != null ? party.artists + " + " + (party.volunteers || 0) : String(party.size || "—");
+    const whoSmall = party.artists != null ? "artists + volunteers" + veh : "people" + veh;
     return "<div class='totals'>" +
-      stat("Travelling", who + (party.vehicles && party.vehicles[0] ? " · " + (party.vehicles[0].count || 1) + " × " + party.vehicles[0].name : "")) +
+      "<div class='stat stat-wide'><span class='stat-k'>Travelling</span><span class='stat-v'>" + esc(whoBig) + " <small>" + whoSmall + "</small></span></div>" +
       stat("Days", plan.days.length + " (" + t.showDays + " with events)") +
       stat("Road time", dur(t.travelMin)) +
       stat("Distance", Math.round(t.km) + " km") +
