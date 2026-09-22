@@ -76,6 +76,12 @@ there, then `tools/vault.sh seal` and commit the `.enc`.
   thing to hand a designer; the stylesheets remain the exact reference.
 - **Progress dashboard:** `/progress/` (link-only) — tickets from the Tickets
   workbook, events from the Event List, totals from the bridge. See §1, 18 Sep.
+- **Event pages:** `event/?e=<slug>` for every event with tickets live, read
+  live from the sheet; the calendar row links to it. Banners from one Drive
+  folder per event (`data/event-banners.json`), served as responsive WebP
+  (~40 KB on a phone), synced hourly; a stand-in shows until one exists.
+- **Hero figures** count only public events and their venues: 16 days,
+  15 events, 13 venues on 22 Sep 2026.
 - **Print:** `tools/build-event-posters.py` renders the event listing at
   500&#215;1000&#160;mm and 1000&#215;500&#160;mm into `assets/print/`.
 - **Open:**
