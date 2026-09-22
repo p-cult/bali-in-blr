@@ -848,7 +848,7 @@
       leave = dep;
       timeline.push(block("truck", leave, at, "Instrument vehicle: leave " + (store.name || "storage") + " for " + (x.venue ? x.venue.name : x.ev.venue), { dir: "out", detail: legDetail(tr, 0) + " · production vehicle, not artist time" }));
     } else {
-      timeline.push(block("truck", at, null, "Instruments at " + (x.venue ? x.venue.name : x.ev.venue) + " by now", { dir: "out", detail: store ? "" : "set the instrument storage location in the planner sheet to get the departure time" }));
+      timeline.push(block("truck", at, null, "Instruments at " + (x.venue ? x.venue.name : x.ev.venue) + " by now", { dir: "out", detail: "" }));
     }
     day.trucks = day.trucks || [];
     day.trucks.push({ id: x.ev.id, instrAt: at, instrLeave: leave });
