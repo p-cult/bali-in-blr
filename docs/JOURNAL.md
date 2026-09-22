@@ -1309,6 +1309,15 @@ the buffer — the tool's job is to expose the squeeze, not hide it.
   `data/event-banners.json` only when written, so the page never asks for a
   file that does not exist. Bump `FMT` in the sync tool to re-encode them all.
 
+### 22 Sep 2026 — booking buttons on phones
+- The BookMyShow and District buttons stacked full width on phones with their
+  logos jammed into the top-left corner. Cause: the phone rule
+  `.cal-act .btn { display: block }` out-ranked `.btn-logo`'s
+  `display: inline-flex` centring (two classes beat one). Fixed in the shared
+  component, so calendar rows and event pages both get it: on a phone the
+  buttons sit side by side at equal width, one alone takes the full width, and
+  the rule sets size only, never display.
+
 ## 2. Lessons and standing rules (the "why" behind the rules)
 
 **Data and privacy**

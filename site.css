@@ -953,10 +953,14 @@ p.ev-desc { font-size: 1.08rem; line-height: 1.65; color: var(--muted); max-widt
   /* Still all three on one row (set at 760px); just a touch tighter. */
   .hero-meta { gap: 0.6rem; }
 
-  /* The action goes full width beneath the body on a phone. */
-  .cal-act { flex-direction: column; align-items: stretch; }
-  .cal-act .btn { display: block; width: 100%; text-align: center; }
-  .cal-soon { text-align: center; }
+  /* On a phone the actions fill the row: one button takes the full width, two
+     (BookMyShow + District) sit side by side at equal width. Only size is set
+     here, never display — a display rule here once overrode .btn-logo's
+     centring and pushed the provider logos into the top-left corner. */
+  .cal-act { flex-wrap: wrap; align-items: stretch; }
+  .cal-act .btn { flex: 1 1 0; min-width: 0; text-align: center; }
+  .cal-act .btn-logo { padding-left: 0.5rem; padding-right: 0.5rem; }
+  .cal-act .cal-soon { flex-basis: 100%; text-align: center; }
 }
 
 /* -------------------------------------------------------------- 12. Print */
