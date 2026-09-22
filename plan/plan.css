@@ -46,6 +46,16 @@ h2{font-family:var(--display);font-weight:700;text-transform:uppercase;font-size
 .field{display:flex;flex-direction:column;gap:.25rem;font-size:.8rem;color:var(--muted)}
 .field input,.field select,.field textarea{background:var(--bg);border:1px solid var(--line2);border-radius:6px;color:var(--ink);font:inherit;font-size:.9rem;padding:.45rem .6rem;width:100%}
 .field input:focus,.field select:focus{outline:none;border-color:var(--accent)}
+.show-form{display:grid;grid-template-columns:repeat(4,1fr);gap:.7rem 1rem;align-items:end}
+.show-form .span-all{grid-column:1/-1}
+.show-form .span-3{grid-column:span 3}
+.field-group{display:grid;grid-template-columns:repeat(4,1fr);gap:.7rem 1rem;padding:.7rem .9rem .8rem;border:1px dashed var(--line2);border-radius:6px}
+.group-label{grid-column:1/-1;font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent-2)}
+.field select{background:var(--bg);border:1px solid var(--line2);border-radius:6px;color:var(--ink);font:inherit;font-size:.9rem;padding:.45rem .6rem;width:100%}
+/* native time / date pickers: dark scheme so the clock and calendar icons are cream, not black */
+input[type=time],input[type=date]{color-scheme:dark}
+input[type=time]::-webkit-calendar-picker-indicator,input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.92) sepia(.35) saturate(.6) brightness(1.05);opacity:.9;cursor:pointer}
+@media (max-width:760px){.show-form,.field-group{grid-template-columns:1fr 1fr}.show-form .span-3{grid-column:span 2}}
 .stays{display:grid;gap:.6rem}
 .stay{display:grid;grid-template-columns:auto 1fr auto;gap:.8rem;align-items:center;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:.6rem .8rem}
 .stay-pick{display:flex;flex-direction:column;gap:.3rem;font-size:.75rem;color:var(--muted);white-space:nowrap}

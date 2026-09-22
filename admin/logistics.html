@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@125,600;125,700;125,900&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="../plan/plan.css?v=11" />
+<link rel="stylesheet" href="../plan/plan.css?v=12" />
 </head>
 <body>
 <div class="wrap" id="admin-app" hidden>
@@ -82,18 +82,24 @@
   <div class="panel no-print" id="show-panel">
     <h2 style="margin-top:0">Per-show settings</h2>
     <p class="muted" style="font-size:.8rem;margin:0 0 .6rem">Pick a show, enter its own cast and timings, and press Submit: these replace the type defaults for that show only, the whole plan recalibrates, and the sheet is updated.</p>
-    <div class="grid">
-      <label class="field" style="grid-column:span 2">Show <select id="sh-pick"></select></label>
+    <div class="show-form">
+      <label class="field span-all">Show <select id="sh-pick"></select></label>
       <label class="field">Artists <input type="number" id="sh-artists" min="0" /></label>
-      <label class="field" style="grid-column:span 2">Cast (names or group) <input type="text" id="sh-cast" placeholder="e.g. Kecak troupe: Wayan, Made, …" /></label>
-      <label class="field">Instrument set-up (min) <input type="number" id="sh-setup" min="0" step="5" /></label>
-      <label class="field">Sound check (min) <input type="number" id="sh-soundcheck" min="0" step="5" /></label>
-      <label class="field">Costume, make-up, warm-up (min) <input type="number" id="sh-ready" min="0" step="5" /></label>
-      <label class="field">Costume off after (min) <input type="number" id="sh-change" min="0" step="5" /></label>
-      <label class="field">Wrap (min) <input type="number" id="sh-after" min="0" step="5" /></label>
-      <label class="field">Instruments at venue by (HH:MM) <input type="time" id="sh-instr" /></label>
-      <label class="field" style="grid-column:span 2">Note <input type="text" id="sh-note" /></label>
-      <label class="field">Skip this show <select id="sh-skip"><option value="">No</option><option value="1">Yes</option></select></label>
+      <label class="field span-3">Cast (names or group) <input type="text" id="sh-cast" placeholder="e.g. Kecak troupe: Wayan, Made, …" /></label>
+      <div class="field-group span-all">
+        <span class="group-label">Before the show (min)</span>
+        <label class="field">Instrument set-up <input type="number" id="sh-setup" min="0" step="5" /></label>
+        <label class="field">Sound check <input type="number" id="sh-soundcheck" min="0" step="5" /></label>
+        <label class="field">Costume, make-up, warm-up <input type="number" id="sh-ready" min="0" step="5" /></label>
+        <label class="field">Instruments at venue by <input type="time" id="sh-instr" /></label>
+      </div>
+      <div class="field-group span-all">
+        <span class="group-label">After the show (min)</span>
+        <label class="field">Costume off <input type="number" id="sh-change" min="0" step="5" /></label>
+        <label class="field">Wrap <input type="number" id="sh-after" min="0" step="5" /></label>
+        <label class="field">Skip this show <select id="sh-skip"><option value="">No</option><option value="1">Yes</option></select></label>
+        <label class="field">Note <input type="text" id="sh-note" /></label>
+      </div>
     </div>
     <div class="bar" style="margin:.8rem 0 0">
       <button class="btn btn-primary" type="button" id="sh-submit">Submit &amp; recalibrate</button>
