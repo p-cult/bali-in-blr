@@ -190,6 +190,28 @@ times, the add-on rows (engagements and stops) and the Settings values
 planner into an input cell (for example "Instruments at venue by") is from
 then on the sheet's value, so change it in either place.
 
+## Admin planner controls (after the 22 Sep tidy-up)
+
+Top bar, four buttons: **Sync everything** (re-pull the Event List into the
+sheet, read the sheet's inputs, re-price every leg with Google traffic,
+write the plan back), **Open the Google Sheet**, **Print / PDF**, **Reset my
+draft** (discard this browser's edits and reload the shipped defaults).
+Panels: places of stay (main-plan radio, compare checkbox, guarded Delete,
+Restore), group and vehicles, day rhythm, buffers by event type,
+**per-show settings** (pick a show from the dropdown, enter its cast, artist
+count and timings, Submit replaces the type defaults for that show and
+recalibrates; "Back to type defaults" clears it), comparison, the day cards
+(each with "Print this day", meal lines and add-ons), venues, and the public
+link (Copy public link, Open public page, Copy frozen snapshot). Internal
+engagements are entered as Engagement rows in the sheet's add-ons, not in a
+separate panel. Per-event inline editors were removed in favour of the
+per-show panel.
+
+**Cast per show.** Each event carries an artist count and a cast (names or a
+group), in the sheet's "Artists" and "Cast" columns or the per-show panel.
+The day's travelling party is the largest cast any event that day needs;
+the rest are noted as staying at the stay.
+
 ## Sharing and saving
 
 - **Print / save as PDF** on either page prints the plan as one day per

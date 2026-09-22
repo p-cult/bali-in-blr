@@ -1214,6 +1214,15 @@ the whole default plan and keeps writing after every edit (debounced), and
 reads the sheet on load / on "Fetch sheet inputs". Last writer wins.
 Version 7 of the same deployment.
 
+Later on 22 Sep: per-show cast and artist count (sheet columns and a
+per-show panel with a dropdown and Submit that recalibrates the plan);
+"Print this day"; the public-link panel became buttons only (the visible
+hash link was intimidating — the sheet-backed page is the link to share,
+the hash link is a frozen snapshot); and the admin's top bar was cut from
+eight buttons to four ("Sync everything" does re-pull + fetch + traffic +
+write-back). The Internal engagements panel went (the sheet's Engagement
+add-on rows do it) and so did the per-event inline editors.
+
 Lesson: the first pass let a leg depart before the previous event had
 wrapped (arrival was fixed at start − buffer). Legs now leave no earlier
 than the previous wrap and the day is flagged with the minutes lost from

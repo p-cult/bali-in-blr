@@ -251,7 +251,7 @@ function json_(obj) {
    ============================================================ */
 var PLANNER_NAME = "Bali in Bengaluru — Logistics Planner";
 var HEADER_ROW = 10;
-var EVENT_HEADERS = ["#", "Type", "Title", "Venue", "Start", "End", "Status", "Artists", "Set-up", "Sound check", "Costume & make-up", "Costume off", "Wrap", "Skip?", "Instruments at venue by", "Vehicle leaves storage", "Note"];
+var EVENT_HEADERS = ["#", "Type", "Title", "Venue", "Start", "End", "Status", "Artists", "Set-up", "Sound check", "Costume & make-up", "Costume off", "Wrap", "Skip?", "Instruments at venue by", "Vehicle leaves storage", "Note", "Cast (who performs — names or group)"];
 var ADDON_HEADERS = ["#", "Purpose", "Location (Maps link or address)", "Start", "End", "Include?", "Note"];
 var PURPOSES = ["Breakfast", "Lunch", "Dinner", "Sightseeing", "Shopping", "Engagement", "Other"];
 var ADDON_ROWS = 6;
@@ -385,15 +385,16 @@ function dayTab_(ss, iso, events) {
     var k = keep[slug_(e.title)];
     var t = function (m) { return hhmm_(m); };
     return [i + 1, e.category, e.title, e.venue, e.start ? hhmm_(parseClock_(e.start)) : "", e.end ? hhmm_(parseClock_(e.end)) : "", e.status,
-      k ? k[7] : "", k ? k[8] : t(seg[0]), k ? k[9] : t(seg[1]), k ? k[10] : t(seg[2]), k ? k[11] : t(seg[3]), k ? k[12] : t(seg[4]), k ? k[13] : "No", k ? k[14] : "", k ? k[15] : "", k ? k[16] : ""];
+      k ? k[7] : "", k ? k[8] : t(seg[0]), k ? k[9] : t(seg[1]), k ? k[10] : t(seg[2]), k ? k[11] : t(seg[3]), k ? k[12] : t(seg[4]), k ? k[13] : "No", k ? k[14] : "", k ? k[15] : "", k ? k[16] : "", k ? (k[17] || "") : ""];
   });
   var n = Math.max(rows.length, 1);
-  if (!rows.length) rows = [["", "", "(no programme this day)", "", "", "", "", "", "", "", "", "", "", "", "", "", ""]];
+  if (!rows.length) rows = [["", "", "(no programme this day)", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""]];
   var eventsRange = sh.getRange(h + 1, 1, n, EVENT_HEADERS.length);
   eventsRange.setValues(rows);
   sh.getRange(h + 1, 1, n, 7).setBackground("#E9E4DA").setFontColor("#444444");
   sh.getRange(h + 1, 16, n, 1).setBackground("#E9E4DA").setFontColor("#444444");
   sh.getRange(h + 1, 8, n, 9).setBackground("#FFFFFF");
+  sh.getRange(h + 1, 18, n, 1).setBackground("#FFFFFF").setWrap(true);
   sh.getRange(h + 1, 5, n, 2).setNumberFormat("@");
   sh.getRange(h + 1, 9, n, 5).setNumberFormat("[hh]:mm");
   sh.getRange(h + 1, 15, n, 2).setNumberFormat("hh:mm");
@@ -423,7 +424,7 @@ function dayTab_(ss, iso, events) {
   sh.getRange(a + 1, 1, ADDON_ROWS, 1).setBackground("#E9E4DA");
 
   // Widths, freeze, protection of the pulled cells.
-  [4, 11, 30, 26, 8, 8, 12, 8, 9, 10, 12, 10, 8, 7, 14, 14, 30].forEach(function (w, i) { sh.setColumnWidth(i + 1, w * 8); });
+  [4, 11, 30, 26, 8, 8, 12, 8, 9, 10, 12, 10, 8, 7, 14, 14, 30, 40].forEach(function (w, i) { sh.setColumnWidth(i + 1, w * 8); });
   sh.setFrozenRows(HEADER_ROW);
   sh.getProtections(SpreadsheetApp.ProtectionType.RANGE).forEach(function (p) { p.remove(); });
   var prot = function (range, desc) { var p = range.protect().setDescription(desc); p.removeEditors(p.getEditors()); if (p.canDomainEdit()) p.setDomainEdit(false); };
@@ -472,6 +473,7 @@ function sheetplan_() {
       if (/^y/i.test(row[13])) o.skip = true;
       if (row[14] && row[14] !== "—") o.instrAt = dispMin_(row[14]);
       if (row[16]) o.note = row[16];
+      if (row[17]) o.cast = row[17];
       cfg.overrides[id] = o;
     }
     for (r = r + 1; r < all.length; r++) {
@@ -539,8 +541,9 @@ function writeback_(days, settings) {
         ev.change != null ? ev.change : row[11], ev.after != null ? ev.after : row[12],
         ev.skip != null ? (ev.skip ? "Yes" : "No") : row[13],
         ev.instrAt || row[14], ev.instrLeave || row[15], ev.note != null ? ev.note : row[16],
+        ev.cast != null ? ev.cast : (row[17] || ""),
       ];
-      sh.getRange(r + 1, 8, 1, 10).setValues([cells]);
+      sh.getRange(r + 1, 8, 1, 11).setValues([cells]);
     }
     if (addonHeader >= 0 && d.addons) {
       var rows = [];

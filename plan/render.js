@@ -12,7 +12,7 @@
     if (day.kind === "outstation") return day.events.length + " event · out of town · arrive " + hm(day.wake) + " after the overnight drive · leave " + hm(day.sleep) + " for the night drive home · " + dur(day.travelMin) + " on the road";
     const n = day.events.length;
     if (day.nightDeparture) return (n === 1 ? "1 event" : n + " events") + " · leave " + hm(day.leave) + " · overnight coach to " + day.nightTo + " at " + hm(day.sleep) + (day.back == null ? " straight from the venue" : "") + " · " + dur(day.travelMin) + " in town";
-    return (n === 1 ? "1 event" : n + " events") + " · leave " + hm(day.leave) + " · back " + hm(day.back) +
+    return (n === 1 ? "1 event" : n + " events") + (day.travelling ? " · " + day.travelling + " artists" : "") + " · leave " + hm(day.leave) + " · back " + hm(day.back) +
       " · " + dur(day.travelMin) + " on the road" + (day.km ? " · " + Math.round(day.km) + " km" : "");
   }
 
@@ -24,7 +24,8 @@
     if (b.type === "show") {
       body += "<span class='tl-detail'>" + esc((b.ev && b.ev.category) || "") + (b.venue ? " · " + esc(b.venue.name) + (b.venue.area ? ", " + esc(b.venue.area) : "") : "") +
         (b.ev && b.ev.extra ? " · internal engagement" : b.ev && b.ev.notPublic ? " · not public" : "") + (b.ev && b.ev.note ? " · " + esc(b.ev.note) : "") + "</span>";
-      if (opts.editable && b.ev && !b.showIndex) body += bufferEditor(b.ev, opts.cfg);
+      if (b.artists != null || b.cast) body += "<span class='tl-detail tl-cast'>" + (b.artists != null ? b.artists + " artists" : "") + (b.artists != null && b.cast ? " · " : "") + esc(b.cast || "") + "</span>";
+      if (opts.editable && opts.eventEditor !== false && b.ev && !b.showIndex) body += bufferEditor(b.ev, opts.cfg);
     }
     if (b.type === "buffer") body += "<span class='tl-detail'>" + b.minutes + " min" + (b.short ? " · " + b.short + " min short — arrival is late" : "") + "</span>";
     if (b.meal && opts.editable) body += mealEditorRow(b, opts.date, opts.cfg);
@@ -54,6 +55,8 @@
     const b = cfg.buffers[ev.category] || cfg.buffers.default;
     const f = function (k, label) { return "<label>" + label + " <input type='number' min='0' step='5' data-k='" + k + "' value='" + esc(o[k] != null ? o[k] : (b[k] != null ? b[k] : 0)) + "'></label>"; };
     return "<span class='tl-edit' data-ev='" + esc(ev.id) + "'>" +
+      "<label>Artists <input type='number' min='0' data-k='artists' value='" + esc(o.artists != null ? o.artists : "") + "' placeholder='" + esc(cfg.party.artists) + "'></label>" +
+      "<label>Cast <input type='text' data-k='cast' value='" + esc(o.cast || "") + "' placeholder='names or group, e.g. Kecak troupe'></label>" +
       f("setup", "Set-up") + f("soundcheck", "Sound check") + f("ready", "Costume & warm-up") + f("change", "Costume off") + f("after", "Wrap") +
       "<label>Note <input type='text' data-k='note' value='" + esc(o.note || "") + "' placeholder='e.g. gamelan on stage by 5pm'></label>" +
       "<label class='tl-skip'><input type='checkbox' data-k='skip'" + (o.skip ? " checked" : "") + "> skip</label>" +
@@ -91,7 +94,7 @@
     const meals = opts.editable && day.kind !== "outstation" ? stopEditor(day, opts.cfg) : "";
     return "<details class='day day-" + day.kind + (day.red ? " day-red" : "") + "'" + open + " data-date='" + day.date + "'>" +
       "<summary><span class='day-date'>" + esc(L.dateLabel(day.date)) + "</span>" + (day.red ? "<span class='badge-red'>Red flag</span>" : "") + "<span class='day-sum'>" + esc(summaryLine(day)) + "</span></summary>" +
-      "<div class='day-body'>" + events + flags + meals +
+      "<div class='day-body'><button class='btn btn-sm day-print no-print' type='button' data-printday='" + day.date + "'>Print this day</button>" + events + flags + meals +
       "<div class='timeline'>" + day.blocks.map(function (b) { return blockRow(b, Object.assign({}, opts, { date: day.date })); }).join("") + "</div>" +
       "</div></details>";
   }

@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@125,600;125,700;125,900&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="../plan/plan.css?v=9" />
+<link rel="stylesheet" href="../plan/plan.css?v=11" />
 </head>
 <body>
 <div class="wrap" id="admin-app" hidden>
@@ -30,14 +30,11 @@
   <div class="bar no-print">
     <span class="status" id="status">Loading…</span>
     <span class="grow"></span>
-    <button class="btn btn-sm" type="button" id="traffic">Refresh live traffic</button>
-    <button class="btn btn-sm" type="button" id="reset">Reset to defaults</button>
+    <button class="btn btn-sm btn-primary" type="button" id="sync" title="Re-pull the Event List into the sheet, read the sheet's inputs, re-price every leg with Google traffic, write the plan back">Sync everything</button>
     <a class="btn btn-sm" id="sheet-link" href="#" target="_blank" rel="noopener" hidden>Open the Google Sheet</a>
-    <button class="btn btn-sm" type="button" id="reload-sheet" hidden>Fetch sheet inputs</button>
-    <button class="btn btn-sm" type="button" id="repull-sheet" hidden>Re-pull events into sheet</button>
-    <button class="btn btn-sm" type="button" id="save" hidden>Save plan</button>
-    <button class="btn btn-sm" type="button" id="share">Copy public link</button>
-    <button class="btn btn-sm btn-primary" type="button" id="print">Print / PDF</button>
+    <button class="btn btn-sm" type="button" id="print">Print / PDF</button>
+    <button class="btn btn-sm" type="button" id="reset" title="Discard this browser's draft edits and reload the shipped defaults">Reset my draft</button>
+    <button type="button" id="traffic" hidden></button><button type="button" id="reload-sheet" hidden></button><button type="button" id="repull-sheet" hidden></button><button type="button" id="save" hidden></button><button type="button" id="share" hidden></button>
   </div>
 
   <div class="panel no-print">
@@ -50,21 +47,6 @@
       <button class="btn" type="button" id="add-stay">Add &amp; locate</button>
     </div>
     <p class="muted" style="font-size:.8rem;margin:.6rem 0 0">“Main plan” is the stay shown day by day, on the public link and in the sheet; “compare” plans a stay in full for the comparison below. Delete asks first and is never allowed on the main plan.</p>
-  </div>
-
-  <div class="panel no-print">
-    <h2 style="margin-top:0">Internal engagements</h2>
-    <p class="muted" style="font-size:.8rem;margin:0 0 .6rem">Photoshoots, rehearsals, receptions — anything the group must travel to that is not on the public calendar. Public events come from the schedule sheet.</p>
-    <table class="cmp" id="extras"></table>
-    <div class="grid">
-      <label class="field">Title <input type="text" id="x-title" placeholder="e.g. Photoshoot" /></label>
-      <label class="field">Date <input type="date" id="x-date" min="2026-09-01" /></label>
-      <label class="field">Start <input type="time" id="x-start" /></label>
-      <label class="field">End <input type="time" id="x-end" /></label>
-      <label class="field">Venue (name, or paste a maps link) <input type="text" id="x-venue" placeholder="e.g. Mandala Cultural Centre" /></label>
-      <label class="field">Note <input type="text" id="x-note" /></label>
-      <label class="field">&nbsp;<button class="btn" type="button" id="x-add">Add engagement</button></label>
-    </div>
   </div>
 
   <div class="panel no-print">
@@ -97,6 +79,29 @@
     <p class="muted" style="font-size:.8rem;margin:.6rem 0 0">The group arrives set-up + sound check + ready minutes before the scheduled start; after the show comes costume off and make-up removal, then wrap (pack-down, meeting people) — meals and the drive home follow both. Instruments travel in their own vehicle, so set-up here is the artists' time on stage, not loading. Override any single event inside its day below.</p>
   </div>
 
+  <div class="panel no-print" id="show-panel">
+    <h2 style="margin-top:0">Per-show settings</h2>
+    <p class="muted" style="font-size:.8rem;margin:0 0 .6rem">Pick a show, enter its own cast and timings, and press Submit: these replace the type defaults for that show only, the whole plan recalibrates, and the sheet is updated.</p>
+    <div class="grid">
+      <label class="field" style="grid-column:span 2">Show <select id="sh-pick"></select></label>
+      <label class="field">Artists <input type="number" id="sh-artists" min="0" /></label>
+      <label class="field" style="grid-column:span 2">Cast (names or group) <input type="text" id="sh-cast" placeholder="e.g. Kecak troupe: Wayan, Made, …" /></label>
+      <label class="field">Instrument set-up (min) <input type="number" id="sh-setup" min="0" step="5" /></label>
+      <label class="field">Sound check (min) <input type="number" id="sh-soundcheck" min="0" step="5" /></label>
+      <label class="field">Costume, make-up, warm-up (min) <input type="number" id="sh-ready" min="0" step="5" /></label>
+      <label class="field">Costume off after (min) <input type="number" id="sh-change" min="0" step="5" /></label>
+      <label class="field">Wrap (min) <input type="number" id="sh-after" min="0" step="5" /></label>
+      <label class="field">Instruments at venue by (HH:MM) <input type="time" id="sh-instr" /></label>
+      <label class="field" style="grid-column:span 2">Note <input type="text" id="sh-note" /></label>
+      <label class="field">Skip this show <select id="sh-skip"><option value="">No</option><option value="1">Yes</option></select></label>
+    </div>
+    <div class="bar" style="margin:.8rem 0 0">
+      <button class="btn btn-primary" type="button" id="sh-submit">Submit &amp; recalibrate</button>
+      <button class="btn" type="button" id="sh-reset">Back to type defaults</button>
+      <span class="status" id="sh-status"></span>
+    </div>
+  </div>
+
   <h2>Comparison of stays</h2>
   <div class="cmp-wrap" id="compare"></div>
   <div class="cmp-wrap" id="compare-days"></div>
@@ -122,16 +127,22 @@
 
   <div class="panel no-print">
     <h2 style="margin-top:0">Public link</h2>
-    <p class="muted" style="font-size:.85rem">Carries this exact plan (stays, buffers, overrides) in the link itself, so it works without any backend. Not linked from the site and not indexed.</p>
-    <div class="share" id="share-url"></div>
+    <p class="muted" style="font-size:.85rem">The public page reads the Google Sheet and Google traffic live. It is not linked from the site and not indexed.</p>
+    <div class="bar" style="margin:0">
+      <button class="btn btn-primary" type="button" id="copy-public">Copy public link</button>
+      <a class="btn" href="../plan/" target="_blank" rel="noopener">Open public page</a>
+      <button class="btn btn-sm" type="button" id="copy-snapshot" title="A long link that freezes this exact plan inside the URL; works without the sheet or backend">Copy frozen snapshot</button>
+      <span class="status" id="copy-status"></span>
+    </div>
+    <span id="public-url" hidden>https://bali-in-blr.paramfoundation.org/plan/</span><span id="share-url" hidden></span>
   </div>
 
   <footer>Bali in Bengaluru · <a href="../">Public site</a> · <a href="../plan/">Public plan page</a></footer>
 </div>
 
 <script src="auth.js?v=7"></script>
-<script src="../plan/engine.js?v=20"></script>
-<script src="../plan/render.js?v=15"></script>
+<script src="../plan/engine.js?v=21"></script>
+<script src="../plan/render.js?v=18"></script>
 <script>
 (function () {
   "use strict";
@@ -209,6 +220,7 @@
     $("restore-stays").textContent = "Restore " + missing.map(function (s) { return s.name; }).join(" and ");
   }
   function renderExtras() {
+    if (!$("extras")) return;
     const xs = cfg().extras || [];
     $("extras").innerHTML = xs.length ? "<thead><tr><th>Title</th><th>Date</th><th>Time</th><th>Venue</th><th>Note</th><th></th></tr></thead><tbody>" + xs.map(function (x, i) {
       const v = data.venues.resolve(x.venue);
@@ -251,6 +263,25 @@
   function scheduleRebuild(full) { clearTimeout(renderTimer); renderTimer = setTimeout(function () { rebuild(full); }, 120); }
   function openDates() { return Array.from(document.querySelectorAll(".day[open]")).map(function (d) { return d.dataset.date; }); }
 
+  // Per-show settings panel.
+  function showList() { return data.events.filter(function (e) { return !e.extra; }); }
+  function fillShowPicker() {
+    const pick = $("sh-pick"), cur = pick.value;
+    pick.innerHTML = showList().map(function (e) { return "<option value='" + L.esc(e.id) + "'>" + L.esc(L.dateLabel(e.date)) + " · " + L.esc(e.title) + (e.start != null ? " · " + L.esc(L.hm(e.start)) : "") + "</option>"; }).join("");
+    if (cur && showList().some(function (e) { return e.id === cur; })) pick.value = cur;
+    fillShowForm();
+  }
+  function fillShowForm() {
+    const e = showList().find(function (x) { return x.id === $("sh-pick").value; }); if (!e) return;
+    const c = cfg(), b = c.buffers[e.category] || c.buffers.default, o = (c.overrides || {})[e.id] || {};
+    const v = function (k, d) { return o[k] != null ? o[k] : (b[k] != null ? b[k] : d); };
+    $("sh-artists").value = o.artists != null ? o.artists : c.party.artists;
+    $("sh-cast").value = o.cast || "";
+    ["setup", "soundcheck", "ready", "change", "after"].forEach(function (k) { $("sh-" + k).value = v(k, 0); });
+    $("sh-instr").value = o.instrAt != null ? R.hhmm(o.instrAt) : "";
+    $("sh-note").value = o.note || ""; $("sh-skip").value = o.skip ? "1" : "";
+    $("sh-status").textContent = Object.keys(o).length ? "This show has its own settings." : "Using the " + e.category + " defaults.";
+  }
   function render() {
     const c = cfg(); const stays = L.activeStays(c);
     if (!stays.find(function (s) { return s.id === selectedStay; })) selectedStay = stays[0] ? stays[0].id : null;
@@ -263,11 +294,12 @@
       const plan = rows.find(function (r) { return r.stay === stay; }).plan;
       $("plan-stay").textContent = stay.name;
       $("totals").innerHTML = R.totalsCard(plan, { internal: true });
-      $("days").innerHTML = R.tour(plan, { editable: true, cfg: c });
+      $("days").innerHTML = R.tour(plan, { editable: true, eventEditor: false, cfg: c });
       open.forEach(function (d) { const el = document.querySelector(".day[data-date='" + d + "']"); if (el) el.open = true; });
       $("share-url").textContent = shareUrl(stay);
     } else { $("days").innerHTML = "<p class='muted'>Add a stay to start.</p>"; }
     renderStays(); renderVenues(); renderExtras();
+    if ($("sh-pick").options.length !== showList().length) fillShowPicker(); else fillShowForm();
     const prov = c.provider === "bridge" && !L.CONFIG.LOGISTICS_URL ? "Google traffic not yet connected — using road routing + traffic profile" : (L.providers[c.provider] ? L.providers[c.provider].label : c.provider);
     $("status").innerHTML = "<span class='ok'>●</span> " + data.events.length + " schedule entries" + (data.fromSheet ? " from the live sheet" : " (fallback file)") + " · " + L.esc(prov) + (ctx.matrix ? " · distances via " + L.esc(ctx.matrix.source) : "");
     $("warnings").innerHTML = ctx.warnings.map(L.esc).join("<br>"); ctx.warnings = [];
@@ -349,7 +381,7 @@
       scheduleRebuild(true);
     });
 
-    $("x-add").addEventListener("click", async function () {
+    if ($("x-add")) $("x-add").addEventListener("click", async function () {
       const t = $("x-title").value.trim(), d = $("x-date").value, venue = $("x-venue").value.trim();
       if (!t || !d || !venue) { ctx.warnings.push("An engagement needs a title, a date and a venue."); render(); return; }
       let venueName = venue;
@@ -362,7 +394,7 @@
       ["x-title", "x-venue", "x-note", "x-start", "x-end"].forEach(function (id) { $(id).value = ""; });
       await rebuildEvents(); scheduleRebuild(true);
     });
-    $("extras").addEventListener("click", async function (e) {
+    if ($("extras")) $("extras").addEventListener("click", async function (e) {
       if (e.target.dataset.xrm == null) return;
       cfg().extras.splice(+e.target.dataset.xrm, 1);
       await rebuildEvents(); scheduleRebuild(true);
@@ -431,13 +463,40 @@
       if (e.key === "Enter" && e.target.dataset.k === "where" && e.target.closest(".meal-edit")) { e.preventDefault(); e.target.closest(".meal-edit").querySelector("[data-mealgo]").click(); }
     });
 
+    $("sh-pick").addEventListener("change", fillShowForm);
+    $("sh-submit").addEventListener("click", async function () {
+      const id = $("sh-pick").value; if (!id) return;
+      const o = {};
+      ["setup", "soundcheck", "ready", "change", "after"].forEach(function (k) { o[k] = +$("sh-" + k).value || 0; });
+      if ($("sh-artists").value !== "") o.artists = +$("sh-artists").value;
+      if ($("sh-cast").value.trim()) o.cast = $("sh-cast").value.trim();
+      if ($("sh-instr").value) o.instrAt = L.toMin($("sh-instr").value);
+      if ($("sh-note").value.trim()) o.note = $("sh-note").value.trim();
+      if ($("sh-skip").value) o.skip = true;
+      cfg().overrides[id] = o;
+      $("sh-status").textContent = "Saved — recalibrating…";
+      await rebuild(false);
+      if (L.CONFIG.LOGISTICS_URL && cfg().provider === "bridge") await refreshTraffic();
+      $("sh-status").textContent = "Recalibrated and written to the sheet.";
+      fillShowForm();
+      const day = showList().find(function (x) { return x.id === id; });
+      const el = day && document.querySelector(".day[data-date='" + day.date + "']"); if (el) { el.open = true; el.scrollIntoView({ behavior: "smooth", block: "start" }); }
+    });
+    $("sh-reset").addEventListener("click", async function () {
+      const id = $("sh-pick").value; if (!id) return;
+      delete cfg().overrides[id];
+      await rebuild(false); fillShowForm();
+      if (L.CONFIG.LOGISTICS_URL && cfg().provider === "bridge") await refreshTraffic();
+    });
+
     // Per-event overrides inside the day cards.
     $("days").addEventListener("input", function (e) {
       const box = e.target.closest(".tl-edit"); if (!box || !box.dataset.ev) return;
       const o = cfg().overrides[box.dataset.ev] = cfg().overrides[box.dataset.ev] || {};
       const k = e.target.dataset.k;
       if (k === "skip") o.skip = e.target.checked;
-      else if (k === "note") o.note = e.target.value;
+      else if (k === "note" || k === "cast") o[k] = e.target.value;
+      else if (k === "artists") { if (e.target.value === "") delete o.artists; else o.artists = +e.target.value; }
       else o[k] = +e.target.value;
       scheduleRebuild(false);
     });
@@ -445,11 +504,23 @@
     $("open-all").addEventListener("click", function () { document.querySelectorAll(".day").forEach(function (d) { d.open = true; }); });
     $("close-all").addEventListener("click", function () { document.querySelectorAll(".day").forEach(function (d) { d.open = false; }); });
     $("print").addEventListener("click", function () { window.print(); });
-    window.addEventListener("beforeprint", function () { document.querySelectorAll(".day").forEach(function (d, i) { d.open = true; if (i) d.dataset.print = "page"; }); });
-    $("share").addEventListener("click", function () {
-      const u = $("share-url").textContent;
-      navigator.clipboard.writeText(u).then(function () { $("status").textContent = "Public link copied."; }, function () { window.prompt("Copy this link", u); });
-    });
+    // "Print this day": print only that day, then restore.
+  document.addEventListener("click", function (e) {
+    const b = e.target.closest("[data-printday]"); if (!b) return;
+    const d = document.querySelector(".day[data-date='" + b.dataset.printday + "']"); if (!d) return;
+    d.open = true; d.classList.add("print-target"); document.body.classList.add("print-one");
+    const cleanup = function () { d.classList.remove("print-target"); document.body.classList.remove("print-one"); window.removeEventListener("afterprint", cleanup); };
+    window.addEventListener("afterprint", cleanup);
+    setTimeout(function () { window.print(); }, 50);
+  });
+  window.addEventListener("beforeprint", function () { if (document.body.classList.contains("print-one")) return; document.querySelectorAll(".day").forEach(function (d, i) { d.open = true; if (i) d.dataset.print = "page"; }); });
+    function copyLink(id, label) {
+      const u = $(id).textContent;
+      navigator.clipboard.writeText(u).then(function () { $("copy-status").textContent = label + " copied"; $("status").textContent = label + " copied."; setTimeout(function () { $("copy-status").textContent = ""; }, 3000); }, function () { window.prompt("Copy this link", u); });
+    }
+    $("share").addEventListener("click", function () { copyLink("public-url", "Public link"); });
+    $("copy-public").addEventListener("click", function () { copyLink("public-url", "Public link"); });
+    $("copy-snapshot").addEventListener("click", function () { copyLink("share-url", "Snapshot link"); });
     $("reset").addEventListener("click", function () {
       if (!confirm("Discard every change and go back to the defaults?")) return;
       data.cfg = L.clone(defaults); try { localStorage.removeItem(STORE); } catch (e) { /* ignore */ }
@@ -475,6 +546,7 @@
       loading("Everything is loaded · Google traffic · sheet in step", 1, true);
     };
     $("traffic").addEventListener("click", function () { refreshTraffic(); });
+    $("sync").addEventListener("click", function () { $("repull-sheet").click(); });
     $("repull-sheet").addEventListener("click", async function () {
       $("status").textContent = "Re-pulling the Event List into the planner sheet (keeps your inputs)…"; loading("Re-pulling events into the sheet…", 0.1);
       try { await fetch(L.CONFIG.LOGISTICS_URL + "?action=buildsheet", { cache: "no-store" }); } catch (e) { /* the build usually completes even when the reply is not JSON */ }
@@ -505,7 +577,7 @@
           events[e.id] = {
             artists: o.artists != null ? o.artists : c.party.artists,
             setup: R.hhmm(pick("setup")), soundcheck: R.hhmm(pick("soundcheck")), ready: R.hhmm(pick("ready")), change: R.hhmm(pick("change")), after: R.hhmm(pick("after")),
-            skip: !!o.skip, note: o.note || "",
+            skip: !!o.skip, note: o.note || "", cast: o.cast || "",
             instrAt: t ? R.hhmm(t.instrAt) : "", instrLeave: t && t.instrLeave != null ? R.hhmm(t.instrLeave) : "",
           };
         });
@@ -545,11 +617,11 @@
       data = await L.load({ cfg: draft || undefined });
       defaults = L.clone(await fetch(L.CONFIG.DEFAULTS).then(function (r) { return r.json(); }));
       if (draft && draft.venueOverrides) draft.venueOverrides.forEach(function (v) { data.venues.upsert(v); });
-      if (L.CONFIG.LOGISTICS_URL) $("save").hidden = false;
+
       const ex = data.cfg.excludeStatuses || [];
       data.events = data.events.filter(function (e) { return ex.indexOf((e.status || "").toLowerCase()) === -1; });
       selectedStay = data.cfg.selectedStay || (L.activeStays(data.cfg)[0] || {}).id || null;
-      if (data.cfg.sheetUrl) { $("sheet-link").href = data.cfg.sheetUrl; $("sheet-link").hidden = false; $("reload-sheet").hidden = false; $("repull-sheet").hidden = false; }
+      if (data.cfg.sheetUrl) { $("sheet-link").href = data.cfg.sheetUrl; $("sheet-link").hidden = false; }
       bindForms(); wire();
       await rebuild(true);
       if (L.CONFIG.LOGISTICS_URL && cfg().provider === "bridge") await refreshTraffic();

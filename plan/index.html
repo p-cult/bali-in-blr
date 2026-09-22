@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@125,600;125,700;125,900&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="plan.css?v=9" />
+<link rel="stylesheet" href="plan.css?v=11" />
 </head>
 <body>
 <div class="wrap">
@@ -38,8 +38,8 @@
   </footer>
 </div>
 
-<script src="engine.js?v=20"></script>
-<script src="render.js?v=15"></script>
+<script src="engine.js?v=21"></script>
+<script src="render.js?v=18"></script>
 <script>
 (function () {
   "use strict";
@@ -125,7 +125,16 @@
   $("open-all").addEventListener("click", function () { document.querySelectorAll(".day").forEach(function (d) { d.open = true; }); });
   $("close-all").addEventListener("click", function () { document.querySelectorAll(".day").forEach(function (d) { d.open = false; }); });
   $("print").addEventListener("click", function () { window.print(); });
-  window.addEventListener("beforeprint", function () { document.querySelectorAll(".day").forEach(function (d, i) { d.open = true; if (i) d.dataset.print = "page"; }); });
+  // "Print this day": print only that day, then restore.
+  document.addEventListener("click", function (e) {
+    const b = e.target.closest("[data-printday]"); if (!b) return;
+    const d = document.querySelector(".day[data-date='" + b.dataset.printday + "']"); if (!d) return;
+    d.open = true; d.classList.add("print-target"); document.body.classList.add("print-one");
+    const cleanup = function () { d.classList.remove("print-target"); document.body.classList.remove("print-one"); window.removeEventListener("afterprint", cleanup); };
+    window.addEventListener("afterprint", cleanup);
+    setTimeout(function () { window.print(); }, 50);
+  });
+  window.addEventListener("beforeprint", function () { if (document.body.classList.contains("print-one")) return; document.querySelectorAll(".day").forEach(function (d, i) { d.open = true; if (i) d.dataset.print = "page"; }); });
   start();
 })();
 </script>

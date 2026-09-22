@@ -361,6 +361,8 @@
       after: o.after != null ? +o.after : (b.after || 30),
       skip: !!o.skip,
       note: o.note || "",
+      artists: o.artists != null && o.artists !== "" ? +o.artists : null,
+      cast: o.cast || "",
       start: o.start != null ? +o.start : ev.start,
       end: o.end != null ? +o.end : ev.end,
     };
@@ -397,6 +399,12 @@
     });
     evs.sort(function (a, b) { return a.b.start - b.b.start; });
     day.events = evs.map(function (x) { return x.ev; });
+    // Who travels today: the largest cast any event needs (others rest at the stay).
+    const partyArtists = (cfg.party && cfg.party.artists) || 0;
+    const needs = evs.map(function (x) { return x.b.artists != null ? x.b.artists : partyArtists; });
+    day.travelling = evs.length ? Math.max.apply(null, needs) : 0;
+    if (partyArtists && day.travelling < partyArtists) day.flags.push(day.travelling + " of " + partyArtists + " artists travel today; " + (partyArtists - day.travelling) + " stay at the stay.");
+    if (partyArtists && day.travelling > partyArtists) day.flags.push("An event today lists " + day.travelling + " artists but the group has " + partyArtists + ".");
     placeStops(ctx, evs, stops, stayIdx, dateISO, D, day);
     if (!day.events.length) day.mealsOnly = true;
 
@@ -478,8 +486,8 @@
       } else {
         pushPrep(timeline, arrive, x);
         x.ev.shows.length > 1
-          ? x.ev.shows.forEach(function (s, k) { timeline.push(block("show", s.start, s.end, x.ev.title + " — show " + (k + 1), { ev: x.ev, venue: x.venue, showIndex: k })); })
-          : timeline.push(block("show", x.b.start, x.b.end, x.ev.title, { ev: x.ev, venue: x.venue }));
+          ? x.ev.shows.forEach(function (s, k) { timeline.push(block("show", s.start, s.end, x.ev.title + " — show " + (k + 1), { ev: x.ev, venue: x.venue, showIndex: k, artists: x.b.artists, cast: x.b.cast })); })
+          : timeline.push(block("show", x.b.start, x.b.end, x.ev.title, { ev: x.ev, venue: x.venue, artists: x.b.artists, cast: x.b.cast }));
       }
       const freeAt = x.b.end + (x.meal ? 0 : x.b.change) + x.b.after;
       if (!x.meal) pushWrap(timeline, x);
@@ -636,7 +644,7 @@
       if (arrive > x.b.start) red(day, "“" + x.ev.title + "” starts before the group can be ready (" + hm(arrive) + ").");
       truckFor(ctx, day, timeline, x, arrive, dateISO);
       pushPrep(timeline, arrive, x);
-      timeline.push(block("show", x.b.start, x.b.end, x.ev.title, { ev: x.ev, venue: x.venue }));
+      timeline.push(block("show", x.b.start, x.b.end, x.ev.title, { ev: x.ev, venue: x.venue, artists: x.b.artists, cast: x.b.cast }));
       here = x.b.end + x.b.change + x.b.after;
       pushWrap(timeline, x);
     });
