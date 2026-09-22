@@ -131,8 +131,9 @@ input[type=time]::-webkit-calendar-picker-indicator,input[type=date]::-webkit-ca
 .tl-truck{opacity:.7;font-size:.85rem}
 .tl-truck .tl-when{color:var(--muted)}
 .tl-truck .tl-body b{font-weight:500;color:var(--muted)}
-.truck-icon{width:1.35em;height:auto;vertical-align:-.15em;margin-right:.45em;color:var(--copper)}
-.truck-back .truck-icon{transform:scaleX(-1)}
+/* Heading to the venue: ivory. Heading back to storage: gold. */
+.truck-icon{width:1.35em;height:auto;vertical-align:-.15em;margin-right:.45em;color:var(--ink)}
+.truck-back .truck-icon{transform:scaleX(-1);color:#e4ab0e}
 .tl-sleep .tl-when::after{content:""}
 .tl-edit{display:flex;flex-wrap:wrap;gap:.5rem .9rem;margin-top:.35rem;font-size:.78rem;color:var(--muted)}
 .tl-edit input[type=number]{width:4.2rem}
@@ -203,6 +204,7 @@ footer{margin-top:2.5rem;color:var(--muted2);font-size:.78rem}footer a{color:var
   .tl-show{background:none;border-left:3px solid #8E4A24;padding-left:.45rem;margin-left:0}
   .tl-show .tl-body b{font-size:9pt}
   .tl-truck{opacity:.75;font-size:8.5pt}
+  .truck-icon{color:#1B1D21}.truck-back .truck-icon{color:#b8860b}
   .tl-edit,.addons,.meal-edit,.day-print{display:none}
   body.print-one .day:not(.print-target),body.print-one .totals,body.print-one .cmp-wrap,body.print-one h2{display:none!important}
   body.print-one .day.print-target{page-break-before:auto}

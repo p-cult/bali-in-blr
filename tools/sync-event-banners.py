@@ -30,8 +30,16 @@ MAXW = 2000
 IMG_EXT = re.compile(r"\.(jpe?g|png|webp|tiff?|heic)$", re.I)
 
 
-def get(url):
-    return urlopen(Request(url, headers={"User-Agent": "Mozilla/5.0"}), timeout=60).read()
+def get(url, tries=3):
+    """Drive answers 500/429 now and then; retry before giving up."""
+    import time
+    for n in range(tries):
+        try:
+            return urlopen(Request(url, headers={"User-Agent": "Mozilla/5.0"}), timeout=60).read()
+        except Exception:
+            if n == tries - 1:
+                raise
+            time.sleep(2 * (n + 1))
 
 
 def folder_files(folder):
@@ -44,7 +52,10 @@ def folder_files(folder):
 
 
 def file_name(fid):
-    h = get(f"https://drive.google.com/file/d/{fid}/view").decode("utf-8", "replace")
+    try:
+        h = get(f"https://drive.google.com/file/d/{fid}/view").decode("utf-8", "replace")
+    except Exception:
+        return ""          # unknown name: judged by its pixels alone
     m = re.search(r"<title>(.*?) - Google Drive</title>", h)
     return unescape(m.group(1)).strip() if m else ""
 
@@ -95,7 +106,15 @@ def main():
         folder = entry["folder"]
         if folder not in listing:
             candidates = []
-            for fid in folder_files(folder):
+            try:
+                ids = folder_files(folder)
+            except Exception as err:
+                # Could not see the folder this run. Keep whatever is on-site;
+                # never clear a working banner because Drive had a bad minute.
+                print(f"  !  {slug:52} folder unreachable ({err}); keeping current banner")
+                listing[folder] = "unreachable"
+                continue
+            for fid in ids:
                 name = file_name(fid)
                 if name and not IMG_EXT.search(name):
                     continue                      # PSDs, subfolders, anything not an image
@@ -120,6 +139,8 @@ def main():
 
         pick = listing[folder]
         dest = OUT / f"{slug}.jpg"
+        if pick == "unreachable":
+            continue
         if not pick:
             print(f"  -  {slug:52} no landscape image yet — page shows the stand-in")
             entry.pop("source", None); entry.pop("version", None)
