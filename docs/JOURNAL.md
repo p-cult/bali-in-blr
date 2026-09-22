@@ -1320,6 +1320,15 @@ the buffer — the tool's job is to expose the squeeze, not hide it.
 - Verified live at 375px: all 8 calendar rows with two buttons have them on
   one line with logos centred, none misaligned; the event pages match; no
   sideways scroll on the home page, the calendar or an event page.
+- Then the desktop event page stacked them: its side panel was narrower than
+  two buttons at their fixed minimum width. Provider buttons now start from
+  zero and grow to their usual width (`flex: 1 1 0; max-width: 10.5rem`), so a
+  pair shrinks together instead of wrapping — anywhere. The event page stacks
+  its details panel under the description below 900px, so a tablet gets the
+  full-width panel. Measured side by side: 159px desktop, 168px tablet, 139px
+  phone, 168px in the calendar.
+- Found, not fixed: at 768px the site header's menu overflows sideways; it
+  only collapses to the hamburger below 760px. Site-wide and older than this.
 
 ## 2. Lessons and standing rules (the "why" behind the rules)
 
