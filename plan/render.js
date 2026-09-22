@@ -101,8 +101,9 @@
     return plan.days.map(function (d) { return dayCard(d, Object.assign({}, opts, { open: opts.openAll || opts.openDate === d.date })); }).join("");
   }
 
-  function totalsCard(plan) {
-    const t = plan.totals;
+  // opts.internal shows money (vehicle estimate); the public page never does.
+  function totalsCard(plan, opts) {
+    const t = plan.totals; opts = opts || {};
     if (!plan.days.length) return "";
     const party = plan.party || {};
     const seats = (party.vehicles || []).reduce(function (n, v) { return n + (v.seats || 0) * (v.count || 1); }, 0);
@@ -119,7 +120,7 @@
       stat("Early calls", t.earlyCalls) +
       stat("Red-flag days", t.redDays || 0) +
       stat("Holds in town", t.holdsInTown) +
-      stat("Vehicle est.", "₹" + Math.round(t.vehicleCost).toLocaleString("en-IN")) +
+      (opts.internal ? stat("Vehicle est.", "₹" + Math.round(t.vehicleCost).toLocaleString("en-IN")) : "") +
       "</div>";
   }
   function stat(k, v) { return "<div class='stat'><span class='stat-k'>" + esc(k) + "</span><span class='stat-v'>" + esc(v) + "</span></div>"; }

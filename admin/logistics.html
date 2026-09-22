@@ -126,7 +126,7 @@
 
 <script src="auth.js?v=7"></script>
 <script src="../plan/engine.js?v=20"></script>
-<script src="../plan/render.js?v=14"></script>
+<script src="../plan/render.js?v=15"></script>
 <script>
 (function () {
   "use strict";
@@ -247,7 +247,7 @@
     if (stay) {
       const plan = rows.find(function (r) { return r.stay === stay; }).plan;
       $("plan-stay").textContent = stay.name;
-      $("totals").innerHTML = R.totalsCard(plan);
+      $("totals").innerHTML = R.totalsCard(plan, { internal: true });
       $("days").innerHTML = R.tour(plan, { editable: true, cfg: c });
       open.forEach(function (d) { const el = document.querySelector(".day[data-date='" + d + "']"); if (el) el.open = true; });
       $("share-url").textContent = shareUrl(stay);
