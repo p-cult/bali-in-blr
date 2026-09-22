@@ -99,7 +99,7 @@ on the plan, and add-ons travel in the public link.
 | Provider | Needs | Gives |
 |---|---|---|
 | `osrm` (default) | nothing (public OSRM demo server) | free-flow road time + distance for every pair, in one request |
-| `bridge` | `Logistics.gs` deployed and `CONFIG.LOGISTICS_URL` set | Google Maps duration **with predicted traffic for the exact departure time**, per leg, cached |
+| `bridge` (default once connected) | `Logistics.gs` deployed and `CONFIG.LOGISTICS_URL` set | Google Maps duration for the exact departure time: **typical traffic for that weekday and hour** while the date is far off, refreshed hourly inside 48 h, **live** and refreshed every 10 min inside 2 h of departure |
 | `haversine` | nothing, offline | road-factored straight line at 27 km/h |
 
 Free-flow times are shaped by an hour-of-day **Bengaluru traffic profile**

@@ -144,7 +144,7 @@
     ],
     "safety": 1.1
   },
-  "provider": "osrm",
+  "provider": "bridge",
   "overrides": {},
   "excludeStatuses": [],
   "extras": [

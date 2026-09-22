@@ -281,7 +281,7 @@
           "&to=" + encodeURIComponent(to.lat + "," + to.lon) + "&depart=" + encodeURIComponent(departISO);
         const r = await fetchJSON(url);
         if (!r.ok) throw new Error(r.error || "bridge");
-        return { min: r.minutes, km: r.km, source: "google-traffic" };
+        return { min: r.minutes, km: r.km, source: "google-traffic", mode: r.mode || "typical" };
       },
     },
   };
@@ -785,7 +785,7 @@
   }
   function legDetail(tr, loadOut) {
     if (!tr || tr.min == null) return "travel time unknown";
-    const src = tr.source === "google-traffic" ? "live traffic" : tr.source === "same" ? "" : "est. with traffic";
+    const src = tr.source === "google-traffic" ? (tr.mode === "live" ? "live traffic" : tr.mode === "near" ? "traffic, refreshed hourly" : "typical traffic for the day") : tr.source === "same" ? "" : "est. with traffic";
     return dur(tr.min) + (tr.km != null ? " · " + Math.round(tr.km) + " km" : "") + (src ? " · " + src : "") + (loadOut ? " · " + loadOut + " min loading first" : "");
   }
 
@@ -843,7 +843,7 @@
         try {
           const departISO = day.date + "T" + pad(Math.floor(leg.depart / 60) % 24) + ":" + pad(leg.depart % 60) + ":00+05:30";
           const r = await providers.bridge.leg(ctx.points[a], ctx.points[b], departISO);
-          ctx.legCache[ck] = { min: r.min, km: r.km, source: "google-traffic" };
+          ctx.legCache[ck] = { min: r.min, km: r.km, source: "google-traffic", mode: r.mode };
           changed = true;
         } catch (e) { ctx.warnings.push("Live traffic unavailable for one leg: " + e.message); return changed; }
       }

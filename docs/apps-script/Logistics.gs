@@ -9,9 +9,12 @@
  *   GET ?action=leg&from=lat,lon&to=lat,lon&depart=<ISO 8601>
  *       → { ok, minutes, km, source:"google-traffic" }
  *       Google Maps directions with the traffic model for that departure
- *       time (predicted traffic for a future date, live for now). Cached in
- *       the "TravelCache" tab per origin/destination/weekday/15-min slot so
- *       replanning does not burn quota. Apps Script's Maps service has a
+ *       time. Far from the date this is Google's typical traffic for that
+ *       weekday and hour ("typical"); within 48 h it is refreshed hourly
+ *       ("near"); within 2 h of departure it is live and refreshed every
+ *       10 minutes ("live"). Cached in the "TravelCache" tab per
+ *       origin/destination/weekday/15-min slot so replanning does not burn
+ *       quota; the cache lifetime shortens as the departure approaches. Apps Script's Maps service has a
  *       daily quota (1,000 direction calls on consumer accounts, more on
  *       Workspace) — the planner only asks for legs it has not cached.
  *   GET ?action=geocode&q=<address>
@@ -74,9 +77,10 @@ function leg_(from, to, departISO) {
   // back to "now", which is still live traffic.
   if (depart.getTime() < Date.now()) depart = new Date(Date.now() + 60 * 1000);
 
+  var tier = tier_(depart);
   var key = cacheKey_(a, b, depart);
-  var cached = cacheGet_(key);
-  if (cached) return { ok: true, minutes: cached.minutes, km: cached.km, source: "google-traffic", cached: true };
+  var cached = cacheGet_(key, tier.ttlMs);
+  if (cached) return { ok: true, minutes: cached.minutes, km: cached.km, source: "google-traffic", mode: tier.mode, cached: true };
 
   var finder = Maps.newDirectionFinder()
     .setOrigin(a.lat, a.lon)
@@ -92,8 +96,16 @@ function leg_(from, to, departISO) {
     m += l.distance.value;
   });
   var out = { minutes: Math.round(sec / 60), km: Math.round(m / 100) / 10 };
-  cachePut_(key, out);
-  return { ok: true, minutes: out.minutes, km: out.km, source: "google-traffic", cached: false };
+  cachePut_(key, out, tier.ttlMs);
+  return { ok: true, minutes: out.minutes, km: out.km, source: "google-traffic", mode: tier.mode, cached: false };
+}
+
+// How fresh a figure must be, by how far away the departure is.
+function tier_(depart) {
+  var hours = (depart.getTime() - Date.now()) / 3600000;
+  if (hours <= 2) return { mode: "live", ttlMs: 10 * 60000 };
+  if (hours <= 48) return { mode: "near", ttlMs: 60 * 60000 };
+  return { mode: "typical", ttlMs: 7 * 86400000 };
 }
 
 function cacheKey_(a, b, depart) {
@@ -102,25 +114,23 @@ function cacheKey_(a, b, depart) {
   var slot = Utilities.formatDate(depart, TZ, "u-HH") + ":" + (Math.floor(depart.getMinutes() / 15) * 15);
   return [a.lat.toFixed(4), a.lon.toFixed(4), b.lat.toFixed(4), b.lon.toFixed(4), slot].join("|");
 }
-function cacheGet_(key) {
+function cacheGet_(key, ttlMs) {
   var hit = CacheService.getScriptCache().get(key);
-  if (hit) return JSON.parse(hit);
+  if (hit) { var h = JSON.parse(hit); if (Date.now() - h.at < ttlMs) return h; }
   var sh = tab_(CACHE_TAB, ["key", "minutes", "km", "fetched"]);
   var data = sh.getDataRange().getValues();
-  for (var i = 1; i < data.length; i++) {
-    if (data[i][0] === key) {
-      // Sheet entries older than 7 days are refreshed.
-      if (Date.now() - new Date(data[i][3]).getTime() < 7 * 86400000) {
-        var v = { minutes: +data[i][1], km: +data[i][2] };
-        CacheService.getScriptCache().put(key, JSON.stringify(v), 21600);
-        return v;
-      }
+  for (var i = data.length - 1; i >= 1; i--) {
+    if (data[i][0] === key && Date.now() - new Date(data[i][3]).getTime() < ttlMs) {
+      var v = { minutes: +data[i][1], km: +data[i][2], at: new Date(data[i][3]).getTime() };
+      CacheService.getScriptCache().put(key, JSON.stringify(v), Math.min(21600, Math.max(60, Math.floor(ttlMs / 1000))));
+      return v;
     }
   }
   return null;
 }
-function cachePut_(key, v) {
-  CacheService.getScriptCache().put(key, JSON.stringify(v), 21600);
+function cachePut_(key, v, ttlMs) {
+  var rec = { minutes: v.minutes, km: v.km, at: Date.now() };
+  CacheService.getScriptCache().put(key, JSON.stringify(rec), Math.min(21600, Math.max(60, Math.floor(ttlMs / 1000))));
   tab_(CACHE_TAB, ["key", "minutes", "km", "fetched"]).appendRow([key, v.minutes, v.km, new Date()]);
 }
 

@@ -67,8 +67,8 @@
       <label class="field">Vehicles <input type="number" id="veh-count" min="1" /></label>
       <label class="field">Travel time source
         <select id="provider">
+          <option value="bridge">Google Maps traffic (typical for the day, live near the day)</option>
           <option value="osrm">Road routing + Bengaluru traffic profile</option>
-          <option value="bridge">Google Maps live traffic (needs backend)</option>
           <option value="haversine">Straight-line estimate (offline)</option>
         </select></label>
       <label class="field">Traffic safety margin <input type="number" id="safety" min="1" max="2" step="0.05" /></label>
@@ -119,7 +119,7 @@
 </div>
 
 <script src="auth.js?v=6"></script>
-<script src="../plan/engine.js?v=8"></script>
+<script src="../plan/engine.js?v=9"></script>
 <script src="../plan/render.js?v=6"></script>
 <script>
 (function () {
@@ -239,7 +239,7 @@
       $("share-url").textContent = shareUrl(stay);
     } else { $("days").innerHTML = "<p class='muted'>Add a stay to start.</p>"; }
     renderStays(); renderVenues(); renderExtras();
-    const prov = L.providers[c.provider] ? L.providers[c.provider].label : c.provider;
+    const prov = c.provider === "bridge" && !L.CONFIG.LOGISTICS_URL ? "Google traffic not yet connected — using road routing + traffic profile" : (L.providers[c.provider] ? L.providers[c.provider].label : c.provider);
     $("status").innerHTML = "<span class='ok'>●</span> " + data.events.length + " schedule entries" + (data.fromSheet ? " from the live sheet" : " (fallback file)") + " · " + L.esc(prov) + (ctx.matrix ? " · distances via " + L.esc(ctx.matrix.source) : "");
     $("warnings").innerHTML = ctx.warnings.map(L.esc).join("<br>"); ctx.warnings = [];
   }
