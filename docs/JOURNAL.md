@@ -1340,6 +1340,37 @@ the buffer — the tool's job is to expose the squeeze, not hide it.
 - Verified live at 768px: menu button in place, no sideways scroll, privacy's
   back link visible. Locally also at 1078, 980, 940 and 375px.
 
+### 22 Sep 2026 — data audit: one pipeline, sheet-driven everywhere
+- Audited every place data enters and every copy of it; the map is now
+  **`docs/DATA-MAP.md`** (sources → readers → derived copies → who regenerates
+  what). Findings and fixes, each a targeted change:
+- **Link builder now uses the site's own event pipeline.** It loads `main.js`
+  and calls `loadEvents` → `normaliseEvent` → `assignSlugs` → `ticketsLive`,
+  so its new **Event pages** destination lists exactly the events the calendar
+  links, with the same addresses. Its own copies of the bridge and schedule
+  URLs and its own schedule parser are gone; it reads `CONFIG`. Its weaker
+  `esc` (no quote escaping) is gone too. A minted event link is
+  `event/?e=<slug>&utm_…&ref=…`.
+- **Fallback files resolve from the script's location** (`SITE_ROOT`), not
+  from the page that loaded it — needed once `main.js` runs under `/admin/`,
+  and it makes `event/`'s `<base>` no longer load-bearing for data.
+- **Page views now carry `campaign_ref`** like every other dataLayer event;
+  without it arrivals could not be split by link.
+- **The event a visitor came from reaches the sheet again.** Since the 17 Sep
+  simplification the Register form asks no programme question, so the
+  Signups `programmes` column stayed empty even when the link said
+  `?programme=`. A hidden `programmes` field is now filled from the link
+  before the form's early return (that return was why a first attempt inside
+  `preselectProgramme` never ran). The 17 Sep decision — no question — stands;
+  only the data is carried. Cleared on a plain visit.
+- **Derived copies regenerate hourly:** `tools/sync-events-fallback.py` now
+  also rewrites the hero's placeholder figures in `index.html` (public events,
+  span, venues — mirroring `NOT_PUBLIC`) and `sitemap.xml` (home, privacy and
+  every public event page, 15 today), and the image workflow runs it.
+- Not changed, recorded: PDFs and posters stay on-demand snapshots; the slug
+  rule and the not-public keyword list exist in both JS and Python by design
+  (see the map's "deliberate duplicates").
+
 ## 2. Lessons and standing rules (the "why" behind the rules)
 
 **Data and privacy**
@@ -1423,6 +1454,12 @@ the buffer — the tool's job is to expose the squeeze, not hide it.
   palette without showing a preview first.
 
 **Working practice**
+- **Before blaming a change, test the deployed site.** The empty Register
+  checklist looked like a regression from the day's edits; the live site had
+  the same one-card form because it was simplified on purpose on 17 Sep.
+- **A shared script in a new page needs the same cache tag on every page.**
+  Two edits under one tag served the first edit from cache and cost a
+  wrong-looking test.
 - **Fallbacks and PDFs drift; the page does not.** After a schedule change,
   run `tools/sync-events-fallback.py` and the two PDF tools. Derive dates in
   code rather than typing them into a template.

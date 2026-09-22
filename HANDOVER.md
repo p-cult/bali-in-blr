@@ -82,6 +82,7 @@ docs/
                     sheet without anyone running a script.
 tools/
   JOURNAL.md        (docs/) Decisions, problems solved, lessons — the project memory.
+  DATA-MAP.md       (docs/) Every data source, its readers and its derived copies.
   assets/logo.svg   The festival logo (source). Inlined in every page; see §5.
   brand/index.html  The brand kit — link-only page for the team (noindex).
   ANALYTICS-SETUP.md (docs/) What the site reports, and the GTM work left to do.

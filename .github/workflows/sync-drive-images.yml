@@ -57,15 +57,22 @@ jobs:
         continue-on-error: true
         run: python3 tools/sync-event-banners.py
 
+      # The offline fallback, the hero's placeholder figures and the sitemap
+      # are all derived from the schedule sheet; refresh them so nothing
+      # not-read-live can drift from it. Never blocks the image sync.
+      - name: Refresh the schedule fallback, hero figures and sitemap
+        continue-on-error: true
+        run: python3 tools/sync-events-fallback.py
+
       - name: Commit anything new
         run: |
-          if [ -z "$(git status --porcelain assets/drive assets/events data/event-banners.json)" ]; then
+          if [ -z "$(git status --porcelain assets/drive assets/events data/event-banners.json data/events.json index.html sitemap.xml)" ]; then
             echo "Nothing new. Done."
             exit 0
           fi
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add assets/drive assets/events data/event-banners.json
+          git add assets/drive assets/events data/event-banners.json data/events.json index.html sitemap.xml
           git commit -m "Sync Drive images (automated)
 
           Picked up by .github/workflows/sync-drive-images.yml — a Drive link in

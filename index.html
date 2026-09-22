@@ -341,6 +341,10 @@
                  with the visitor's choice; if that enhancement can't load, this
                  keeps registration working (email is always collected). -->
             <input type="hidden" name="notify" value="Email" />
+            <!-- The event a visitor arrived from (?programme= on the link, set by
+                 calendar rows, event pages and minted links). Filled by main.js;
+                 lands in the Signups sheet's existing 'programmes' column. -->
+            <input type="hidden" name="programmes" value="" />
             <div class="field">
             <label for="sf-name">Name <span class="req">*</span></label>
             <input type="text" id="sf-name" name="name" autocomplete="name" placeholder="e.g. Made Nagaraj" required />
@@ -472,6 +476,6 @@
       }
     })();
   </script>
-  <script src="main.js?v=hub79"></script>
+  <script src="main.js?v=hub82"></script>
 </body>
 </html>

@@ -58,6 +58,7 @@ dependencies. Hosted on **GitHub Pages**, auto-deploys on push to `main`.
 - `docs/ANOTHER-MACHINE.md` — working from the drive on a new computer
 - `tools/doctor.sh` — checks a machine can carry on (reads only)
 - `docs/JOURNAL.md` — decisions, problems solved, lessons (the project's memory)
+- `docs/DATA-MAP.md` — where every piece of data lives, who reads it, what regenerates it
 - `HANDOVER.md` — full brief · `AGENTS.md` — entry point for any AI tool ·
   `.cursor/rules/` — same rules for Cursor
 

@@ -9,6 +9,14 @@
    reading the local files in /data with the form in demo mode.
    See docs/BRIDGE-SETUP.md.
    ============================================================ */
+/* main.js is loaded by pages in sub-folders too (event/, admin/). Its local
+   fallback files live beside it, so they are resolved from the script's own
+   address rather than from whichever page loaded it. */
+const SITE_ROOT = (function () {
+  const src = document.currentScript && document.currentScript.src;
+  try { return src ? new URL(".", src).href : ""; } catch (e) { return ""; }
+})();
+
 const CONFIG = {
   // Paste your Apps Script Web App URL here, e.g.
   // "https://script.google.com/macros/s/AKfy.../exec"
@@ -47,8 +55,8 @@ const CONFIG = {
     "https://script.google.com/macros/s/AKfycbyKXzPHQLsHCoryx0aJVpVkP0Z0XrnPxjucaiUJtR1aXeux33ygq2Br2QcBNU_MAB7qDw/exec?feed=bms",
 
   // Used when the sheet has no rows yet, or cannot be reached.
-  LOCAL_EVENTS_URL: "data/events.json",
-  LOCAL_PARTNERS_URL: "data/partners.json",
+  LOCAL_EVENTS_URL: SITE_ROOT + "data/events.json",
+  LOCAL_PARTNERS_URL: SITE_ROOT + "data/partners.json",
 
   // Occupancy / waitlist copy only. Per-event Book / RSVP buttons follow the
   // sheet: a real URL in a ticket column (Event List or the BMS tab) shows
@@ -156,6 +164,7 @@ function trackView(path, title) {
     event: "virtual_page_view",
     page_path: path,
     page_title: title,
+    campaign_ref: CAMPAIGN_REF || "(direct)", // so arrivals split by link, like every other event
   });
   if (window.gtag && ANALYTICS.GA4_ID) {
     gtag("event", "page_view", {
@@ -1257,7 +1266,7 @@ function loadCollaborators() {
     // Local logo registry (collaborator name → optimised asset). Used when the
     // sheet's Files column has no Drive link of its own.
     let logos = {};
-    try { logos = await loadJSON("data/collab-logos.json"); } catch (e) { logos = {}; }
+    try { logos = await loadJSON(SITE_ROOT + "data/collab-logos.json"); } catch (e) { logos = {}; }
     let list = [];
     // Published feed first, then the bridge feed (owner-read, publish-proof).
     for (const url of [CONFIG.COLLAB_URL, CONFIG.COLLAB_URL_ALT].filter(Boolean)) {
@@ -1740,7 +1749,7 @@ async function initOnboarding() {
 
   let sets = {};
   try {
-    sets = await loadJSON("data/questions.json");
+    sets = await loadJSON(SITE_ROOT + "data/questions.json");
   } catch (err) {
     sets = {}; // questions are an enhancement: fall back to the plain form
   }
@@ -1786,6 +1795,18 @@ function setupOnboarding(shell, questions) {
   const answers = {};
   const total = questions.length;
   let index = 0; // 0..total-1 = questions, total = the signup card
+
+  /* The event a visitor arrived from rides the link as ?programme= (calendar
+     rows, event pages, minted links). It goes into the form's hidden
+     'programmes' field so the Signups sheet records it — whether or not the
+     form asks any questions (it has asked none since 17 Sep). Cleared again
+     when a later visit carries no programme. */
+  function carryProgramme() {
+    const hidden = form.elements["programmes"];
+    if (hidden && hidden.type === "hidden") hidden.value = urlParam("programme") || "";
+  }
+  carryProgramme();
+  window.addEventListener("hashchange", carryProgramme);
 
   // No questions configured → behave exactly as before.
   if (!total) {

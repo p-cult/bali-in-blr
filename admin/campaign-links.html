@@ -82,6 +82,7 @@
           <option value="register">Register for updates</option>
           <option value="volunteer">Volunteer</option>
           <option value="calendar">Calendar</option>
+          <optgroup label="Event pages (tickets live)" id="destEvents"></optgroup>
         </select>
       </div>
       <div class="field">
@@ -183,11 +184,16 @@
 </div>
 <div class="toast" id="toast"></div>
 
+<!-- The site's own script, so this page uses the same schedule pipeline,
+     status rules, slugs and config as the calendar and the event pages. It is
+     safe here: every home-page routine returns early when its section is
+     absent, and the analytics ids are blank. -->
+<script src="../main.js?v=hub82"></script>
 <script src="auth.js?v=7"></script>
 <script>
 const BASE = "https://bali-in-blr.paramfoundation.org/";
-const BRIDGE_URL = "https://script.google.com/macros/s/AKfycbyKXzPHQLsHCoryx0aJVpVkP0Z0XrnPxjucaiUJtR1aXeux33ygq2Br2QcBNU_MAB7qDw/exec";
-const SCHEDULE_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTji37D6cT7J9bLFptJdNaYrvZF_soZyiqIsX-rHYUj4H6rnfMCExu2hIyVjCk48j86rdaBhp_lthzb/pub?gid=289612903&single=true&output=tsv";
+const BRIDGE_URL = CONFIG.BRIDGE_URL; // from main.js
+const SCHEDULE_URL = CONFIG.SCHEDULE_URL; // from main.js
 const KEY = "bali-campaign-links"; // local cache + queue; the sheet 'links' tab is the master
 const $ = (id) => document.getElementById(id);
 const slug = (s) => String(s||"").toLowerCase().trim().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
@@ -249,6 +255,10 @@ function buildUrl(){
   if (ref) params.set("ref", ref);
   if (dest === "register" && programme) params.set("programme", programme);
   const q = params.toString();
+  // An event page is a real path with the slug in its query; tags follow it.
+  if (dest.startsWith("event:")) {
+    return BASE + "event/?e=" + encodeURIComponent(dest.slice(6)) + (q ? "&" + q : "");
+  }
   const hash = dest ? "#" + dest : "";
   return BASE + (q ? "?" + q : "") + hash;
 }
@@ -306,7 +316,6 @@ $("dlPng").addEventListener("click", () => qrPngBlob(buildUrl(), b => { if(b) dl
 /* ---- minted list (localStorage) ---- */
 function load(){ try { return JSON.parse(localStorage.getItem(KEY)) || []; } catch(e){ return []; } }
 function save(){ try { localStorage.setItem(KEY, JSON.stringify(LINKS)); } catch(e){} }
-function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
 
 // Local cache + queue; the sheet 'links' tab is the master (pulled on load).
 let LINKS = load();
@@ -453,18 +462,26 @@ async function pullLinks(){
   } catch(e){ /* offline: keep local cache */ }
 }
 
-/* ---- populate programmes from the live schedule ---- */
+/* ---- events, from the site's own pipeline (main.js) ----
+   loadEvents() reads the schedule sheet (with the tickets tab merged in) and
+   falls back exactly as the calendar does; normaliseEvent/assignSlugs/
+   ticketsLive are the same functions the calendar and event pages use, so a
+   link minted here always points where the calendar points. */
 async function pullProgrammes(){
   try {
-    const t = await (await fetch(SCHEDULE_URL, {cache:"no-store"})).text();
-    const rows = t.split(/\r?\n/).map(l => l.split("\t"));
-    const hi = rows.findIndex(c => c.map(x=>x.trim().toLowerCase()).includes("title"));
-    if (hi === -1) return;
-    const ti = rows[hi].map(x=>x.trim().toLowerCase()).indexOf("title");
-    const seen = new Set(); const sel = $("programme");
-    rows.slice(hi+1).forEach(c => { const name=(c[ti]||"").trim(); if(name && !seen.has(name)){ seen.add(name); const o=document.createElement("option"); o.value=name; o.textContent=name; sel.appendChild(o); } });
-  } catch(e){ /* programmes optional */ }
-}
-</script>
+    const events = assignSlugs((await loadEvents()).map(normaliseEvent));
+    const sel = $("programme"), seen = new Set();
+    events.forEach(ev => {
+      if (!ev.title || ev.notPublic || seen.has(ev.title)) return;
+      seen.add(ev.title);
+      const o = document.createElement("option"); o.value = ev.title; o.textContent = ev.title; sel.appendChild(o);
+    });
+    const grp = $("destEvents");
+    events.filter(ticketsLive).forEach(ev => {
+      const o = document.createElement("option"); o.value = "event:" + ev.slug; o.textContent = ev.title; grp.appendChild(o);
+    });
+    if (!grp.children.length) grp.label = "Event pages (none with tickets live yet)";
+  } catch(e){ /* the four fixed destinations still work */ }
+}</script>
 </body>
 </html>
