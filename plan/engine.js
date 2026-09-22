@@ -365,6 +365,9 @@
       end: o.end != null ? +o.end : ev.end,
     };
   }
+  // A red flag is something that cannot work as scheduled; plain flags are
+  // notes. Rendered as {level, text} — strings stay plain notes.
+  function red(day, text) { day.flags.push({ level: "red", text: text }); day.red = true; }
   function block(type, from, to, label, extra) {
     return Object.assign({ type: type, from: from, to: to, label: label }, extra || {});
   }
@@ -427,16 +430,18 @@
     // `notBefore` (still wrapping the previous show) we leave then and
     // arrive late — the caller flags the lost buffer.
     function legTo(x, mustArrive, notBefore) {
-      let depart = mustArrive - 45, tr = null;
-      for (let pass = 0; pass < 4; pass++) {
+      let depart = mustArrive - 45, tr = null, arrive = null;
+      // Walk the departure back until leaving at that time (priced at that
+      // time — traffic changes by the quarter hour) really arrives by
+      // mustArrive, unless the previous event holds us (notBefore).
+      for (let pass = 0; pass < 8; pass++) {
+        if (notBefore != null && depart < notBefore) depart = notBefore;
         tr = ctx.travel(here, x.idx, dateISO, depart);
-        depart = mustArrive - (tr.min == null ? 45 : tr.min);
+        arrive = depart + (tr.min == null ? 45 : tr.min);
+        if (arrive <= mustArrive + 0.5 || (notBefore != null && depart <= notBefore)) break;
+        depart -= (arrive - mustArrive);
       }
-      if (notBefore != null && depart < notBefore) depart = notBefore;
-      // Price at the departure we actually return, so a later Google
-      // refinement of this leg is keyed the same way.
-      tr = ctx.travel(here, x.idx, dateISO, depart);
-      return { depart: depart, arrive: depart + (tr.min == null ? 45 : tr.min), travel: tr };
+      return { depart: depart, arrive: arrive, travel: tr };
     }
 
     let notBefore = null; // earliest we can leave the current location
@@ -454,8 +459,16 @@
       }));
       day.legs.push({ from: hereLabel, to: x.venue ? x.venue.name : x.ev.venue, depart: depart, travelDepart: leg.depart, arrive: leg.arrive, travel: leg.travel });
       if (leg.travel.min != null) { day.travelMin += leg.travel.min; day.km += leg.travel.km || 0; }
-      if (!x.meal && leg.arrive > wanted + 5) day.flags.push("“" + x.ev.title + "”: arrives " + hm(arrive) + ", " + dur(leg.arrive - wanted) + " into the " + x.b.before + " min buffer — the previous event runs too close.");
-      if (!x.meal && leg.arrive > x.b.start) day.flags.push("“" + x.ev.title + "” cannot be reached before it starts (" + hm(leg.arrive) + ").");
+      if (!x.meal && leg.arrive > x.b.start) red(day, "“" + x.ev.title + "” cannot be reached before it starts: arrival " + hm(leg.arrive) + ".");
+      else if (!x.meal && leg.arrive > wanted + 5) {
+        const lost = leg.arrive - wanted;
+        const costumeLeft = Math.max(0, x.b.ready - Math.max(0, lost - 0));
+        const msg = "“" + x.ev.title + "”: arrives " + hm(arrive) + ", " + dur(lost) + " late for the " + x.b.before + " min preparation.";
+        if (lost >= x.b.ready + x.b.soundcheck) red(day, msg + " No sound check or costume time.");
+        else if (lost >= x.b.ready) red(day, msg + " No costume / make-up time.");
+        else if (costumeLeft < x.b.ready / 2) red(day, msg + " Costume / make-up cut to " + Math.round(costumeLeft) + " min.");
+        else day.flags.push(msg);
+      }
       if (x.meal) {
         // A meal out: no venue buffers, the meal itself, then move on.
         if (x.b.start > arrive + 5) timeline.push(block("hold", arrive, x.b.start, "Arrive early at " + x.venue.name, { inTown: true }));
@@ -561,6 +574,11 @@
     day.wake = wake; day.leave = leaveStay; day.back = home; day.sleep = sleepAt;
     const earliest = toMin(D.earliestWake), latest = toMin(D.latestSleep) + 1440;
     if (wake < earliest) day.flags.push("Early call: wake-up at " + hm(wake) + ".");
+    if (prev && prev.sleep != null && prev.kind !== "rest") {
+      const night = wake + 1440 - prev.sleep;
+      if (night < 300) red(day, "Only " + dur(night) + " between lights out (" + hm(prev.sleep) + " the night before) and wake-up.");
+      else if (night < 390) day.flags.push("Short night: " + dur(night) + " between lights out (" + hm(prev.sleep) + ") and wake-up.");
+    }
     if (sleepAt > latest) day.flags.push("Late night: lights out at " + hm(sleepAt) + ".");
     evs.forEach(function (x) { if (x.b.note) day.flags.push("Note on “" + x.ev.title + "”: " + x.b.note); });
     return day;
@@ -614,7 +632,7 @@
         here += tr.min || 15;
       }
       if (arrive > here + 15) timeline.push(block("hold", here, arrive, "Free time in town" + mealHint(here, arrive, D), { inTown: true }));
-      if (arrive > x.b.start) day.flags.push("“" + x.ev.title + "” starts before the group can be ready (" + hm(arrive) + ").");
+      if (arrive > x.b.start) red(day, "“" + x.ev.title + "” starts before the group can be ready (" + hm(arrive) + ").");
       pushPrep(timeline, arrive, x);
       timeline.push(block("show", x.b.start, x.b.end, x.ev.title, { ev: x.ev, venue: x.venue }));
       here = x.b.end + x.b.change + x.b.after;
@@ -730,7 +748,7 @@
       if (p.start != null) {
         start = p.start;
         const clash = evs.find(function (x) { return x.b.start < start + len && x.b.end > start; });
-        if (clash) day.flags.push(p.label + " at " + p.name + " (" + hm(start) + ") overlaps “" + (clash.stopLabel || clash.ev.title) + "”.");
+        if (clash) red(day, p.label + " at " + p.name + " (" + hm(start) + ") overlaps “" + (clash.stopLabel || clash.ev.title) + "”.");
       } else if (p.purpose === "breakfast") {
         const first = evs.slice().sort(function (a, b) { return a.b.start - b.b.start; })[0];
         const call = first ? first.b.start - first.b.before : toMin(D.restDayWake) + 240;
@@ -860,6 +878,7 @@
       t.earliestWake = t.earliestWake == null ? day.wake : Math.min(t.earliestWake, day.wake);
       t.latestSleep = t.latestSleep == null ? day.sleep : Math.max(t.latestSleep, day.sleep);
       t.holdsInTown += day.blocks.filter(function (b) { return b.type === "hold" && b.inTown; }).length;
+      if (day.red) t.redDays = (t.redDays || 0) + 1;
       t.longestDay = Math.max(t.longestDay, day.back - day.leave);
     });
     const veh = (ctx.cfg.party.vehicles || [])[0] || { ratePerKm: 0, minPerDay: 0, count: 1 };

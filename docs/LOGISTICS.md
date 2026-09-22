@@ -59,6 +59,16 @@ profile).
 Before breakfast and after dinner are rendered *broad* (dimmed); the working
 day is detailed to the minute.
 
+**Red flags.** A day gets a red badge on its summary line, a red border and
+red-highlighted flag lines when something cannot work as scheduled: a venue
+that cannot be reached before the start, a late arrival that leaves no (or
+under half the) costume / make-up time, a timed add-on that overlaps an
+event, or under five hours between lights out and wake-up. Everything else
+(early calls, short nights of five to six and a half hours, packed lunches,
+notes) stays a plain flag. The totals card and the comparison table count
+red-flag days per stay. The plan states the problem; it does not propose
+schedule changes.
+
 ## Internal engagements
 
 Photoshoots, rehearsals, receptions and other things the group must travel

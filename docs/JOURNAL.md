@@ -1177,6 +1177,15 @@ starts with the cast still in costume. With Google traffic the 4 Oct day
 3.30pm show: the plan says so rather than hiding it; the fix is in the
 schedule (shorter wrap at Drishti or a later first show).
 
+User's rule (22 Sep): the plan must not suggest moving anything; it marks
+red flags in the schedule instead. Implemented as a red badge / border /
+line per day with a strict definition (unreachable start, no or under half
+the costume time, overlapping timed stop, under five hours' sleep) and a
+red-flag-days count per stay. A false-positive class got fixed on the way:
+single-event days were reporting "11 min late" because the departure was
+computed from one traffic slot and priced at another; departures now walk
+back until the priced leg really arrives in time.
+
 Lesson: the first pass let a leg depart before the previous event had
 wrapped (arrival was fixed at start − buffer). Legs now leave no earlier
 than the previous wrap and the day is flagged with the minutes lost from

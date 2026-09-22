@@ -62,13 +62,16 @@
   function dayCard(day, opts) {
     opts = opts || {};
     const open = opts.open ? " open" : "";
-    const flags = day.flags.length ? "<ul class='day-flags'>" + day.flags.map(function (f) { return "<li>" + esc(f) + "</li>"; }).join("") + "</ul>" : "";
+    const flags = day.flags.length ? "<ul class='day-flags'>" + day.flags.map(function (f) {
+      const isRed = f && f.level === "red"; const text = isRed ? f.text : f;
+      return "<li class='" + (isRed ? "flag-red" : "") + "'>" + (isRed ? "<b>Red flag:</b> " : "") + esc(text) + "</li>";
+    }).join("") + "</ul>" : "";
     const events = day.events.length ? "<p class='day-events'>" + day.events.map(function (e) {
       return "<span class='day-ev" + (e.notPublic ? " day-ev-private" : "") + "'>" + esc(e.title) + (e.start != null ? " <i>" + hm(e.start) + "</i>" : "") + "</span>";
     }).join("") + "</p>" : "";
     const meals = opts.editable && day.kind !== "outstation" ? stopEditor(day, opts.cfg) : "";
-    return "<details class='day day-" + day.kind + "'" + open + " data-date='" + day.date + "'>" +
-      "<summary><span class='day-date'>" + esc(L.dateLabel(day.date)) + "</span><span class='day-sum'>" + esc(summaryLine(day)) + "</span></summary>" +
+    return "<details class='day day-" + day.kind + (day.red ? " day-red" : "") + "'" + open + " data-date='" + day.date + "'>" +
+      "<summary><span class='day-date'>" + esc(L.dateLabel(day.date)) + "</span>" + (day.red ? "<span class='badge-red'>Red flag</span>" : "") + "<span class='day-sum'>" + esc(summaryLine(day)) + "</span></summary>" +
       "<div class='day-body'>" + events + flags + meals +
       "<div class='timeline'>" + day.blocks.map(function (b) { return blockRow(b, Object.assign({}, opts, { date: day.date })); }).join("") + "</div>" +
       "</div></details>";
@@ -93,6 +96,7 @@
       stat("Earliest wake", hm(t.earliestWake)) +
       stat("Latest lights out", hm(t.latestSleep)) +
       stat("Early calls", t.earlyCalls) +
+      stat("Red-flag days", t.redDays || 0) +
       stat("Holds in town", t.holdsInTown) +
       stat("Vehicle est.", "₹" + Math.round(t.vehicleCost).toLocaleString("en-IN")) +
       "</div>";
@@ -101,13 +105,13 @@
 
   function compareTable(rows) {
     if (rows.length < 2) return "<p class='muted'>Add a second stay option to compare.</p>";
-    const head = "<thead><tr><th>Stay</th><th>Road time</th><th>vs best</th><th>Distance</th><th>Avg / show day</th><th>Earliest wake</th><th>Latest lights out</th><th>Early calls</th><th>Holds in town</th><th>Vehicle est.</th></tr></thead>";
+    const head = "<thead><tr><th>Stay</th><th>Road time</th><th>vs best</th><th>Distance</th><th>Avg / show day</th><th>Earliest wake</th><th>Latest lights out</th><th>Early calls</th><th>Red flags</th><th>Holds in town</th><th>Vehicle est.</th></tr></thead>";
     const body = rows.map(function (r) {
       const t = r.totals;
       return "<tr class='" + (r.best ? "best" : "") + "'><td><b>" + esc(r.stay.name) + "</b>" + (r.best ? " <span class='tag'>least travel</span>" : "") + "<br><small>" + esc(r.stay.address || "") + "</small></td>" +
         "<td>" + dur(t.travelMin) + "</td><td>" + (r.deltaMin ? "+" + dur(r.deltaMin) : "—") + "</td><td>" + Math.round(t.km) + " km</td>" +
         "<td>" + dur(t.showDays ? t.travelMin / t.showDays : 0) + "</td><td>" + hm(t.earliestWake) + "</td><td>" + hm(t.latestSleep) + "</td>" +
-        "<td>" + t.earlyCalls + "</td><td>" + t.holdsInTown + "</td><td>₹" + Math.round(t.vehicleCost).toLocaleString("en-IN") + "</td></tr>";
+        "<td>" + t.earlyCalls + "</td><td class='" + (t.redDays ? "red" : "") + "'>" + (t.redDays || 0) + "</td><td>" + t.holdsInTown + "</td><td>₹" + Math.round(t.vehicleCost).toLocaleString("en-IN") + "</td></tr>";
     }).join("");
     return "<table class='cmp'>" + head + "<tbody>" + body + "</tbody></table>";
   }
