@@ -1337,6 +1337,8 @@ the buffer — the tool's job is to expose the squeeze, not hide it.
   on phones since the page was made. It is now `.nav-links--fixed` and stays
   visible at every width.
 - Every page loading styles.css is on the same cache tag (privacy had lagged).
+- Verified live at 768px: menu button in place, no sideways scroll, privacy's
+  back link visible. Locally also at 1078, 980, 940 and 375px.
 
 ## 2. Lessons and standing rules (the "why" behind the rules)
 
