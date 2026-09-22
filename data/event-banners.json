@@ -5,33 +5,53 @@
       "folder": "1wApekormP63LDjbAB95fvZdQYLat7VTu",
       "label": "Collab - shadow",
       "source": "19CLPMCEWkTl2UhEnaABM-9v7HsXLOmSo",
-      "version": "19CLPMCEWk",
+      "version": "19CLPMCEWk-2",
       "picked": "BMS-Landscape.png (1920x960)",
-      "updated": "2026-09-22"
+      "updated": "2026-09-22",
+      "fmt": 2,
+      "webp": [
+        "indonesian-indian-shadow-puppetry-performance-1600.webp",
+        "indonesian-indian-shadow-puppetry-performance-800.webp"
+      ]
     },
     "dance-movement-workshop": {
       "folder": "1HmAT4WY77mSo2HwzBAo22eNmlimu_qUl",
       "label": "Drishti",
       "source": "1N9a6KYDOSF-iwEftVOY5dy7S7BaCsPKd",
-      "version": "1N9a6KYDOS",
+      "version": "1N9a6KYDOS-2",
       "picked": "BMS-Landscape.png (1920x960)",
-      "updated": "2026-09-22"
+      "updated": "2026-09-22",
+      "fmt": 2,
+      "webp": [
+        "dance-movement-workshop-1600.webp",
+        "dance-movement-workshop-800.webp"
+      ]
     },
     "indonesian-shadow-puppetry-performance": {
       "folder": "127aDTcqpfLO0w2HMwSSpKJcEfDCISTdB",
       "label": "For jagriti",
       "source": "1iqjzYCO9txUExwZaHFQ3iHiR-yivpImz",
-      "version": "1iqjzYCO9t",
+      "version": "1iqjzYCO9t-2",
       "picked": "BMS-Landscape.png (1920x960)",
-      "updated": "2026-09-22"
+      "updated": "2026-09-22",
+      "fmt": 2,
+      "webp": [
+        "indonesian-shadow-puppetry-performance-1600.webp",
+        "indonesian-shadow-puppetry-performance-800.webp"
+      ]
     },
     "gamelan-workshop": {
       "folder": "1rRpQNK0X81NvYgXaLo0CcazrypCZe4d5",
       "label": "Gamelan workshop",
       "source": "1xzcX8-KXoO295ZIH8hAN-ZsYYx47L-y5",
-      "version": "1xzcX8-KXo",
+      "version": "1xzcX8-KXo-2",
       "picked": "BMS-Landscape.png (1920x960)",
-      "updated": "2026-09-22"
+      "updated": "2026-09-22",
+      "fmt": 2,
+      "webp": [
+        "gamelan-workshop-1600.webp",
+        "gamelan-workshop-800.webp"
+      ]
     },
     "lecture-demonstration": {
       "folder": "1oqw_L0X5RB1ORgM_cQ3rvxFg13Q5-eCX",
@@ -45,41 +65,66 @@
       "folder": "17t5vuKkKbe7JmLslQNyzUg4SACjWa4vC",
       "label": "Kecak workshop - studio1",
       "source": "153PkETSoMFKzmxlRhrLgYgxiIXcLdy6v",
-      "version": "153PkETSoM",
+      "version": "153PkETSoM-2",
       "picked": "BMS-Landscape.png (1920x960)",
-      "updated": "2026-09-22"
+      "updated": "2026-09-22",
+      "fmt": 2,
+      "webp": [
+        "kecak-workshop-1600.webp",
+        "kecak-workshop-800.webp"
+      ]
     },
     "mask-making-workshop": {
       "folder": "1H2mhyDYfnWnuUN_gC7DAPmZeE6zl-S4h",
       "label": "Mask making",
       "source": "1QMlaoxqm2wPHXbDcUJfttaQLGL83KcNY",
-      "version": "1QMlaoxqm2",
+      "version": "1QMlaoxqm2-2",
       "picked": "BMS-Landscape.png (1920x960)",
-      "updated": "2026-09-22"
+      "updated": "2026-09-22",
+      "fmt": 2,
+      "webp": [
+        "mask-making-workshop-1600.webp",
+        "mask-making-workshop-800.webp"
+      ]
     },
     "traditional-balinese-dance": {
       "folder": "1OHVNTJ5hchupFSAuvFSd-HigUQx-i-Ce",
       "label": "Rangamancha",
       "source": "112w2FJbO9B-twg6nkg1P2pm8hYtjU9kF",
-      "version": "112w2FJbO9",
+      "version": "112w2FJbO9-2",
       "picked": "BMS-Landscape.png (1920x960)",
-      "updated": "2026-09-22"
+      "updated": "2026-09-22",
+      "fmt": 2,
+      "webp": [
+        "traditional-balinese-dance-1600.webp",
+        "traditional-balinese-dance-800.webp"
+      ]
     },
     "balinese-shadow-puppetry-workshop": {
       "folder": "1ykxdY1v1rXO_mm-sC9rGAIxGhYyWZHVE",
       "label": "workshop - shadow puppetry",
       "source": "16ZEcCRgGTm27rZqoIXk9qqNiY0h51eoD",
-      "version": "16ZEcCRgGT",
+      "version": "16ZEcCRgGT-2",
       "picked": "BMS-Landscape.png (1920x960)",
-      "updated": "2026-09-22"
+      "updated": "2026-09-22",
+      "fmt": 2,
+      "webp": [
+        "balinese-shadow-puppetry-workshop-1600.webp",
+        "balinese-shadow-puppetry-workshop-800.webp"
+      ]
     },
     "traditional-balinese-dance-yakshagana-performance": {
       "folder": "1UKehCFfv8jftPqZCkDSkhixnH6K2dTSe",
       "label": "Yakshagana x balinese dance - chowdiah",
       "source": "138n92is3REqEHCuMHFGuHorCKZMvXAqI",
-      "version": "138n92is3R",
+      "version": "138n92is3R-2",
       "picked": "BMS-Landscape.png (1920x960)",
-      "updated": "2026-09-22"
+      "updated": "2026-09-22",
+      "fmt": 2,
+      "webp": [
+        "traditional-balinese-dance-yakshagana-performance-1600.webp",
+        "traditional-balinese-dance-yakshagana-performance-800.webp"
+      ]
     }
   }
 }

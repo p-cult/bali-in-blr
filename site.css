@@ -815,7 +815,8 @@ body.view-open { overflow: hidden; }
   position: relative; margin: 0 0 2.4rem; aspect-ratio: 2 / 1; overflow: hidden;
   border-radius: var(--radius); background: var(--bg-3); border: 1px solid var(--line);
 }
-.ev-banner img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+.ev-banner picture, .ev-banner img { position: absolute; inset: 0; width: 100%; height: 100%; }
+.ev-banner img { object-fit: contain; }
 .ev-banner.has-image { background: var(--bg-2); }
 .ev-banner.has-image .ev-standin { visibility: hidden; }
 

@@ -1294,6 +1294,14 @@ the buffer — the tool's job is to expose the squeeze, not hide it.
   transient 500 on its second run, and would have cleared a good banner).
 - At launch: 9 events with tickets live, 9 banners; IME's folder is empty, and
   Kecak Performance has no folder, so both show the stand-in.
+- **Made light the same day.** Each banner was one 1920px JPEG of ~310 KB sent
+  to every device. Now each is two WebP widths plus a JPEG fallback, served
+  through `<picture>` so the browser picks by screen: a phone downloads the
+  800px WebP (~40-50 KB), a high-density desktop the 1600px one (~110-170 KB),
+  old browsers a 1600px JPEG (~150-210 KB). Measured: 50 KB on a 375px phone,
+  169 KB on a retina desktop, one file per load. WebP is listed per event in
+  `data/event-banners.json` only when written, so the page never asks for a
+  file that does not exist. Bump `FMT` in the sync tool to re-encode them all.
 
 ## 2. Lessons and standing rules (the "why" behind the rules)
 

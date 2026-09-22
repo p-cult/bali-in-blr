@@ -37,13 +37,20 @@
 
   // The banner's version comes from the sync tool, so a new image is fetched
   // fresh instead of from a cache. A missing file simply leaves the stand-in.
-  let bannerVersion = "";
+  let banner = {};
   try {
     const cfg = await (await fetch("data/event-banners.json", { cache: "no-store" })).json();
-    bannerVersion = ((cfg.events || {})[ev.slug] || {}).version || "";
-  } catch (e) { /* no map: try the file anyway */ }
-  const bannerSrc = "assets/events/" + encodeURIComponent(ev.slug) + ".jpg" +
-    (bannerVersion ? "?v=" + encodeURIComponent(bannerVersion) : "");
+    banner = (cfg.events || {})[ev.slug] || {};
+  } catch (e) { /* no map: try the JPEG anyway */ }
+  const v = banner.version ? "?v=" + encodeURIComponent(banner.version) : "";
+  const base = "assets/events/" + encodeURIComponent(ev.slug);
+  const bannerSrc = base + ".jpg" + v;
+  // A phone takes the 800px WebP (~40 KB), a wide screen the 1600px one; only
+  // offered when the sync tool actually wrote them.
+  const webp = (banner.webp || []).length
+    ? `<source type="image/webp" sizes="(max-width: 1180px) 100vw, 1120px" ` +
+      `srcset="${esc(base + "-800.webp" + v)} 800w, ${esc(base + "-1600.webp" + v)} 1600w" />`
+    : "";
 
   const time = calTimeText(ev);
   const mapUrl = safeUrl(ev.mapUrl);
@@ -71,9 +78,13 @@
         <span class="ev-standin-title">${esc(ev.title)}</span>
         <span class="ev-standin-motif"><i></i><i></i><i></i></span>
       </div>
-      <img src="${esc(bannerSrc)}" alt="${esc(ev.title)}"
-           onload="this.parentNode.classList.add('has-image')"
-           onerror="this.remove()" />
+      <picture>
+        ${webp}
+        <img src="${esc(bannerSrc)}" alt="${esc(ev.title)}" width="1600" height="800"
+             fetchpriority="high" decoding="async"
+             onload="this.closest('.ev-banner').classList.add('has-image')"
+             onerror="this.closest('picture').remove()" />
+      </picture>
     </figure>
 
     <div class="ev-grid">

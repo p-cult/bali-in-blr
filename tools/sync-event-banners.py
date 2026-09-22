@@ -77,22 +77,38 @@ def dims(path):
     return None
 
 
-def optimise(src, dst, width):
-    """Shrink-only JPEG. Pillow first (the CI runner), sips on a Mac."""
+FMT = 2          # bump to re-encode every banner on the next run
+SIZES = (1600, 800)
+
+
+def optimise(src, slug):
+    """Write the banner set for one event, shrink-only (never upscaled):
+
+      <slug>-1600.webp, <slug>-800.webp   what browsers actually load
+      <slug>.jpg                           1600px fallback for old browsers
+
+    The page picks the WebP width to match the screen, so a phone downloads
+    the 800px file (~40-60 KB) instead of the full banner. Returns True when
+    WebP was written; without Pillow only the JPEG is made and the page skips
+    WebP for that event rather than asking for a file that is not there."""
     try:
         from PIL import Image
-        with Image.open(src) as im:
-            im = im.convert("RGB")
-            if im.width > MAXW:
-                im = im.resize((MAXW, round(im.height * MAXW / im.width)), Image.LANCZOS)
-            im.save(dst, "JPEG", quality=80, optimize=True, progressive=True)
-        return
     except ImportError:
-        pass
-    args = ["sips", "-s", "format", "jpeg", "-s", "formatOptions", "80"]
-    if width > MAXW:
-        args += ["--resampleWidth", str(MAXW)]
-    subprocess.run(args + [str(src), "--out", str(dst)], check=True, capture_output=True)
+        args = ["sips", "-s", "format", "jpeg", "-s", "formatOptions", "72",
+                "--resampleWidth", str(SIZES[0]), str(src), "--out", str(OUT / f"{slug}.jpg")]
+        subprocess.run(args, check=True, capture_output=True)
+        return False
+
+    with Image.open(src) as im:
+        im = im.convert("RGB")
+        def at(width):
+            if im.width <= width:
+                return im
+            return im.resize((width, round(im.height * width / im.width)), Image.LANCZOS)
+        at(SIZES[0]).save(OUT / f"{slug}.jpg", "JPEG", quality=72, optimize=True, progressive=True)
+        for w in SIZES:
+            at(w).save(OUT / f"{slug}-{w}.webp", "WEBP", quality=70, method=6)
+    return True
 
 
 def main():
@@ -143,18 +159,22 @@ def main():
             continue
         if not pick:
             print(f"  -  {slug:52} no landscape image yet — page shows the stand-in")
-            entry.pop("source", None); entry.pop("version", None)
+            for k in ("source", "version", "fmt", "webp", "picked", "updated"):
+                entry.pop(k, None)
             continue
-        if entry.get("source") == pick["id"] and dest.exists():
+        if entry.get("source") == pick["id"] and entry.get("fmt") == FMT and dest.exists():
             print(f"  =  {slug:52} unchanged ({pick['name']})")
             continue
-        optimise(pick["raw"], dest, pick["w"])
+        webp = optimise(pick["raw"], slug)
         entry["source"] = pick["id"]
-        entry["version"] = pick["id"][:10]
+        entry["version"] = pick["id"][:10] + "-" + str(FMT)
+        entry["fmt"] = FMT
+        entry["webp"] = [f"{slug}-{w}.webp" for w in SIZES] if webp else []
         entry["picked"] = f"{pick['name']} ({pick['w']}x{pick['h']})"
         entry["updated"] = datetime.date.today().isoformat()
         changed = True
-        print(f"  +  {slug:52} {pick['name']} {pick['w']}x{pick['h']} -> {dest.stat().st_size // 1024} KB")
+        sizes = " / ".join(f"{(OUT / n).stat().st_size // 1024}" for n in entry["webp"]) or "-"
+        print(f"  +  {slug:52} webp {sizes} KB, jpg {dest.stat().st_size // 1024} KB")
 
     MAP.write_text(json.dumps(cfg, indent=2, ensure_ascii=False) + "\n")
     shutil.rmtree(tmp, ignore_errors=True)
