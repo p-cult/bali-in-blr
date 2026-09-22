@@ -8,7 +8,7 @@
 
   function summaryLine(day) {
     if (day.kind === "rest") return "Rest day · no travel";
-    if (day.mealsOnly) return "No programme · meals out · " + dur(day.travelMin) + " on the road · " + Math.round(day.km) + " km";
+    if (day.mealsOnly) return "No programme · add-ons only · leave " + hm(day.leave) + " · back " + hm(day.back) + " · " + dur(day.travelMin) + " on the road · " + Math.round(day.km) + " km";
     if (day.kind === "outstation") return day.events.length + " event · out of town · arrive " + hm(day.wake) + " after the overnight drive · leave " + hm(day.sleep) + " for the night drive home · " + dur(day.travelMin) + " on the road";
     const n = day.events.length;
     if (day.nightDeparture) return (n === 1 ? "1 event" : n + " events") + " · leave " + hm(day.leave) + " · overnight coach to " + day.nightTo + " at " + hm(day.sleep) + (day.back == null ? " straight from the venue" : "") + " · " + dur(day.travelMin) + " in town";
@@ -41,20 +41,23 @@
       "</span>";
   }
 
-  // Optional lunch / dinner locations for the day (planner only). Blank =
-  // default (at the stay or near the venue). Paste a Google Maps link, an
-  // address or "lat, lon"; the plan re-routes through it.
-  function mealEditor(day, cfg) {
-    const m = ((cfg.mealStops || {})[day.date]) || {};
-    function one(k, label) {
-      const p = m[k];
-      return "<label class='meal-out'><span>" + label + " out</span>" +
-        "<input type='text' data-meal='" + k + "' value='" + esc(p ? (p.link || p.name) : "") + "' placeholder='blank = " + (k === "lunch" ? "packed / at the stay" : "at the stay or near the venue") + " · paste a Google Maps link'>" +
-        (p ? "<i>" + esc(p.name) + (p.area ? ", " + esc(p.area) : "") + "</i>" : "") +
-        "<button class='btn btn-sm' type='button' data-mealset='" + k + "'>" + (p ? "Update" : "Set") + "</button>" +
-        (p ? "<button class='btn btn-sm' type='button' data-mealclear='" + k + "'>Clear</button>" : "") + "</label>";
-    }
-    return "<div class='meals-out' data-date='" + day.date + "'>" + one("lunch", "Lunch") + one("dinner", "Dinner") + "</div>";
+  // Day add-ons (planner only): stops with a purpose, a location and optional
+  // HH:MM times. Blank list = default day.
+  function stopEditor(day, cfg) {
+    const list = ((cfg.stops || {})[day.date]) || [];
+    const rows = list.map(function (p, i) {
+      const when = p.start ? p.start + (p.end ? " – " + p.end : "") : "auto";
+      return "<div class='addon-row'><span class='pill on'>" + esc(L.PURPOSE[p.purpose] || "Stop") + "</span><span class='addon-name'>" +
+        (p.link ? "<a href='" + esc(p.link) + "' target='_blank' rel='noopener'>" + esc(p.name) + "</a>" : esc(p.name)) + (p.area ? " <small>" + esc(p.area) + "</small>" : "") +
+        (p.lat == null ? " <small class='prec low'>NOT LOCATED</small>" : "") + "</span><span class='addon-when'>" + esc(when) + "</span>" +
+        "<button class='btn btn-sm' type='button' data-stoprm='" + i + "'>remove</button></div>";
+    }).join("");
+    const opts = Object.keys(L.PURPOSE).map(function (k) { return "<option value='" + k + "'>" + esc(L.PURPOSE[k]) + "</option>"; }).join("");
+    return "<div class='addons' data-date='" + day.date + "'>" + rows +
+      "<div class='addon-add'><select data-k='purpose'>" + opts + "</select>" +
+      "<input type='text' data-k='where' placeholder='Google Maps link, address or lat, lon'>" +
+      "<input type='time' data-k='start' title='Start (optional)'><input type='time' data-k='end' title='End (optional)'>" +
+      "<button class='btn btn-sm' type='button' data-stopadd>Add</button></div></div>";
   }
 
   function dayCard(day, opts) {
@@ -64,7 +67,7 @@
     const events = day.events.length ? "<p class='day-events'>" + day.events.map(function (e) {
       return "<span class='day-ev" + (e.notPublic ? " day-ev-private" : "") + "'>" + esc(e.title) + (e.start != null ? " <i>" + hm(e.start) + "</i>" : "") + "</span>";
     }).join("") + "</p>" : "";
-    const meals = opts.editable && day.kind !== "outstation" ? mealEditor(day, opts.cfg) : "";
+    const meals = opts.editable && day.kind !== "outstation" ? stopEditor(day, opts.cfg) : "";
     return "<details class='day day-" + day.kind + "'" + open + " data-date='" + day.date + "'>" +
       "<summary><span class='day-date'>" + esc(L.dateLabel(day.date)) + "</span><span class='day-sum'>" + esc(summaryLine(day)) + "</span></summary>" +
       "<div class='day-body'>" + events + flags + meals +

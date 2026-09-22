@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@125,600;125,700;125,900&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="../plan/plan.css?v=2" />
+<link rel="stylesheet" href="../plan/plan.css?v=3" />
 </head>
 <body>
 <div class="wrap" id="admin-app" hidden>
@@ -119,8 +119,8 @@
 </div>
 
 <script src="auth.js?v=6"></script>
-<script src="../plan/engine.js?v=6"></script>
-<script src="../plan/render.js?v=4"></script>
+<script src="../plan/engine.js?v=7"></script>
+<script src="../plan/render.js?v=5"></script>
 <script>
 (function () {
   "use strict";
@@ -320,27 +320,27 @@
       await rebuildEvents(); scheduleRebuild(true);
     });
 
-    // Meals out: set / clear a lunch or dinner location for a day.
+    // Day add-ons: add / remove a stop for a day.
     $("days").addEventListener("click", async function (e) {
-      const box = e.target.closest(".meals-out"); if (!box) return;
-      const date = box.dataset.date, k = e.target.dataset.mealset || e.target.dataset.mealclear;
-      if (!k) return;
-      const ms = cfg().mealStops = cfg().mealStops || {};
-      if (e.target.dataset.mealclear) { if (ms[date]) delete ms[date][k]; scheduleRebuild(true); return; }
-      const text = box.querySelector("input[data-meal='" + k + "']").value.trim();
-      if (!text) { if (ms[date]) delete ms[date][k]; scheduleRebuild(true); return; }
+      const box = e.target.closest(".addons"); if (!box) return;
+      const date = box.dataset.date;
+      const st = cfg().stops = cfg().stops || {};
+      if (e.target.dataset.stoprm != null) { st[date].splice(+e.target.dataset.stoprm, 1); if (!st[date].length) delete st[date]; scheduleRebuild(true); return; }
+      if (!("stopadd" in e.target.dataset)) return;
+      const q = function (k) { return box.querySelector("[data-k='" + k + "']"); };
+      const text = q("where").value.trim(); if (!text) return;
       try {
         const pos = await locate(text);
         if (!pos) { ctx.warnings.push("Could not locate “" + text + "” — paste a Google Maps link that contains coordinates."); render(); return; }
+        const purpose = q("purpose").value;
         const fromLink = L.placeNameFromLink(text);
-        const name = fromLink || (L.parseLatLon(text) ? (k === "lunch" ? "Lunch place" : "Dinner place") + " (" + pos.lat.toFixed(3) + ", " + pos.lon.toFixed(3) + ")" : (pos.label || text).split(",")[0]);
-        ms[date] = ms[date] || {};
-        ms[date][k] = { name: name, area: L.parseLatLon(text) ? "" : (pos.label || "").split(",").slice(1, 3).join(",").trim(), lat: pos.lat, lon: pos.lon, link: /^https?:/.test(text) ? text : "" };
+        const name = fromLink || (L.parseLatLon(text) ? L.PURPOSE[purpose] + " place (" + pos.lat.toFixed(3) + ", " + pos.lon.toFixed(3) + ")" : (pos.label || text).split(",")[0]);
+        st[date] = (st[date] || []).concat([{ purpose: purpose, name: name, area: L.parseLatLon(text) ? "" : (pos.label || "").split(",").slice(1, 3).join(",").trim(), lat: pos.lat, lon: pos.lon, link: /^https?:/.test(text) ? text : "", start: q("start").value || "", end: q("end").value || "" }]);
         scheduleRebuild(true);
       } catch (err) { ctx.warnings.push("Locate failed: " + err.message); render(); }
     });
     $("days").addEventListener("keydown", function (e) {
-      if (e.key === "Enter" && e.target.dataset.meal) { e.preventDefault(); e.target.closest(".meal-out").querySelector("[data-mealset]").click(); }
+      if (e.key === "Enter" && e.target.closest(".addon-add")) { e.preventDefault(); e.target.closest(".addon-add").querySelector("[data-stopadd]").click(); }
     });
 
     // Per-event overrides inside the day cards.

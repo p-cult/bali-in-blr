@@ -1113,9 +1113,11 @@ engagements" list in the plan config rather than a row in the schedule
 sheet — the sheet stays the public calendar's source of truth, and the
 planner merges the two.
 
-Same day: optional per-day meal locations (lunch / dinner out, a Maps
-link). Implemented as synthetic events the main loop routes through, so
-departure, holds and the return re-derive with no special cases. Meal
+Same day: optional per-day add-ons — a purpose (breakfast / lunch / dinner
+/ sightseeing / shopping / other), a location (Maps link) and optional
+HH:MM times. Implemented as synthetic events the main loop routes through,
+so departure, holds and the return re-derive with no special cases; timed
+stops are pinned, untimed ones auto-place. Meal
 stops are registered as routing points up front; a point dropped in after
 the matrix exists gets a straight-line estimate until the next rebuild.
 

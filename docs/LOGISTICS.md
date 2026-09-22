@@ -61,17 +61,27 @@ public events, with their own buffer row ("Internal"), and are marked as
 internal on the plan. First entry: the photoshoot at Mandala Cultural
 Centre, Kanakapura Road, on 2 Oct 2026, 7am–2pm.
 
-## Meals out
+## Day add-ons (meals out, sightseeing, shopping)
 
-Inside any day in the planner, "Lunch out" and "Dinner out" take a Google
-Maps link, an address or `lat, lon`. Blank is the default (lunch packed or
-at the stay, dinner at the stay or near the venue). With a place set, the
-plan routes the group there: lunch goes into the first gap that overlaps the
-lunch window (before the first call, between events, or after a morning
-programme) and the next leg starts from the restaurant; dinner follows the
-last event, then the drive home. Rest days get a stay → place → stay trip.
-If lunch cannot fit around the programme the day says so and ignores the
-stop. Meal stops travel in the public link.
+Inside any day in the planner, the add-on row takes a **purpose**
+(breakfast, lunch, dinner, sightseeing, shopping, other), a **location**
+(Google Maps link, address or `lat, lon`) and optional **start / end times
+in HH:MM**. The list is blank by default. Each stop becomes a point the day
+routes through, so departure, holds and the return all re-derive:
+
+- A **timed** stop is pinned at that time (and flagged if it overlaps an
+  event).
+- An untimed **breakfast** goes before the first call, on the way, at a
+  normal breakfast hour; breakfast at the stay is dropped.
+- An untimed **lunch** takes the first gap that overlaps the lunch window;
+  an untimed **dinner** follows the last event, then the drive home.
+- An untimed **sightseeing / shopping / other** stop (90 min) takes the
+  first gap in the day that fits, or says it does not fit.
+- A day with no programme but with add-ons becomes an outing (stay → stops
+  → stay), with wake-up and meals around it.
+
+The place name is read from the Maps link when it has one, the link is kept
+on the plan, and add-ons travel in the public link.
 
 ## Travel time — three providers
 

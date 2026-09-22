@@ -94,13 +94,15 @@ h2{font-family:var(--display);font-weight:700;text-transform:uppercase;font-size
 .tl-edit input[type=text]{width:14rem}
 .tl-edit input{background:var(--bg);border:1px solid var(--line2);border-radius:4px;color:var(--ink);font:inherit;font-size:.78rem;padding:.15rem .35rem}
 
-.meals-out{display:grid;gap:.4rem;margin:.6rem 0 .4rem;padding:.6rem .8rem;background:var(--bg);border:1px dashed var(--line2);border-radius:6px}
-.meal-out{display:grid;grid-template-columns:5.5rem 1fr auto auto;gap:.5rem;align-items:center;font-size:.8rem;color:var(--muted)}
-.meal-out span{font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted2)}
-.meal-out input{background:var(--bg3);border:1px solid var(--line2);border-radius:5px;color:var(--ink);font:inherit;font-size:.8rem;padding:.3rem .5rem;min-width:0}
-.meal-out i{grid-column:2;font-style:normal;color:var(--accent-2);font-size:.75rem}
-.tl-meal .tl-body b{color:var(--accent-2)}
-@media (max-width:760px){.meal-out{grid-template-columns:1fr}}
+.addons{display:grid;gap:.35rem;margin:.6rem 0 .4rem;padding:.6rem .8rem;background:var(--bg);border:1px dashed var(--line2);border-radius:6px}
+.addon-row{display:grid;grid-template-columns:auto 1fr auto auto;gap:.6rem;align-items:center;font-size:.82rem}
+.addon-name a{color:var(--ink)}.addon-name small{color:var(--muted2)}
+.addon-when{font-variant-numeric:tabular-nums;color:var(--accent-2);font-size:.78rem}
+.addon-add{display:grid;grid-template-columns:auto 1fr auto auto auto;gap:.4rem;align-items:center;margin-top:.2rem}
+.addon-add select,.addon-add input{background:var(--bg3);border:1px solid var(--line2);border-radius:5px;color:var(--ink);font:inherit;font-size:.8rem;padding:.3rem .5rem;min-width:0}
+.tl-meal .tl-body b,.tl-visit .tl-body b{color:var(--accent-2)}
+.tl-visit{border-left:3px solid var(--copper);padding-left:.6rem;margin-left:-.75rem}
+@media (max-width:760px){.addon-row,.addon-add{grid-template-columns:1fr 1fr}}
 
 /* compare */
 .cmp{width:100%;border-collapse:collapse;font-size:.85rem;margin:0 0 1rem}
@@ -132,7 +134,7 @@ footer{margin-top:2.5rem;color:var(--muted2);font-size:.78rem}footer a{color:var
   .day>summary::before{display:none}
   .day-body{padding-left:0}
   .tl-show{background:none;border-left:3px solid #8E4A24}
-  .tl-edit{display:none}
+  .tl-edit,.addons{display:none}
   .totals{grid-template-columns:repeat(4,1fr)}
   .stat{border-color:#ccc}
   details:not([open])>*:not(summary){display:block}
