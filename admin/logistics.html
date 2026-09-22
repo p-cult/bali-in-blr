@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@125,600;125,700;125,900&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="../plan/plan.css?v=17" />
+<link rel="stylesheet" href="../plan/plan.css?v=18" />
 </head>
 <body>
 <div class="wrap" id="admin-app" hidden>
@@ -18,7 +18,7 @@
   </div>
 
   <h1>Artist logistics planner</h1>
-  <p class="sub">Day-by-day tour plan for the touring company, computed from the live festival schedule and road conditions. Every change below re-plans instantly.</p>
+  <p class="sub">The touring company's day-by-day plan, built from the live festival schedule, the planner sheet and Google traffic. Anything you change here re-plans at once and is written to the sheet.</p>
 
   <div class="loader no-print" id="loader" role="status" aria-live="polite">
     <span class="loader-spin" aria-hidden="true"></span>
@@ -37,45 +37,26 @@
     <button type="button" id="traffic" hidden></button><button type="button" id="reload-sheet" hidden></button><button type="button" id="repull-sheet" hidden></button><button type="button" id="save" hidden></button><button type="button" id="share" hidden></button>
   </div>
 
-  <div class="panel no-print">
-    <h2 style="margin-top:0">Places of stay</h2>
-    <div class="stays" id="stays"></div>
-    <button class="btn btn-sm" type="button" id="restore-stays" hidden>Restore default stays</button>
-    <div class="addstay">
-      <label class="field">Name <input type="text" id="new-name" placeholder="e.g. Hotel near Jayanagar" /></label>
-      <label class="field">Address, Google Maps link, or “lat, lon” <input type="text" id="new-addr" placeholder="paste an address or a maps link" /></label>
-      <button class="btn" type="button" id="add-stay">Add &amp; locate</button>
+  <nav class="jump no-print" aria-label="Sections">
+    <a href="#sec-plan">Plan</a><a href="#sec-show">Edit a show</a><a href="#sec-stays">Stays &amp; comparison</a><a href="#sec-settings">Settings</a><a href="#sec-share">Share</a>
+  </nav>
+
+  <section id="sec-plan">
+    <div class="sec-head">
+      <h2>Plan · <span id="plan-stay">—</span></h2>
+      <div class="bar no-print" style="margin:0">
+        <button class="btn btn-sm" type="button" id="open-all">Expand all</button>
+        <button class="btn btn-sm" type="button" id="close-all">Collapse all</button>
+      </div>
     </div>
-    <p class="muted" style="font-size:.8rem;margin:.6rem 0 0">“Main plan” is the stay shown day by day, on the public link and in the sheet; “compare” plans a stay in full for the comparison below. Delete asks first and is never allowed on the main plan.</p>
-  </div>
+    <p class="muted hint no-print">Open a day to see it minute by minute. Inside a day you can move a meal, send it somewhere, or add a stop; the plan and the sheet follow.</p>
+    <div id="totals"></div>
+    <div id="days"></div>
+  </section>
 
-  <div class="panel no-print">
-    <div class="grid">
-      <label class="field">Artists <input type="number" id="party-artists" min="0" /></label>
-      <label class="field">Volunteers travelling <input type="number" id="party-volunteers" min="0" /></label>
-      <label class="field">Group label <input type="text" id="party-label" /></label>
-      <label class="field">Seats per vehicle <input type="number" id="veh-seats" min="1" /></label>
-      <label class="field">Vehicle ₹/km <input type="number" id="veh-rate" min="0" /></label>
-      <label class="field">Vehicle min ₹/day <input type="number" id="veh-min" min="0" /></label>
-      <label class="field">Vehicles <input type="number" id="veh-count" min="1" /></label>
-      <label class="field">Travel time source
-        <select id="provider">
-          <option value="bridge">Google Maps traffic (typical for the day, live near the day)</option>
-          <option value="osrm">Road routing + Bengaluru traffic profile</option>
-          <option value="haversine">Straight-line estimate (offline)</option>
-        </select></label>
-      <label class="field">Traffic safety margin <input type="number" id="safety" min="1" max="2" step="0.05" /></label>
-    </div>
-  </div>
-
-  <div class="panel no-print">
-    <h2 style="margin-top:0">Day rhythm</h2>
-    <div class="grid" id="day-grid"></div>
-  </div>
-
-  <div class="panel no-print" id="show-panel">
-    <h2 style="margin-top:0">Per-show settings</h2>
-    <p class="muted" style="font-size:.8rem;margin:0 0 .6rem">Pick a show, enter its own cast and timings, and press Submit: these replace the type defaults for that show only, the whole plan recalibrates, and the sheet is updated.</p>
+  <section id="sec-show" class="panel no-print" >
+    <h2 style="margin-top:0">Edit a show</h2>
+    <p class="muted hint">Pick a show, set who performs and how long each step takes, then Submit. It replaces the type defaults for that show only and recalibrates everything.</p>
     <div class="show-form">
       <label class="field span-all">Show <select id="sh-pick"></select></label>
       <label class="field">Artists <input type="number" id="sh-artists" min="0" /></label>
@@ -100,38 +81,70 @@
       <button class="btn" type="button" id="sh-reset">Back to type defaults</button>
       <span class="status" id="sh-status"></span>
     </div>
-    <details class="defaults buffers">
-      <summary>Type defaults — what a show uses until it has its own settings (minutes)</summary>
-      <table id="buffers"></table>
-    </details>
-  </div>
+  </section>
 
-  <h2>Comparison of stays</h2>
-  <div class="cmp-wrap" id="compare"></div>
-  <div class="cmp-wrap" id="compare-days"></div>
+  <section id="sec-stays" class="panel no-print">
+    <h2 style="margin-top:0">Stays &amp; comparison</h2>
+    <p class="muted hint">“Main plan” is the stay used day by day, on the public page and in the sheet. Tick “compare” to plan another stay in full and see it side by side.</p>
+    <div class="stays" id="stays"></div>
+    <button class="btn btn-sm" type="button" id="restore-stays" hidden>Restore default stays</button>
+    <div class="addstay">
+      <label class="field">Name <input type="text" id="new-name" placeholder="e.g. Hotel near Jayanagar" /></label>
+      <label class="field">Address, Google Maps link, or “lat, lon” <input type="text" id="new-addr" placeholder="paste an address or a maps link" /></label>
+      <button class="btn" type="button" id="add-stay">Add &amp; locate</button>
+    </div>
+    <div class="cmp-wrap" id="compare"></div>
+    <div class="cmp-wrap" id="compare-days"></div>
+  </section>
 
-  <h2>Plan for <span id="plan-stay">—</span></h2>
-  <div id="totals"></div>
-  <div class="bar no-print">
-    <span class="grow"></span>
-    <button class="btn btn-sm" type="button" id="open-all">Expand all</button>
-    <button class="btn btn-sm" type="button" id="close-all">Collapse all</button>
-  </div>
-  <div id="days"></div>
-
-  <div class="panel no-print">
-    <h2 style="margin-top:0">Venues on the schedule</h2>
+  <section id="sec-settings" class="no-print">
+    <details class="settings">
+      <summary><h2>Settings</h2><span class="muted hint">group and vehicles · day rhythm · travel source · type defaults · venues</span></summary>
+      <div class="panel">
+        <h3>Group &amp; vehicles</h3>
+    <div class="grid">
+      <label class="field">Artists <input type="number" id="party-artists" min="0" /></label>
+      <label class="field">Volunteers travelling <input type="number" id="party-volunteers" min="0" /></label>
+      <label class="field">Group label <input type="text" id="party-label" /></label>
+      <label class="field">Seats per vehicle <input type="number" id="veh-seats" min="1" /></label>
+      <label class="field">Vehicle ₹/km <input type="number" id="veh-rate" min="0" /></label>
+      <label class="field">Vehicle min ₹/day <input type="number" id="veh-min" min="0" /></label>
+      <label class="field">Vehicles <input type="number" id="veh-count" min="1" /></label>
+      <label class="field">Travel time source
+        <select id="provider">
+          <option value="bridge">Google Maps traffic (typical for the day, live near the day)</option>
+          <option value="osrm">Road routing + Bengaluru traffic profile</option>
+          <option value="haversine">Straight-line estimate (offline)</option>
+        </select></label>
+      <label class="field">Traffic safety margin <input type="number" id="safety" min="1" max="2" step="0.05" /></label>
+    </div>
+      </div>
+      <div class="panel">
+        <h3>Day rhythm</h3>
+        <p class="muted hint">How the day is built around the programme: durations as HH : MM, clock times where a time of day is meant.</p>
+    <div class="grid" id="day-grid"></div>
+      </div>
+      <div class="panel">
+        <h3>Type defaults</h3>
+        <p class="muted hint">What a show uses until it has its own settings (minutes).</p>
+        <div class="buffers"><table id="buffers"></table></div>
+      </div>
+      <div class="panel">
+        <h3>Venues on the schedule</h3>
+        <p class="muted hint">Where each venue on the sheet has been placed. Pin a better position if one is only locality-precise.</p>
     <div class="venues" id="venues"></div>
     <div class="addstay">
       <label class="field">Venue (as in the sheet) <input type="text" id="fix-venue" placeholder="e.g. Jama The Studio" /></label>
       <label class="field">Correct position: address, maps link, or “lat, lon” <input type="text" id="fix-pos" /></label>
       <button class="btn" type="button" id="fix-btn">Pin position</button>
     </div>
-  </div>
+      </div>
+    </details>
+  </section>
 
-  <div class="panel no-print">
-    <h2 style="margin-top:0">Public link</h2>
-    <p class="muted" style="font-size:.85rem">The public page reads the Google Sheet and Google traffic live. It is not linked from the site and not indexed.</p>
+  <section id="sec-share" class="panel no-print">
+    <h2 style="margin-top:0">Share</h2>
+    <p class="muted hint">The public page reads the Google Sheet and Google traffic live. It is not linked from the site and not indexed.</p>
     <div class="bar" style="margin:0">
       <button class="btn btn-primary" type="button" id="copy-public">Copy public link</button>
       <a class="btn" href="../plan/" target="_blank" rel="noopener">Open public page</a>
@@ -139,14 +152,14 @@
       <span class="status" id="copy-status"></span>
     </div>
     <span id="public-url" hidden>https://bali-in-blr.paramfoundation.org/plan/</span><span id="share-url" hidden></span>
-  </div>
+  </section>
 
   <footer>Bali in Bengaluru · <a href="../">Public site</a> · <a href="../plan/">Public plan page</a></footer>
 </div>
 
 <script src="auth.js?v=7"></script>
 <script src="../plan/engine.js?v=24"></script>
-<script src="../plan/render.js?v=19"></script>
+<script src="../plan/render.js?v=20"></script>
 <script>
 (function () {
   "use strict";
@@ -501,6 +514,12 @@
       delete cfg().overrides[id];
       await rebuild(false); fillShowForm();
       if (L.CONFIG.LOGISTICS_URL && cfg().provider === "bridge") await refreshTraffic();
+    });
+
+    // In-day editors: reveal on demand.
+    $("days").addEventListener("click", function (e) {
+      if (e.target.closest("[data-mealtoggle]")) { e.target.closest(".tl-row").classList.toggle("editing"); }
+      if (e.target.closest("[data-addontoggle]")) { e.target.closest(".addons").classList.add("adding"); e.target.closest(".addons").querySelector("[data-k='where']").focus(); }
     });
 
     // Per-event overrides inside the day cards.

@@ -40,6 +40,31 @@ h2{font-family:var(--display);font-weight:700;text-transform:uppercase;font-size
 .loader.done .loader-bar i{background:var(--ok)}
 @media print{.loader{display:none}}
 
+/* admin sections */
+.jump{display:flex;gap:.3rem;flex-wrap:wrap;margin:0 0 1.2rem}
+.jump a{font-family:var(--display);font-weight:700;text-transform:uppercase;letter-spacing:.08em;font-size:.68rem;color:var(--muted);text-decoration:none;border:1px solid var(--line);border-radius:99px;padding:.3rem .7rem}
+.jump a:hover{color:var(--ink);border-color:var(--ink)}
+section{margin:0 0 1.6rem}
+.sec-head{display:flex;justify-content:space-between;align-items:baseline;gap:1rem;flex-wrap:wrap}
+.sec-head h2{margin:1.2rem 0 .4rem}
+.hint{font-size:.82rem;margin:0 0 .8rem}
+.settings>summary{list-style:none;cursor:pointer;display:flex;align-items:baseline;gap:1rem;flex-wrap:wrap;padding:.4rem 0}
+.settings>summary::-webkit-details-marker{display:none}
+.settings>summary h2{margin:0}
+.settings>summary h2::before{content:"+ ";color:var(--copper)}
+.settings[open]>summary h2::before{content:"– "}
+.settings .panel{margin-top:.8rem}
+.settings h3{font-family:var(--display);font-weight:700;text-transform:uppercase;font-size:.8rem;letter-spacing:.08em;margin:0 0 .6rem;color:var(--muted)}
+/* in-day editors stay out of the way until asked for */
+.tl-row .meal-edit{display:none}
+.tl-row.editing .meal-edit{display:flex}
+.meal-toggle{font:inherit;font-size:.72rem;color:var(--muted2);background:none;border:1px solid var(--line);border-radius:99px;padding:.05rem .5rem;margin-left:.5rem;cursor:pointer;vertical-align:middle}
+.meal-toggle:hover{color:var(--ink);border-color:var(--ink)}
+.addons .addon-add{display:none}
+.addons.adding .addon-add{display:grid}
+.addon-toggle{font:inherit;font-size:.75rem;color:var(--accent-2);background:none;border:0;padding:0;cursor:pointer}
+.addons.adding .addon-toggle{display:none}
+
 /* panels & forms */
 .panel{background:var(--bg3);border:1px solid var(--line);border-radius:var(--radius);padding:1.1rem 1.2rem;margin:0 0 1rem}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.7rem 1rem}

@@ -22,7 +22,7 @@
   function blockRow(b, opts) {
     const cls = ["tl-row", "tl-" + b.type, b.broad ? "tl-broad" : "", b.type === "truck" ? "truck-" + (b.dir || "out") : ""].join(" ");
     let when = hm(b.from) + (b.to != null ? " – " + hm(b.to) : "");
-    let body = "<b>" + (b.type === "truck" ? TRUCK : "") + esc(b.label) + "</b>";
+    let body = "<b>" + (b.type === "truck" ? TRUCK : "") + esc(b.label) + "</b>" + (b.meal && opts.editable ? "<button type='button' class='meal-toggle no-print' data-mealtoggle>edit</button>" : "");
     if (b.type === "leg" || b.type === "truck") body += "<span class='tl-detail'>" + esc(b.detail) + "</span>";
     if (b.type === "show") {
       body += "<span class='tl-detail'>" + esc((b.ev && b.ev.category) || "") + (b.venue ? " · " + esc(b.venue.name) + (b.venue.area ? ", " + esc(b.venue.area) : "") : "") +
@@ -78,6 +78,7 @@
     }).join("");
     const opts = Object.keys(L.PURPOSE).map(function (k) { return "<option value='" + k + "'>" + esc(L.PURPOSE[k]) + "</option>"; }).join("");
     return "<div class='addons' data-date='" + day.date + "'>" + rows +
+      "<button type='button' class='addon-toggle no-print' data-addontoggle>+ Add a stop (meal out, sightseeing, shopping…)</button>" +
       "<div class='addon-add'><select data-k='purpose'>" + opts + "</select>" +
       "<input type='text' data-k='where' placeholder='Google Maps link, address or lat, lon'>" +
       "<input type='time' data-k='start' title='Start (optional)'><input type='time' data-k='end' title='End (optional)'>" +

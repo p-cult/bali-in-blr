@@ -200,6 +200,16 @@ times, the add-on rows (engagements and stops) and the Settings values
 planner into an input cell (for example "Instruments at venue by") is from
 then on the sheet's value, so change it in either place.
 
+## Admin planner layout (after the 22 Sep UX pass)
+
+Five sections, with a jump bar at the top: **Plan** (the stay in use,
+totals, the day cards; inside a day the meal lines and add-ons stay
+read-only until "edit" / "+ Add a stop" is pressed), **Edit a show** (the
+per-show form), **Stays & comparison** (stay list and the two comparison
+tables together), **Settings** (collapsed by default: group & vehicles, day
+rhythm, type defaults, venues), **Share** (public link buttons). Every
+feature is unchanged; only the order and the amount shown at once.
+
 ## Admin planner controls (after the 22 Sep tidy-up)
 
 Top bar, four buttons: **Sync everything** (re-pull the Event List into the
