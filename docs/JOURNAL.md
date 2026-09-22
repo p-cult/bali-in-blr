@@ -1247,6 +1247,16 @@ the buffer — the tool's job is to expose the squeeze, not hide it.
 - Left alone: `v1.html` still says eighteen days — the frozen backup,
   noindex, by design.
 
+### 22 Sep 2026 — the hero counts only what the public can attend
+- Decided with the client: the hero's Events and Venues figures exclude events
+  marked not public, and those events' venues. The calendar still lists them.
+  Result: **16 days, 15 events, 13 venues** (was 17 and 15, counting the
+  Kumarans school workshop and the Manipal campus day, which is outside
+  Bengaluru under a label reading "Venues across the city").
+- No venue list to maintain: a venue drops out because its only events are
+  not public. If a *public* event is ever held outside the city, its venue
+  will count — revisit then.
+
 ## 2. Lessons and standing rules (the "why" behind the rules)
 
 **Data and privacy**

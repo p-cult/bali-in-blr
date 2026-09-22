@@ -926,6 +926,41 @@
     return rows;
   }
 
+  /* ---------- persistent leg cache (browser) ---------- */
+  // Google figures are kept in localStorage so a page refresh shows the
+  // priced plan at once; only legs whose figure has aged past its tier
+  // (typical 7 days, within 48 h of departure 1 h, within 2 h 10 min) are
+  // asked for again, in the background.
+  const LEG_STORE = "bali-legcache-v1";
+  function legTTL(ck) {
+    // ck = a|b|YYYY-MM-DD|bucket(15 min)
+    const parts = ck.split("|"), date = parts[2], bucket = +parts[3];
+    const dep = new Date(date + "T00:00:00+05:30").getTime() + bucket * 15 * 60000;
+    const hours = (dep - Date.now()) / 3600000;
+    return hours <= 2 ? 10 * 60000 : hours <= 48 ? 60 * 60000 : 7 * 86400000;
+  }
+  function loadLegCache(ctx) {
+    try {
+      const raw = JSON.parse(localStorage.getItem(LEG_STORE) || "{}");
+      let kept = 0;
+      Object.keys(raw).forEach(function (ck) {
+        const v = raw[ck];
+        if (v && v.at && Date.now() - v.at < legTTL(ck)) { ctx.legCache[ck] = v; kept++; }
+      });
+      return kept;
+    } catch (e) { return 0; }
+  }
+  function saveLegCache(ctx) {
+    try {
+      const out = {};
+      Object.keys(ctx.legCache).forEach(function (ck) { const v = ctx.legCache[ck]; if (v && v.source === "google-traffic") out[ck] = v; });
+      localStorage.setItem(LEG_STORE, JSON.stringify(out));
+    } catch (e) { /* storage full or blocked: fine */ }
+  }
+  function pruneLegCache(ctx) {
+    Object.keys(ctx.legCache).forEach(function (ck) { const v = ctx.legCache[ck]; if (v && v.at && Date.now() - v.at >= legTTL(ck)) delete ctx.legCache[ck]; });
+  }
+
   /* ---------- live-traffic refinement (async, optional) ---------- */
   // For every leg in a plan, ask the bridge for the traffic-aware time at
   // that departure (six requests at a time), fill the leg cache and call
@@ -933,6 +968,7 @@
   // figures arrive. Returns true if anything changed.
   async function refineWithBridge(ctx, plan, onProgress) {
     if (!CONFIG.LOGISTICS_URL) return false;
+    pruneLegCache(ctx);
     const jobs = [];
     plan.days.forEach(function (day) {
       day.legs.forEach(function (leg) {
@@ -968,15 +1004,18 @@
       }
       if (r) chunk.forEach(function (j, k) {
         const x = r.results[k];
-        if (x && x.ok) { ctx.legCache[j.ck] = { min: x.minutes, km: x.km, source: "google-traffic", mode: x.mode }; changed = true; }
+        if (x && x.ok) { ctx.legCache[j.ck] = { min: x.minutes, km: x.km, source: "google-traffic", mode: x.mode, at: Date.now() }; changed = true; }
         else failed++;
       });
       if (onProgress) onProgress(i + BATCH, jobs.length);
     }
     if (failed) ctx.warnings.push("Google traffic unavailable for " + failed + " leg" + (failed > 1 ? "s" : "") + "; those use the estimate.");
+    if (changed) saveLegCache(ctx);
     return changed;
   }
   // Refine, re-plan, and refine again until departures settle (max 3 passes).
+  // Returns the plan; onProgress(plan, done, total, pass) fires per batch —
+  // when every leg is already cached it fires once with total 0.
   async function refineTour(ctx, events, stay, onProgress) {
     let plan = planTour(ctx, events, stay);
     for (let pass = 0; pass < 4; pass++) {
@@ -997,6 +1036,7 @@
   // Register every place the plan can route through, so one matrix call
   // covers stays, venues, internal engagements and meal stops.
   function registerPoints(ctx, cfg, venues, events) {
+    loadLegCache(ctx);
     activeStays(cfg).forEach(function (s) { ctx.point(s); });
     events.forEach(function (e) { const v = venues.resolve(e.venue); if (v) ctx.point(v); });
     Object.keys(cfg.stops || {}).forEach(function (d) { (cfg.stops[d] || []).forEach(function (p) { if (p && p.lat != null) ctx.point(p); }); });
@@ -1099,7 +1139,7 @@
   global.Logistics = { PURPOSE: PURPOSE,
     CONFIG: CONFIG, providers: providers, Ctx: Ctx, VenueBook: VenueBook,
     load: load, parseSchedule: parseSchedule, planDay: planDay, planTour: planTour, compareStays: compareStays,
-    refineWithBridge: refineWithBridge, refineTour: refineTour, fetchSheetPlan: fetchSheetPlan, applySheetPlan: applySheetPlan, activeStays: activeStays, registerPoints: registerPoints, encodeShare: encodeShare, decodeShare: decodeShare,
+    refineWithBridge: refineWithBridge, refineTour: refineTour, loadLegCache: loadLegCache, saveLegCache: saveLegCache, fetchSheetPlan: fetchSheetPlan, applySheetPlan: applySheetPlan, activeStays: activeStays, registerPoints: registerPoints, encodeShare: encodeShare, decodeShare: decodeShare,
     parseLatLon: parseLatLon, placeNameFromLink: placeNameFromLink, geocode: geocode, deepMerge: deepMerge, clone: clone,
     esc: esc, hm: hm, dur: dur, toMin: toMin, dateLabel: dateLabel, slug: slug, pad: pad,
   };

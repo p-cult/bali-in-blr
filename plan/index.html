@@ -38,7 +38,7 @@
   </footer>
 </div>
 
-<script src="engine.js?v=21"></script>
+<script src="engine.js?v=22"></script>
 <script src="render.js?v=18"></script>
 <script>
 (function () {
@@ -105,14 +105,15 @@
         const order = [main].concat(stays.filter(function (s) { return s !== main; }));
         for (let i = 0; i < order.length; i++) {
           const s = order[i];
+          loading("Checking Google traffic for " + s.name + "…", 0.3 + 0.7 * (i / order.length));
           await L.refineTour(ctx, data.events, s, function (plan, done, total, pass) {
             const frac = 0.3 + 0.7 * ((i + Math.min(done, total) / Math.max(total, 1)) / order.length);
-            loading("Google traffic for " + s.name + ": " + Math.min(done, total) + " of " + total + " legs" + (pass ? ", settling" : "") + "…", frac);
+            if (total) loading("Google traffic for " + s.name + ": " + Math.min(done, total) + " of " + total + " legs" + (pass ? ", settling" : "") + "…", frac);
             if (currentStay() === s) render();
           });
         }
         render();
-        loading("Everything is loaded · times use Google traffic for these dates", 1, true);
+        loading("Everything is loaded · Google traffic for these dates" + (Object.keys(ctx.legCache).length ? " · saved on this device for quick reloads" : ""), 1, true);
       } else {
         loading("Everything is loaded · times are estimates", 1, true);
       }

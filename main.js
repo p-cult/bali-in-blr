@@ -1083,10 +1083,15 @@ function cardHTML(ev) {
 }
 
 /* Keep the hero's Days/Events/Venues figures in sync with the calendar, so they
-   are never hand-maintained. Events = how many are listed; Days = the festival's
-   span, first event date to last, inclusive; Venues = distinct venues used. Each
-   number in the HTML is a fallback, left as-is if the calendar yields nothing. */
-function updateHeroStats(events) {
+   are never hand-maintained. They count only what the public can attend: an
+   event marked not public (a school workshop, a campus day outside the city)
+   stays on the calendar but not in these figures, and neither does its venue —
+   which is also what keeps "Venues across the city" to venues in the city.
+   Events = public events; Days = their span, first to last, inclusive;
+   Venues = distinct venues of public events. Each number in the HTML is a
+   fallback, left as-is if the calendar yields nothing. */
+function updateHeroStats(allEvents) {
+  const events = allEvents.filter((ev) => !ev.notPublic);
   const setNum = (key, val) => {
     const el = document.querySelector('.hero-meta-num[data-stat="' + key + '"]');
     if (el && val != null) el.textContent = val;

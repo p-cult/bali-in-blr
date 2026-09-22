@@ -129,6 +129,14 @@ leg, so a highway run to Manipal is not doubled. When the bridge is on,
 departure, then re-plans; results are cached per weekday and 15-minute slot
 so a re-plan costs nothing.
 
+**Quick reloads.** Google figures are also kept in the browser
+(localStorage, `bali-legcache-v1`) with the time they were fetched. On the
+next load the priced plan appears at once, and only legs whose figure has
+aged past its tier (typical 7 days; within 48 h of departure 1 h; within
+2 h 10 min) are asked for again, in the background, while the loader says
+"Checking Google traffic…". The backend keeps its own cache too, so a
+fresh browser still prices in seconds rather than minutes.
+
 ## Comparing stays
 
 Each stay row has a **main plan** radio (the stay shown day by day, on
