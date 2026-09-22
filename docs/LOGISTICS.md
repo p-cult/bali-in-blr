@@ -61,6 +61,17 @@ public events, with their own buffer row ("Internal"), and are marked as
 internal on the plan. First entry: the photoshoot at Mandala Cultural
 Centre, Kanakapura Road, on 2 Oct 2026, 7am–2pm.
 
+## Meals
+
+Every day shows breakfast, lunch and dinner as their own lines. The default
+is wherever the group is at that time: breakfast at the stay (or on arrival
+after a night drive), lunch at the stay, in a hold in town near the venue,
+or packed at the venue when a show runs through the window, dinner at the
+stay when home in time or near the venue when late. In the planner each
+meal line is editable: time and length (HH:MM, minutes), a note, or
+"Elsewhere" with a Maps link, which turns that meal into a located stop and
+re-routes the day; "Back to default" returns it to where they are.
+
 ## Day add-ons (meals out, sightseeing, shopping)
 
 Inside any day in the planner, the add-on row takes a **purpose**

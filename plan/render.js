@@ -27,8 +27,27 @@
       if (opts.editable && b.ev && !b.showIndex) body += bufferEditor(b.ev, opts.cfg);
     }
     if (b.type === "buffer") body += "<span class='tl-detail'>" + b.minutes + " min buffer</span>";
+    if (b.meal && opts.editable) body += mealEditorRow(b, opts.date, opts.cfg);
     if (b.note) body += "<span class='tl-detail'>" + esc(b.note) + "</span>";
     return "<div class='" + cls + "'><span class='tl-when'>" + when + "</span><span class='tl-body'>" + body + "</span></div>";
+  }
+  function hhmm(min) { const m = ((Math.round(min) % 1440) + 1440) % 1440; return L.pad(Math.floor(m / 60)) + ":" + L.pad(m % 60); }
+  // Inline editor for a meal line: time, length, note, and a location
+  // (which turns the meal into an add-on stop). Default = where they are.
+  function mealEditorRow(b, date, cfg) {
+    const o = ((cfg.mealPlan || {})[date] || {})[b.meal] || {};
+    const len = b.to != null ? b.to - b.from : 45;
+    let html = "<span class='tl-edit meal-edit' data-meal='" + esc(b.meal) + "' data-date='" + esc(date) + "'>";
+    if (b.out) {
+      html += "<span class='muted'>at " + esc(b.at) + "</span><button class='btn btn-sm' type='button' data-mealdefault>Back to default (where they are)</button>";
+    } else {
+      html += "<label>Time <input type='time' data-k='start' value='" + hhmm(b.from) + "'></label>" +
+        "<label>Length <input type='number' min='10' step='5' data-k='minutes' value='" + Math.round(len) + "'> min</label>" +
+        "<label>Note <input type='text' data-k='note' value='" + esc(o.note || "") + "' placeholder='e.g. packed, veg only'></label>" +
+        "<label>Elsewhere <input type='text' data-k='where' placeholder='Google Maps link, address or lat, lon'></label><button class='btn btn-sm' type='button' data-mealgo>Go there</button>" +
+        (b.edited ? "<button class='btn btn-sm' type='button' data-mealreset>Reset</button>" : "");
+    }
+    return html + "</span>";
   }
   function bufferEditor(ev, cfg) {
     const o = (cfg.overrides || {})[ev.id] || {};
@@ -71,7 +90,7 @@
     return "<details class='day day-" + day.kind + "'" + open + " data-date='" + day.date + "'>" +
       "<summary><span class='day-date'>" + esc(L.dateLabel(day.date)) + "</span><span class='day-sum'>" + esc(summaryLine(day)) + "</span></summary>" +
       "<div class='day-body'>" + events + flags + meals +
-      "<div class='timeline'>" + day.blocks.map(function (b) { return blockRow(b, opts); }).join("") + "</div>" +
+      "<div class='timeline'>" + day.blocks.map(function (b) { return blockRow(b, Object.assign({}, opts, { date: day.date })); }).join("") + "</div>" +
       "</div></details>";
   }
 

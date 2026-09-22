@@ -119,8 +119,8 @@
 </div>
 
 <script src="auth.js?v=6"></script>
-<script src="../plan/engine.js?v=7"></script>
-<script src="../plan/render.js?v=5"></script>
+<script src="../plan/engine.js?v=8"></script>
+<script src="../plan/render.js?v=6"></script>
 <script>
 (function () {
   "use strict";
@@ -343,9 +343,49 @@
       if (e.key === "Enter" && e.target.closest(".addon-add")) { e.preventDefault(); e.target.closest(".addon-add").querySelector("[data-stopadd]").click(); }
     });
 
+    // Meal lines: time / length / note edits, "go there", reset, back to default.
+    $("days").addEventListener("input", function (e) {
+      const box = e.target.closest(".meal-edit"); if (!box || e.target.dataset.k === "where") return;
+      const mp = cfg().mealPlan = cfg().mealPlan || {};
+      const d = mp[box.dataset.date] = mp[box.dataset.date] || {};
+      const o = d[box.dataset.meal] = d[box.dataset.meal] || {};
+      const k = e.target.dataset.k;
+      o[k] = k === "minutes" ? +e.target.value : e.target.value;
+      scheduleRebuild(false);
+    });
+    $("days").addEventListener("click", async function (e) {
+      const box = e.target.closest(".meal-edit"); if (!box) return;
+      const date = box.dataset.date, meal = box.dataset.meal;
+      const st = cfg().stops = cfg().stops || {};
+      if ("mealdefault" in e.target.dataset) {
+        st[date] = (st[date] || []).filter(function (p) { return p.purpose !== meal; }); if (!st[date].length) delete st[date];
+        if (cfg().mealStops && cfg().mealStops[date]) delete cfg().mealStops[date][meal];
+        scheduleRebuild(true); return;
+      }
+      if ("mealreset" in e.target.dataset) {
+        if (cfg().mealPlan && cfg().mealPlan[date]) delete cfg().mealPlan[date][meal];
+        scheduleRebuild(false); return;
+      }
+      if (!("mealgo" in e.target.dataset)) return;
+      const text = box.querySelector("[data-k='where']").value.trim(); if (!text) return;
+      try {
+        const pos = await locate(text);
+        if (!pos) { ctx.warnings.push("Could not locate “" + text + "” — paste a Google Maps link that contains coordinates."); render(); return; }
+        const fromLink = L.placeNameFromLink(text);
+        const name = fromLink || (L.parseLatLon(text) ? L.PURPOSE[meal] + " place (" + pos.lat.toFixed(3) + ", " + pos.lon.toFixed(3) + ")" : (pos.label || text).split(",")[0]);
+        const start = box.querySelector("[data-k='start']").value, mins = +box.querySelector("[data-k='minutes']").value || 0;
+        const end = start && mins ? (function (m) { return L.pad(Math.floor(m / 60) % 24) + ":" + L.pad(m % 60); })(L.toMin(start) + mins) : "";
+        st[date] = (st[date] || []).filter(function (p) { return p.purpose !== meal; }).concat([{ purpose: meal, name: name, area: L.parseLatLon(text) ? "" : (pos.label || "").split(",").slice(1, 3).join(",").trim(), lat: pos.lat, lon: pos.lon, link: /^https?:/.test(text) ? text : "", start: start, end: end }]);
+        scheduleRebuild(true);
+      } catch (err) { ctx.warnings.push("Locate failed: " + err.message); render(); }
+    });
+    $("days").addEventListener("keydown", function (e) {
+      if (e.key === "Enter" && e.target.dataset.k === "where" && e.target.closest(".meal-edit")) { e.preventDefault(); e.target.closest(".meal-edit").querySelector("[data-mealgo]").click(); }
+    });
+
     // Per-event overrides inside the day cards.
     $("days").addEventListener("input", function (e) {
-      const box = e.target.closest(".tl-edit"); if (!box) return;
+      const box = e.target.closest(".tl-edit"); if (!box || !box.dataset.ev) return;
       const o = cfg().overrides[box.dataset.ev] = cfg().overrides[box.dataset.ev] || {};
       const k = e.target.dataset.k;
       if (k === "skip") o.skip = e.target.checked;

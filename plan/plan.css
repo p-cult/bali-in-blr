@@ -92,6 +92,8 @@ h2{font-family:var(--display);font-weight:700;text-transform:uppercase;font-size
 .tl-edit{display:flex;flex-wrap:wrap;gap:.5rem .9rem;margin-top:.35rem;font-size:.78rem;color:var(--muted)}
 .tl-edit input[type=number]{width:4.2rem}
 .tl-edit input[type=text]{width:14rem}
+.meal-edit input[type=time]{width:6.5rem}
+.tl-meal.tl-broad{opacity:.85}
 .tl-edit input{background:var(--bg);border:1px solid var(--line2);border-radius:4px;color:var(--ink);font:inherit;font-size:.78rem;padding:.15rem .35rem}
 
 .addons{display:grid;gap:.35rem;margin:.6rem 0 .4rem;padding:.6rem .8rem;background:var(--bg);border:1px dashed var(--line2);border-radius:6px}

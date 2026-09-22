@@ -384,12 +384,16 @@
       const wake = toMin(D.restDayWake) || 480;
       day.kind = "rest";
       day.blocks.push(block("wake", wake, wake + D.wake, "Wake up", { broad: true }));
-      day.blocks.push(block("meal", wake + D.wake, wake + D.wake + D.breakfast, "Breakfast at the stay", { broad: true }));
+      day.blocks.push(block("meal", wake + D.wake, wake + D.wake + D.breakfast, "Breakfast at the stay", { broad: true, meal: "breakfast", at: "the stay" }));
       const dinnerAt = toMin(D.dinnerWindow[0]) + 30;
-      day.blocks.push(block("free", wake + D.wake + D.breakfast, dinnerAt, "Rest day — no programme", { note: "Rehearsal, rest or a city visit can be pencilled here." }));
-      day.blocks.push(block("meal", dinnerAt, dinnerAt + D.dinner, "Dinner at the stay"));
+      const lunchAt = toMin(D.lunchWindow[0]) + 30;
+      day.blocks.push(block("free", wake + D.wake + D.breakfast, lunchAt, "Rest day — no programme", { note: "Rehearsal, rest or a city visit can be pencilled here." }));
+      day.blocks.push(block("meal", lunchAt, lunchAt + D.lunch, "Lunch at the stay", { meal: "lunch", at: "the stay" }));
+      day.blocks.push(block("free", lunchAt + D.lunch, dinnerAt, "Free at the stay"));
+      day.blocks.push(block("meal", dinnerAt, dinnerAt + D.dinner, "Dinner at the stay", { meal: "dinner", at: "the stay" }));
       day.blocks.push(block("sleep", dinnerAt + D.dinner + D.windDown, null, "Lights out", { broad: true }));
       day.wake = wake; day.sleep = dinnerAt + D.dinner + D.windDown;
+      applyMealPlan(cfg, dateISO, day);
       return day;
     }
 
@@ -436,7 +440,7 @@
         // A meal out: no venue buffers, the meal itself, then move on.
         if (x.b.start > arrive + 5) timeline.push(block("hold", arrive, x.b.start, "Arrive early at " + x.venue.name, { inTown: true }));
         const isMeal = /^(breakfast|lunch|dinner)$/.test(x.meal);
-        timeline.push(block(isMeal ? "meal" : "visit", x.b.start, x.b.end, x.stopLabel, { stop: x.venue }));
+        timeline.push(block(isMeal ? "meal" : "visit", x.b.start, x.b.end, x.stopLabel, { stop: x.venue, meal: isMeal ? x.meal : undefined, at: x.venue.name, out: true }));
       } else {
         if (x.b.start > arrive + 1) timeline.push(block("buffer", arrive, x.b.start, "At venue — " + (x.ev.category === "Performance" ? "load-in, sound & costume, warm-up" : "set-up & settle") , { minutes: Math.round(x.b.start - arrive) }));
         x.ev.shows.length > 1
@@ -485,7 +489,7 @@
     if (day.dinnerOut) { /* dinner already taken at the chosen place */ }
     else if (home + 10 > dinnerClose) {
       // Too late to eat at the stay: dinner near the venue before the drive.
-      dinnerBlock = block("meal", departHome, departHome + D.dinner, "Dinner near " + hereLabel + " (late return)");
+      dinnerBlock = block("meal", departHome, departHome + D.dinner, "Dinner near " + hereLabel + " (late return)", { meal: "dinner", at: "near " + hereLabel });
       departHome += D.dinner;
       backLeg = ctx.travel(here, stayIdx, dateISO, departHome);
       home = departHome + (backLeg.min == null ? 45 : backLeg.min);
@@ -498,7 +502,7 @@
     if (day.dinnerOut) sleepAt = home + D.loadIn + D.windDown;
     else if (!dinnerBlock) {
       const dAt = Math.max(home + D.loadIn, dinnerOpen);
-      timeline.push(block("meal", dAt, dAt + D.dinner, "Dinner at the stay", { broad: dAt > home + 30 }));
+      timeline.push(block("meal", dAt, dAt + D.dinner, "Dinner at the stay", { broad: dAt > home + 30, meal: "dinner", at: "the stay" }));
       sleepAt = dAt + D.dinner + D.windDown;
     } else sleepAt = home + D.loadIn + D.windDown;
     timeline.push(block("sleep", sleepAt, null, "Lights out", { broad: true }));
@@ -516,25 +520,23 @@
       // hour and show the free time, with lunch at the stay if it fits.
       wake = normalWake; bfStart = wake + D.wake;
       morning.push(block("wake", wake, bfStart, "Wake up", { broad: true }));
-      if (!day.breakfastOut) morning.push(block("meal", bfStart, bfStart + D.breakfast, "Breakfast at the stay", { broad: true }));
+      if (!day.breakfastOut) morning.push(block("meal", bfStart, bfStart + D.breakfast, "Breakfast at the stay", { broad: true, meal: "breakfast", at: "the stay" }));
       const lunchAt = !day.lunchOut && prepStart - D.lunch >= lo ? Math.min(prepStart - D.lunch, lo + 30) : null;
       const freeTo = lunchAt != null ? lunchAt : prepStart;
       if (freeTo - (bfStart + bfLen) >= 30) morning.push(block("free", bfStart + bfLen, freeTo, "Free at the stay — rehearsal, rest", { broad: true }));
       if (lunchAt != null) {
-        morning.push(block("meal", lunchAt, lunchAt + D.lunch, "Lunch at the stay before leaving", { broad: true }));
+        morning.push(block("meal", lunchAt, lunchAt + D.lunch, "Lunch at the stay before leaving", { broad: true, meal: "lunch", at: "the stay" }));
         if (prepStart - (lunchAt + D.lunch) >= 30) morning.push(block("free", lunchAt + D.lunch, prepStart, "Free at the stay", { broad: true }));
       }
     } else {
       morning.push(block("wake", wake, bfStart, "Wake up", { broad: true }));
-      if (!day.breakfastOut) morning.push(block("meal", bfStart, prepStart, "Breakfast at the stay", { broad: true }));
+      if (!day.breakfastOut) morning.push(block("meal", bfStart, prepStart, "Breakfast at the stay", { broad: true, meal: "breakfast", at: "the stay" }));
     }
     morning.push(block("prep", prepStart, leaveStay, "Get ready · costumes & instruments to the vehicle", {}));
     // Lunch on the road: if a show sits inside the lunch window, say so.
-    const busy = timeline.filter(function (b) { return b.type === "show" && b.from < lc && b.to > lo; });
-    const lunchDone = day.lunchOut || morning.some(function (b) { return b.type === "meal" && /Lunch/.test(b.label); });
-    if (!lunchDone && busy.length) day.flags.push("Lunch falls inside “" + busy[0].label + "” — arrange packed lunch at the venue.");
-
     day.blocks = morning.concat(timeline).sort(function (a, b) { return a.from - b.from; });
+    if (!day.lunchOut && !day.blocks.some(function (b) { return b.meal === "lunch"; })) placeDefaultLunch(day, D, lo, lc);
+    applyMealPlan(cfg, dateISO, day);
     day.wake = wake; day.leave = leaveStay; day.back = home; day.sleep = sleepAt;
     const earliest = toMin(D.earliestWake), latest = toMin(D.latestSleep) + 1440;
     if (wake < earliest) day.flags.push("Early call: wake-up at " + hm(wake) + ".");
@@ -578,7 +580,7 @@
     timeline.push(block("leg", arriveOut, null, "Arrive " + (dest ? dest.name : first.ev.venue) + " after the overnight drive", { travel: out, detail: legDetail(out, 0) + " · left " + originLabel + " " + hm(departOut) + " on " + dateLabel(prevDate), overnight: true }));
     if (out.min != null) { day.travelMin += out.min; day.km += out.km || 0; }
     const bfEnd = arriveOut + fresh;
-    timeline.push(block("meal", arriveOut, bfEnd, "Freshen up & breakfast on arrival", { broad: true }));
+    timeline.push(block("meal", arriveOut, bfEnd, "Freshen up & breakfast on arrival", { broad: true, meal: "breakfast", at: "on arrival" }));
     let here = bfEnd;
     evs.forEach(function (x, i) {
       const arrive = Math.max(here, x.b.start - x.b.before);
@@ -596,10 +598,9 @@
       timeline.push(block("buffer", x.b.end, here, "Wrap — pack, meet people, load-out", { minutes: x.b.after }));
     });
     const lo = toMin(D.lunchWindow[0]), lc = toMin(D.lunchWindow[1]);
-    if (evs.some(function (x) { return x.b.start < lc && x.b.end > lo; })) day.flags.push("Lunch falls inside the programme — arrange it at the venue.");
     // Dinner in town, then the night drive home.
     const dinnerAt = Math.max(here, toMin(D.dinnerWindow[0]));
-    timeline.push(block("meal", dinnerAt, dinnerAt + D.dinner, "Dinner near " + (last.venue ? last.venue.name : last.ev.venue)));
+    timeline.push(block("meal", dinnerAt, dinnerAt + D.dinner, "Dinner near " + (last.venue ? last.venue.name : last.ev.venue), { meal: "dinner", at: "near " + (last.venue ? last.venue.name : last.ev.venue) }));
     const back0 = ctx.travel(last.idx, stayIdx, dateISO, departAfter);
     const backMin = back0.min == null ? 360 : back0.min;
     const departBack = Math.min(1425, Math.max(dinnerAt + D.dinner, departAfter, morning + 1440 - backMin));
@@ -610,6 +611,8 @@
     if (back.min != null) { day.travelMin += back.min; day.km += back.km || 0; }
     day.nightBack = { date: nextDate, depart: departBack, arrive: arriveHome - 1440, travel: back, from: last.venue ? last.venue.name : last.ev.venue };
     day.blocks = timeline.sort(function (a, b) { return a.from - b.from; });
+    if (!day.blocks.some(function (b) { return b.meal === "lunch"; })) placeDefaultLunch(day, D, lo, lc);
+    applyMealPlan(cfg, dateISO, day);
     day.wake = arriveOut; day.leave = departOut - 1440; day.back = arriveHome; day.sleep = departBack;
     day.legs = [];
     day.flags.push("Overnight travel both ways: sleep on the road out (" + dur(outMin) + ") and back (" + dur(backMin) + "). A sleeper coach is worth booking for these two nights.");
@@ -629,7 +632,8 @@
         const cut = prev.lastFreeAt;
         prev.blocks = prev.blocks.filter(function (b) { return b.from < cut || (b.type === "buffer" && b.to <= cut); });
         const dinnerLen = n.depart - cut >= 60 ? 60 : Math.max(30, n.depart - cut);
-        prev.blocks.push(block("meal", cut, cut + dinnerLen, "Dinner near " + n.fromLabel));
+        prev.blocks = prev.blocks.filter(function (b) { return b.meal !== "dinner"; });
+        prev.blocks.push(block("meal", cut, cut + dinnerLen, "Dinner near " + n.fromLabel, { meal: "dinner", at: "near " + n.fromLabel }));
         if (n.depart - (cut + dinnerLen) >= 15) prev.blocks.push(block("hold", cut + dinnerLen, n.depart, "Wait for the coach at " + n.fromLabel, { inTown: true }));
         prev.back = null;
         prev.flags.push("No return to the stay tonight: the overnight coach to " + n.to + " leaves from " + n.fromLabel + " at " + hm(n.depart) + " — pack for Manipal in the morning.");
@@ -732,6 +736,48 @@
     evs.sort(function (a, b) { return a.b.start - b.b.start; });
   }
 
+  // Default lunch: wherever the group is inside the lunch window — a hold
+  // in town, the stay, or packed at the venue during a show.
+  function placeDefaultLunch(day, D, lo, lc) {
+    const bl = day.blocks;
+    const overlap = function (b) { return b.to != null && b.from < lc && b.to > lo; };
+    let host = bl.find(function (b) { return b.type === "hold" && overlap(b) && Math.min(b.to, lc) - Math.max(b.from, lo) >= 30; });
+    let label, at, from, note;
+    if (host) {
+      from = Math.max(host.from, lo);
+      at = host.atStay ? "the stay" : (host.label.replace(/^Hold (in town near |at )/, "").replace(/ · lunch here$/, ""));
+      label = "Lunch " + (host.atStay ? "at the stay" : "near " + at);
+      host.label = host.label.replace(/ · lunch here$/, "");
+    } else {
+      host = bl.find(function (b) { return b.type === "free" && overlap(b); });
+      if (host) { from = Math.max(host.from, lo); at = "the stay"; label = "Lunch at the stay"; }
+      else {
+        host = bl.find(function (b) { return (b.type === "show" || b.type === "buffer") && overlap(b); });
+        if (host) { from = Math.max(host.from, lo); at = host.venue ? host.venue.name : "the venue"; label = "Lunch at the venue (packed)"; note = "During “" + (host.ev ? host.ev.title : host.label) + "” — arrange packed lunch."; }
+        else {
+          host = bl.find(function (b) { return b.type === "leg" && overlap(b); });
+          from = host ? Math.max(host.from, lo) : lo; at = "on the road"; label = "Lunch on the road";
+        }
+      }
+    }
+    bl.push(block("meal", from, from + Math.min(D.lunch, 60), label, { meal: "lunch", at: at, note: note, during: !!note }));
+    bl.sort(function (a, b) { return a.from - b.from; });
+  }
+  // Staff edits to a default meal: cfg.mealPlan[date][meal] = {start, minutes, note}.
+  function applyMealPlan(cfg, dateISO, day) {
+    const mp = (cfg.mealPlan || {})[dateISO] || {};
+    day.blocks.forEach(function (b) {
+      if (!b.meal || b.out) return;
+      const o = mp[b.meal]; if (!o) return;
+      const len = o.minutes != null && o.minutes > 0 ? +o.minutes : (b.to != null ? b.to - b.from : 45);
+      if (toMin(o.start) != null) b.from = toMin(o.start);
+      b.to = b.from + len;
+      if (o.note) b.note = o.note;
+      b.edited = true;
+    });
+    day.blocks.sort(function (a, b) { return a.from - b.from; });
+  }
+
   function mealHint(from, to, D) {
     const lo = toMin(D.lunchWindow[0]), lc = toMin(D.lunchWindow[1]);
     if (from < lc && to > lo && (Math.min(to, lc) - Math.max(from, lo)) >= 45) return " · lunch here";
@@ -824,7 +870,7 @@
   }
   function activeStays(cfg) { return (cfg.stays || []).filter(function (s) { return s.active !== false && s.lat != null; }); }
   function encodeShare(cfg) {
-    const slim = { v: cfg.version || 1, extras: cfg.extras || [], stops: cfg.stops || {}, party: cfg.party, stays: cfg.stays, day: cfg.day, buffers: cfg.buffers, overrides: cfg.overrides, provider: cfg.provider, traffic: cfg.traffic, excludeStatuses: cfg.excludeStatuses, venueOverrides: cfg.venueOverrides || [] };
+    const slim = { v: cfg.version || 1, extras: cfg.extras || [], stops: cfg.stops || {}, mealPlan: cfg.mealPlan || {}, party: cfg.party, stays: cfg.stays, day: cfg.day, buffers: cfg.buffers, overrides: cfg.overrides, provider: cfg.provider, traffic: cfg.traffic, excludeStatuses: cfg.excludeStatuses, venueOverrides: cfg.venueOverrides || [] };
     return btoa(unescape(encodeURIComponent(JSON.stringify(slim)))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
   }
   function decodeShare(s) {

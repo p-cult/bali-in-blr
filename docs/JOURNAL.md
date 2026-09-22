@@ -1121,6 +1121,11 @@ stops are pinned, untimed ones auto-place. Meal
 stops are registered as routing points up front; a point dropped in after
 the matrix exists gets a straight-line estimate until the next rebuild.
 
+Same day: every meal is now an explicit line (breakfast / lunch / dinner)
+defaulting to wherever the group is, editable in the planner (time, length,
+note, or a location that re-routes the day). The old "packed lunch" flag
+became a real lunch line inside the show.
+
 Lesson: the first pass let a leg depart before the previous event had
 wrapped (arrival was fixed at start − buffer). Legs now leave no earlier
 than the previous wrap and the day is flagged with the minutes lost from
