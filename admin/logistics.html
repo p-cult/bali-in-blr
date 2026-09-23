@@ -189,7 +189,7 @@
 </div>
 
 <script src="auth.js?v=7"></script>
-<script src="../plan/engine.js?v=34"></script>
+<script src="../plan/engine.js?v=35"></script>
 <script src="../plan/render.js?v=31"></script>
 <script>
 (function () {
@@ -704,7 +704,7 @@
       render();
       loading("Writing the plan to the Google Sheet…", 0.95);
       await writeBack();
-      loading("Everything is loaded · Google traffic · sheet in step", 1, true);
+      loading(ctx.backendDown ? "Loaded with estimates · Google's backend is busy; press Sync everything in a few minutes" : "Everything is loaded · Google traffic · sheet in step", 1, true);
     };
     $("traffic").addEventListener("click", function () { refreshTraffic(); });
     $("sync").addEventListener("click", function () { $("repull-sheet").click(); });
@@ -757,7 +757,7 @@
     async function writeBack() {
       if (!L.CONFIG.LOGISTICS_URL || !cfg().sheetUrl) return;
       const payload = sheetPayload(); if (!payload) return;
-      try { await fetch(L.CONFIG.LOGISTICS_URL, { method: "POST", body: JSON.stringify(payload) }); $("status").textContent = $("status").textContent.replace(/ · sheet updated.*$/, "") + " · sheet updated " + new Date().toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit" }); }
+      try { const ac = new AbortController(); const tm = setTimeout(function () { ac.abort(); }, 90000); await fetch(L.CONFIG.LOGISTICS_URL, { method: "POST", body: JSON.stringify(payload), signal: ac.signal }); clearTimeout(tm); $("status").textContent = $("status").textContent.replace(/ · sheet updated.*$/, "") + " · sheet updated " + new Date().toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit" }); }
       catch (e) { /* the write usually lands even when the reply is not JSON */ }
     }
     function syncSoon() { if (!cfg().sheetUrl) return; clearTimeout(syncTimer); syncTimer = setTimeout(writeBack, 2500); }

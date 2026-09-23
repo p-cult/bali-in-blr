@@ -1089,7 +1089,7 @@
   // figures arrive. Returns true if anything changed.
   async function refineWithBridge(ctx, plan, onProgress, opts) {
     opts = opts || {};
-    if (!CONFIG.LOGISTICS_URL) return false;
+    if (!CONFIG.LOGISTICS_URL || ctx.backendDown) return false;
     pruneLegCache(ctx);
     const jobs = [];
     plan.days.forEach(function (day) {
@@ -1117,17 +1117,21 @@
     // with retries on its occasional HTML answer. The first request can
     // also carry the planner-sheet inputs back (opts.sheet), so a cold
     // load pays the front door once, not twice.
-    let batch = 100;
+    let batch = 100, batchesFailed = 0;
     let wantSheet = !!opts.sheet;
     for (let i = 0; i < jobs.length || wantSheet; i += batch) {
       const chunk = jobs.slice(i, i + batch);
       const spec = chunk.map(function (j) { return ctx.points[j.a].lat + "," + ctx.points[j.a].lon + "~" + ctx.points[j.b].lat + "," + ctx.points[j.b].lon + "~" + j.departISO; }).join("|");
       const url = CONFIG.LOGISTICS_URL + "?action=legs&legs=" + encodeURIComponent(spec) + (wantSheet ? "&sheet=1" : "");
       let r = null, tooMany = false;
-      for (let attempt = 0; attempt < 4 && !r; attempt++) {
-        try { r = await fetchJSON(url, 180000); if (!r.ok) { if (/at most \d+ legs/.test(r.error || "")) { tooMany = true; break; } throw new Error(r.error || "bridge"); } }
-        catch (e) { r = null; if (attempt === 3) { failed += chunk.length; } else await new Promise(function (res) { setTimeout(res, 800 * (attempt + 1)); }); }
+      // Three tries, 75 s each at most: a flaky front door can hold a page
+      // for a couple of minutes, never a quarter of an hour. After the
+      // second whole batch fails the rest of the tour is skipped for now.
+      for (let attempt = 0; attempt < 3 && !r; attempt++) {
+        try { r = await fetchJSON(url, 75000); if (!r.ok) { if (/at most \d+ legs/.test(r.error || "")) { tooMany = true; break; } throw new Error(r.error || "bridge"); } }
+        catch (e) { r = null; if (attempt === 2) { failed += chunk.length; batchesFailed++; } else await new Promise(function (res) { setTimeout(res, 1500 * (attempt + 1)); }); }
       }
+      if (batchesFailed >= 2) { failed += Math.max(0, jobs.length - i - chunk.length); ctx.backendDown = true; break; }
       // An older backend takes 40 a time: redo this chunk in that size.
       if (tooMany && batch > 40) { batch = 40; i -= batch; continue; }
       if (r && wantSheet) {
@@ -1144,7 +1148,7 @@
       if (onProgress) onProgress(i + batch, jobs.length);
       if (!jobs.length) break;
     }
-    if (failed) ctx.warnings.push("Google traffic unavailable for " + failed + " leg" + (failed > 1 ? "s" : "") + "; those use the estimate.");
+    if (failed) ctx.warnings.push("Google's backend did not answer for " + failed + " leg" + (failed > 1 ? "s" : "") + " — those show the built-in estimate. It is usually back within a few minutes; reload or press Sync everything to try again.");
     if (changed) saveLegCache(ctx);
     return changed;
   }
@@ -1159,6 +1163,7 @@
       const changed = await refineWithBridge(ctx, plan, function (done, total) { if (onProgress) onProgress(planTour(ctx, events, stay), done, total, pass); },
         first ? { sheet: opts.sheet, onSheet: async function (sheet) { if (!opts.onSheet) return; const ev = await opts.onSheet(sheet); if (ev) events = ev; } } : null);
       plan = planTour(ctx, events, stay);
+      if (ctx.backendDown) break;
       // Sheet inputs may have added stops: one more pass prices those.
       if (!changed && !(first && opts.sheet)) break;
     }
@@ -1245,7 +1250,7 @@
   async function fetchSheetPlanLive(fresh) {
     if (!CONFIG.LOGISTICS_URL) return null;
     try {
-      const r = await fetchJSON(CONFIG.LOGISTICS_URL + "?action=sheetplan" + (fresh ? "&fresh=1" : ""), 180000);
+      const r = await fetchJSON(CONFIG.LOGISTICS_URL + "?action=sheetplan" + (fresh ? "&fresh=1" : ""), 75000);
       if (r && r.ok) { storeSheetPlan(r); return r; }
     } catch (e) { /* fall through */ }
     return null;

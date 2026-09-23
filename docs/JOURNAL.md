@@ -1834,3 +1834,31 @@ stay → check-in → dinner. Departure: dinner → luggage → airport → flig
 Wired into `render-plan-pdf.mjs` (committed by the workflow's existing
 globs); "Routine sheet" beside the other downloads on both pages.
 
+## 23 Sep 2026 — "Stuck 14 minutes": the backend's bad half-hour
+
+**Problem.** The admin planner sat on its loader for ~14 minutes. The
+public page loaded; the backend was answering some calls with Google's
+"Sorry, unable to open the file at present" page (one call fine in 1.6 s,
+the next an HTML error after 32 s). The client waited up to 180 s per
+try, four tries per batch, for every batch and every stay — so a run of
+those errors held the page for a quarter of an hour.
+
+**Cause, likely.** Apps Script quotas are per account. The same Google
+account runs another project, "cult task sheet v2", whose time-driven
+`pollUserSheets` fires every minute all day (seen in My Executions). That
+competes with the logistics web app for simultaneous executions and
+trigger runtime; the front-door refusals cluster when the account is
+busy. Not touched — it is not this project's.
+
+**Done.** `refineWithBridge`: 75 s per try, three tries, 1.5/3 s
+back-off; after two whole batches fail the rest of the tour is skipped
+for this load (`ctx.backendDown`), later stays and passes are not
+attempted, and the loader ends honestly ("Loaded with estimates ·
+Google's backend is busy…") instead of hanging. Sheet read timeout
+75 s; the admin's write-back is time-boxed at 90 s. Worst case is now a
+few minutes, with the plan on screen throughout.
+
+**Lesson.** A retry loop's worst case is what the user sees on a bad
+day; budget it in minutes, not attempts. And check who else shares the
+Apps Script account.
+

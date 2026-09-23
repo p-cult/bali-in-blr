@@ -43,7 +43,7 @@
   </footer>
 </div>
 
-<script src="engine.js?v=34"></script>
+<script src="engine.js?v=35"></script>
 <script src="render.js?v=31"></script>
 <script>
 (function () {
@@ -135,7 +135,8 @@
           }, i === 0 ? { sheet: needSheet, onSheet: applySheet } : null);
         }
         render();
-        loading("Everything is loaded · Google traffic for these dates" + (Object.keys(ctx.legCache).length ? " · saved on this device for quick reloads" : ""), 1, true);
+        if (ctx.backendDown) loading("Loaded with estimates · Google's backend is busy right now; reload in a few minutes for traffic-priced times", 1, true);
+        else loading("Everything is loaded · Google traffic for these dates" + (Object.keys(ctx.legCache).length ? " · saved on this device for quick reloads" : ""), 1, true);
       } else {
         loading("Everything is loaded · times are estimates", 1, true);
       }
