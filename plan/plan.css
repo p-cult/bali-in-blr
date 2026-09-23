@@ -117,6 +117,7 @@ input[type=time]::-webkit-calendar-picker-indicator,input[type=date]::-webkit-ca
 .buffers table{width:100%;border-collapse:collapse;font-size:.85rem}
 .buffers td,.buffers th{padding:.35rem .5rem;border-bottom:1px solid var(--line);text-align:left}
 .buffers input{width:5.5rem;background:var(--bg);border:1px solid var(--line2);border-radius:5px;color:var(--ink);font:inherit;padding:.3rem .4rem}
+.buffers input[type=date]{width:10.5rem}
 .venues{font-size:.82rem;display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:.4rem .9rem}
 .venues div{display:flex;justify-content:space-between;gap:.5rem;border-bottom:1px solid var(--line);padding:.25rem 0}
 .venues .prec{color:var(--muted2);font-size:.72rem}

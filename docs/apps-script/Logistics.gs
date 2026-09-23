@@ -290,6 +290,8 @@ function parseDate_(s) {
   if (Object.prototype.toString.call(s) === "[object Date]") return Utilities.formatDate(s, TZ, "yyyy-MM-dd");
   return "";
 }
+// "2026-09-30", "30 Sep 2026", "30/09/2026" → ISO; anything else as given.
+function isoDate_(s) { var d = parseDate_(s); if (d) return d; var m = /^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})$/.exec(String(s || "").trim()); return m ? m[3] + "-" + ("0" + m[2]).slice(-2) + "-" + ("0" + m[1]).slice(-2) : String(s || "").trim(); }
 function slug_(s) { return String(s || "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim().replace(/ /g, "-"); }
 function addDays_(iso, n) { var d = new Date(iso + "T00:00:00+05:30"); d.setDate(d.getDate() + n); return Utilities.formatDate(d, TZ, "yyyy-MM-dd"); }
 
@@ -460,8 +462,13 @@ function sheetplan_() {
   var cfg = { overrides: {}, stops: {}, extras: [], mealPlan: {}, dayVehicle: {} };
   var st = ss.getSheetByName("Settings");
   if (st) {
-    var sv = st.getRange(HEADER_ROW + 1, 1, 5, 2).getDisplayValues();
+    var sv = st.getRange(HEADER_ROW + 1, 1, 14, 2).getDisplayValues();
     var get = function (k) { for (var i = 0; i < sv.length; i++) if (sv[i][0] === k) return sv[i][1]; return ""; };
+    // Flights (rows added by the planner's write-back; absent until then).
+    var fl = {};
+    if (get("Arrival date")) fl.arrival = { date: isoDate_(get("Arrival date")), time: get("Arrival time"), place: get("Arrival place"), landingBuffer: dispMin_(get("Arrival: minutes to clear airport")) };
+    if (get("Departure date")) fl.departure = { date: isoDate_(get("Departure date")), time: get("Departure time"), place: get("Departure place"), checkInLead: dispMin_(get("Departure: check-in lead")) };
+    if (fl.arrival || fl.departure) cfg.travel = fl;
     cfg.stayName = get("Place of stay");
     cfg.party = { artists: +get("Artists") || 25, volunteers: +get("Volunteers travelling") || 0 };
     cfg.instrumentLead = dispMin_(get("Instruments needed at venue"));
@@ -477,6 +484,9 @@ function sheetplan_() {
     if (!iso) return;
     var vm = /^Vehicle:\s*(.+)$/.exec(String(all[1] && all[1][4] || "").trim());
     if (vm && !/^auto$/i.test(vm[1].trim())) cfg.dayVehicle[iso] = vm[1].trim();
+    // E3: "Joiners: 6 · Yakshagana artists (local) · in the vehicles|on their own"
+    var jm = /^Joiners:\s*(\d+)\s*·\s*(.*?)\s*·\s*(in the vehicles|on their own)\s*$/.exec(String(all[2] && all[2][4] || "").trim());
+    if (jm && +jm[1] > 0) { cfg.joiners = cfg.joiners || {}; cfg.joiners[iso] = { count: +jm[1], label: jm[2], travel: jm[3] === "in the vehicles" }; }
     var r = HEADER_ROW;
     for (; r < all.length; r++) {
       var row = all[r];
@@ -535,8 +545,21 @@ function writeback_(days, settings) {
   if (settings) {
     var st = ss.getSheetByName("Settings");
     if (st) {
-      var vals = st.getRange(HEADER_ROW + 1, 1, 5, 2).getDisplayValues();
+      var vals = st.getRange(HEADER_ROW + 1, 1, 14, 2).getDisplayValues();
       var put = function (k, v) { for (var i = 0; i < vals.length; i++) if (vals[i][0] === k && v != null && v !== "") st.getRange(HEADER_ROW + 1 + i, 2).setValue(v); };
+      // A key the Settings tab does not have yet is appended below the last used row.
+      var putOrAdd = function (k, v, note) {
+        for (var i = 0; i < vals.length; i++) if (vals[i][0] === k) { st.getRange(HEADER_ROW + 1 + i, 2).setValue(v == null ? "" : v); return; }
+        var r = HEADER_ROW + 1; while (r <= HEADER_ROW + 14 && st.getRange(r, 1).getDisplayValue()) r++;
+        st.getRange(r, 1, 1, 3).setValues([[k, v == null ? "" : v, note || ""]]); vals.push([k, String(v == null ? "" : v)]);
+      };
+      if (settings.flights) {
+        var fa = settings.flights.arrival, fd = settings.flights.departure;
+        putOrAdd("Arrival date", fa ? fa.date : "", "YYYY-MM-DD"); putOrAdd("Arrival time", fa ? fa.time : "", "HH:MM landing"); putOrAdd("Arrival place", fa ? fa.place : "", "Airport or station, as in the venue list");
+        putOrAdd("Arrival: minutes to clear airport", fa && fa.landingBuffer != null ? hhmm_(fa.landingBuffer) : "", "HH:MM");
+        putOrAdd("Departure date", fd ? fd.date : "", "YYYY-MM-DD of the flight"); putOrAdd("Departure time", fd ? fd.time : "", "HH:MM flight"); putOrAdd("Departure place", fd ? fd.place : "", "");
+        putOrAdd("Departure: check-in lead", fd && fd.checkInLead != null ? hhmm_(fd.checkInLead) : "", "HH:MM before the flight");
+      }
       // The dropdown must offer whatever the planner writes, so re-set it.
       var stayList = STAYS.slice(); if (settings.stay && stayList.indexOf(settings.stay) === -1) stayList.push(settings.stay);
       st.getRange(HEADER_ROW + 1, 2).setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(stayList, true).build());
@@ -551,6 +574,8 @@ function writeback_(days, settings) {
     if (d.leave) sh.getRange(2, 1).setValue(dayLabel_(iso) + " | " + d.leave);
     // E2: the vehicle chosen for the day ("Vehicle: auto" = let the planner pick).
     if (d.vehicle != null) sh.getRange(2, 5).setValue("Vehicle: " + (d.vehicle || "auto")).setFontColor("#444444");
+    // E3: who joins the company that day.
+    if (d.joiners !== undefined) sh.getRange(3, 5).setValue(d.joiners && d.joiners.count ? "Joiners: " + d.joiners.count + " · " + (d.joiners.label || "guests") + " · " + (d.joiners.travel ? "in the vehicles" : "on their own") : "").setFontColor("#444444");
     var all = sh.getDataRange().getDisplayValues();
     var r = HEADER_ROW, addonHeader = -1;
     for (; r < all.length; r++) {

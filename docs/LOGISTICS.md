@@ -229,8 +229,14 @@ the main stay, see below) and **Print**. The last tab used is remembered.
   how many, ₹/km and minimum ₹/day, add/remove, with the estimate broken
   down by type — the first row is the coach; a smaller type is used on its
   own when the day's party fits in it, e.g. a talk's two people take the
-  car); day rhythm; type defaults (Talk: no set-up, costume or truck, two
-  people); venues; "Start over" (reset the browser draft).
+  car); **Flights** (arrival and departure: the plan adds an arrival day,
+  airport → stay, and a departure day, stay → airport before the flight; a
+  flight before 6 am is planned the evening before); **People who join on
+  a day** (local artists or guests per date, in the vehicles or on their
+  own); day rhythm; type defaults (Talk: no set-up, costume or truck, two
+  people); venues; "Start over" (reset the browser draft). Flights and
+  joiners are written to the sheet (Settings rows; E3 of the day tab) and
+  read back like every other input.
 - **Share.** Copy public link, Open public page, Copy frozen snapshot.
 
 **Cast per show.** Each event carries an artist count and a cast, in the

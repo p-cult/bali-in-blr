@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;900&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="../plan/plan.css?v=32" />
+<link rel="stylesheet" href="../plan/plan.css?v=33" />
 </head>
 <body>
 <div class="wrap" id="admin-app" hidden>
@@ -126,6 +126,26 @@
       <div class="bar" style="margin:.6rem 0 0"><button class="btn btn-sm" type="button" id="veh-add">Add a vehicle type</button><span class="status" id="veh-est"></span></div>
     </div>
     <div class="panel">
+      <h3>Flights</h3>
+      <p class="muted hint">The company's arrival and departure. The plan adds an arrival day (airport → stay) and a departure day (stay → airport, check-in lead before the flight; a flight before 6 am is planned the evening before). Written to the sheet's Settings tab.</p>
+      <div class="grid">
+        <label class="field">Arrival date <input type="date" id="arr-date" /></label>
+        <label class="field">Landing time <input type="time" id="arr-time" /></label>
+        <label class="field">Arrival airport / place <input type="text" id="arr-place" placeholder="Kempegowda International Airport" /></label>
+        <label class="field">Minutes to clear the airport <input type="number" id="arr-buffer" min="0" step="5" /></label>
+        <label class="field">Departure date <input type="date" id="dep-date" /></label>
+        <label class="field">Flight time <input type="time" id="dep-time" /></label>
+        <label class="field">Departure airport / place <input type="text" id="dep-place" /></label>
+        <label class="field">Check-in lead (minutes before the flight) <input type="number" id="dep-lead" min="0" step="15" /></label>
+      </div>
+    </div>
+    <div class="panel">
+      <h3>People who join on a day</h3>
+      <p class="muted hint">Local artists or guests who perform with the company on a date. Tick “travel with the group” when they ride in the vehicles (they count for seats); untick when they come on their own. Written to that day's tab in the sheet.</p>
+      <div class="buffers"><table id="joiners"><thead><tr><th>Date</th><th>How many</th><th>Who</th><th>Travel with the group</th><th></th></tr></thead><tbody></tbody></table></div>
+      <div class="bar" style="margin:.6rem 0 0"><button class="btn btn-sm" type="button" id="join-add">Add a day</button></div>
+    </div>
+    <div class="panel">
       <h3>Day rhythm</h3>
       <p class="muted hint">How a day is built around the programme: how long breakfast takes, when the earliest wake can be, and so on. Durations are HH : MM; clock times where a time of day is meant.</p>
       <div class="grid" id="day-grid"></div>
@@ -168,7 +188,7 @@
 </div>
 
 <script src="auth.js?v=7"></script>
-<script src="../plan/engine.js?v=33"></script>
+<script src="../plan/engine.js?v=34"></script>
 <script src="../plan/render.js?v=31"></script>
 <script>
 (function () {
@@ -209,6 +229,17 @@
         "<td>" + (i === 0 ? "<span class='pill'>coach</span>" : "<button class='btn btn-sm' type='button' data-vrm='" + i + "'>remove</button>") + "</td></tr>";
     }).join("");
   }
+  function renderJoiners() {
+    const jn = cfg().joiners || {};
+    const dates = Object.keys(jn).filter(function (d) { return /^\d{4}-\d{2}-\d{2}$/.test(d); }).sort();
+    $("joiners").querySelector("tbody").innerHTML = dates.map(function (d, i) {
+      const j = jn[d];
+      return "<tr><td><input type='date' data-j='date' value='" + d + "'></td><td><input type='number' min='0' data-j='count' value='" + (j.count || 0) + "' style='width:5rem'></td>" +
+        "<td><input type='text' data-j='label' value='" + L.esc(j.label || "") + "' style='width:16rem' placeholder='e.g. Yakshagana artists (local)'></td>" +
+        "<td><label class='tl-skip'><input type='checkbox' data-j='travel'" + (j.travel ? " checked" : "") + "> in the vehicles</label></td>" +
+        "<td><button class='btn btn-sm' type='button' data-jrm='" + d + "'>remove</button></td></tr>";
+    }).join("");
+  }
   function renderVehicleEstimate(plan) {
     if (!plan || !plan.days) return;
     const by = {};
@@ -220,7 +251,10 @@
   function bindForms() {
     const c = cfg();
     $("party-artists").value = c.party.artists != null ? c.party.artists : c.party.size; $("party-volunteers").value = c.party.volunteers || 0; $("party-label").value = c.party.label;
-    renderVehicles();
+    renderVehicles(); renderJoiners();
+    const tv = c.travel || (c.travel = {}); const ar = tv.arrival || {}, dp = tv.departure || {};
+    $("arr-date").value = ar.date || ""; $("arr-time").value = ar.time || ""; $("arr-place").value = ar.place || ""; $("arr-buffer").value = ar.landingBuffer != null ? ar.landingBuffer : 75;
+    $("dep-date").value = dp.date || ""; $("dep-time").value = dp.time || ""; $("dep-place").value = dp.place || ""; $("dep-lead").value = dp.checkInLead != null ? dp.checkInLead : 180;
     $("provider").value = c.provider; $("safety").value = c.traffic.safety;
     $("day-grid").innerHTML = DAY_FIELDS.map(function (f) {
       const val = c.day[f[0]]; const isTime = typeof val === "string";
@@ -252,6 +286,16 @@
       const g = function (k) { return tr.querySelector("[data-v='" + k + "']"); };
       v.name = g("name").value.trim() || v.name; v.seats = +g("seats").value || 0; v.count = +g("count").value || 1; v.ratePerKm = +g("rate").value || 0; v.minPerDay = +g("min").value || 0;
     });
+    c.travel = c.travel || {};
+    c.travel.arrival = $("arr-date").value ? { date: $("arr-date").value, time: $("arr-time").value, place: $("arr-place").value.trim(), landingBuffer: +$("arr-buffer").value || 0, note: (c.travel.arrival || {}).note || "" } : null;
+    c.travel.departure = $("dep-date").value ? { date: $("dep-date").value, time: $("dep-time").value, place: $("dep-place").value.trim(), checkInLead: +$("dep-lead").value || 0 } : null;
+    const jn = {};
+    document.querySelectorAll("#joiners tbody tr").forEach(function (tr) {
+      const g = function (k) { return tr.querySelector("[data-j='" + k + "']"); };
+      const date = g("date").value; if (!date) return;
+      jn[date] = { count: +g("count").value || 0, label: g("label").value.trim() || "guests", travel: g("travel").checked };
+    });
+    c.joiners = jn;
     c.provider = $("provider").value; c.traffic.safety = +$("safety").value || 1;
     document.querySelectorAll("[data-day]").forEach(function (i) {
       if (i.classList.contains("dur")) c.day[i.dataset.day] = (+i.querySelector("[data-part=h]").value || 0) * 60 + (+i.querySelector("[data-part=m]").value || 0);
@@ -390,6 +434,15 @@
     document.querySelectorAll("#party-artists,#party-volunteers,#party-label,#safety").forEach(function (i) { i.addEventListener("input", function () { scheduleRebuild(false); }); });
     $("vehicles").addEventListener("input", function () { scheduleRebuild(false); });
     $("vehicles").addEventListener("click", function (e) { const b = e.target.closest("[data-vrm]"); if (!b) return; readForms(); cfg().party.vehicles.splice(+b.dataset.vrm, 1); renderVehicles(); scheduleRebuild(false); });
+    document.querySelectorAll("#arr-date,#arr-time,#arr-place,#arr-buffer,#dep-date,#dep-time,#dep-place,#dep-lead").forEach(function (i) { i.addEventListener("input", function () { scheduleRebuild(true); }); });
+    $("joiners").addEventListener("input", function () { scheduleRebuild(false); });
+    $("joiners").addEventListener("click", function (e) { const b = e.target.closest("[data-jrm]"); if (!b) return; b.closest("tr").remove(); scheduleRebuild(false); });
+    $("join-add").addEventListener("click", function () {
+      // A blank row; it joins the plan once it has a date.
+      const tr = document.createElement("tr");
+      tr.innerHTML = "<td><input type='date' data-j='date' value=''></td><td><input type='number' min='0' data-j='count' value='1' style='width:5rem'></td><td><input type='text' data-j='label' value='' style='width:16rem' placeholder='e.g. Yakshagana artists (local)'></td><td><label class='tl-skip'><input type='checkbox' data-j='travel'> in the vehicles</label></td><td><button class='btn btn-sm' type='button' data-jrm=''>remove</button></td>";
+      $("joiners").querySelector("tbody").appendChild(tr); tr.querySelector("[data-j='date']").focus();
+    });
     $("veh-add").addEventListener("click", function () { readForms(); cfg().party.vehicles.push({ name: "Car (4 seats)", seats: 4, count: 1, ratePerKm: 14, minPerDay: 1500 }); renderVehicles(); scheduleRebuild(false); });
     $("provider").addEventListener("change", function () { scheduleRebuild(true); });
     $("day-grid").addEventListener("input", function () { scheduleRebuild(false); });
@@ -695,9 +748,10 @@
         ((c.stops || {})[d.date] || []).forEach(function (p) {
           addons.push({ purpose: PURPOSE_LABEL[p.purpose] || "Other", location: p.link || p.name, start: p.start || "", end: p.end || "", include: true, note: p.note || "" });
         });
-        days[d.date] = { leave: d.leave != null && d.kind !== "rest" ? R.hhmm(d.leave) : "", vehicle: (c.dayVehicle || {})[d.date] || "", events: events, addons: addons };
+        const jj = (c.joiners || {})[d.date];
+        days[d.date] = { leave: d.leave != null && d.kind !== "rest" ? R.hhmm(d.leave) : "", vehicle: (c.dayVehicle || {})[d.date] || "", joiners: jj ? { count: jj.count, label: jj.label, travel: !!jj.travel } : null, events: events, addons: addons };
       });
-      return { action: "writeback", days: days, settings: { stay: stay.name, artists: c.party.artists, volunteers: c.party.volunteers, storage: c.instrumentStore && c.instrumentStore.link ? c.instrumentStore.link : "", lead: c.instrumentLead != null ? R.hhmm(c.instrumentLead) : "" } };
+      return { action: "writeback", days: days, settings: { stay: stay.name, artists: c.party.artists, volunteers: c.party.volunteers, storage: c.instrumentStore && c.instrumentStore.link ? c.instrumentStore.link : "", lead: c.instrumentLead != null ? R.hhmm(c.instrumentLead) : "", flights: c.travel || null } };
     }
     async function writeBack() {
       if (!L.CONFIG.LOGISTICS_URL || !cfg().sheetUrl) return;

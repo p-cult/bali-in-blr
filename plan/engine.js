@@ -1274,6 +1274,8 @@
     cfg.mealStops = {};
     cfg.extras = sc.extras || [];
     if (sc.dayVehicle) cfg.dayVehicle = Object.assign({}, cfg.dayVehicle || {}, sc.dayVehicle);
+    if (sc.travel) { cfg.travel = cfg.travel || {}; if (sc.travel.arrival) cfg.travel.arrival = Object.assign({}, cfg.travel.arrival || {}, sc.travel.arrival); if (sc.travel.departure) cfg.travel.departure = Object.assign({}, cfg.travel.departure || {}, sc.travel.departure); }
+    if (sc.joiners) cfg.joiners = Object.assign({}, cfg.joiners || {}, sc.joiners);
     if (sc.party) { cfg.party.artists = sc.party.artists; cfg.party.volunteers = sc.party.volunteers; cfg.party.size = (sc.party.artists || 0) + (sc.party.volunteers || 0); }
     if (sc.instrumentLead != null) cfg.instrumentLead = sc.instrumentLead;
     if (sc.instrumentStore) cfg.instrumentStore = sc.instrumentStore;

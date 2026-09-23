@@ -1774,3 +1774,17 @@ and "incl. 6 local". Both edges are in the PDFs and workbooks (20 days).
 List's date range, so 30 Sep, 1 Oct and 19 Oct have no tab; the flight
 days live in `logistics.json` and the snapshot only.
 
+**Maintained from the admin (23 Sep, later).** The planner is the Event
+List's dates (from the sheet) plus the flight days, which have no Event
+List row and so are maintained by hand: Settings → **Flights** (arrival
+date/time/place, minutes to clear the airport; departure date/time/place,
+check-in lead) and Settings → **People who join on a day** (date, count,
+who, in the vehicles or on their own). Both re-plan live and go to the
+sheet with the next write-back: flights as eight rows appended to the
+Settings tab (Arrival date … Departure: check-in lead), joiners as E3 on
+the day tab ("Joiners: 6 · Yakshagana artists (local) · in the
+vehicles"). `sheetplan_` reads both back, so the public page and the
+nightly files follow the admin's edits. Backend Version 15. A
+`setNumberFormat("@")` on the Settings range was caught before deploy:
+it would have turned the existing HH:MM cell into a fraction.
+
