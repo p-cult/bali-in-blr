@@ -457,7 +457,7 @@ function sheetplanCached_(fresh) {
 }
 function sheetplan_() {
   var ss = plannerBook_();
-  var cfg = { overrides: {}, stops: {}, extras: [], mealPlan: {} };
+  var cfg = { overrides: {}, stops: {}, extras: [], mealPlan: {}, dayVehicle: {} };
   var st = ss.getSheetByName("Settings");
   if (st) {
     var sv = st.getRange(HEADER_ROW + 1, 1, 5, 2).getDisplayValues();
@@ -475,6 +475,8 @@ function sheetplan_() {
     var iso = null;
     var m = /plan\/\?day=(\d{4}-\d{2}-\d{2})/.exec(String(all[3] && all[3][0] || "")); if (m) iso = m[1];
     if (!iso) return;
+    var vm = /^Vehicle:\s*(.+)$/.exec(String(all[1] && all[1][4] || "").trim());
+    if (vm && !/^auto$/i.test(vm[1].trim())) cfg.dayVehicle[iso] = vm[1].trim();
     var r = HEADER_ROW;
     for (; r < all.length; r++) {
       var row = all[r];
@@ -547,6 +549,8 @@ function writeback_(days, settings) {
     var sh = ss.getSheetByName(tabName_(iso)); if (!sh) return;
     var d = days[iso];
     if (d.leave) sh.getRange(2, 1).setValue(dayLabel_(iso) + " | " + d.leave);
+    // E2: the vehicle chosen for the day ("Vehicle: auto" = let the planner pick).
+    if (d.vehicle != null) sh.getRange(2, 5).setValue("Vehicle: " + (d.vehicle || "auto")).setFontColor("#444444");
     var all = sh.getDataRange().getDisplayValues();
     var r = HEADER_ROW, addonHeader = -1;
     for (; r < all.length; r++) {

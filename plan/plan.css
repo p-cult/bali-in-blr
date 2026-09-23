@@ -162,6 +162,8 @@ input[type=time]::-webkit-calendar-picker-indicator,input[type=date]::-webkit-ca
 .ds-muted{color:var(--muted2);font-size:.82rem}
 .day-body{padding:0 1.1rem 1rem 2.1rem;border-top:1px solid var(--line)}
 .day-events{display:flex;flex-wrap:wrap;gap:.4rem;margin:.8rem 0 .4rem}
+.day-veh{display:inline-flex;align-items:center;gap:.4rem;font-size:.78rem;color:var(--muted2);margin:.6rem 0 0}
+.day-veh select{background:var(--bg);border:1px solid var(--line2);border-radius:5px;color:var(--ink);font:inherit;font-size:.8rem;padding:.25rem .5rem}
 .day-print{float:right;margin:.6rem 0 0}
 .day-ev{font-size:.8rem;border:1px solid var(--line2);border-radius:99px;padding:.15rem .6rem}
 .day-ev i{font-style:normal;color:var(--accent-2)}

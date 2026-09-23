@@ -33,7 +33,7 @@
     if (day.kind === "outstation") return "<span class='ds'>" + evs + pill("Out of town", "far") + sep + t("arrive", day.wake) + "<span class='ds-muted'>after the overnight drive</span>" + arrow + t("night drive home", day.sleep) + sep + road() + "</span>";
     if (day.nightDeparture) return "<span class='ds'>" + evs + pill("Overnight coach", "far") + sep + t("leave", day.leave) + arrow + t("coach to " + day.nightTo, day.sleep) + (day.back == null ? "<span class='ds-muted'>straight from the venue</span>" : "") + sep + road() + "</span>";
     const who = (day.travelling ? "<span class='ds-muted'>" + day.travelling + (day.travelling === 1 ? " artist" : " artists") + "</span>" : "") +
-      (day.smallVehicle ? pill((day.vehicles > 1 ? day.vehicles + " × " : "") + String(day.vehicle.name).replace(/\s*\(.*\)$/, ""), "veh") :
+      (day.smallVehicle || day.vehicleChosen ? pill((day.vehicles > 1 ? day.vehicles + " × " : "") + String(day.vehicle.name).replace(/\s*\(.*\)$/, ""), "veh") :
         day.vehicles && day.fleet > 1 && day.vehicles < day.fleet ? pill(day.vehicles + " vehicle" + (day.vehicles > 1 ? "s" : ""), "veh") : "");
     return "<span class='ds'>" + evs + who + sep + t("leave", day.leave) + arrow + t("back", day.back) + sep + road() + "</span>";
   }
@@ -127,9 +127,15 @@
       return "<span class='day-ev" + (e.notPublic ? " day-ev-private" : "") + "'>" + esc(e.title) + (e.start != null ? " <i>" + hm(e.start) + "</i>" : "") + "</span>";
     }).join("") + "</p>" : "";
     const meals = opts.editable && day.kind !== "outstation" ? stopEditor(day, opts.cfg) : "";
+    // Per-day vehicle choice (admin): Auto, or any type from Settings → Transport.
+    const vehiclePick = opts.editable && day.kind !== "rest" ? (function () {
+      const cur = ((opts.cfg.dayVehicle || {})[day.date]) || "";
+      const list = (opts.cfg.party.vehicles || []).map(function (v) { return "<option value='" + esc(v.name) + "'" + (cur === v.name ? " selected" : "") + ">" + esc(v.name) + "</option>"; }).join("");
+      return "<label class='day-veh no-print'>Vehicle <select data-dayveh='" + day.date + "'><option value=''" + (cur ? "" : " selected") + ">Auto · " + esc(day.vehicle ? (day.vehicles > 1 ? day.vehicles + " × " : "") + day.vehicle.name : "") + "</option>" + list + "</select></label>";
+    })() : "";
     return "<details class='day day-" + day.kind + (day.red ? " day-red" : "") + "'" + open + " data-date='" + day.date + "'>" +
       "<summary><span class='day-date'>" + esc(L.dateLabel(day.date)) + "</span>" + (day.red ? "<span class='badge-red'>Red flag</span>" : "") + "<span class='day-sum'>" + summaryHTML(day) + "</span></summary>" +
-      "<div class='day-body'><button class='btn btn-sm day-print no-print' type='button' data-printday='" + day.date + "'>Print this day</button>" + events + flags + meals +
+      "<div class='day-body'><button class='btn btn-sm day-print no-print' type='button' data-printday='" + day.date + "'>Print this day</button>" + vehiclePick + events + flags + meals +
       "<div class='timeline'>" + day.blocks.map(function (b) { return blockRow(b, Object.assign({}, opts, { date: day.date })); }).join("") + "</div>" +
       "</div></details>";
   }

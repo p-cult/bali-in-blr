@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;900&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="../plan/plan.css?v=30" />
+<link rel="stylesheet" href="../plan/plan.css?v=31" />
 </head>
 <body>
 <div class="wrap" id="admin-app" hidden>
@@ -167,8 +167,8 @@
 </div>
 
 <script src="auth.js?v=7"></script>
-<script src="../plan/engine.js?v=31"></script>
-<script src="../plan/render.js?v=29"></script>
+<script src="../plan/engine.js?v=32"></script>
+<script src="../plan/render.js?v=30"></script>
 <script>
 (function () {
   "use strict";
@@ -551,6 +551,13 @@
       if (L.CONFIG.LOGISTICS_URL && cfg().provider === "bridge") await refreshTraffic();
     });
 
+    // Per-day vehicle dropdown.
+    $("days").addEventListener("change", function (e) {
+      const sel = e.target.closest("[data-dayveh]"); if (!sel) return;
+      const dv = cfg().dayVehicle = cfg().dayVehicle || {};
+      if (sel.value) dv[sel.dataset.dayveh] = sel.value; else delete dv[sel.dataset.dayveh];
+      scheduleRebuild(false);
+    });
     // In-day editors: reveal on demand.
     $("days").addEventListener("click", function (e) {
       if (e.target.closest("[data-mealtoggle]")) { const on = e.target.closest(".tl-row").classList.toggle("editing"); e.target.closest("[data-mealtoggle]").textContent = on ? "close" : "edit"; }
@@ -687,7 +694,7 @@
         ((c.stops || {})[d.date] || []).forEach(function (p) {
           addons.push({ purpose: PURPOSE_LABEL[p.purpose] || "Other", location: p.link || p.name, start: p.start || "", end: p.end || "", include: true, note: p.note || "" });
         });
-        days[d.date] = { leave: d.leave != null && d.kind !== "rest" ? R.hhmm(d.leave) : "", events: events, addons: addons };
+        days[d.date] = { leave: d.leave != null && d.kind !== "rest" ? R.hhmm(d.leave) : "", vehicle: (c.dayVehicle || {})[d.date] || "", events: events, addons: addons };
       });
       return { action: "writeback", days: days, settings: { stay: stay.name, artists: c.party.artists, volunteers: c.party.volunteers, storage: c.instrumentStore && c.instrumentStore.link ? c.instrumentStore.link : "", lead: c.instrumentLead != null ? R.hhmm(c.instrumentLead) : "" } };
     }

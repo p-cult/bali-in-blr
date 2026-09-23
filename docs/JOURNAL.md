@@ -1689,3 +1689,14 @@ Note: "Closing Day" (18 Oct) is categorised Talk in the schedule and now
 plans as 2 people in a car; if the whole company attends, set its
 artists on the day.
 
+## 23 Sep 2026 — Choose the vehicle per day
+
+**Done.** Each day in the admin's Plan tab opens with a "Vehicle"
+dropdown: Auto (showing what the planner would pick) or any type from
+Settings → Transport. The choice lives in `cfg.dayVehicle[date]`, rides
+in the frozen snapshot, and is written to the day tab's E2 as
+"Vehicle: <name>" ("Vehicle: auto" when cleared); `sheetplan_` reads it
+back, so the sheet and the planner agree either way (Version 14). A
+chosen vehicle too small for the day's party is flagged on the day, not
+silently swapped. The day row's pill names the chosen vehicle.
+

@@ -948,8 +948,12 @@
     days.forEach(function (day) {
       const heads = (day.travelling || ctx.cfg.party.size || 0);
       if (day.kind === "rest") { day.vehicles = 0; day.vehicle = veh; day.fleet = fleet; return; }
+      // A vehicle chosen by hand for the day (admin dropdown / sheet E2) wins.
+      const chosenName = (ctx.cfg.dayVehicle || {})[day.date];
+      const chosen = chosenName ? fleetList.find(function (v) { return v.name === chosenName; }) : null;
       const fits = small.find(function (v) { return heads <= v.seats * (v.count || 1); });
-      if (fits) { day.vehicle = fits; day.vehicles = Math.max(1, Math.ceil(heads / fits.seats)); day.smallVehicle = true; }
+      if (chosen) { day.vehicle = chosen; day.vehicles = Math.max(1, Math.min(chosen.count || 1, Math.ceil(heads / (chosen.seats || heads)))); day.smallVehicle = chosen !== veh; day.vehicleChosen = true; if (heads > (chosen.seats || 0) * (chosen.count || 1)) day.flags.push("Vehicle: " + chosen.name + " chosen for the day, but " + heads + " travel and it seats " + (chosen.seats || 0) * (chosen.count || 1) + "."); }
+      else if (fits) { day.vehicle = fits; day.vehicles = Math.max(1, Math.ceil(heads / fits.seats)); day.smallVehicle = true; }
       else { day.vehicle = veh; day.vehicles = Math.max(1, Math.min(fleet, Math.ceil(heads / perVehicle))); }
       day.fleet = fleet;
     });
@@ -1104,7 +1108,7 @@
   }
   function activeStays(cfg) { return (cfg.stays || []).filter(function (s) { return s.active !== false && s.lat != null; }); }
   function encodeShare(cfg) {
-    const slim = { v: cfg.version || 1, instrumentStore: cfg.instrumentStore || null, instrumentLead: cfg.instrumentLead, selectedStay: cfg.selectedStay, extras: cfg.extras || [], stops: cfg.stops || {}, mealPlan: cfg.mealPlan || {}, party: cfg.party, stays: cfg.stays, day: cfg.day, buffers: cfg.buffers, overrides: cfg.overrides, provider: cfg.provider, traffic: cfg.traffic, excludeStatuses: cfg.excludeStatuses, venueOverrides: cfg.venueOverrides || [] };
+    const slim = { v: cfg.version || 1, instrumentStore: cfg.instrumentStore || null, instrumentLead: cfg.instrumentLead, selectedStay: cfg.selectedStay, extras: cfg.extras || [], stops: cfg.stops || {}, mealPlan: cfg.mealPlan || {}, dayVehicle: cfg.dayVehicle || {}, party: cfg.party, stays: cfg.stays, day: cfg.day, buffers: cfg.buffers, overrides: cfg.overrides, provider: cfg.provider, traffic: cfg.traffic, excludeStatuses: cfg.excludeStatuses, venueOverrides: cfg.venueOverrides || [] };
     return btoa(unescape(encodeURIComponent(JSON.stringify(slim)))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
   }
   function decodeShare(s) {
@@ -1190,6 +1194,7 @@
     cfg.stops = sc.stops || {};
     cfg.mealStops = {};
     cfg.extras = sc.extras || [];
+    if (sc.dayVehicle) cfg.dayVehicle = Object.assign({}, cfg.dayVehicle || {}, sc.dayVehicle);
     if (sc.party) { cfg.party.artists = sc.party.artists; cfg.party.volunteers = sc.party.volunteers; cfg.party.size = (sc.party.artists || 0) + (sc.party.volunteers || 0); }
     if (sc.instrumentLead != null) cfg.instrumentLead = sc.instrumentLead;
     if (sc.instrumentStore) cfg.instrumentStore = sc.instrumentStore;
