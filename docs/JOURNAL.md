@@ -1662,3 +1662,30 @@ the stay on screen (public: the picker; admin: the main-plan radio) and
 hide it when that stay has no file yet. The picker now takes the URL's
 or the sheet's stay when its options are first created.
 
+## 23 Sep 2026 — Talks travel light; transport types with costing
+
+**Ask.** A talk needs no costume, make-up or instrument vehicle, and a
+car will do for the few who go. Transport types should be editable with
+their costs.
+
+**Done.**
+- Type defaults for Talk: set-up 0 (so no instrument vehicle), sound
+  check 10, no costume, no costume-off, wrap 10, and a default of 2
+  people (`buffers.Talk.artists`; `bufFor` now takes a per-type artists
+  default). The two Talk rows in the planner sheet were rewritten through
+  the backend as HH:MM — a bare "10" in those [hh]:mm cells reads as ten
+  days (14400 min), which the first attempt produced.
+- A second vehicle type, "Car (4 seats)", in `party.vehicles`. `planTour`
+  uses the smallest listed vehicle the day's party fits in; otherwise the
+  coach, as many as needed up to the fleet. The day row shows a "Car"
+  pill; the estimate prices each day by the vehicle used.
+- Settings → Transport: a table of vehicle types (name, seats, how many,
+  ₹/km, min ₹/day) with add/remove, and a live line breaking the estimate
+  down by type. Old drafts gain new shipped vehicle types by name.
+- Backend `DEFAULT_SEG.Talk` = [0,10,0,0,10] for rows built in future
+  (Version 13).
+
+Note: "Closing Day" (18 Oct) is categorised Talk in the schedule and now
+plans as 2 people in a car; if the whole company attends, set its
+artists on the day.
+

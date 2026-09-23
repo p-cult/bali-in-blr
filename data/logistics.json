@@ -11,9 +11,17 @@
         "count": 2,
         "ratePerKm": 26,
         "minPerDay": 3000
+      },
+      {
+        "name": "Car (4 seats)",
+        "seats": 4,
+        "count": 1,
+        "ratePerKm": 14,
+        "minPerDay": 1500,
+        "_why": "For days when only a few travel (talks): a car goes instead of a Tempo Traveller."
       }
     ],
-    "notes": "25 artists + 2 volunteers travel together in two tempo travellers. Instruments and sets go in a separate vehicle (not counted in artist time).",
+    "notes": "25 artists + 2 volunteers travel together in two tempo travellers; on days when only a few go (a talk), one car. Instruments and sets go in a separate vehicle (not counted in artist time).",
     "artists": 25,
     "volunteers": 2
   },
@@ -21,7 +29,11 @@
     {
       "id": "20th-mile",
       "name": "Jana Seva Vidya Kendra",
-      "aliases": ["20th Mile, Magadi Road", "Jana Seva", "Janaseva"],
+      "aliases": [
+        "20th Mile, Magadi Road",
+        "Jana Seva",
+        "Janaseva"
+      ],
       "address": "Jana Seva Trust campus, 20th Mile, Bengaluru–Magadi Road, Channenahalli 562130",
       "lat": 12.9778584,
       "lon": 77.4305523,
@@ -85,12 +97,14 @@
       "defaultDuration": 180
     },
     "Talk": {
-      "setup": 10,
+      "setup": 0,
       "soundcheck": 10,
-      "ready": 20,
-      "change": 5,
-      "after": 15,
-      "defaultDuration": 90
+      "ready": 0,
+      "change": 0,
+      "after": 10,
+      "artists": 2,
+      "defaultDuration": 90,
+      "_why": "A talk: speaker plus a demonstrator at most; nothing to bring (set-up 0 = no instrument vehicle), no costume or make-up."
     },
     "Internal": {
       "setup": 10,

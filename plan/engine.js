@@ -364,7 +364,7 @@
       // (talks, mask making…). Any "instruments at" time is then ignored.
       truck: setup > 0,
       note: o.note || "",
-      artists: o.artists != null && o.artists !== "" ? +o.artists : null,
+      artists: o.artists != null && o.artists !== "" ? +o.artists : (b.artists != null ? +b.artists : null),
       cast: o.cast || "",
       start: o.start != null ? +o.start : ev.start,
       end: o.end != null ? +o.end : ev.end,
@@ -939,14 +939,21 @@
     });
     // Vehicles per day follow who travels: a talk with one speaker needs
     // one vehicle, not the whole fleet; the estimate follows suit.
-    const veh = (ctx.cfg.party.vehicles || [])[0] || { ratePerKm: 0, minPerDay: 0, count: 1 };
+    // The first vehicle is the group's coach; any smaller one listed (a
+    // car) is used on its own when the day's party fits in it.
+    const fleetList = ctx.cfg.party.vehicles || [];
+    const veh = fleetList[0] || { ratePerKm: 0, minPerDay: 0, count: 1 };
     const fleet = veh.count || 1, perVehicle = veh.seats || 17;
+    const small = fleetList.slice(1).filter(function (v) { return (v.seats || 0) < perVehicle; }).sort(function (a, b) { return a.seats - b.seats; });
     days.forEach(function (day) {
       const heads = (day.travelling || ctx.cfg.party.size || 0);
-      day.vehicles = day.kind === "rest" ? 0 : Math.max(1, Math.min(fleet, Math.ceil(heads / perVehicle)));
+      if (day.kind === "rest") { day.vehicles = 0; day.vehicle = veh; day.fleet = fleet; return; }
+      const fits = small.find(function (v) { return heads <= v.seats * (v.count || 1); });
+      if (fits) { day.vehicle = fits; day.vehicles = Math.max(1, Math.ceil(heads / fits.seats)); day.smallVehicle = true; }
+      else { day.vehicle = veh; day.vehicles = Math.max(1, Math.min(fleet, Math.ceil(heads / perVehicle))); }
       day.fleet = fleet;
     });
-    t.vehicleCost = days.reduce(function (s, day) { return s + Math.max(day.km * (veh.ratePerKm || 0), day.kind === "rest" ? 0 : (veh.minPerDay || 0)) * day.vehicles; }, 0);
+    t.vehicleCost = days.reduce(function (s, day) { const v = day.vehicle || veh; return s + Math.max(day.km * (v.ratePerKm || 0), day.kind === "rest" ? 0 : (v.minPerDay || 0)) * day.vehicles; }, 0);
     const seats = (ctx.cfg.party.vehicles || []).reduce(function (n, v) { return n + (v.seats || 0) * (v.count || 1); }, 0);
     if (seats && seats < (ctx.cfg.party.size || 0)) ctx.warnings.push("The group is " + ctx.cfg.party.size + " people but the vehicles seat " + seats + " — add a vehicle or a bigger coach.");
     return { stay: stay, days: days, totals: t, party: ctx.cfg.party };

@@ -109,10 +109,6 @@
         <label class="field">Artists <input type="number" id="party-artists" min="0" /></label>
         <label class="field">Volunteers travelling <input type="number" id="party-volunteers" min="0" /></label>
         <label class="field">Group label <input type="text" id="party-label" /></label>
-        <label class="field">Seats per vehicle <input type="number" id="veh-seats" min="1" /></label>
-        <label class="field">Vehicle ₹/km <input type="number" id="veh-rate" min="0" /></label>
-        <label class="field">Vehicle min ₹/day <input type="number" id="veh-min" min="0" /></label>
-        <label class="field">Vehicles <input type="number" id="veh-count" min="1" /></label>
         <label class="field">Travel time source
           <select id="provider">
             <option value="bridge">Google Maps traffic (typical for the day, live near the day)</option>
@@ -121,6 +117,12 @@
           </select></label>
         <label class="field">Traffic safety margin <input type="number" id="safety" min="1" max="2" step="0.05" /></label>
       </div>
+    </div>
+    <div class="panel">
+      <h3>Transport</h3>
+      <p class="muted hint">The first row is the group's coach and sets how many go on a full day. Any smaller vehicle below it is used on its own on a day when everyone travelling fits in it (a talk with two people takes the car). The vehicle estimate is ₹/km × the day's km, or the day minimum, whichever is more, per vehicle used.</p>
+      <div class="buffers"><table id="vehicles"><thead><tr><th>Type</th><th>Seats</th><th>How many</th><th>₹ / km</th><th>Min ₹ / day</th><th></th></tr></thead><tbody></tbody></table></div>
+      <div class="bar" style="margin:.6rem 0 0"><button class="btn btn-sm" type="button" id="veh-add">Add a vehicle type</button><span class="status" id="veh-est"></span></div>
     </div>
     <div class="panel">
       <h3>Day rhythm</h3>
@@ -165,8 +167,8 @@
 </div>
 
 <script src="auth.js?v=7"></script>
-<script src="../plan/engine.js?v=30"></script>
-<script src="../plan/render.js?v=28"></script>
+<script src="../plan/engine.js?v=31"></script>
+<script src="../plan/render.js?v=29"></script>
 <script>
 (function () {
   "use strict";
@@ -196,12 +198,28 @@
   function persist() { try { localStorage.setItem(STORE, JSON.stringify(cfg())); } catch (e) { /* ignore */ } if (syncHook) syncHook(); }
   function stored() { try { return JSON.parse(localStorage.getItem(STORE) || "null"); } catch (e) { return null; } }
 
+  // Transport table (Settings): one row per vehicle type; the first is the coach.
+  function renderVehicles() {
+    const list = cfg().party.vehicles || (cfg().party.vehicles = []);
+    $("vehicles").querySelector("tbody").innerHTML = list.map(function (v, i) {
+      const f = function (k, val, type, extra) { return "<td><input type='" + (type || "number") + "' data-v='" + k + "' value='" + L.esc(val) + "' " + (extra || "") + "></td>"; };
+      return "<tr>" + f("name", v.name || "", "text", "style='width:12rem'") + f("seats", v.seats || 0, "number", "min='1'") + f("count", v.count || 1, "number", "min='1'") +
+        f("rate", v.ratePerKm || 0, "number", "min='0'") + f("min", v.minPerDay || 0, "number", "min='0'") +
+        "<td>" + (i === 0 ? "<span class='pill'>coach</span>" : "<button class='btn btn-sm' type='button' data-vrm='" + i + "'>remove</button>") + "</td></tr>";
+    }).join("");
+  }
+  function renderVehicleEstimate(plan) {
+    if (!plan || !plan.days) return;
+    const by = {};
+    plan.days.forEach(function (d) { if (!d.vehicles || !d.vehicle) return; const k = d.vehicle.name; by[k] = by[k] || { days: 0, cost: 0 }; by[k].days++; const v = d.vehicle; by[k].cost += Math.max(d.km * (v.ratePerKm || 0), v.minPerDay || 0) * d.vehicles; });
+    $("veh-est").textContent = Object.keys(by).map(function (k) { return k + ": " + by[k].days + " day" + (by[k].days > 1 ? "s" : "") + " · ₹" + Math.round(by[k].cost).toLocaleString("en-IN"); }).join(" · ") + (Object.keys(by).length ? " · total ₹" + Math.round(plan.totals.vehicleCost).toLocaleString("en-IN") : "");
+  }
+
   /* ---- forms ---- */
   function bindForms() {
     const c = cfg();
     $("party-artists").value = c.party.artists != null ? c.party.artists : c.party.size; $("party-volunteers").value = c.party.volunteers || 0; $("party-label").value = c.party.label;
-    const v = c.party.vehicles[0];
-    $("veh-seats").value = v.seats || 0; $("veh-rate").value = v.ratePerKm; $("veh-min").value = v.minPerDay; $("veh-count").value = v.count;
+    renderVehicles();
     $("provider").value = c.provider; $("safety").value = c.traffic.safety;
     $("day-grid").innerHTML = DAY_FIELDS.map(function (f) {
       const val = c.day[f[0]]; const isTime = typeof val === "string";
@@ -228,8 +246,11 @@
     const c = cfg();
     c.party.artists = +$("party-artists").value || 0; c.party.volunteers = +$("party-volunteers").value || 0;
     c.party.size = c.party.artists + c.party.volunteers || 1; c.party.label = $("party-label").value;
-    const v = c.party.vehicles[0];
-    v.seats = +$("veh-seats").value || 0; v.ratePerKm = +$("veh-rate").value || 0; v.minPerDay = +$("veh-min").value || 0; v.count = +$("veh-count").value || 1;
+    document.querySelectorAll("#vehicles tbody tr").forEach(function (tr, i) {
+      const v = c.party.vehicles[i]; if (!v) return;
+      const g = function (k) { return tr.querySelector("[data-v='" + k + "']"); };
+      v.name = g("name").value.trim() || v.name; v.seats = +g("seats").value || 0; v.count = +g("count").value || 1; v.ratePerKm = +g("rate").value || 0; v.minPerDay = +g("min").value || 0;
+    });
     c.provider = $("provider").value; c.traffic.safety = +$("safety").value || 1;
     document.querySelectorAll("[data-day]").forEach(function (i) {
       if (i.classList.contains("dur")) c.day[i.dataset.day] = (+i.querySelector("[data-part=h]").value || 0) * 60 + (+i.querySelector("[data-part=m]").value || 0);
@@ -327,6 +348,7 @@
       const plan = rows.find(function (r) { return r.stay === stay; }).plan;
       $("plan-stay").textContent = stay.name;
       $("totals").innerHTML = R.totalsCard(plan, { internal: true });
+      renderVehicleEstimate(plan);
       $("days").innerHTML = R.tour(plan, { editable: true, eventEditor: true, cfg: c });
       open.forEach(function (d) { const el = document.querySelector(".day[data-date='" + d + "']"); if (el) el.open = true; });
       $("share-url").textContent = shareUrl(stay);
@@ -364,7 +386,10 @@
 
   /* ---- events ---- */
   function wire() {
-    document.querySelectorAll("#party-artists,#party-volunteers,#party-label,#veh-seats,#veh-rate,#veh-min,#veh-count,#safety").forEach(function (i) { i.addEventListener("input", function () { scheduleRebuild(false); }); });
+    document.querySelectorAll("#party-artists,#party-volunteers,#party-label,#safety").forEach(function (i) { i.addEventListener("input", function () { scheduleRebuild(false); }); });
+    $("vehicles").addEventListener("input", function () { scheduleRebuild(false); });
+    $("vehicles").addEventListener("click", function (e) { const b = e.target.closest("[data-vrm]"); if (!b) return; readForms(); cfg().party.vehicles.splice(+b.dataset.vrm, 1); renderVehicles(); scheduleRebuild(false); });
+    $("veh-add").addEventListener("click", function () { readForms(); cfg().party.vehicles.push({ name: "Car (4 seats)", seats: 4, count: 1, ratePerKm: 14, minPerDay: 1500 }); renderVehicles(); scheduleRebuild(false); });
     $("provider").addEventListener("change", function () { scheduleRebuild(true); });
     $("day-grid").addEventListener("input", function () { scheduleRebuild(false); });
     $("day-grid").addEventListener("change", function () { scheduleRebuild(false); });
@@ -719,6 +744,8 @@
       // A draft keeps its own copy of the stays; names, addresses and aliases
       // follow the shipped defaults by id so a rename lands everywhere.
       (data.cfg.stays || []).forEach(function (s) { const d = (defaults.stays || []).find(function (x) { return x.id === s.id; }); if (d) { s.name = d.name; s.address = d.address; s.aliases = d.aliases; } });
+      // Vehicle types shipped later than a draft are added to it (by name).
+      (defaults.party.vehicles || []).forEach(function (v) { if (!(data.cfg.party.vehicles || []).some(function (x) { return x.name === v.name; })) data.cfg.party.vehicles.push(L.clone(v)); });
 
       const ex = data.cfg.excludeStatuses || [];
       data.events = data.events.filter(function (e) { return ex.indexOf((e.status || "").toLowerCase()) === -1; });

@@ -257,7 +257,7 @@ var EVENT_HEADERS = ["#", "Type", "Title", "Venue", "Start", "End", "Status", "A
 var ADDON_HEADERS = ["#", "Purpose", "Location (Maps link or address)", "Start", "End", "Include?", "Note"];
 var PURPOSES = ["Breakfast", "Lunch", "Dinner", "Sightseeing", "Shopping", "Engagement", "Other"];
 var ADDON_ROWS = 6;
-var DEFAULT_SEG = { Performance: [30, 30, 60, 20, 30], Workshop: [10, 10, 15, 5, 15], Talk: [10, 10, 20, 5, 15], Internal: [10, 0, 15, 10, 10], default: [15, 10, 20, 5, 15] };
+var DEFAULT_SEG = { Performance: [30, 30, 60, 20, 30], Workshop: [10, 10, 15, 5, 15], Talk: [0, 10, 0, 0, 10], Internal: [10, 0, 15, 10, 10], default: [15, 10, 20, 5, 15] };
 var SEED_ENGAGEMENTS = [{ date: "2026-10-02", title: "Photoshoot", venue: "Mandala Cultural Centre", start: "07:00", end: "14:00" }];
 var STAYS = ["Jana Seva Vidya Kendra", "Citadel Sarovar Portico"];
 

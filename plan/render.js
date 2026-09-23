@@ -33,7 +33,8 @@
     if (day.kind === "outstation") return "<span class='ds'>" + evs + pill("Out of town", "far") + sep + t("arrive", day.wake) + "<span class='ds-muted'>after the overnight drive</span>" + arrow + t("night drive home", day.sleep) + sep + road() + "</span>";
     if (day.nightDeparture) return "<span class='ds'>" + evs + pill("Overnight coach", "far") + sep + t("leave", day.leave) + arrow + t("coach to " + day.nightTo, day.sleep) + (day.back == null ? "<span class='ds-muted'>straight from the venue</span>" : "") + sep + road() + "</span>";
     const who = (day.travelling ? "<span class='ds-muted'>" + day.travelling + (day.travelling === 1 ? " artist" : " artists") + "</span>" : "") +
-      (day.vehicles && day.fleet > 1 && day.vehicles < day.fleet ? pill(day.vehicles + " vehicle" + (day.vehicles > 1 ? "s" : ""), "veh") : "");
+      (day.smallVehicle ? pill((day.vehicles > 1 ? day.vehicles + " × " : "") + String(day.vehicle.name).replace(/\s*\(.*\)$/, ""), "veh") :
+        day.vehicles && day.fleet > 1 && day.vehicles < day.fleet ? pill(day.vehicles + " vehicle" + (day.vehicles > 1 ? "s" : ""), "veh") : "");
     return "<span class='ds'>" + evs + who + sep + t("leave", day.leave) + arrow + t("back", day.back) + sep + road() + "</span>";
   }
 
@@ -147,7 +148,8 @@
     const party = plan.party || {};
     const v0 = party.vehicles && party.vehicles[0];
     const who = party.artists != null ? party.artists + " artists + " + (party.volunteers || 0) + " volunteers" : (party.size || "—") + " people";
-    const veh = v0 ? (v0.count || 1) + " × " + esc(v0.name) + (v0.seats && !/seat/i.test(v0.name) ? " (" + v0.seats + " seats)" : "") : "";
+    const others = (party.vehicles || []).slice(1).map(function (v) { return (v.count > 1 ? v.count + " × " : "") + esc(v.name) + " on small days"; });
+    const veh = v0 ? (v0.count || 1) + " × " + esc(v0.name) + (v0.seats && !/seat/i.test(v0.name) ? " (" + v0.seats + " seats)" : "") + (others.length ? " · " + others.join(" · ") : "") : "";
     const flags = [];
     if (t.redDays) flags.push("<span class='chip chip-red' title='Days where something does not fit: open the day to see what'>" + t.redDays + " red-flag day" + (t.redDays > 1 ? "s" : "") + "</span>");
     if (t.earlyCalls) flags.push("<span class='chip chip-warn' title='Days that start before 6 am'>" + t.earlyCalls + " early call" + (t.earlyCalls > 1 ? "s" : "") + " · from " + hm(t.earliestWake) + "</span>");
