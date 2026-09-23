@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@125,600;125,700;125,900&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="../plan/plan.css?v=18" />
+<link rel="stylesheet" href="../plan/plan.css?v=19" />
 </head>
 <body>
 <div class="wrap" id="admin-app" hidden>
@@ -159,7 +159,7 @@
 
 <script src="auth.js?v=7"></script>
 <script src="../plan/engine.js?v=25"></script>
-<script src="../plan/render.js?v=20"></script>
+<script src="../plan/render.js?v=21"></script>
 <script>
 (function () {
   "use strict";
@@ -448,6 +448,7 @@
     });
     $("days").addEventListener("keydown", function (e) {
       if (e.key === "Enter" && e.target.closest(".addon-add")) { e.preventDefault(); e.target.closest(".addon-add").querySelector("[data-stopadd]").click(); }
+      if (e.key === "Escape" && e.target.closest(".addon-add")) { e.target.closest(".addons").querySelector("[data-stopcancel]").click(); }
     });
 
     // Meal lines: time / length / note edits, "go there", reset, back to default.
@@ -519,7 +520,12 @@
     // In-day editors: reveal on demand.
     $("days").addEventListener("click", function (e) {
       if (e.target.closest("[data-mealtoggle]")) { e.target.closest(".tl-row").classList.toggle("editing"); }
-      if (e.target.closest("[data-addontoggle]")) { e.target.closest(".addons").classList.add("adding"); e.target.closest(".addons").querySelector("[data-k='where']").focus(); }
+      if (e.target.closest("[data-addontoggle]")) {
+        const box = e.target.closest(".addons"); const on = box.classList.toggle("adding");
+        e.target.closest("[data-addontoggle]").textContent = on ? "Close" : "+ Add a stop (meal out, sightseeing, shopping…)";
+        if (on) box.querySelector("[data-k='where']").focus();
+      }
+      if (e.target.closest("[data-stopcancel]")) { e.target.closest(".addons").querySelector("[data-addontoggle]").click(); }
     });
 
     // Per-event overrides inside the day cards.

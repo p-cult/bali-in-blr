@@ -63,7 +63,8 @@ section{margin:0 0 1.6rem}
 .addons .addon-add{display:none}
 .addons.adding .addon-add{display:grid}
 .addon-toggle{font:inherit;font-size:.75rem;color:var(--accent-2);background:none;border:0;padding:0;cursor:pointer}
-.addons.adding .addon-toggle{display:none}
+.addons.adding .addon-toggle{color:var(--muted)}
+.btn-ghost{border-color:transparent;color:var(--muted)}
 
 /* panels & forms */
 .panel{background:var(--bg3);border:1px solid var(--line);border-radius:var(--radius);padding:1.1rem 1.2rem;margin:0 0 1rem}
@@ -175,7 +176,7 @@ input[type=time]::-webkit-calendar-picker-indicator,input[type=date]::-webkit-ca
 .addon-row{display:grid;grid-template-columns:auto 1fr auto auto;gap:.6rem;align-items:center;font-size:.82rem}
 .addon-name a{color:var(--ink)}.addon-name small{color:var(--muted2)}
 .addon-when{font-variant-numeric:tabular-nums;color:var(--accent-2);font-size:.78rem}
-.addon-add{display:grid;grid-template-columns:auto 1fr auto auto auto;gap:.4rem;align-items:center;margin-top:.2rem}
+.addon-add{display:grid;grid-template-columns:auto 1fr auto auto auto auto;gap:.4rem;align-items:center;margin-top:.2rem}
 .addon-add select,.addon-add input{background:var(--bg3);border:1px solid var(--line2);border-radius:5px;color:var(--ink);font:inherit;font-size:.8rem;padding:.3rem .5rem;min-width:0}
 .tl-meal .tl-body b,.tl-visit .tl-body b{color:var(--accent-2)}
 .tl-visit{border-left:3px solid var(--copper);padding-left:.6rem;margin-left:-.75rem}

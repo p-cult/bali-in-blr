@@ -82,7 +82,8 @@
       "<div class='addon-add'><select data-k='purpose'>" + opts + "</select>" +
       "<input type='text' data-k='where' placeholder='Google Maps link, address or lat, lon'>" +
       "<input type='time' data-k='start' title='Start (optional)'><input type='time' data-k='end' title='End (optional)'>" +
-      "<button class='btn btn-sm' type='button' data-stopadd>Add</button></div></div>";
+      "<button class='btn btn-sm' type='button' data-stopadd>Add</button>" +
+      "<button class='btn btn-sm btn-ghost' type='button' data-stopcancel title='Close without adding'>Cancel</button></div></div>";
   }
 
   function dayCard(day, opts) {
