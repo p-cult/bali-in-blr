@@ -1808,3 +1808,9 @@ flights and joiners maintained in the admin and carried through the
 planner sheet; backend Version 15; nightly job renders PDFs and
 workbooks per stay; the internal calendar poster at /plan/calendar.pdf.
 
+**Re-checked (23 Sep, ~2 pm).** Public page: 20 days, loaded with Google
+traffic in ~8 s, no warnings, PDF stamp 1:26 pm. Admin: same code,
+priced in ~20 s, write-back running, vehicle estimate Tempo Traveller
+15 days ₹1,26,486 + Car 2 days ₹3,000 = ₹1,29,486. No change since the
+previous entry; nothing outstanding.
+
