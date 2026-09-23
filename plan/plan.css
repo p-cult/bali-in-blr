@@ -57,7 +57,8 @@ section{margin:0 0 1.6rem}
 .settings h3{font-family:var(--display);font-weight:700;text-transform:uppercase;font-size:.8rem;letter-spacing:.08em;margin:0 0 .6rem;color:var(--muted)}
 /* in-day editors stay out of the way until asked for */
 .tl-row .meal-edit{display:none}
-.tl-row.editing .meal-edit{display:flex}
+.tl-row.editing .meal-edit{display:flex;align-items:center}
+.tl-row.editing .meal-toggle{color:var(--ink);border-color:var(--ink)}
 .meal-toggle{font:inherit;font-size:.72rem;color:var(--muted2);background:none;border:1px solid var(--line);border-radius:99px;padding:.05rem .5rem;margin-left:.5rem;cursor:pointer;vertical-align:middle}
 .meal-toggle:hover{color:var(--ink);border-color:var(--ink)}
 .addons .addon-add{display:none}

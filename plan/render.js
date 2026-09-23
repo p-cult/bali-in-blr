@@ -43,13 +43,15 @@
     const len = b.to != null ? b.to - b.from : 45;
     let html = "<span class='tl-edit meal-edit' data-meal='" + esc(b.meal) + "' data-date='" + esc(date) + "'>";
     if (b.out) {
-      html += "<span class='muted'>at " + esc(b.at) + "</span><button class='btn btn-sm' type='button' data-mealdefault>Back to default (where they are)</button>";
+      html += "<span class='muted'>at " + esc(b.at) + "</span><button class='btn btn-sm' type='button' data-mealdefault>Back to default (where they are)</button>" +
+        "<button class='btn btn-sm btn-ghost' type='button' data-mealdone>Done</button>";
     } else {
       html += "<label>Time <input type='time' data-k='start' value='" + hhmm(b.from) + "'></label>" +
         "<label>Length <input type='number' min='10' step='5' data-k='minutes' value='" + Math.round(len) + "'> min</label>" +
         "<label>Note <input type='text' data-k='note' value='" + esc(o.note || "") + "' placeholder='e.g. packed, veg only'></label>" +
-        "<label>Elsewhere <input type='text' data-k='where' placeholder='Google Maps link, address or lat, lon'></label><button class='btn btn-sm' type='button' data-mealgo>Go there</button>" +
-        (b.edited ? "<button class='btn btn-sm' type='button' data-mealreset>Reset</button>" : "");
+        "<label>Move elsewhere <input type='text' data-k='where' placeholder='Google Maps link, address or lat, lon'></label><button class='btn btn-sm' type='button' data-mealgo>Move here</button>" +
+        (b.edited ? "<button class='btn btn-sm' type='button' data-mealreset>Reset</button>" : "") +
+        "<button class='btn btn-sm btn-ghost' type='button' data-mealdone>Done</button>";
     }
     return html + "</span>";
   }

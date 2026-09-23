@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@125,600;125,700;125,900&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="../plan/plan.css?v=20" />
+<link rel="stylesheet" href="../plan/plan.css?v=21" />
 </head>
 <body>
 <div class="wrap" id="admin-app" hidden>
@@ -159,7 +159,7 @@
 
 <script src="auth.js?v=7"></script>
 <script src="../plan/engine.js?v=25"></script>
-<script src="../plan/render.js?v=21"></script>
+<script src="../plan/render.js?v=22"></script>
 <script>
 (function () {
   "use strict";
@@ -463,6 +463,7 @@
     });
     $("days").addEventListener("click", async function (e) {
       const box = e.target.closest(".meal-edit"); if (!box) return;
+      if ("mealdone" in e.target.dataset) { box.closest(".tl-row").classList.remove("editing"); return; }
       const date = box.dataset.date, meal = box.dataset.meal;
       const st = cfg().stops = cfg().stops || {};
       if ("mealdefault" in e.target.dataset) {
@@ -489,6 +490,7 @@
     });
     $("days").addEventListener("keydown", function (e) {
       if (e.key === "Enter" && e.target.dataset.k === "where" && e.target.closest(".meal-edit")) { e.preventDefault(); e.target.closest(".meal-edit").querySelector("[data-mealgo]").click(); }
+      if (e.key === "Escape" && e.target.closest(".meal-edit")) { e.target.closest(".tl-row").classList.remove("editing"); }
     });
 
     $("sh-pick").addEventListener("change", fillShowForm);
@@ -519,7 +521,7 @@
 
     // In-day editors: reveal on demand.
     $("days").addEventListener("click", function (e) {
-      if (e.target.closest("[data-mealtoggle]")) { e.target.closest(".tl-row").classList.toggle("editing"); }
+      if (e.target.closest("[data-mealtoggle]")) { const on = e.target.closest(".tl-row").classList.toggle("editing"); e.target.closest("[data-mealtoggle]").textContent = on ? "close" : "edit"; }
       if (e.target.closest("[data-addontoggle]")) {
         const box = e.target.closest(".addons"); box.classList.add("adding");
         box.querySelector("[data-k='where']").focus();
