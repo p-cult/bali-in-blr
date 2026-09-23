@@ -112,28 +112,28 @@
   }
 
   // opts.internal shows money (vehicle estimate); the public page never does.
+  // One line that says who is travelling, how much road there is, and what
+  // needs a look — nothing else. Anything zero is left out.
   function totalsCard(plan, opts) {
     const t = plan.totals; opts = opts || {};
     if (!plan.days.length) return "";
     const party = plan.party || {};
-    const seats = (party.vehicles || []).reduce(function (n, v) { return n + (v.seats || 0) * (v.count || 1); }, 0);
-    const veh = party.vehicles && party.vehicles[0] ? " · " + (party.vehicles[0].count || 1) + " × " + esc(party.vehicles[0].name) : "";
-    const whoBig = party.artists != null ? party.artists + " + " + (party.volunteers || 0) : String(party.size || "—");
-    const whoSmall = party.artists != null ? "artists + volunteers" + veh : "people" + veh;
-    return "<div class='totals'>" +
-      "<div class='stat stat-wide'><span class='stat-k'>Travelling</span><span class='stat-v'>" + esc(whoBig) + " <small>" + whoSmall + "</small></span></div>" +
-      stat("Days", plan.days.length + " (" + t.showDays + " with events)") +
-      stat("Road time", dur(t.travelMin)) +
-      stat("Distance", Math.round(t.km) + " km") +
-      stat("Earliest wake", hm(t.earliestWake)) +
-      stat("Latest lights out", hm(t.latestSleep)) +
-      stat("Early calls", t.earlyCalls) +
-      stat("Red-flag days", t.redDays || 0) +
-      stat("Holds in town", t.holdsInTown) +
-      (opts.internal ? stat("Vehicle est.", "₹" + Math.round(t.vehicleCost).toLocaleString("en-IN")) : "") +
+    const v0 = party.vehicles && party.vehicles[0];
+    const who = party.artists != null ? party.artists + " artists + " + (party.volunteers || 0) + " volunteers" : (party.size || "—") + " people";
+    const veh = v0 ? (v0.count || 1) + " × " + esc(v0.name) + (v0.seats && !/seat/i.test(v0.name) ? " (" + v0.seats + " seats)" : "") : "";
+    const flags = [];
+    if (t.redDays) flags.push("<span class='chip chip-red' title='Days where something does not fit: open the day to see what'>" + t.redDays + " red-flag day" + (t.redDays > 1 ? "s" : "") + "</span>");
+    if (t.earlyCalls) flags.push("<span class='chip chip-warn' title='Days that start before 6 am'>" + t.earlyCalls + " early call" + (t.earlyCalls > 1 ? "s" : "") + " · from " + hm(t.earliestWake) + "</span>");
+    if (t.latestSleep > 24 * 60) flags.push("<span class='chip chip-warn' title='Latest the group gets to bed'>late night · lights out " + hm(t.latestSleep) + "</span>");
+    if (t.holdsInTown) flags.push("<span class='chip' title='Gaps spent in town rather than going back to the stay'>" + t.holdsInTown + " hold" + (t.holdsInTown > 1 ? "s" : "") + " in town</span>");
+    if (!flags.length) flags.push("<span class='chip chip-ok'>nothing to flag</span>");
+    return "<div class='glance'>" +
+      "<div class='glance-g'><span class='glance-k'>Travelling</span><b>" + esc(who) + "</b>" + (veh ? "<small>" + veh + "</small>" : "") + "</div>" +
+      "<div class='glance-g'><span class='glance-k'>On the road</span><b>" + dur(t.travelMin) + " over " + t.showDays + " show days</b><small>" + Math.round(t.km) + " km · " + plan.days.length + " days in all" +
+        (opts.internal ? " · vehicle estimate ₹" + Math.round(t.vehicleCost).toLocaleString("en-IN") : "") + "</small></div>" +
+      "<div class='glance-g glance-flags'><span class='glance-k'>Needs a look</span><span class='chips'>" + flags.join("") + "</span></div>" +
       "</div>";
   }
-  function stat(k, v) { return "<div class='stat'><span class='stat-k'>" + esc(k) + "</span><span class='stat-v'>" + esc(v) + "</span></div>"; }
 
   function compareTable(rows) {
     if (rows.length < 2) return "<p class='muted'>Add a second stay option to compare.</p>";

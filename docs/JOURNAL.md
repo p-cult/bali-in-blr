@@ -1557,3 +1557,26 @@ Move here", and the public footer credits Param Foundation | Culture.
 the device, then refine; the front-door latency is Google's and cannot be
 tuned away, only paid fewer times.
 
+## 23 Sep 2026 — Planner admin: tabs, one toolbar, one summary strip
+
+**Problem.** The admin planner had grown into a wall: ten statistic tiles,
+a jump nav, two button bars, and five stacked sections, all visible at
+once. Nothing said why it was there. It intimidated on first sight.
+
+**Done.**
+- One toolbar with three actions (Sync everything, Open the Google Sheet,
+  Print / PDF) beside a short status. "Reset my draft" moved into
+  Settings under "Start over".
+- Five tabs — Plan, Shows, Stays, Settings, Share — one on screen at a
+  time; the last used is remembered. Each opens with a one-line lede that
+  says what it is for. Printing always prints the Plan tab.
+- The tile wall became a three-part strip on both pages: who is
+  travelling, how much road there is, and "needs a look" chips that
+  appear only when there is something to flag (red-flag days, early
+  calls, late nights, holds in town). Earliest wake and lights-out no
+  longer stand alone as numbers; they ride on the chips that need them.
+  The vehicle estimate is one muted clause, admin only.
+
+**Lesson.** Show a number only when it changes what the reader does; the
+rest belongs inside the day it describes.
+

@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@125,600;125,700;125,900&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="../plan/plan.css?v=21" />
+<link rel="stylesheet" href="../plan/plan.css?v=22" />
 </head>
 <body>
 <div class="wrap" id="admin-app" hidden>
@@ -18,7 +18,7 @@
   </div>
 
   <h1>Artist logistics planner</h1>
-  <p class="sub">The touring company's day-by-day plan, built from the live festival schedule, the planner sheet and Google traffic. Anything you change here re-plans at once and is written to the sheet.</p>
+  <p class="sub">The touring company's day by day, built from the festival schedule, the planner sheet and Google traffic. Whatever you change here re-plans at once and goes to the sheet.</p>
 
   <div class="loader no-print" id="loader" role="status" aria-live="polite">
     <span class="loader-spin" aria-hidden="true"></span>
@@ -27,21 +27,23 @@
   </div>
   <div class="warnings" id="warnings"></div>
 
-  <div class="bar no-print">
+  <div class="toolbar no-print">
     <span class="status" id="status">Loading…</span>
-    <span class="grow"></span>
-    <button class="btn btn-sm btn-primary" type="button" id="sync" title="Re-pull the Event List into the sheet, read the sheet's inputs, re-price every leg with Google traffic, write the plan back">Sync everything</button>
+    <button class="btn btn-sm btn-primary" type="button" id="sync" title="Pull the latest events and sheet inputs, re-price with Google traffic, write the plan back">Sync everything</button>
     <a class="btn btn-sm" id="sheet-link" href="#" target="_blank" rel="noopener" hidden>Open the Google Sheet</a>
     <button class="btn btn-sm" type="button" id="print">Print / PDF</button>
-    <button class="btn btn-sm" type="button" id="reset" title="Discard this browser's draft edits and reload the shipped defaults">Reset my draft</button>
     <button type="button" id="traffic" hidden></button><button type="button" id="reload-sheet" hidden></button><button type="button" id="repull-sheet" hidden></button><button type="button" id="save" hidden></button><button type="button" id="share" hidden></button>
   </div>
 
-  <nav class="jump no-print" aria-label="Sections">
-    <a href="#sec-plan">Plan</a><a href="#sec-show">Edit a show</a><a href="#sec-stays">Stays &amp; comparison</a><a href="#sec-settings">Settings</a><a href="#sec-share">Share</a>
+  <nav class="tabs no-print" role="tablist" aria-label="Planner sections">
+    <button class="tab on" type="button" role="tab" data-tab="sec-plan">Plan</button>
+    <button class="tab" type="button" role="tab" data-tab="sec-show">Shows</button>
+    <button class="tab" type="button" role="tab" data-tab="sec-stays">Stays</button>
+    <button class="tab" type="button" role="tab" data-tab="sec-settings">Settings</button>
+    <button class="tab" type="button" role="tab" data-tab="sec-share">Share</button>
   </nav>
 
-  <section id="sec-plan">
+  <section id="sec-plan" class="tab-body">
     <div class="sec-head">
       <h2>Plan · <span id="plan-stay">—</span></h2>
       <div class="bar no-print" style="margin:0">
@@ -49,14 +51,14 @@
         <button class="btn btn-sm" type="button" id="close-all">Collapse all</button>
       </div>
     </div>
-    <p class="muted hint no-print">Open a day to see it minute by minute. Inside a day you can move a meal, send it somewhere, or add a stop; the plan and the sheet follow.</p>
     <div id="totals"></div>
+    <p class="lede no-print">Open a day to see it minute by minute. Inside a day you can edit a meal, send it somewhere else, or add a stop. The plan re-times itself and the sheet follows.</p>
     <div id="days"></div>
   </section>
 
-  <section id="sec-show" class="panel no-print" >
-    <h2 style="margin-top:0">Edit a show</h2>
-    <p class="muted hint">Pick a show, set who performs and how long each step takes, then Submit. It replaces the type defaults for that show only and recalibrates everything.</p>
+  <section id="sec-show" class="tab-body panel no-print" hidden>
+    <h2>Shows</h2>
+    <p class="lede">Every show starts from its type's defaults. Pick one here to set who performs and how long set-up, sound check and costume take for that show alone, then submit. The day re-times around it.</p>
     <div class="show-form">
       <label class="field span-all">Show <select id="sh-pick"></select></label>
       <label class="field">Artists <input type="number" id="sh-artists" min="0" /></label>
@@ -83,9 +85,9 @@
     </div>
   </section>
 
-  <section id="sec-stays" class="panel no-print">
-    <h2 style="margin-top:0">Stays &amp; comparison</h2>
-    <p class="muted hint">“Main plan” is the stay used day by day, on the public page and in the sheet. Tick “compare” to plan another stay in full and see it side by side.</p>
+  <section id="sec-stays" class="tab-body panel no-print" hidden>
+    <h2>Stays</h2>
+    <p class="lede">The main stay is what the plan, the public page and the sheet use. Tick “compare” on another stay to plan the whole tour from there too and see the two side by side.</p>
     <div class="stays" id="stays"></div>
     <button class="btn btn-sm" type="button" id="restore-stays" hidden>Restore default stays</button>
     <div class="addstay">
@@ -97,54 +99,58 @@
     <div class="cmp-wrap" id="compare-days"></div>
   </section>
 
-  <section id="sec-settings" class="no-print">
-    <details class="settings">
-      <summary><h2>Settings</h2><span class="muted hint">group and vehicles · day rhythm · travel source · type defaults · venues</span></summary>
-      <div class="panel">
-        <h3>Group &amp; vehicles</h3>
-    <div class="grid">
-      <label class="field">Artists <input type="number" id="party-artists" min="0" /></label>
-      <label class="field">Volunteers travelling <input type="number" id="party-volunteers" min="0" /></label>
-      <label class="field">Group label <input type="text" id="party-label" /></label>
-      <label class="field">Seats per vehicle <input type="number" id="veh-seats" min="1" /></label>
-      <label class="field">Vehicle ₹/km <input type="number" id="veh-rate" min="0" /></label>
-      <label class="field">Vehicle min ₹/day <input type="number" id="veh-min" min="0" /></label>
-      <label class="field">Vehicles <input type="number" id="veh-count" min="1" /></label>
-      <label class="field">Travel time source
-        <select id="provider">
-          <option value="bridge">Google Maps traffic (typical for the day, live near the day)</option>
-          <option value="osrm">Road routing + Bengaluru traffic profile</option>
-          <option value="haversine">Straight-line estimate (offline)</option>
-        </select></label>
-      <label class="field">Traffic safety margin <input type="number" id="safety" min="1" max="2" step="0.05" /></label>
+  <section id="sec-settings" class="tab-body no-print" hidden>
+    <h2>Settings</h2>
+    <p class="lede">Things that rarely change. Each one re-plans the tour as you edit it.</p>
+    <div class="panel">
+      <h3>Group &amp; vehicles</h3>
+      <div class="grid">
+        <label class="field">Artists <input type="number" id="party-artists" min="0" /></label>
+        <label class="field">Volunteers travelling <input type="number" id="party-volunteers" min="0" /></label>
+        <label class="field">Group label <input type="text" id="party-label" /></label>
+        <label class="field">Seats per vehicle <input type="number" id="veh-seats" min="1" /></label>
+        <label class="field">Vehicle ₹/km <input type="number" id="veh-rate" min="0" /></label>
+        <label class="field">Vehicle min ₹/day <input type="number" id="veh-min" min="0" /></label>
+        <label class="field">Vehicles <input type="number" id="veh-count" min="1" /></label>
+        <label class="field">Travel time source
+          <select id="provider">
+            <option value="bridge">Google Maps traffic (typical for the day, live near the day)</option>
+            <option value="osrm">Road routing + Bengaluru traffic profile</option>
+            <option value="haversine">Straight-line estimate (offline)</option>
+          </select></label>
+        <label class="field">Traffic safety margin <input type="number" id="safety" min="1" max="2" step="0.05" /></label>
+      </div>
     </div>
-      </div>
-      <div class="panel">
-        <h3>Day rhythm</h3>
-        <p class="muted hint">How the day is built around the programme: durations as HH : MM, clock times where a time of day is meant.</p>
-    <div class="grid" id="day-grid"></div>
-      </div>
-      <div class="panel">
-        <h3>Type defaults</h3>
-        <p class="muted hint">What a show uses until it has its own settings (minutes).</p>
-        <div class="buffers"><table id="buffers"></table></div>
-      </div>
-      <div class="panel">
-        <h3>Venues on the schedule</h3>
-        <p class="muted hint">Where each venue on the sheet has been placed. Pin a better position if one is only locality-precise.</p>
-    <div class="venues" id="venues"></div>
-    <div class="addstay">
-      <label class="field">Venue (as in the sheet) <input type="text" id="fix-venue" placeholder="e.g. Jama The Studio" /></label>
-      <label class="field">Correct position: address, maps link, or “lat, lon” <input type="text" id="fix-pos" /></label>
-      <button class="btn" type="button" id="fix-btn">Pin position</button>
+    <div class="panel">
+      <h3>Day rhythm</h3>
+      <p class="muted hint">How a day is built around the programme: how long breakfast takes, when the earliest wake can be, and so on. Durations are HH : MM; clock times where a time of day is meant.</p>
+      <div class="grid" id="day-grid"></div>
     </div>
+    <div class="panel">
+      <h3>Type defaults</h3>
+      <p class="muted hint">What a show uses until it has its own settings on the Shows tab (minutes).</p>
+      <div class="buffers"><table id="buffers"></table></div>
+    </div>
+    <div class="panel">
+      <h3>Venues on the schedule</h3>
+      <p class="muted hint">Where each venue on the sheet has been placed on the map. Pin a better position if one is only locality-precise.</p>
+      <div class="venues" id="venues"></div>
+      <div class="addstay">
+        <label class="field">Venue (as in the sheet) <input type="text" id="fix-venue" placeholder="e.g. Jama The Studio" /></label>
+        <label class="field">Correct position: address, maps link, or “lat, lon” <input type="text" id="fix-pos" /></label>
+        <button class="btn" type="button" id="fix-btn">Pin position</button>
       </div>
-    </details>
+    </div>
+    <div class="panel">
+      <h3>Start over</h3>
+      <p class="muted hint">Drops the edits kept in this browser and reloads the shipped defaults. The sheet is not touched.</p>
+      <button class="btn btn-sm" type="button" id="reset">Reset my draft</button>
+    </div>
   </section>
 
-  <section id="sec-share" class="panel no-print">
-    <h2 style="margin-top:0">Share</h2>
-    <p class="muted hint">The public page reads the Google Sheet and Google traffic live. It is not linked from the site and not indexed.</p>
+  <section id="sec-share" class="tab-body panel no-print" hidden>
+    <h2>Share</h2>
+    <p class="lede">The public page shows this plan, read live from the sheet and Google traffic, without any of the controls or costs. It is not linked from the site and not indexed; only people with the link find it.</p>
     <div class="bar" style="margin:0">
       <button class="btn btn-primary" type="button" id="copy-public">Copy public link</button>
       <a class="btn" href="../plan/" target="_blank" rel="noopener">Open public page</a>
@@ -159,7 +165,7 @@
 
 <script src="auth.js?v=7"></script>
 <script src="../plan/engine.js?v=26"></script>
-<script src="../plan/render.js?v=22"></script>
+<script src="../plan/render.js?v=23"></script>
 <script>
 (function () {
   "use strict";
@@ -326,8 +332,8 @@
     } else { $("days").innerHTML = "<p class='muted'>Add a stay to start.</p>"; }
     renderStays(); renderVenues(); renderExtras();
     if ($("sh-pick").options.length !== showList().length) fillShowPicker(); else fillShowForm();
-    const prov = c.provider === "bridge" && !L.CONFIG.LOGISTICS_URL ? "Google traffic not yet connected — using road routing + traffic profile" : (L.providers[c.provider] ? L.providers[c.provider].label : c.provider);
-    $("status").innerHTML = "<span class='ok'>●</span> " + data.events.length + " schedule entries" + (data.fromSheet ? " from the live sheet" : " (fallback file)") + " · " + L.esc(prov) + (ctx.matrix ? " · distances via " + L.esc(ctx.matrix.source) : "");
+    const prov = c.provider === "bridge" ? (L.CONFIG.LOGISTICS_URL ? "Google traffic" : "estimated traffic (backend not connected)") : c.provider === "osrm" ? "estimated traffic" : "straight-line estimate";
+    $("status").innerHTML = "<span class='ok'>●</span> " + data.events.length + " events" + (data.fromSheet ? " from the live schedule" : " (fallback file)") + " · " + L.esc(prov);
     $("warnings").innerHTML = ctx.warnings.map(L.esc).join("<br>"); ctx.warnings = [];
   }
   function shareUrl(stay) {
@@ -665,6 +671,20 @@
     });
   }
 
+  // Tabs: one section at a time; the last one used is remembered.
+  function wireTabs() {
+    const TAB = "bali-logistics-tab";
+    function show(id) {
+      document.querySelectorAll(".tab-body").forEach(function (s) { s.hidden = s.id !== id; });
+      document.querySelectorAll(".tab").forEach(function (t) { t.classList.toggle("on", t.dataset.tab === id); t.setAttribute("aria-selected", t.dataset.tab === id); });
+      try { localStorage.setItem(TAB, id); } catch (e) { /* ignore */ }
+    }
+    document.querySelectorAll(".tab").forEach(function (t) { t.addEventListener("click", function () { show(t.dataset.tab); }); });
+    let last = null; try { last = localStorage.getItem(TAB); } catch (e) { /* ignore */ }
+    if (last && document.getElementById(last)) show(last);
+    // Print always prints the plan.
+    window.addEventListener("beforeprint", function () { document.getElementById("sec-plan").hidden = false; });
+  }
   async function start(user) {
     $("who").textContent = user;
     try {
@@ -678,7 +698,7 @@
       data.events = data.events.filter(function (e) { return ex.indexOf((e.status || "").toLowerCase()) === -1; });
       selectedStay = data.cfg.selectedStay || (L.activeStays(data.cfg)[0] || {}).id || null;
       if (data.cfg.sheetUrl) { $("sheet-link").href = data.cfg.sheetUrl; $("sheet-link").hidden = false; }
-      bindForms(); wire();
+      bindForms(); wire(); wireTabs();
       await rebuild(true);
       if (L.CONFIG.LOGISTICS_URL && cfg().provider === "bridge") await refreshTraffic({ sheet: !L.sheetIsFresh() });
       if (!(L.CONFIG.LOGISTICS_URL && cfg().provider === "bridge")) loading("Everything is loaded · times are estimates", 1, true);
