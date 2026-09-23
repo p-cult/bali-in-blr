@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@125,600;125,700;125,900&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="../plan/plan.css?v=23" />
+<link rel="stylesheet" href="../plan/plan.css?v=24" />
 </head>
 <body>
 <div class="wrap" id="admin-app" hidden>
@@ -31,7 +31,8 @@
     <span class="status" id="status">Loading…</span>
     <button class="btn btn-sm btn-primary" type="button" id="sync" title="Pull the latest events and sheet inputs, re-price with Google traffic, write the plan back">Sync everything</button>
     <a class="btn btn-sm" id="sheet-link" href="#" target="_blank" rel="noopener" hidden>Open the Google Sheet</a>
-    <button class="btn btn-sm" type="button" id="print">Print / PDF</button>
+    <a class="btn btn-sm" id="pdf" href="../plan/tour-plan.pdf" download="Bali-in-Bengaluru-tour-plan.pdf" hidden title="Ready-made PDF, rendered every night">Download PDF</a>
+    <button class="btn btn-sm" type="button" id="print">Print</button>
     <button type="button" id="traffic" hidden></button><button type="button" id="reload-sheet" hidden></button><button type="button" id="repull-sheet" hidden></button><button type="button" id="save" hidden></button><button type="button" id="share" hidden></button>
   </div>
 
@@ -687,6 +688,10 @@
   }
   async function start(user) {
     $("who").textContent = user;
+    fetch("../plan/tour-plan.pdf.json", { cache: "no-store" }).then(function (r) { return r.ok ? r.json() : null; }).then(function (st) {
+      if (!st || !st.at) return; const d = new Date(st.at);
+      $("pdf").hidden = false; $("pdf").title = "Ready-made PDF rendered " + d.toLocaleString("en-IN", { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" }) + " IST, refreshed every night";
+    }).catch(function () { /* none yet */ });
     try {
       loading("Loading the festival schedule…", 0.1);
       const draft = stored();

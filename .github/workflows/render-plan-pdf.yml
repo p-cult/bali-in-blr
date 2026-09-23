@@ -1,0 +1,47 @@
+# Keep a ready-made PDF of the artist tour plan so "Download PDF" is instant.
+#
+# The plan page can always print itself (browser print dialog), but a file
+# that is already rendered — sheet inputs and Google traffic applied — is
+# what people forward. This renders it nightly after the day's edits, and on
+# demand from the Actions tab, and commits plan/tour-plan.pdf with a stamp
+# the pages show next to the button.
+name: Render plan PDF
+
+on:
+  schedule:
+    - cron: "45 18 * * *"   # 00:15 IST, after the day's edits
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: render-plan-pdf
+  cancel-in-progress: false
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Serve the site and render the print edition
+        run: |
+          python3 -m http.server 8000 >/dev/null 2>&1 &
+          sleep 1
+          CHROME="$(command -v google-chrome || command -v chromium-browser)" node tools/render-plan-pdf.mjs "http://localhost:8000/plan/?print=1" plan/tour-plan.pdf
+
+      - name: Commit the PDF if it changed
+        run: |
+          if [ -z "$(git status --porcelain plan/tour-plan.pdf plan/tour-plan.pdf.json)" ]; then
+            echo "Unchanged. Done."; exit 0
+          fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add plan/tour-plan.pdf plan/tour-plan.pdf.json
+          git commit -m "Render the tour plan PDF (automated)"
+          git pull --rebase origin main
+          git push

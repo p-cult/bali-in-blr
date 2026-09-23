@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@125,600;125,700;125,900&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="plan.css?v=23" />
+<link rel="stylesheet" href="plan.css?v=24" />
 </head>
 <body>
 <div class="wrap">
@@ -26,8 +26,10 @@
     <span class="grow"></span>
     <button class="btn btn-sm" type="button" id="open-all">Expand all</button>
     <button class="btn btn-sm" type="button" id="close-all">Collapse all</button>
-    <button class="btn btn-sm btn-primary" type="button" id="print">Print / save as PDF</button>
+    <a class="btn btn-sm btn-primary" id="pdf" href="tour-plan.pdf" download="Bali-in-Bengaluru-tour-plan.pdf" hidden>Download PDF</a>
+    <button class="btn btn-sm" type="button" id="print">Print this page</button>
   </div>
+  <p class="muted pdf-stamp no-print" id="pdf-stamp" hidden></p>
   <div class="warnings" id="warnings"></div>
   <div id="totals"></div>
   <div id="days"></div>
@@ -137,6 +139,14 @@
   $("open-all").addEventListener("click", function () { document.querySelectorAll(".day").forEach(function (d) { d.open = true; }); });
   $("close-all").addEventListener("click", function () { document.querySelectorAll(".day").forEach(function (d) { d.open = false; }); });
   $("print").addEventListener("click", function () { window.print(); });
+  // The ready-made PDF (rendered nightly by GitHub Actions); shown when it exists.
+  fetch("tour-plan.pdf.json", { cache: "no-store" }).then(function (r) { return r.ok ? r.json() : null; }).then(function (st) {
+    if (!st || !st.at) return;
+    $("pdf").hidden = false;
+    const d = new Date(st.at);
+    $("pdf-stamp").textContent = "PDF rendered " + d.toLocaleString("en-IN", { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" }) + " IST · " + st.pages + " pages · refreshed every night; “Print this page” always has the latest.";
+    $("pdf-stamp").hidden = false;
+  }).catch(function () { /* no PDF yet */ });
   // "Print this day": print only that day, then restore.
   document.addEventListener("click", function (e) {
     const b = e.target.closest("[data-printday]"); if (!b) return;

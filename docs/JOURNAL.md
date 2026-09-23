@@ -1580,3 +1580,28 @@ once. Nothing said why it was there. It intimidated on first sight.
 **Lesson.** Show a number only when it changes what the reader does; the
 rest belongs inside the day it describes.
 
+## 23 Sep 2026 — A ready-made PDF, and a print header that breathes
+
+**Problem.** The printable plan was only ever the browser's print dialog,
+and my attempt to produce a file for review took two false starts. The
+print header was cramped: boxed summary clipped at the right edge, warning
+chips in a colour unreadable on cream.
+
+**Done.**
+- `tools/render-plan-pdf.mjs` opens the public page in headless Chrome,
+  waits for the page's own loader to say "Everything is loaded", then
+  prints with the print stylesheet and writes `plan/tour-plan.pdf` plus a
+  stamp (`.pdf.json`: when, pages). It refuses to overwrite when the plan
+  did not finish loading.
+- `.github/workflows/render-plan-pdf.yml` runs it at 00:15 IST nightly and
+  on demand from the Actions tab, committing the PDF when it changed.
+- Both pages show a "Download PDF" button (instant, the committed file)
+  with its render time, beside "Print this page" for the very latest.
+- Print header: kick, big title, subtitle, then the summary as a ruled band
+  in plain ink rather than a bordered box; chips in dark ink, red flags
+  dark red, warnings dark amber; day flags likewise.
+
+**Lesson.** Anything that must feel instant to the reader is rendered
+ahead of time and committed; the browser's print dialog stays as the
+always-current fallback.
+
