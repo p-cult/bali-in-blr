@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@125,600;125,700;125,900&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="../plan/plan.css?v=19" />
+<link rel="stylesheet" href="../plan/plan.css?v=20" />
 </head>
 <body>
 <div class="wrap" id="admin-app" hidden>
@@ -521,11 +521,10 @@
     $("days").addEventListener("click", function (e) {
       if (e.target.closest("[data-mealtoggle]")) { e.target.closest(".tl-row").classList.toggle("editing"); }
       if (e.target.closest("[data-addontoggle]")) {
-        const box = e.target.closest(".addons"); const on = box.classList.toggle("adding");
-        e.target.closest("[data-addontoggle]").textContent = on ? "Close" : "+ Add a stop (meal out, sightseeing, shopping…)";
-        if (on) box.querySelector("[data-k='where']").focus();
+        const box = e.target.closest(".addons"); box.classList.add("adding");
+        box.querySelector("[data-k='where']").focus();
       }
-      if (e.target.closest("[data-stopcancel]")) { e.target.closest(".addons").querySelector("[data-addontoggle]").click(); }
+      if (e.target.closest("[data-stopcancel]")) { e.target.closest(".addons").classList.remove("adding"); }
     });
 
     // Per-event overrides inside the day cards.

@@ -63,7 +63,7 @@ section{margin:0 0 1.6rem}
 .addons .addon-add{display:none}
 .addons.adding .addon-add{display:grid}
 .addon-toggle{font:inherit;font-size:.75rem;color:var(--accent-2);background:none;border:0;padding:0;cursor:pointer}
-.addons.adding .addon-toggle{color:var(--muted)}
+.addons.adding .addon-toggle{display:none}
 .btn-ghost{border-color:transparent;color:var(--muted)}
 
 /* panels & forms */
