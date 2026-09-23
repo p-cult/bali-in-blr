@@ -10,9 +10,10 @@ Reads data/events.json (refresh it first with tools/sync-events-fallback.py),
 lays it out for A4 paper, and prints with headless Chrome:
   assets/bali-in-bengaluru-calendar.pdf  — public: linked from the site, so
                                             events marked "not public" are left out
-  plan/calendar.pdf                       — internal: every event, not-public
-                                            ones tagged; lives under the link-only
-                                            planner path (not linked, not indexed)
+  plan/calendar-a4.pdf                    — internal A4 list: every event, not-public
+                                            ones tagged. (The poster-style internal
+                                            calendar at plan/calendar.pdf comes from
+                                            tools/build-event-posters.py --internal.)
 A multi-day event appears on every date it runs, so no date is missed.
 
 Print uses the cream side of the palette: paper ground, charcoal type and
@@ -27,7 +28,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT_PUBLIC = ROOT / "assets" / "bali-in-bengaluru-calendar.pdf"
-OUT_INTERNAL = ROOT / "plan" / "calendar.pdf"
+OUT_INTERNAL = ROOT / "plan" / "calendar-a4.pdf"
 NOT_PUBLIC = re.compile(r"^(internal|private|invite|invite only|invitation|invitation only|closed|not public|not open|no button)$", re.I)
 
 

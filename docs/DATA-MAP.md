@@ -32,7 +32,7 @@ can be traced end to end. Audited 22 Sep 2026; re-verify with
 | `assets/events/*` — event page banners (WebP + JPEG) | `tools/sync-event-banners.py` | Hourly |
 | `data/event-banners.json` `source/version/webp` fields | same tool | same |
 | Baked copy in `index.html` (`data-content`) | `tools/bake-content.py` | Hourly (`bake-content.yml`) |
-| `assets/bali-in-bengaluru-calendar.pdf` (public, no not-public events), `plan/calendar.pdf` (internal, every event), `assets/print/*.pdf` | `tools/build-calendar-pdf.py`, `tools/build-event-posters.py` | On demand — snapshots, re-run after schedule changes |
+| `assets/bali-in-bengaluru-calendar.pdf` (public, no not-public events), `plan/calendar.pdf` (internal, every event, poster design), `assets/print/*.pdf` | `tools/build-calendar-pdf.py`, `tools/build-event-posters.py` (`--internal` for plan/calendar.pdf) | On demand — snapshots, re-run after schedule changes |
 | `data/collab-logos.json` | fallback for collaborator logos | On demand |
 | `plan/tour-plan*.pdf`, `.xlsx`, `.json` + `.pdf.json` stamps — the artist tour plan, one per stay | `tools/render-plan-pdf.mjs` (headless Chrome on the public page) + `tools/build-plan-xlsx.py` | Nightly 00:15 IST (`render-plan-pdf.yml`) and on demand |
 

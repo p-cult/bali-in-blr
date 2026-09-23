@@ -1739,3 +1739,13 @@ an internal engagement in the planner sheet, not an Event List row, so it
 never appears. Venue matching normalises punctuation (Parsec's alias);
 a "-" status cell is treated as none.
 
+**Redone in the poster language.** The A4 list edition was rejected on
+sight; `plan/calendar.pdf` is now built by `tools/build-event-posters.py
+--internal`: the 1:2 poster design (500 × 1000 mm, brick screen, cream
+type, gold accents) from the live sheet, with what the poster leaves out
+added per event — weekday (Tue–Wed for a run), the time as written, venue
+with its area, category, Collaboration, ticket status, and a red "Not
+public" tag. "3.30pm and 7.30pm" stays as two shows rather than "onwards".
+The A4 internal edition in `build-calendar-pdf.py` remains available but
+is not what `/plan/calendar.pdf` holds.
+

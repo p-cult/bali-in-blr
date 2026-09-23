@@ -5,6 +5,9 @@ Build the print-ready event posters, in two shapes.
     python3 tools/build-event-posters.py            # both
     python3 tools/build-event-posters.py --only 1x2 # one
     python3 tools/build-event-posters.py --public-only  # drop internal / invite-only shows
+    python3 tools/build-event-posters.py --internal     # plan/calendar.pdf: the 1x2 design with
+                                                        # every event and every detail (weekday,
+                                                        # area, category, status, "Not public")
 
 Reads the live schedule sheet (falling back to data/events.json when it cannot
 be reached), lays the festival lockup and every event out in the poster
@@ -87,6 +90,7 @@ def from_sheet():
             "venue": d.get("venue", ""),
             "image": d.get("image", ""),
             "status": d.get("status", "").lower(),
+            "collab": bool(re.match(r"^(y|yes|true)$", d.get("collaboration", ""), re.I)),
         })
     return out
 
@@ -99,7 +103,59 @@ def from_file():
     return [{"title": e.get("title", ""), "category": e.get("category", ""),
              "date": e.get("date", ""), "end": "", "start": e.get("time", ""),
              "finish": "", "venue": e.get("venue", ""), "image": e.get("image", ""),
-             "status": ""} for e in data]
+             "status": (e.get("statusRaw") or "").lower(), "collab": bool(e.get("collab"))} for e in data]
+
+
+NOT_PUBLIC = re.compile(r"^(internal|private|invite|invite only|invitation|"
+                        r"invitation only|closed|not public|not open|no button)$", re.I)
+
+
+def venue_area(name):
+    """The venue's area from data/venues.json, matched loosely (punctuation
+    and case ignored, aliases honoured)."""
+    try:
+        venues = json.loads((ROOT / "data" / "venues.json").read_text())["venues"]
+    except Exception:
+        return ""
+    norm = lambda x: re.sub(r"[^a-z0-9]+", " ", (x or "").lower()).strip()
+    n = norm(name)
+    for v in venues:
+        if norm(v["name"]) == n or n in [norm(a) for a in v.get("aliases", [])]:
+            return v.get("area", "")
+    for v in venues:
+        head = norm(v["name"]).split(" ")[0]
+        if n and (n in norm(v["name"]) or norm(v["name"]) in n or (len(head) > 4 and n.startswith(head))):
+            return v.get("area", "")
+    return ""
+
+
+def weekday_label(e):
+    """Mon–Sun for the start date (and end date for a run), year from the
+    sheet when it gives one, else the festival year."""
+    from datetime import date
+    def wd(v):
+        v = (v or "").strip()
+        m = re.match(r"^(\d{1,2})\s+([A-Za-z]{3,})\s*(\d{2,4})?$", v)
+        y, d, mo = None, None, None
+        if m:
+            d, mo = int(m.group(1)), MONTHS.get(m.group(2)[:3].lower(), 0)
+            y = int(m.group(3)) if m.group(3) else None
+        else:
+            m = re.match(r"^(\d{4})-(\d{2})-(\d{2})$", v)
+            if m:
+                y, mo, d = int(m.group(1)), int(m.group(2)), int(m.group(3))
+        if not d or not mo:
+            return ""
+        if y is None: y = 2026
+        if y < 100: y += 2000
+        try:
+            return date(y, mo, d).strftime("%a")
+        except ValueError:
+            return ""
+    a, b = wd(e["date"]), wd(e["end"])
+    if a and b and b != a:
+        return f"{a}&#8211;{b}"
+    return a
 
 
 DRIVE = re.compile(r"drive\.google\.com/(?:file/d/|open\?id=|uc\?[^\s]*id=)([A-Za-z0-9_-]{20,})")
@@ -164,8 +220,9 @@ def time_label(e):
     if a and b:
         return f"{a} &#8211; {b}"
     if a:
-        return f"{a} onwards"
-    return ""
+        # "3.30pm and 7.30pm" is two shows, not a start; leave it as written.
+        return a if re.search(r"\b(and|&)\b|,", a) else f"{a} onwards"
+    return "Time to be announced"
 
 
 def sort_key(e):
@@ -194,7 +251,7 @@ def logo_svg():
     return s.replace('role="img" aria-labelledby="logo-title"', 'aria-hidden="true"')
 
 
-def build_html(events, key):
+def build_html(events, key, internal=False):
     spec = SIZES[key]
     tw, th = spec["trim"]
     pw, ph = tw + BLEED * 2, th + BLEED * 2
@@ -210,15 +267,30 @@ def build_html(events, key):
         img = thumb(local_image(e["image"]), px)
         pic = f'<img src="{img}" alt="">' if img else '<span class="noimg"></span>'
         t = time_label(e)
-        bits = [x for x in (t, escape(e["venue"])) if x]
-        meta = "<br>".join(bits) if tall else " &#183; ".join(bits)
+        if internal:
+            # Every detail: weekday with the time, venue with its area, then tags.
+            wd = weekday_label(e)
+            area = venue_area(e["venue"])
+            line1 = " &#183; ".join(x for x in (wd, t) if x)
+            line2 = escape(e["venue"]) + (f" &#183; {escape(area)}" if area else "")
+            tags = [f'<i>{escape(e["category"])}</i>'] if e.get("category") else []
+            if e.get("collab"): tags.append('<i class="tg-collab">Collaboration</i>')
+            st = (e.get("status") or "").strip(" -–—")
+            if NOT_PUBLIC.match(st): tags.append('<i class="tg-private">Not public</i>')
+            elif st: tags.append(f'<i class="tg-status">{escape(st)}</i>')
+            meta = f"{line1}<br>{line2}"
+            extra = f'<p class="ev-tags">{"".join(tags)}</p>'
+        else:
+            bits = [x for x in (t, escape(e["venue"])) if x]
+            meta = "<br>".join(bits) if tall else " &#183; ".join(bits)
+            extra = ""
         cards.append(f"""
       <article class="ev">
         <div class="ev-pic">{pic}</div>
         <div class="ev-body">
           <p class="ev-date"><b>{d}</b><span>{mon}</span></p>
           <h2>{escape(e['title'])}</h2>
-          <p class="ev-meta">{meta}</p>
+          <p class="ev-meta">{meta}</p>{extra}
         </div>
       </article>""")
 
@@ -298,6 +370,21 @@ def build_html(events, key):
     font-size: {5.6*ts}mm; line-height: 1.32; color: #5F574C;
   }}
 
+  .ev-tags {{ margin: {2.2*ts}mm 0 0; display: flex; flex-wrap: wrap; gap: {1.6*ts}mm; }}
+  .ev-tags i {{
+    font-style: normal; font-weight: 600; text-transform: uppercase; letter-spacing: {.4*ts}mm;
+    font-size: {3.4*ts}mm; line-height: 1; padding: {1.2*ts}mm {2.2*ts}mm;
+    border: {.35*ts}mm solid rgba(27,29,33,.35); color: #5F574C;
+  }}
+  .tg-collab {{ border-color: #8E4A24 !important; color: #8E4A24 !important; }}
+  .tg-private {{ border-color: #A32B14 !important; color: #A32B14 !important; }}
+  .tg-status {{ border-color: #3F5F38 !important; color: #3F5F38 !important; }}
+  .edition {{
+    display: inline-block; margin-top: {3*ts}mm; font-weight: 600; text-transform: uppercase;
+    letter-spacing: {.6*ts}mm; font-size: {4*ts}mm; color: #A32B14; border: {.4*ts}mm solid #A32B14;
+    padding: {1.4*ts}mm {2.6*ts}mm;
+  }}
+
   footer {{
     margin-top: {10*ts}mm; display: flex; align-items: flex-end; justify-content: space-between;
     gap: {10*u}mm; border-top: {.8*ts}mm solid #8E4A24; padding-top: {6*ts}mm;
@@ -309,7 +396,7 @@ def build_html(events, key):
     <div class="top">
       <div class="lock">{logo_svg()}</div>
       <div>
-        <div class="dates"><b>{festival_span(events)}<br>2026</b><span>Bengaluru</span></div>
+        <div class="dates"><b>{festival_span(events)}<br>2026</b><span>Bengaluru</span>{'<span class="edition">Internal &#183; every event</span>' if internal else ''}</div>
         <div class="motif"><i class="m1"></i><i class="m2"></i><i class="m3"></i></div>
       </div>
     </div>
@@ -325,13 +412,13 @@ def build_html(events, key):
 </body></html>"""
 
 
-def render(events, key, chrome):
+def render(events, key, chrome, internal=False):
     spec = SIZES[key]
-    out = OUTDIR / f"bali-in-bengaluru-events-{key}.pdf"
+    out = (ROOT / "plan" / "calendar.pdf") if internal else OUTDIR / f"bali-in-bengaluru-events-{key}.pdf"
     with tempfile.NamedTemporaryFile("w", suffix=".html", delete=False) as f:
-        f.write(build_html(events, key))
+        f.write(build_html(events, key, internal))
         src = f.name
-    OUTDIR.mkdir(parents=True, exist_ok=True)
+    out.parent.mkdir(parents=True, exist_ok=True)
     subprocess.run([chrome, "--headless", "--disable-gpu", "--no-pdf-header-footer",
                     "--virtual-time-budget=20000", f"--print-to-pdf={out}", f"file://{src}"],
                    check=True, capture_output=True)
@@ -345,6 +432,8 @@ def main():
     ap.add_argument("--only", choices=sorted(SIZES))
     ap.add_argument("--public-only", action="store_true",
                     help="leave out events whose Status marks them not open to the public")
+    ap.add_argument("--internal", action="store_true",
+                    help="write plan/calendar.pdf: the 1x2 design, every event, every detail")
     args = ap.parse_args()
 
     events = from_sheet()
@@ -355,16 +444,17 @@ def main():
         sys.exit("No events anywhere — nothing to print.")
     if args.public_only:
         # Same words the site treats as "not open to the public" (main.js notPublic).
-        not_public = re.compile(r"^(internal|private|invite|invite only|invitation|"
-                                r"invitation only|closed|not public|not open|no button)$", re.I)
-        dropped = [e["title"] for e in events if not_public.match(e.get("status", ""))]
-        events = [e for e in events if not not_public.match(e.get("status", ""))]
+        dropped = [e["title"] for e in events if NOT_PUBLIC.match(e.get("status", ""))]
+        events = [e for e in events if not NOT_PUBLIC.match(e.get("status", ""))]
         for t in dropped:
             print(f"  left out (not public): {t}")
     events.sort(key=sort_key)
 
     chrome = find_chrome()
     print(f"{len(events)} events from the {src}")
+    if args.internal:
+        render(events, "1x2", chrome, internal=True)
+        return
     for key in ([args.only] if args.only else sorted(SIZES)):
         render(events, key, chrome)
 
