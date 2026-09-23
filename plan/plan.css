@@ -175,8 +175,13 @@ input[type=time]::-webkit-calendar-picker-indicator,input[type=date]::-webkit-ca
 .tl-broad{opacity:.62;font-size:.85rem}
 .tl-cast{color:var(--accent-2)}
 .tl-broad .tl-when{color:var(--muted)}
-.tl-show{background:rgba(255,90,60,.07);border-left:3px solid var(--accent);padding-left:.6rem;margin-left:-.75rem}
-.tl-show .tl-body b{font-family:var(--display);text-transform:uppercase;letter-spacing:.03em;font-size:.85rem}
+/* The show itself: a solid dark band with white type, so the event name is
+   the one thing a glance lands on, on screen and on paper alike. */
+.tl-show{background:#0E0F12;border-left:4px solid var(--accent);padding:.55rem .8rem .55rem .7rem;margin:.2rem 0 .2rem -.75rem;border-radius:0 6px 6px 0;border-bottom:0;align-items:baseline}
+.tl-show .tl-when{color:#F3E9D2}
+.tl-show .tl-body b{font-family:var(--display);text-transform:uppercase;letter-spacing:.04em;font-size:.95rem;color:#fff;font-weight:700}
+.tl-show .tl-detail{color:#C9C4B8}
+.tl-show .tl-cast{color:var(--accent-2)}
 .tl-leg .tl-body b::before{content:"→ ";color:var(--copper)}
 .tl-hold .tl-body b{color:var(--muted)}
 /* Instrument vehicle rows: a distinct strip, not a dimmed note. Ivory
@@ -275,8 +280,11 @@ footer{margin-top:2.5rem;color:var(--muted2);font-size:.78rem}
   .tl-when{color:#8E4A24}
   .tl-detail{font-size:7.5pt;color:#555}
   .tl-broad{opacity:.7;font-size:8.5pt}
-  .tl-show{background:none;border-left:3px solid #8E4A24;padding-left:.45rem;margin-left:0}
-  .tl-show .tl-body b{font-size:9pt}
+  .tl-show{background:#1B1D21;border-left:4px solid #8E4A24;padding:.3rem .55rem .3rem .5rem;margin:.15rem 0;border-radius:0 3px 3px 0;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .tl-show .tl-when{color:#F3E9D2}
+  .tl-show .tl-body b{font-size:10pt;color:#fff}
+  .tl-show .tl-detail{color:#D5D0C5}
+  .tl-show .tl-cast{color:#E0A470}
   .tl-truck{opacity:1;font-size:9pt;background:#f6ecd0;border-left:3px solid #b8860b;padding:.2rem .45rem;margin-left:0;-webkit-print-color-adjust:exact;print-color-adjust:exact}
   .tl-truck .tl-when,.tl-truck .tl-body b{color:#8a6508}
   .truck-icon{color:#b8860b}
