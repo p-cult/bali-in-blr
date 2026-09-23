@@ -259,7 +259,7 @@ var PURPOSES = ["Breakfast", "Lunch", "Dinner", "Sightseeing", "Shopping", "Enga
 var ADDON_ROWS = 6;
 var DEFAULT_SEG = { Performance: [30, 30, 60, 20, 30], Workshop: [10, 10, 15, 5, 15], Talk: [10, 10, 20, 5, 15], Internal: [10, 0, 15, 10, 10], default: [15, 10, 20, 5, 15] };
 var SEED_ENGAGEMENTS = [{ date: "2026-10-02", title: "Photoshoot", venue: "Mandala Cultural Centre", start: "07:00", end: "14:00" }];
-var STAYS = ["20th Mile, Magadi Road", "Citadel Sarovar Portico"];
+var STAYS = ["Jana Seva Vidya Kendra", "Citadel Sarovar Portico"];
 
 function plannerBook_() {
   var props = PropertiesService.getScriptProperties();
@@ -535,6 +535,9 @@ function writeback_(days, settings) {
     if (st) {
       var vals = st.getRange(HEADER_ROW + 1, 1, 5, 2).getDisplayValues();
       var put = function (k, v) { for (var i = 0; i < vals.length; i++) if (vals[i][0] === k && v != null && v !== "") st.getRange(HEADER_ROW + 1 + i, 2).setValue(v); };
+      // The dropdown must offer whatever the planner writes, so re-set it.
+      var stayList = STAYS.slice(); if (settings.stay && stayList.indexOf(settings.stay) === -1) stayList.push(settings.stay);
+      st.getRange(HEADER_ROW + 1, 2).setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(stayList, true).build());
       put("Place of stay", settings.stay); put("Artists", settings.artists); put("Volunteers travelling", settings.volunteers);
       if (settings.storage) put("Instrument storage", settings.storage);
       if (settings.lead) put("Instruments needed at venue", settings.lead);

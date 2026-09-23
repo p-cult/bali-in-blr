@@ -165,7 +165,7 @@
 </div>
 
 <script src="auth.js?v=7"></script>
-<script src="../plan/engine.js?v=27"></script>
+<script src="../plan/engine.js?v=28"></script>
 <script src="../plan/render.js?v=26"></script>
 <script>
 (function () {
@@ -698,6 +698,9 @@
       data = await L.load({ cfg: draft || undefined, sheet: "background" });
       defaults = L.clone(await fetch(L.CONFIG.DEFAULTS).then(function (r) { return r.json(); }));
       if (draft && draft.venueOverrides) draft.venueOverrides.forEach(function (v) { data.venues.upsert(v); });
+      // A draft keeps its own copy of the stays; names, addresses and aliases
+      // follow the shipped defaults by id so a rename lands everywhere.
+      (data.cfg.stays || []).forEach(function (s) { const d = (defaults.stays || []).find(function (x) { return x.id === s.id; }); if (d) { s.name = d.name; s.address = d.address; s.aliases = d.aliases; } });
 
       const ex = data.cfg.excludeStatuses || [];
       data.events = data.events.filter(function (e) { return ex.indexOf((e.status || "").toLowerCase()) === -1; });

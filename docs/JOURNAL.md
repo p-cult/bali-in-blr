@@ -1605,3 +1605,20 @@ chips in a colour unreadable on cream.
 ahead of time and committed; the browser's print dialog stays as the
 always-current fallback.
 
+## 23 Sep 2026 — The stay is named, not just located
+
+**Problem.** The main stay was labelled by its landmark, "20th Mile,
+Magadi Road". A place should carry its proper name.
+
+**Verified.** The campus at 20th Mile, Bengaluru–Magadi Road,
+Channenahalli 562130 is the Jana Seva Trust's Janaseva Vidya Kendra
+residential school (janasevatrust.in). Named "Jana Seva Vidya Kendra".
+
+**Done.** Renamed in `data/logistics.json` with the old label kept as an
+alias; `applySheetPlan` matches the sheet's stay by name or alias, so old
+sheet values and drafts still resolve; the admin refreshes draft stays'
+names from the defaults by id; the backend's dropdown list changed and
+write-back now re-sets that dropdown to include whatever it writes
+(Version 12). The sheet's Settings cell was written through the backend
+and read back. PDF re-rendered.
+

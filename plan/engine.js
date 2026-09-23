@@ -1173,7 +1173,11 @@
     if (sc.party) { cfg.party.artists = sc.party.artists; cfg.party.volunteers = sc.party.volunteers; cfg.party.size = (sc.party.artists || 0) + (sc.party.volunteers || 0); }
     if (sc.instrumentLead != null) cfg.instrumentLead = sc.instrumentLead;
     if (sc.instrumentStore) cfg.instrumentStore = sc.instrumentStore;
-    if (sc.stayName) { const st = (cfg.stays || []).find(function (s) { return s.name === sc.stayName; }); if (st) cfg.selectedStay = st.id; }
+    if (sc.stayName) {
+      const want = String(sc.stayName).trim().toLowerCase();
+      const st = (cfg.stays || []).find(function (s) { return s.name.toLowerCase() === want || (s.aliases || []).some(function (al) { return al.toLowerCase() === want; }); });
+      if (st) cfg.selectedStay = st.id;
+    }
     cfg.sheetUrl = sheet.url;
     return cfg;
   }

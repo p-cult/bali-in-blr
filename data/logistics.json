@@ -20,8 +20,9 @@
   "stays": [
     {
       "id": "20th-mile",
-      "name": "20th Mile, Magadi Road",
-      "address": "20th Mile, Magadi Road, Channenahalli, Bengaluru 562130",
+      "name": "Jana Seva Vidya Kendra",
+      "aliases": ["20th Mile, Magadi Road", "Jana Seva", "Janaseva"],
+      "address": "Jana Seva Trust campus, 20th Mile, Bengaluru–Magadi Road, Channenahalli 562130",
       "lat": 12.9778584,
       "lon": 77.4305523,
       "precision": "locality",
