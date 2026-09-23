@@ -8,6 +8,8 @@
 
   function summaryLine(day) {
     if (day.kind === "rest") return "Rest day · no travel";
+    if (day.kind === "arrival") return "Arrival · land " + hm(day.wake) + " · at the stay " + hm(day.back);
+    if (day.kind === "departure") return "Departure · leave the stay " + hm(day.leave) + " · flight " + hm(day.flight);
     if (day.mealsOnly) return "No programme · add-ons only · leave " + hm(day.leave) + " · back " + hm(day.back) + " · " + dur(day.travelMin) + " on the road · " + Math.round(day.km) + " km";
     if (day.kind === "outstation") return day.events.length + " event · out of town · arrive " + hm(day.wake) + " after the overnight drive · leave " + hm(day.sleep) + " for the night drive home · " + dur(day.travelMin) + " on the road";
     const n = day.events.length;
@@ -29,10 +31,12 @@
     const t = function (label, v) { return "<span class='ds-t'>" + esc(label) + " <b>" + esc(hm(v)) + "</b></span>"; };
     const arrow = "<span class='ds-arrow' aria-hidden='true'>→</span>";
     if (day.kind === "rest") return "<span class='ds'>" + pill("Rest day", "rest") + sep + "<span class='ds-muted'>no travel</span></span>";
+    if (day.kind === "arrival") return "<span class='ds'>" + pill("Arrival", "far") + "<span class='ds-muted'>" + day.travelling + " artists</span>" + sep + t("land", day.wake) + arrow + t("at the stay", day.back) + sep + road() + "</span>";
+    if (day.kind === "departure") return "<span class='ds'>" + pill("Departure", "far") + "<span class='ds-muted'>" + day.travelling + " artists</span>" + sep + t("leave the stay", day.leave) + arrow + t("flight", day.flight) + sep + road() + "</span>";
     if (day.mealsOnly) return "<span class='ds'>" + pill("Add-ons only", "rest") + sep + t("leave", day.leave) + arrow + t("back", day.back) + sep + road() + "</span>";
     if (day.kind === "outstation") return "<span class='ds'>" + evs + pill("Out of town", "far") + sep + t("arrive", day.wake) + "<span class='ds-muted'>after the overnight drive</span>" + arrow + t("night drive home", day.sleep) + sep + road() + "</span>";
     if (day.nightDeparture) return "<span class='ds'>" + evs + pill("Overnight coach", "far") + sep + t("leave", day.leave) + arrow + t("coach to " + day.nightTo, day.sleep) + (day.back == null ? "<span class='ds-muted'>straight from the venue</span>" : "") + sep + road() + "</span>";
-    const who = (day.travelling ? "<span class='ds-muted'>" + day.travelling + (day.travelling === 1 ? " artist" : " artists") + "</span>" : "") +
+    const who = (day.travelling ? "<span class='ds-muted'>" + day.travelling + (day.travelling === 1 ? " artist" : " artists") + (day.joiners ? " <i class='ds-join'>incl. " + day.joiners.count + " local" + (day.joiners.travel ? "" : ", travelling separately") + "</i>" : "") + "</span>" : "") +
       (day.smallVehicle || day.vehicleChosen ? pill((day.vehicles > 1 ? day.vehicles + " × " : "") + String(day.vehicle.name).replace(/\s*\(.*\)$/, ""), "veh") :
         day.vehicles && day.fleet > 1 && day.vehicles < day.fleet ? pill(day.vehicles + " vehicle" + (day.vehicles > 1 ? "s" : ""), "veh") : "");
     return "<span class='ds'>" + evs + who + sep + t("leave", day.leave) + arrow + t("back", day.back) + sep + road() + "</span>";

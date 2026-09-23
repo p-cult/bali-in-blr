@@ -129,7 +129,7 @@ def build(plan, out):
     ws.freeze_panes = "A10"
     r = 10
     for d in days:
-        kind = {"rest": "Rest day", "outstation": "Out of town"}.get(d.get("kind"), "Show day")
+        kind = {"rest": "Rest day", "outstation": "Out of town", "arrival": "Arrival", "departure": "Departure"}.get(d.get("kind"), "Show day")
         if d.get("nightOut") or any(b.get("type") == "leg" and "overnight" in (b.get("label") or "").lower() for b in d["blocks"]):
             pass
         evs = "; ".join(f"{e['title']}" + (f" {hm(e['start'])}" if e.get("start") is not None else "") for e in d.get("events", []))

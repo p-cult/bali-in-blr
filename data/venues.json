@@ -180,6 +180,22 @@
       "lon": 77.53036,
       "precision": "building",
       "source": "web"
+    },
+    {
+      "key": "kempegowda international airport",
+      "name": "Kempegowda International Airport",
+      "aliases": [
+        "kia",
+        "blr airport",
+        "airport",
+        "bengaluru airport"
+      ],
+      "area": "Devanahalli",
+      "address": "KIAL Road, Devanahalli, Bengaluru 560300",
+      "lat": 13.1989,
+      "lon": 77.7068,
+      "precision": "building",
+      "source": "manual"
     }
   ]
 }

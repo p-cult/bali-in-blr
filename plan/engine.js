@@ -379,6 +379,68 @@
 
   // Plans one date. `events` are that day's events (already filtered).
   // Returns {date, kind, blocks[], legs[], leave, back, wake, sleep, travelMin, km, flags[]}.
+  // A flight before 06:00 is planned on the evening before.
+  function departureDay(tv) {
+    const dep = tv && tv.departure; if (!dep || !parseDate(dep.date)) return null;
+    const m = toMin(dep.time); return m != null && m < 360 ? addDays(parseDate(dep.date), -1) : parseDate(dep.date);
+  }
+  // Arrival day (land → stay) and departure day (stay → airport for the
+  // flight). Only when the day has no programme; otherwise the flight is
+  // flagged on the show day for a human to fit.
+  function flightBlocks(ctx, dateISO, stay, stayIdx, day, evs) {
+    const cfg = ctx.cfg, D = cfg.day, tv = cfg.travel || {};
+    const arr = tv.arrival, dep = tv.departure;
+    const isArr = arr && parseDate(arr.date) === dateISO, isDep = departureDay(tv) === dateISO;
+    if (!isArr && !isDep) return null;
+    if (evs.length) { day.flags.push(isArr ? "The company lands today at " + hm(toMin(arr.time)) + " — the programme below assumes they are already here." : "The flight home is tonight/tomorrow at " + hm(toMin(dep.time)) + " — leave time for the airport after the programme."); return null; }
+    const port = ctx.venues.resolve((isArr ? arr : dep).place);
+    const portIdx = port ? ctx.point(port) : -1;
+    const portName = port ? port.name : ((isArr ? arr : dep).place || "the airport");
+    const T = day.blocks;
+    if (isArr) {
+      day.kind = "arrival";
+      const land = toMin(arr.time) || 900, buf = arr.landingBuffer != null ? +arr.landingBuffer : 75;
+      T.push(block("show", land, land + buf, "Land at " + portName, { detail: (arr.note || "The company arrives") + " · immigration, baggage, meet the team" }));
+      const tr = ctx.travel(portIdx, stayIdx, dateISO, land + buf);
+      const home = land + buf + (tr.min == null ? 60 : tr.min);
+      T.push(block("leg", land + buf, home, "Leave " + portName + " for the stay", { travel: tr, detail: legDetail(tr, D.loadOut || 0), dest: "the stay" }));
+      day.legs.push({ from: portName, to: "the stay", depart: land + buf, arrive: home, travel: tr });
+      if (tr.min != null) { day.travelMin += tr.min; day.km += tr.km || 0; }
+      T.push(block("free", home, home + 90, "Check in at the stay, settle in", { note: "Rooms, luggage, a first briefing." }));
+      const dinnerAt = Math.max(home + 90, toMin(D.dinnerWindow[0]) + 30);
+      T.push(block("meal", dinnerAt, dinnerAt + D.dinner, "Dinner at the stay", { meal: "dinner", at: "the stay" }));
+      T.push(block("sleep", dinnerAt + D.dinner + D.windDown, null, "Lights out", { broad: true }));
+      day.wake = land; day.leave = null; day.back = home; day.sleep = dinnerAt + D.dinner + D.windDown; day.travelling = (cfg.party && cfg.party.artists) || 0;
+      applyMealPlan(cfg, dateISO, day);
+      return day;
+    }
+    day.kind = "departure";
+    let flight = toMin(dep.time) || 0; if (parseDate(dep.date) !== dateISO) flight += 1440;
+    const lead = dep.checkInLead != null ? +dep.checkInLead : 180;
+    const atPort = flight - lead;
+    let leave = atPort - 60, tr = null;
+    for (let i = 0; i < 6; i++) { tr = ctx.travel(stayIdx, portIdx, dateISO, leave); const arrive = leave + (tr.min == null ? 60 : tr.min) + (D.loadOut || 0); if (arrive <= atPort + 0.5) break; leave -= (arrive - atPort); }
+    const wake = toMin(D.restDayWake) || 480;
+    T.push(block("wake", wake, wake + D.wake, "Wake up", { broad: true }));
+    T.push(block("meal", wake + D.wake, wake + D.wake + D.breakfast, "Breakfast at the stay", { broad: true, meal: "breakfast", at: "the stay" }));
+    const lunchAt = toMin(D.lunchWindow[0]) + 30;
+    T.push(block("free", wake + D.wake + D.breakfast, lunchAt, "Pack, settle up, rest", { note: "Last day at the stay." }));
+    T.push(block("meal", lunchAt, lunchAt + D.lunch, "Lunch at the stay", { meal: "lunch", at: "the stay" }));
+    const dinnerAt = Math.min(toMin(D.dinnerWindow[0]) + 30, leave - D.dinner - (D.loadOut || 0) - 15);
+    T.push(block("free", lunchAt + D.lunch, dinnerAt, "Free at the stay"));
+    T.push(block("meal", dinnerAt, dinnerAt + D.dinner, "Dinner at the stay", { meal: "dinner", at: "the stay" }));
+    T.push(block("prep", leave - (D.loadOut || 0), leave, "Load luggage into the vehicles", {}));
+    const arrivePort = leave + (tr.min == null ? 60 : tr.min);
+    T.push(block("leg", leave, arrivePort, "Leave the stay for " + portName, { travel: tr, detail: legDetail(tr, 0), dest: portName }));
+    day.legs.push({ from: "the stay", to: portName, depart: leave, arrive: arrivePort, travel: tr });
+    if (tr.min != null) { day.travelMin += tr.min; day.km += tr.km || 0; }
+    T.push(block("free", arrivePort, flight, "Check-in, immigration, security", { note: lead + " min before the flight." }));
+    T.push(block("show", flight, null, "Flight departs " + hm(flight), { detail: "from " + portName }));
+    day.wake = wake; day.leave = leave; day.back = null; day.sleep = null; day.flight = flight; day.travelling = (cfg.party && cfg.party.artists) || 0;
+    applyMealPlan(cfg, dateISO, day);
+    return day;
+  }
+
   function planDay(ctx, dateISO, events, stay, prev) {
     const cfg = ctx.cfg, D = cfg.day;
     const stayIdx = ctx.point(stay);
@@ -406,8 +468,17 @@
     const partyArtists = (cfg.party && cfg.party.artists) || 0;
     const needs = evs.map(function (x) { return x.b.artists != null ? x.b.artists : partyArtists; });
     day.travelling = evs.length ? Math.max.apply(null, needs) : 0;
-    if (partyArtists && day.travelling < partyArtists) day.flags.push(day.travelling + " of " + partyArtists + " artists travel today; " + (partyArtists - day.travelling) + " stay at the stay.");
-    if (partyArtists && day.travelling > partyArtists) day.flags.push("An event today lists " + day.travelling + " artists but the group has " + partyArtists + ".");
+    if (evs.length && partyArtists && day.travelling < partyArtists) day.flags.push(day.travelling + " of " + partyArtists + " artists travel today; " + (partyArtists - day.travelling) + " stay at the stay.");
+    if (evs.length && partyArtists && day.travelling > partyArtists) day.flags.push("An event today lists " + day.travelling + " artists but the group has " + partyArtists + ".");
+    // People who join the company today (local artists for a joint show).
+    const jn = (cfg.joiners || {})[dateISO];
+    if (jn && jn.count) {
+      day.joiners = jn;
+      if (jn.travel) { day.travelling += jn.count; day.flags.push(jn.count + " " + jn.label + " travel with the group today — " + day.travelling + " in the vehicles."); }
+      else day.flags.push(jn.count + " " + jn.label + " perform with the group today and travel on their own.");
+    }
+    const flightDay = flightBlocks(ctx, dateISO, stay, stayIdx, day, evs);
+    if (flightDay) return flightDay;
     placeStops(ctx, evs, stops, stayIdx, dateISO, D, day);
     if (!day.events.length) day.mealsOnly = true;
 
@@ -913,8 +984,14 @@
   function planTour(ctx, events, stay) {
     const dates = events.map(function (e) { return e.date; });
     if (!dates.length) return { stay: stay, days: [], totals: {} };
-    const first = dates.reduce(function (a, b) { return a < b ? a : b; });
-    const last = dates.reduce(function (a, b) { return a > b ? a : b; });
+    let first = dates.reduce(function (a, b) { return a < b ? a : b; });
+    let last = dates.reduce(function (a, b) { return a > b ? a : b; });
+    // The company's flights stretch the tour: arrival day, and the day the
+    // run to the airport happens (the evening before a small-hours flight).
+    const tv = ctx.cfg.travel || {};
+    if (tv.arrival && parseDate(tv.arrival.date) && parseDate(tv.arrival.date) < first) first = parseDate(tv.arrival.date);
+    const depDay = departureDay(tv);
+    if (depDay && depDay > last) last = depDay;
     const days = [];
     for (let d = first; d <= last; d = addDays(d, 1)) {
       days.push(planDay(ctx, d, events.filter(function (e) { return e.date === d; }), stay, days[days.length - 1]));
@@ -928,11 +1005,12 @@
     days.forEach(function (day) {
       t.travelMin += day.travelMin; t.km += day.km; t.truckKm += day.truckKm || 0; t.truckMin += day.truckMin || 0;
       if (day.kind === "rest") { t.restDays++; return; }
+      if (day.kind === "arrival" || day.kind === "departure") return;
       t.showDays++;
       if (day.wake < toMin(D.earliestWake)) t.earlyCalls++;
-      if (day.sleep > toMin(D.latestSleep) + 1440) t.lateNights++;
+      if (day.sleep != null && day.sleep > toMin(D.latestSleep) + 1440) t.lateNights++;
       t.earliestWake = t.earliestWake == null ? day.wake : Math.min(t.earliestWake, day.wake);
-      t.latestSleep = t.latestSleep == null ? day.sleep : Math.max(t.latestSleep, day.sleep);
+      if (day.sleep != null) t.latestSleep = t.latestSleep == null ? day.sleep : Math.max(t.latestSleep, day.sleep);
       t.holdsInTown += day.blocks.filter(function (b) { return b.type === "hold" && b.inTown; }).length;
       if (day.red) t.redDays = (t.redDays || 0) + 1;
       t.longestDay = Math.max(t.longestDay, day.back - day.leave);
@@ -1102,13 +1180,14 @@
     events.forEach(function (e) { const v = venues.resolve(e.venue); if (v) ctx.point(v); });
     Object.keys(cfg.stops || {}).forEach(function (d) { (cfg.stops[d] || []).forEach(function (p) { if (p && p.lat != null) ctx.point(p); }); });
     if (cfg.instrumentStore && cfg.instrumentStore.lat != null) ctx.point(cfg.instrumentStore);
+    ["arrival", "departure"].forEach(function (k) { const t = cfg.travel && cfg.travel[k]; const v = t && t.place && venues.resolve(t.place); if (v) ctx.point(v); });
     Object.keys(cfg.mealStops || {}).forEach(function (d) {
       ["lunch", "dinner"].forEach(function (k) { const p = cfg.mealStops[d][k]; if (p && p.lat != null) ctx.point(p); });
     });
   }
   function activeStays(cfg) { return (cfg.stays || []).filter(function (s) { return s.active !== false && s.lat != null; }); }
   function encodeShare(cfg) {
-    const slim = { v: cfg.version || 1, instrumentStore: cfg.instrumentStore || null, instrumentLead: cfg.instrumentLead, selectedStay: cfg.selectedStay, extras: cfg.extras || [], stops: cfg.stops || {}, mealPlan: cfg.mealPlan || {}, dayVehicle: cfg.dayVehicle || {}, party: cfg.party, stays: cfg.stays, day: cfg.day, buffers: cfg.buffers, overrides: cfg.overrides, provider: cfg.provider, traffic: cfg.traffic, excludeStatuses: cfg.excludeStatuses, venueOverrides: cfg.venueOverrides || [] };
+    const slim = { v: cfg.version || 1, instrumentStore: cfg.instrumentStore || null, instrumentLead: cfg.instrumentLead, selectedStay: cfg.selectedStay, extras: cfg.extras || [], stops: cfg.stops || {}, mealPlan: cfg.mealPlan || {}, dayVehicle: cfg.dayVehicle || {}, travel: cfg.travel || null, joiners: cfg.joiners || {}, party: cfg.party, stays: cfg.stays, day: cfg.day, buffers: cfg.buffers, overrides: cfg.overrides, provider: cfg.provider, traffic: cfg.traffic, excludeStatuses: cfg.excludeStatuses, venueOverrides: cfg.venueOverrides || [] };
     return btoa(unescape(encodeURIComponent(JSON.stringify(slim)))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
   }
   function decodeShare(s) {

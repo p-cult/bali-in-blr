@@ -194,5 +194,39 @@
       "note": ""
     }
   ],
-  "_extras": "Internal engagements not on the public calendar (photoshoots, rehearsals, receptions). Same shape as the planner's form; merged into the schedule."
+  "_extras": "Internal engagements not on the public calendar (photoshoots, rehearsals, receptions). Same shape as the planner's form; merged into the schedule.",
+  "travel": {
+    "_about": "The company's flights. The arrival day runs airport → stay; the departure day ends with the run to the airport, checkInLead minutes before the flight. A flight before 06:00 is planned on the evening before.",
+    "arrival": {
+      "date": "2026-09-30",
+      "time": "15:10",
+      "place": "Kempegowda International Airport",
+      "note": "25 Balinese artists land",
+      "landingBuffer": 75
+    },
+    "departure": {
+      "date": "2026-10-20",
+      "time": "00:50",
+      "place": "Kempegowda International Airport",
+      "checkInLead": 180
+    }
+  },
+  "joiners": {
+    "_about": "People who join the company on a day. travel:true = they ride with the group (counted for vehicles); false = they perform alongside but come on their own.",
+    "2026-10-02": {
+      "count": 6,
+      "label": "Yakshagana artists (local)",
+      "travel": false
+    },
+    "2026-10-13": {
+      "count": 6,
+      "label": "Yakshagana artists (local)",
+      "travel": false
+    },
+    "2026-10-16": {
+      "count": 6,
+      "label": "Yakshagana artists (local)",
+      "travel": true
+    }
+  }
 }

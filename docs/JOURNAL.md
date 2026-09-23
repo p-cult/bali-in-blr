@@ -1749,3 +1749,28 @@ public" tag. "3.30pm and 7.30pm" stays as two shows rather than "onwards".
 The A4 internal edition in `build-calendar-pdf.py` remains available but
 is not what `/plan/calendar.pdf` holds.
 
+## 23 Sep 2026 — Flights and local joiners in the plan
+
+**Ask.** 25 Balinese artists land 30 Sep 15:10 at Kempegowda
+International Airport; the flight home is 20 Oct 00:50. Six local
+Yakshagana artists perform with the company at the photoshoot (2 Oct),
+on 13 Oct and in Manipal (16 Oct); for Manipal they travel with the group.
+
+**Done.** `data/logistics.json` gains `travel` (arrival, departure with a
+check-in lead of 180 min and a landing buffer of 75) and `joiners` (per
+date: count, label, travel yes/no); `data/venues.json` gains the airport.
+The tour now runs from the arrival day to the day of the airport run (a
+flight before 06:00 is planned the evening before): 30 Sep is an
+**arrival** day (land → immigration → traffic-priced leg to the stay →
+check-in → dinner), 19 Oct a **departure** day (pack → dinner → luggage →
+leg to the airport → check-in → flight 12.50am (+1)), both priced by
+Google traffic like any leg. Joiners are flagged on their days and, when
+they travel, added to the vehicles (16 Oct: 31 in the vehicles). If a
+flight day ever has a programme, the flight is flagged on that day for a
+human to fit rather than guessed. Day rows show Arrival / Departure pills
+and "incl. 6 local". Both edges are in the PDFs and workbooks (20 days).
+
+**Not in the sheet.** The planner sheet's day tabs come from the Event
+List's date range, so 30 Sep, 1 Oct and 19 Oct have no tab; the flight
+days live in `logistics.json` and the snapshot only.
+
