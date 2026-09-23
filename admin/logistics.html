@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;900&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="../plan/plan.css?v=28" />
+<link rel="stylesheet" href="../plan/plan.css?v=30" />
 </head>
 <body>
 <div class="wrap" id="admin-app" hidden>
@@ -66,7 +66,7 @@
       <label class="field span-3">Cast (names or group) <input type="text" id="sh-cast" placeholder="e.g. Kecak troupe: Wayan, Made, …" /></label>
       <div class="field-group span-all">
         <span class="group-label">Before the show (min)</span>
-        <label class="field">Instrument set-up <input type="number" id="sh-setup" min="0" step="5" /></label>
+        <label class="field">Instrument set-up · 0 = no instrument vehicle <input type="number" id="sh-setup" min="0" step="5" /></label>
         <label class="field">Sound check <input type="number" id="sh-soundcheck" min="0" step="5" /></label>
         <label class="field">Costume, make-up, warm-up <input type="number" id="sh-ready" min="0" step="5" /></label>
         <label class="field">Instruments at venue by <input type="time" id="sh-instr" /></label>
@@ -165,8 +165,8 @@
 </div>
 
 <script src="auth.js?v=7"></script>
-<script src="../plan/engine.js?v=28"></script>
-<script src="../plan/render.js?v=26"></script>
+<script src="../plan/engine.js?v=30"></script>
+<script src="../plan/render.js?v=28"></script>
 <script>
 (function () {
   "use strict";
@@ -327,7 +327,7 @@
       const plan = rows.find(function (r) { return r.stay === stay; }).plan;
       $("plan-stay").textContent = stay.name;
       $("totals").innerHTML = R.totalsCard(plan, { internal: true });
-      $("days").innerHTML = R.tour(plan, { editable: true, eventEditor: false, cfg: c });
+      $("days").innerHTML = R.tour(plan, { editable: true, eventEditor: true, cfg: c });
       open.forEach(function (d) { const el = document.querySelector(".day[data-date='" + d + "']"); if (el) el.open = true; });
       $("share-url").textContent = shareUrl(stay);
     } else { $("days").innerHTML = "<p class='muted'>Add a stay to start.</p>"; }
@@ -497,7 +497,7 @@
     });
     $("days").addEventListener("keydown", function (e) {
       if (e.key === "Enter" && e.target.dataset.k === "where" && e.target.closest(".meal-edit")) { e.preventDefault(); e.target.closest(".meal-edit").querySelector("[data-mealgo]").click(); }
-      if (e.key === "Escape" && e.target.closest(".meal-edit")) { e.target.closest(".tl-row").classList.remove("editing"); }
+      if (e.key === "Escape" && e.target.closest(".meal-edit, .tl-edit")) { e.target.closest(".tl-row").classList.remove("editing"); }
     });
 
     $("sh-pick").addEventListener("change", fillShowForm);
@@ -536,16 +536,27 @@
       if (e.target.closest("[data-stopcancel]")) { e.target.closest(".addons").classList.remove("adding"); }
     });
 
-    // Per-event overrides inside the day cards.
-    $("days").addEventListener("input", function (e) {
+    // Per-show editor inside the day: opens from the "edit" pill on the
+    // show band, applies on the button (not per keystroke, which would
+    // re-draw the day under the cursor), then re-times and syncs the sheet.
+    $("days").addEventListener("click", async function (e) {
+      if (e.target.closest("[data-showtoggle]")) { const row = e.target.closest(".tl-row"); const on = row.classList.toggle("editing"); e.target.closest("[data-showtoggle]").textContent = on ? "close" : "edit"; return; }
       const box = e.target.closest(".tl-edit"); if (!box || !box.dataset.ev) return;
-      const o = cfg().overrides[box.dataset.ev] = cfg().overrides[box.dataset.ev] || {};
-      const k = e.target.dataset.k;
-      if (k === "skip") o.skip = e.target.checked;
-      else if (k === "note" || k === "cast") o[k] = e.target.value;
-      else if (k === "artists") { if (e.target.value === "") delete o.artists; else o.artists = +e.target.value; }
-      else o[k] = +e.target.value;
-      scheduleRebuild(false);
+      const id = box.dataset.ev;
+      if (e.target.closest("[data-showdone]")) { box.closest(".tl-row").classList.remove("editing"); return; }
+      if (e.target.closest("[data-showreset]")) { delete cfg().overrides[id]; await rebuild(false); fillShowForm(); if (L.CONFIG.LOGISTICS_URL && cfg().provider === "bridge") refreshTraffic(); return; }
+      if (!e.target.closest("[data-showapply]")) return;
+      const o = {};
+      box.querySelectorAll("[data-k]").forEach(function (el) {
+        const k = el.dataset.k, v = el.value;
+        if (k === "skip") { if (el.checked) o.skip = true; }
+        else if (k === "note" || k === "cast") { if (v.trim()) o[k] = v.trim(); }
+        else if (k === "instrAt") { if (v) o.instrAt = L.toMin(v); }
+        else if (v !== "") o[k] = +v;
+      });
+      cfg().overrides[id] = o;
+      await rebuild(false); fillShowForm();
+      if (L.CONFIG.LOGISTICS_URL && cfg().provider === "bridge") refreshTraffic();
     });
 
     $("open-all").addEventListener("click", function () { document.querySelectorAll(".day").forEach(function (d) { d.open = true; }); });
@@ -641,7 +652,7 @@
             artists: o.artists != null ? o.artists : c.party.artists,
             setup: R.hhmm(pick("setup")), soundcheck: R.hhmm(pick("soundcheck")), ready: R.hhmm(pick("ready")), change: R.hhmm(pick("change")), after: R.hhmm(pick("after")),
             skip: !!o.skip, note: o.note || "", cast: o.cast || "",
-            instrAt: t ? R.hhmm(t.instrAt) : "", instrLeave: t && t.instrLeave != null ? R.hhmm(t.instrLeave) : "",
+            instrAt: t ? R.hhmm(t.instrAt) : "—", instrLeave: t && t.instrLeave != null ? R.hhmm(t.instrLeave) : "—",
           };
         });
         const addons = [];

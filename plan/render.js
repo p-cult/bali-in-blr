@@ -32,7 +32,9 @@
     if (day.mealsOnly) return "<span class='ds'>" + pill("Add-ons only", "rest") + sep + t("leave", day.leave) + arrow + t("back", day.back) + sep + road() + "</span>";
     if (day.kind === "outstation") return "<span class='ds'>" + evs + pill("Out of town", "far") + sep + t("arrive", day.wake) + "<span class='ds-muted'>after the overnight drive</span>" + arrow + t("night drive home", day.sleep) + sep + road() + "</span>";
     if (day.nightDeparture) return "<span class='ds'>" + evs + pill("Overnight coach", "far") + sep + t("leave", day.leave) + arrow + t("coach to " + day.nightTo, day.sleep) + (day.back == null ? "<span class='ds-muted'>straight from the venue</span>" : "") + sep + road() + "</span>";
-    return "<span class='ds'>" + evs + (day.travelling ? "<span class='ds-muted'>" + day.travelling + " artists</span>" : "") + sep + t("leave", day.leave) + arrow + t("back", day.back) + sep + road() + "</span>";
+    const who = (day.travelling ? "<span class='ds-muted'>" + day.travelling + (day.travelling === 1 ? " artist" : " artists") + "</span>" : "") +
+      (day.vehicles && day.fleet > 1 && day.vehicles < day.fleet ? pill(day.vehicles + " vehicle" + (day.vehicles > 1 ? "s" : ""), "veh") : "");
+    return "<span class='ds'>" + evs + who + sep + t("leave", day.leave) + arrow + t("back", day.back) + sep + road() + "</span>";
   }
 
   // The production vehicle (assets/truck.svg); drawn facing right, so it
@@ -41,13 +43,15 @@
   function blockRow(b, opts) {
     const cls = ["tl-row", "tl-" + b.type, b.broad ? "tl-broad" : "", b.type === "truck" ? "truck-" + (b.dir || "out") : ""].join(" ");
     let when = hm(b.from) + (b.to != null ? " – " + hm(b.to) : "");
-    let body = "<b>" + (b.type === "truck" ? TRUCK : "") + esc(b.label) + "</b>" + (b.meal && opts.editable ? "<button type='button' class='meal-toggle no-print' data-mealtoggle>edit</button>" : "");
+    const canEditShow = b.type === "show" && opts.editable && opts.eventEditor !== false && b.ev && !b.showIndex;
+    let body = "<b>" + (b.type === "truck" ? TRUCK : "") + esc(b.label) + "</b>" + (b.meal && opts.editable ? "<button type='button' class='meal-toggle no-print' data-mealtoggle>edit</button>" : "") +
+      (canEditShow ? "<button type='button' class='meal-toggle no-print' data-showtoggle>edit</button>" : "");
     if (b.type === "leg" || b.type === "truck") body += "<span class='tl-detail'>" + esc(b.detail) + "</span>";
     if (b.type === "show") {
       body += "<span class='tl-detail'>" + esc((b.ev && b.ev.category) || "") + (b.venue ? " · " + esc(b.venue.name) + (b.venue.area ? ", " + esc(b.venue.area) : "") : "") +
         (b.ev && b.ev.extra ? " · internal engagement" : b.ev && b.ev.notPublic ? " · not public" : "") + (b.ev && b.ev.note ? " · " + esc(b.ev.note) : "") + "</span>";
       if (b.artists != null || b.cast) body += "<span class='tl-detail tl-cast'>" + (b.artists != null ? b.artists + " artists" : "") + (b.artists != null && b.cast ? " · " : "") + esc(b.cast || "") + "</span>";
-      if (opts.editable && opts.eventEditor !== false && b.ev && !b.showIndex) body += bufferEditor(b.ev, opts.cfg);
+      if (canEditShow) body += bufferEditor(b.ev, opts.cfg);
     }
     if (b.type === "buffer") body += "<span class='tl-detail'>" + b.minutes + " min" + (b.short ? " · " + b.short + " min short — arrival is late" : "") + "</span>";
     if (b.meal && opts.editable) body += mealEditorRow(b, opts.date, opts.cfg);
@@ -81,9 +85,13 @@
     return "<span class='tl-edit' data-ev='" + esc(ev.id) + "'>" +
       "<label>Artists <input type='number' min='0' data-k='artists' value='" + esc(o.artists != null ? o.artists : "") + "' placeholder='" + esc(cfg.party.artists) + "'></label>" +
       "<label>Cast <input type='text' data-k='cast' value='" + esc(o.cast || "") + "' placeholder='names or group, e.g. Kecak troupe'></label>" +
-      f("setup", "Set-up") + f("soundcheck", "Sound check") + f("ready", "Costume & warm-up") + f("change", "Costume off") + f("after", "Wrap") +
+      f("setup", "Set-up (0 = no instrument vehicle)") + f("soundcheck", "Sound check") + f("ready", "Costume & warm-up") + f("change", "Costume off") + f("after", "Wrap") +
       "<label>Note <input type='text' data-k='note' value='" + esc(o.note || "") + "' placeholder='e.g. gamelan on stage by 5pm'></label>" +
-      "<label class='tl-skip'><input type='checkbox' data-k='skip'" + (o.skip ? " checked" : "") + "> skip</label>" +
+      "<label>Instruments at venue by <input type='time' data-k='instrAt' value='" + (o.instrAt != null ? hhmm(o.instrAt) : "") + "'></label>" +
+      "<label class='tl-skip'><input type='checkbox' data-k='skip'" + (o.skip ? " checked" : "") + "> skip this show</label>" +
+      "<span class='tl-edit-actions'><button class='btn btn-sm btn-primary' type='button' data-showapply>Apply &amp; re-time</button>" +
+      "<button class='btn btn-sm' type='button' data-showreset title='Back to this type\u2019s defaults'>Reset</button>" +
+      "<button class='btn btn-sm btn-ghost' type='button' data-showdone>Done</button></span>" +
       "</span>";
   }
   // Day add-ons (planner only): stops with a purpose, a location and optional

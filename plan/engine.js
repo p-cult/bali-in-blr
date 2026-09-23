@@ -360,6 +360,9 @@
       change: pick("change", ev.category === "Performance" ? 30 : 10),
       after: o.after != null ? +o.after : (b.after || 30),
       skip: !!o.skip,
+      // Set-up 0 = nothing to bring: the instrument vehicle stays away
+      // (talks, mask making…). Any "instruments at" time is then ignored.
+      truck: setup > 0,
       note: o.note || "",
       artists: o.artists != null && o.artists !== "" ? +o.artists : null,
       cast: o.cast || "",
@@ -836,6 +839,7 @@
   // venue `instrumentLead` minutes before the artists' set-up, or at the
   // time given for the event; leaves the storage place travel-time earlier.
   function truckFor(ctx, day, timeline, x, artistsArrive, dateISO) {
+    if (!x.b.truck) return;
     const cfg = ctx.cfg, o = (cfg.overrides || {})[x.ev.id] || {};
     const lead = cfg.instrumentLead != null ? +cfg.instrumentLead : 30;
     const at = o.instrAt != null ? +o.instrAt : artistsArrive - lead;
@@ -858,6 +862,7 @@
   // After the wrap the instruments go back (or on to the next venue: the
   // planner keeps it simple and shows the return to storage).
   function truckBack(ctx, day, timeline, x, freeAt, dateISO) {
+    if (!x.b.truck) return;
     const cfg = ctx.cfg;
     const store = cfg.instrumentStore && cfg.instrumentStore.lat != null ? cfg.instrumentStore : null;
     const from = x.venue ? x.venue.name : x.ev.venue;
@@ -932,8 +937,16 @@
       if (day.red) t.redDays = (t.redDays || 0) + 1;
       t.longestDay = Math.max(t.longestDay, day.back - day.leave);
     });
+    // Vehicles per day follow who travels: a talk with one speaker needs
+    // one vehicle, not the whole fleet; the estimate follows suit.
     const veh = (ctx.cfg.party.vehicles || [])[0] || { ratePerKm: 0, minPerDay: 0, count: 1 };
-    t.vehicleCost = days.reduce(function (s, day) { return s + Math.max(day.km * (veh.ratePerKm || 0), day.kind === "rest" ? 0 : (veh.minPerDay || 0)); }, 0) * (veh.count || 1);
+    const fleet = veh.count || 1, perVehicle = veh.seats || 17;
+    days.forEach(function (day) {
+      const heads = (day.travelling || ctx.cfg.party.size || 0);
+      day.vehicles = day.kind === "rest" ? 0 : Math.max(1, Math.min(fleet, Math.ceil(heads / perVehicle)));
+      day.fleet = fleet;
+    });
+    t.vehicleCost = days.reduce(function (s, day) { return s + Math.max(day.km * (veh.ratePerKm || 0), day.kind === "rest" ? 0 : (veh.minPerDay || 0)) * day.vehicles; }, 0);
     const seats = (ctx.cfg.party.vehicles || []).reduce(function (n, v) { return n + (v.seats || 0) * (v.count || 1); }, 0);
     if (seats && seats < (ctx.cfg.party.size || 0)) ctx.warnings.push("The group is " + ctx.cfg.party.size + " people but the vehicles seat " + seats + " — add a vehicle or a bigger coach.");
     return { stay: stay, days: days, totals: t, party: ctx.cfg.party };

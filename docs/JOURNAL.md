@@ -1622,3 +1622,28 @@ write-back now re-sets that dropdown to include whatever it writes
 (Version 12). The sheet's Settings cell was written through the backend
 and read back. PDF re-rendered.
 
+## 23 Sep 2026 — Per-show tightening inside the day
+
+**Ask.** Not every event needs the whole company, transport, or the full
+set-up/sound-check/costume run (a talk has one speaker; mask making needs
+no instruments). Do it without a new module.
+
+**Done, in three phases.**
+1. Each show band in the admin's day view has an "edit" pill (like the
+   meal rows) that opens the per-show form in place: artists, cast,
+   set-up, sound check, costume & warm-up, costume off, wrap, note,
+   instruments-at time, skip. "Apply & re-time" commits (no per-keystroke
+   re-draw), "Reset" returns to the type defaults, "Done"/Esc closes. The
+   Shows tab still exists and shows the same values.
+2. Set-up 0 = no instrument vehicle. `bufFor` sets `truck` from set-up
+   alone; truck rows, their km and the sheet's instrument columns ("—")
+   follow. The instruments-at time is ignored when set-up is 0, because
+   write-back fills that column for every event and it would otherwise
+   keep the truck alive.
+3. Vehicles per day = ceil(travelling ÷ seats), capped at the fleet. The
+   day row shows "1 vehicle" when fewer than the fleet go; the vehicle
+   estimate multiplies by that day's count instead of the whole fleet.
+
+Mask Making (15 Oct) was set to set-up 0 while testing and left so, as
+the ask named it; Reset on that row restores the default.
+

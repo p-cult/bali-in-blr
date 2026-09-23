@@ -62,8 +62,13 @@ section{margin:0 0 1.6rem}
 .settings .panel{margin-top:.8rem}
 .settings h3{font-family:var(--display);font-weight:700;text-transform:uppercase;font-size:.8rem;letter-spacing:.08em;margin:0 0 .6rem;color:var(--muted)}
 /* in-day editors stay out of the way until asked for */
-.tl-row .meal-edit{display:none}
-.tl-row.editing .meal-edit{display:flex;align-items:center}
+.tl-row .meal-edit,.tl-row .tl-show-editor,.tl-show .tl-edit{display:none}
+.tl-row.editing .meal-edit,.tl-show.editing .tl-edit{display:flex;align-items:center}
+.tl-show .tl-edit{margin-top:.6rem;padding-top:.55rem;border-top:1px solid #2a2d33;color:#C9C4B8}
+.tl-show .tl-edit input{background:#1B1D21;border-color:#3A3F46;color:#fff}
+.tl-show .meal-toggle{color:#C9C4B8;border-color:#4a4f57}
+.tl-show.editing .meal-toggle{color:#fff;border-color:#fff}
+.tl-edit-actions{display:flex;gap:.4rem;flex-basis:100%;margin-top:.2rem}
 .tl-row.editing .meal-toggle{color:var(--ink);border-color:var(--ink)}
 .meal-toggle{font:inherit;font-size:.72rem;color:var(--muted2);background:none;border:1px solid var(--line);border-radius:99px;padding:.05rem .5rem;margin-left:.5rem;cursor:pointer;vertical-align:middle}
 .meal-toggle:hover{color:var(--ink);border-color:var(--ink)}
@@ -149,6 +154,7 @@ input[type=time]::-webkit-calendar-picker-indicator,input[type=date]::-webkit-ca
 .ds-pips{letter-spacing:.12em;margin-right:.4rem;font-size:.5rem;vertical-align:.08em}
 .ds-far{color:var(--warn);border-color:#7a6230}
 .ds-rest{color:var(--muted2);border-style:dashed}
+.ds-veh{color:var(--muted);border-color:var(--line2)}
 .ds-road{font-family:var(--sans);font-weight:500;text-transform:none;letter-spacing:0;font-size:.76rem;color:var(--muted);background:var(--bg)}
 .ds-sep{color:var(--line2);margin:0 .1rem}
 .ds-t{color:var(--muted2);font-size:.84rem}.ds-t b{color:var(--ink);font-weight:600}
