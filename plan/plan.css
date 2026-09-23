@@ -258,7 +258,10 @@ footer{margin-top:2.5rem;color:var(--muted2);font-size:.78rem}
   .tabs{display:none}
   .tab-body[hidden]{display:none!important}
   #sec-plan[hidden]{display:block!important}
-  .day{break-inside:avoid;page-break-inside:avoid;border:0;border-top:2px solid #8E4A24;border-radius:0;margin:0}
+  /* A day may run over a page (rows stay whole); forcing a whole day onto
+     one page pushed it off the first sheet and left the header alone. */
+  .day{break-inside:auto;border:0;border-top:2px solid #8E4A24;border-radius:0;margin:0}
+  .day>summary,.day-events,.day-flags{break-inside:avoid;break-after:avoid}
   .day-rest{opacity:1}
   .day[data-print="page"]{page-break-before:always}
   .day>summary{padding:.35rem 0 .25rem;gap:.6rem}
@@ -291,6 +294,13 @@ footer{margin-top:2.5rem;color:var(--muted2);font-size:.78rem}
   .tl-edit,.addons,.meal-edit,.day-print{display:none}
   body.print-one .day:not(.print-target),body.print-one .glance,body.print-one .cmp-wrap,body.print-one h2{display:none!important}
   body.print-one .day.print-target{page-break-before:auto}
+  /* One day on its own: a lighter header so the day has the sheet. */
+  body.print-one .kick{margin-bottom:.4rem}
+  body.print-one h1{font-size:16pt;margin:0 0 .1rem}
+  body.print-one .sub{font-size:8.5pt;margin:0 0 .5rem}
+  body.print-one .tl-row{padding:.12rem 0}
+  body.print-one .tl-show{padding:.22rem .5rem .22rem .45rem;margin:.1rem 0}
+  body.print-one footer{display:none}
   .badge-red{background:#c0392b;color:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
   .day-flags .flag-red{color:#c0392b}
   footer{font-size:7.5pt;margin-top:.8rem}
