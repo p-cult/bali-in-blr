@@ -846,6 +846,7 @@
       let dep = at - 45;
       for (let i = 0; i < 3; i++) { tr = ctx.travel(sIdx, x.idx, dateISO, dep); dep = at - (tr.min == null ? 45 : tr.min); }
       leave = dep;
+      if (tr && tr.km != null) { day.truckKm = (day.truckKm || 0) + tr.km; day.truckMin = (day.truckMin || 0) + (tr.min || 0); }
       timeline.push(block("truck", leave, at, "Instrument vehicle: leave " + (store.name || "storage") + " for " + (x.venue ? x.venue.name : x.ev.venue), { dir: "out", detail: legDetail(tr, 0) + " · production vehicle, not artist time" }));
     } else {
       timeline.push(block("truck", at, null, "Instruments at " + (x.venue ? x.venue.name : x.ev.venue) + " by now", { dir: "out", detail: "" }));
@@ -862,6 +863,7 @@
     const from = x.venue ? x.venue.name : x.ev.venue;
     if (store && x.idx >= 0) {
       const tr = ctx.travel(x.idx, ctx.point(store), dateISO, freeAt);
+      if (tr.km != null) { day.truckKm = (day.truckKm || 0) + tr.km; day.truckMin = (day.truckMin || 0) + (tr.min || 0); }
       timeline.push(block("truck", freeAt, freeAt + (tr.min == null ? 45 : tr.min), "Instrument vehicle: leave " + from + " for " + (store.name || "storage"), { dir: "back", detail: legDetail(tr, 0) + " · production vehicle, not artist time" }));
     } else {
       timeline.push(block("truck", freeAt, null, "Instruments leave " + from, { dir: "back", detail: "" }));
@@ -913,10 +915,13 @@
       days.push(planDay(ctx, d, events.filter(function (e) { return e.date === d; }), stay, days[days.length - 1]));
     }
     days.forEach(function (day, i) { if (day.kind === "outstation") stitchOvernight(days, i); });
-    const t = { travelMin: 0, km: 0, showDays: 0, restDays: 0, earlyCalls: 0, lateNights: 0, earliestWake: null, latestSleep: null, holdsInTown: 0, longestDay: 0 };
+    const t = { travelMin: 0, km: 0, truckKm: 0, truckMin: 0, showDays: 0, restDays: 0, earlyCalls: 0, lateNights: 0, earliestWake: null, latestSleep: null, holdsInTown: 0, longestDay: 0 };
+    // The instrument vehicle's own legs (storage ↔ venue) are counted apart
+    // from the artists' road time; they exist once a storage place is set.
+    t.truckKnown = !!(ctx.cfg.instrumentStore && ctx.cfg.instrumentStore.lat != null);
     const D = ctx.cfg.day;
     days.forEach(function (day) {
-      t.travelMin += day.travelMin; t.km += day.km;
+      t.travelMin += day.travelMin; t.km += day.km; t.truckKm += day.truckKm || 0; t.truckMin += day.truckMin || 0;
       if (day.kind === "rest") { t.restDays++; return; }
       t.showDays++;
       if (day.wake < toMin(D.earliestWake)) t.earlyCalls++;

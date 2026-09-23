@@ -130,7 +130,8 @@
     return "<div class='glance'>" +
       "<div class='glance-g'><span class='glance-k'>Travelling</span><b>" + esc(who) + "</b>" + (veh ? "<small>" + veh + "</small>" : "") + "</div>" +
       "<div class='glance-g'><span class='glance-k'>On the road</span><b>" + dur(t.travelMin) + " over " + t.showDays + " show days</b><small>" + Math.round(t.km) + " km · " + plan.days.length + " days in all" +
-        (opts.internal ? " · vehicle estimate ₹" + Math.round(t.vehicleCost).toLocaleString("en-IN") : "") + "</small></div>" +
+        (opts.internal ? " · vehicle estimate ₹" + Math.round(t.vehicleCost).toLocaleString("en-IN") : "") + "</small>" +
+        "<small>Instrument vehicle, separately: " + (t.truckKnown ? Math.round(t.truckKm) + " km · " + dur(t.truckMin) : "km counted once its storage place is set") + "</small></div>" +
       "<div class='glance-g glance-flags'><span class='glance-k'>Needs a look</span><span class='chips'>" + flags.join("") + "</span></div>" +
       "</div>";
   }
