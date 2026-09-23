@@ -1516,3 +1516,31 @@ the buffer — the tool's job is to expose the squeeze, not hide it.
 - **Legacy JS build:** if old Android browsers keep appearing in reports, add
   a tool script that emits an ES2015 `main.legacy.js` and load it via the
   `nomodule` pattern. Not done; the old-browser notice covers it for now.
+
+## 23 Sep 2026 — Planner pages draw first, firm up later
+
+**Problem.** A cold load of the planner waited a minute or more: the sheet
+read (15–40 s) and then 12 sequential leg batches, each paying Apps Script's
+15–30 s front door, before anything appeared.
+
+**Done, keeping the structure.**
+- Both pages render at once from the festival schedule, the stored sheet
+  copy (any age) and the built-in traffic profile; the backend work runs
+  behind the drawn plan (`load({ sheet: "background" })`).
+- One backend call instead of thirteen: `legs` takes up to 120 legs (the
+  page sends 100, which is normally the whole tour) and, with `sheet=1`,
+  returns the planner-sheet inputs in the same answer. The page tolerates
+  an older backend (falls back to 40 a time and a separate sheet read).
+- The backend keeps the 17-tab sheet read in CacheService (`sheetplan-v1`,
+  6 h) and re-makes it after every write-back and rebuild; `fresh=1`
+  bypasses it. Legs already lived in CacheService.
+- The browser keeps the sheet copy for a day instead of an hour; legs keep
+  their tiered TTLs.
+
+**Measured (local, cold cache, old backend):** plan on screen in ~4 s,
+Google traffic settled in ~60 s; warm reload complete in ~5 s.
+
+**Lesson.** Never block first paint on Apps Script. Draw from what is on
+the device, then refine; the front-door latency is Google's and cannot be
+tuned away, only paid fewer times.
+

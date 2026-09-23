@@ -980,7 +980,8 @@
   // that departure (six requests at a time), fill the leg cache and call
   // onProgress after each batch so the page can re-plan and re-render as
   // figures arrive. Returns true if anything changed.
-  async function refineWithBridge(ctx, plan, onProgress) {
+  async function refineWithBridge(ctx, plan, onProgress, opts) {
+    opts = opts || {};
     if (!CONFIG.LOGISTICS_URL) return false;
     pruneLegCache(ctx);
     const jobs = [];
@@ -1003,25 +1004,38 @@
       });
     });
     let changed = false, failed = 0;
-    // One backend execution prices up to 12 legs; requests go one after
-    // another (Apps Script dislikes concurrency), with retries on its
-    // occasional HTML answer.
-    const BATCH = 12;
-    for (let i = 0; i < jobs.length; i += BATCH) {
-      const chunk = jobs.slice(i, i + BATCH);
+    // One backend execution prices up to 100 legs — normally the whole tour
+    // in a single round trip, since the front door costs 15–30 s per call.
+    // Requests go one after another (Apps Script dislikes concurrency),
+    // with retries on its occasional HTML answer. The first request can
+    // also carry the planner-sheet inputs back (opts.sheet), so a cold
+    // load pays the front door once, not twice.
+    let batch = 100;
+    let wantSheet = !!opts.sheet;
+    for (let i = 0; i < jobs.length || wantSheet; i += batch) {
+      const chunk = jobs.slice(i, i + batch);
       const spec = chunk.map(function (j) { return ctx.points[j.a].lat + "," + ctx.points[j.a].lon + "~" + ctx.points[j.b].lat + "," + ctx.points[j.b].lon + "~" + j.departISO; }).join("|");
-      const url = CONFIG.LOGISTICS_URL + "?action=legs&legs=" + encodeURIComponent(spec);
-      let r = null;
+      const url = CONFIG.LOGISTICS_URL + "?action=legs&legs=" + encodeURIComponent(spec) + (wantSheet ? "&sheet=1" : "");
+      let r = null, tooMany = false;
       for (let attempt = 0; attempt < 4 && !r; attempt++) {
-        try { r = await fetchJSON(url, 60000); if (!r.ok) throw new Error(r.error || "bridge"); }
+        try { r = await fetchJSON(url, 180000); if (!r.ok) { if (/at most \d+ legs/.test(r.error || "")) { tooMany = true; break; } throw new Error(r.error || "bridge"); } }
         catch (e) { r = null; if (attempt === 3) { failed += chunk.length; } else await new Promise(function (res) { setTimeout(res, 800 * (attempt + 1)); }); }
+      }
+      // An older backend takes 40 a time: redo this chunk in that size.
+      if (tooMany && batch > 40) { batch = 40; i -= batch; continue; }
+      if (r && wantSheet) {
+        wantSheet = false;
+        let sheet = r.sheet && r.sheet.ok ? r.sheet : null;
+        if (sheet) storeSheetPlan(sheet); else sheet = await fetchSheetPlanLive();
+        if (sheet && opts.onSheet) await opts.onSheet(sheet);
       }
       if (r) chunk.forEach(function (j, k) {
         const x = r.results[k];
         if (x && x.ok) { ctx.legCache[j.ck] = { min: x.minutes, km: x.km, source: "google-traffic", mode: x.mode, at: Date.now() }; changed = true; }
         else failed++;
       });
-      if (onProgress) onProgress(i + BATCH, jobs.length);
+      if (onProgress) onProgress(i + batch, jobs.length);
+      if (!jobs.length) break;
     }
     if (failed) ctx.warnings.push("Google traffic unavailable for " + failed + " leg" + (failed > 1 ? "s" : "") + "; those use the estimate.");
     if (changed) saveLegCache(ctx);
@@ -1030,12 +1044,16 @@
   // Refine, re-plan, and refine again until departures settle (max 3 passes).
   // Returns the plan; onProgress(plan, done, total, pass) fires per batch —
   // when every leg is already cached it fires once with total 0.
-  async function refineTour(ctx, events, stay, onProgress) {
+  async function refineTour(ctx, events, stay, onProgress, opts) {
+    opts = opts || {};
     let plan = planTour(ctx, events, stay);
     for (let pass = 0; pass < 4; pass++) {
-      const changed = await refineWithBridge(ctx, plan, function (done, total) { if (onProgress) onProgress(planTour(ctx, events, stay), done, total, pass); });
+      const first = pass === 0;
+      const changed = await refineWithBridge(ctx, plan, function (done, total) { if (onProgress) onProgress(planTour(ctx, events, stay), done, total, pass); },
+        first ? { sheet: opts.sheet, onSheet: async function (sheet) { if (!opts.onSheet) return; const ev = await opts.onSheet(sheet); if (ev) events = ev; } } : null);
       plan = planTour(ctx, events, stay);
-      if (!changed) break;
+      // Sheet inputs may have added stops: one more pass prices those.
+      if (!changed && !(first && opts.sheet)) break;
     }
     return plan;
   }
@@ -1107,32 +1125,37 @@
   // Inputs from the Google Sheet planner (the source of truth for per-event
   // and per-day inputs once the backend is connected).
   // The sheet read takes the backend 15–40 s (17 tabs), so the last answer
-  // is kept in the browser: a load uses it at once when it is under an hour
-  // old and asks for a fresh one in the background (opts.onFresh).
-  const SHEET_STORE = "bali-sheetplan-v1", SHEET_FRESH_MS = 60 * 60000;
+  // is kept in the browser for a day: a load draws from it at once and a
+  // fresh copy rides along with the first traffic request (refineTour's
+  // opts.sheet) whenever the stored one is older than that.
+  const SHEET_STORE = "bali-sheetplan-v1", SHEET_FRESH_MS = 24 * 60 * 60000;
   function storedSheetPlan() {
     try { const s = JSON.parse(localStorage.getItem(SHEET_STORE) || "null"); return s && s.at && s.data ? s : null; } catch (e) { return null; }
   }
-  async function fetchSheetPlanLive() {
+  function storeSheetPlan(r) { try { localStorage.setItem(SHEET_STORE, JSON.stringify({ at: Date.now(), data: r })); } catch (e) { /* ignore */ } }
+  function sheetIsFresh() { const s = storedSheetPlan(); return !!(s && Date.now() - s.at < SHEET_FRESH_MS); }
+  async function fetchSheetPlanLive(fresh) {
     if (!CONFIG.LOGISTICS_URL) return null;
     try {
-      const r = await fetchJSON(CONFIG.LOGISTICS_URL + "?action=sheetplan", 90000);
-      if (r && r.ok) { try { localStorage.setItem(SHEET_STORE, JSON.stringify({ at: Date.now(), data: r })); } catch (e) { /* ignore */ } return r; }
+      const r = await fetchJSON(CONFIG.LOGISTICS_URL + "?action=sheetplan" + (fresh ? "&fresh=1" : ""), 180000);
+      if (r && r.ok) { storeSheetPlan(r); return r; }
     } catch (e) { /* fall through */ }
     return null;
   }
-  // opts.fresh forces a live read; otherwise a recent stored copy is returned
-  // and, if onFresh is given, a live read follows and is handed to it when
-  // it differs.
+  // opts.fresh forces a live read (and a backend re-read of the tabs);
+  // opts.background never waits: the stored copy, whatever its age, or null;
+  // otherwise a recent stored copy is returned and, if onFresh is given, a
+  // live read follows and is handed to it when it differs.
   async function fetchSheetPlan(opts) {
     opts = opts || {};
     if (!CONFIG.LOGISTICS_URL) return null;
     const stored = storedSheetPlan();
+    if (opts.background && !opts.fresh) return stored ? stored.data : null;
     if (!opts.fresh && stored && Date.now() - stored.at < SHEET_FRESH_MS) {
       if (opts.onFresh) fetchSheetPlanLive().then(function (live) { if (live && JSON.stringify(live.cfg) !== JSON.stringify(stored.data.cfg)) opts.onFresh(live); });
       return stored.data;
     }
-    const live = await fetchSheetPlanLive();
+    const live = await fetchSheetPlanLive(opts.fresh);
     return live || (stored ? stored.data : null);
   }
   function applySheetPlan(cfg, sheet) {
@@ -1169,7 +1192,7 @@
       events = local.map(function (e) { return { id: slug(e.title) + "@" + e.date, title: e.title, category: e.category, date: e.date, start: parseClock(e.time), end: null, shows: [], venue: e.venue, status: e.status, notPublic: false, timeText: e.time || "" }; })
         .map(function (e) { if (e.start != null) { e.end = e.start + 120; e.shows = [{ start: e.start, end: e.end }]; } return e; });
     }
-    if (opts.sheet !== false) { const sheet = await fetchSheetPlan({ fresh: opts.freshSheet, onFresh: opts.onFreshSheet }); if (sheet) applySheetPlan(cfg, sheet); }
+    if (opts.sheet !== false) { const sheet = await fetchSheetPlan({ fresh: opts.freshSheet, background: opts.sheet === "background", onFresh: opts.onFreshSheet }); if (sheet) applySheetPlan(cfg, sheet); }
     events = events.concat(extraEvents(cfg));
     events.sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : (a.start || 0) - (b.start || 0); });
     return { cfg: cfg, venues: venues, events: events, fromSheet: !!tsv };
@@ -1178,7 +1201,7 @@
   global.Logistics = { PURPOSE: PURPOSE,
     CONFIG: CONFIG, providers: providers, Ctx: Ctx, VenueBook: VenueBook,
     load: load, parseSchedule: parseSchedule, planDay: planDay, planTour: planTour, compareStays: compareStays,
-    refineWithBridge: refineWithBridge, refineTour: refineTour, loadLegCache: loadLegCache, saveLegCache: saveLegCache, fetchSheetPlan: fetchSheetPlan, applySheetPlan: applySheetPlan, activeStays: activeStays, registerPoints: registerPoints, encodeShare: encodeShare, decodeShare: decodeShare,
+    refineWithBridge: refineWithBridge, refineTour: refineTour, loadLegCache: loadLegCache, saveLegCache: saveLegCache, fetchSheetPlan: fetchSheetPlan, sheetIsFresh: sheetIsFresh, applySheetPlan: applySheetPlan, activeStays: activeStays, registerPoints: registerPoints, encodeShare: encodeShare, decodeShare: decodeShare,
     parseLatLon: parseLatLon, placeNameFromLink: placeNameFromLink, geocode: geocode, deepMerge: deepMerge, clone: clone,
     esc: esc, hm: hm, dur: dur, toMin: toMin, dateLabel: dateLabel, slug: slug, pad: pad,
   };

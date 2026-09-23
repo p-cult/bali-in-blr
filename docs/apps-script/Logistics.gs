@@ -59,9 +59,11 @@ function doGet(e) {
   try {
     switch (p.action) {
       case "leg": { var one = leg_(p.from, p.to, p.depart); cacheFlush_(); return json_(one); }
-      case "legs": { var many = legs_(p.legs); cacheFlush_(); return json_(many); }
+      // legs may carry the planner-sheet inputs back too (sheet=1): one
+      // round trip for a cold page instead of two.
+      case "legs": { var many = legs_(p.legs); if (p.sheet) many.sheet = sheetplanCached_(false); cacheFlush_(); return json_(many); }
       case "buildsheet": return json_(buildsheet_());
-      case "sheetplan": return json_(sheetplan_());
+      case "sheetplan": return json_(sheetplanCached_(!!p.fresh));
       case "geocode": return json_(geocode_(p.q));
       case "load": return json_({ ok: true, cfg: loadPlan_() });
       default: return json_({ ok: true, service: "bali-logistics", actions: ["leg", "legs", "geocode", "load", "save", "buildsheet", "sheetplan", "writeback"] });
@@ -117,7 +119,7 @@ function leg_(from, to, departISO) {
 
 function legs_(spec) {
   var items = String(spec || "").split("|").filter(function (x) { return x; });
-  if (items.length > 40) throw new Error("at most 40 legs per request");
+  if (items.length > 120) throw new Error("at most 120 legs per request");
   var results = items.map(function (item) {
     var parts = item.split("~");
     try { var r = leg_(parts[0], parts[1], parts[2]); return { ok: true, minutes: r.minutes, km: r.km, mode: r.mode, cached: r.cached }; }
@@ -330,6 +332,7 @@ function buildsheet_() {
   var s1 = ss.getSheetByName("Sheet1"); if (s1 && ss.getSheets().length > 1) ss.deleteSheet(s1);
   ss.setActiveSheet(settings); ss.moveActiveSheet(1);
   made.forEach(function (n, i) { ss.setActiveSheet(ss.getSheetByName(n)); ss.moveActiveSheet(i + 2); });
+  CacheService.getScriptCache().remove(SHEETPLAN_KEY);
   return { ok: true, url: ss.getUrl(), days: made.length };
 }
 
@@ -439,6 +442,18 @@ function dispMin_(s) {
   s = String(s || "").trim(); if (!s || s === "—") return null;
   var m = /^(\d{1,3}):(\d{2})/.exec(s); if (m) return +m[1] * 60 + +m[2];
   var c = parseClock_(s); return c;
+}
+// The 17-tab read costs 15–30 s, so its answer is kept in the script cache
+// (6 h, the maximum) and re-made whenever the sheet is written through
+// writeback_ or rebuilt; fresh=1 forces a re-read.
+var SHEETPLAN_KEY = "sheetplan-v1";
+function sheetplanCached_(fresh) {
+  var cache = CacheService.getScriptCache();
+  if (!fresh) { var hit = cache.get(SHEETPLAN_KEY); if (hit) { try { return JSON.parse(hit); } catch (e) { /* re-read */ } } }
+  var r = sheetplan_();
+  var str = JSON.stringify(r);
+  if (str.length < 95000) cache.put(SHEETPLAN_KEY, str, 21600); else cache.remove(SHEETPLAN_KEY);
+  return r;
 }
 function sheetplan_() {
   var ss = plannerBook_();
@@ -554,5 +569,7 @@ function writeback_(days, settings) {
       sh.getRange(addonHeader + 2, 1, ADDON_ROWS, ADDON_HEADERS.length).setValues(rows);
     }
   });
+  // Re-read now so the next page load finds a warm cache that matches.
+  sheetplanCached_(true);
   return { ok: true };
 }

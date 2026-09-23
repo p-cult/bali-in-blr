@@ -39,7 +39,7 @@
   </footer>
 </div>
 
-<script src="engine.js?v=25"></script>
+<script src="engine.js?v=26"></script>
 <script src="render.js?v=22"></script>
 <script>
 (function () {
@@ -84,37 +84,44 @@
     el.classList.toggle("done", !!done);
     if (done) setTimeout(function () { el.classList.add("hide"); }, 2500);
   }
+  // The page draws at once from the festival schedule, the stored sheet
+  // inputs and the built-in traffic profile, then firms up in the
+  // background: one backend round trip brings the fresh sheet inputs and
+  // Google's traffic figures together.
+  async function applySheet(live) {
+    L.applySheetPlan(data.cfg, live);
+    const fresh = await L.load({ cfg: data.cfg, sheet: false });
+    data.events = fresh.events.filter(function (e) { return (data.cfg.excludeStatuses || []).indexOf((e.status || "").toLowerCase()) === -1; });
+    L.registerPoints(ctx, data.cfg, data.venues, data.events);
+    await ctx.ensureMatrix();
+    render();
+    return data.events;
+  }
   async function start() {
     try {
-      loading("Loading the festival schedule and the planner sheet…", 0.1);
-      data = await L.load({ cfg: shared || undefined, onFreshSheet: function (live) {
-        // The sheet changed since the stored copy: apply and re-plan quietly.
-        L.applySheetPlan(data.cfg, live);
-        L.load({ cfg: data.cfg, sheet: false }).then(function (fresh) {
-          data.events = fresh.events.filter(function (e) { return (data.cfg.excludeStatuses || []).indexOf((e.status || "").toLowerCase()) === -1; });
-          L.registerPoints(ctx, data.cfg, data.venues, data.events); ctx.ensureMatrix().then(render);
-        });
-      } });
+      loading("Loading the festival schedule…", 0.1);
+      data = await L.load({ cfg: shared || undefined, sheet: "background" });
       const ex = data.cfg.excludeStatuses || [];
       data.events = data.events.filter(function (e) { return ex.indexOf((e.status || "").toLowerCase()) === -1; });
       ctx = new L.Ctx(data.cfg, data.venues);
       L.registerPoints(ctx, data.cfg, data.venues, data.events);
-      loading("Working out road distances…", 0.25);
+      loading("Working out road distances…", 0.2);
       await ctx.ensureMatrix();
       render();
       if (L.CONFIG.LOGISTICS_URL && data.cfg.provider === "bridge") {
         const stays = L.activeStays(data.cfg);
         const main = currentStay();
+        const needSheet = !L.sheetIsFresh();
+        loading(needSheet ? "Plan drawn from estimates · fetching the planner sheet and Google traffic…" : "Plan drawn · checking Google traffic…", 0.3);
         // Price the stay on screen first, then the others.
         const order = [main].concat(stays.filter(function (s) { return s !== main; }));
         for (let i = 0; i < order.length; i++) {
           const s = order[i];
-          loading("Checking Google traffic for " + s.name + "…", 0.3 + 0.7 * (i / order.length));
           await L.refineTour(ctx, data.events, s, function (plan, done, total, pass) {
             const frac = 0.3 + 0.7 * ((i + Math.min(done, total) / Math.max(total, 1)) / order.length);
             if (total) loading("Google traffic for " + s.name + ": " + Math.min(done, total) + " of " + total + " legs" + (pass ? ", settling" : "") + "…", frac);
             if (currentStay() === s) render();
-          });
+          }, i === 0 ? { sheet: needSheet, onSheet: applySheet } : null);
         }
         render();
         loading("Everything is loaded · Google traffic for these dates" + (Object.keys(ctx.legCache).length ? " · saved on this device for quick reloads" : ""), 1, true);
