@@ -145,6 +145,8 @@ input[type=time]::-webkit-calendar-picker-indicator,input[type=date]::-webkit-ca
 .ds{display:inline-flex;flex-wrap:wrap;align-items:center;gap:.45rem}
 .ds-pill{font-family:var(--display);font-weight:700;text-transform:uppercase;letter-spacing:.06em;font-size:.62rem;border:1px solid var(--line2);border-radius:99px;padding:.15rem .55rem;color:var(--muted);line-height:1.4}
 .ds-ev{color:var(--accent-2);border-color:var(--accent-2)}
+.ds-ev-many{background:var(--accent-2);color:#1B1D21;border-color:var(--accent-2)}
+.ds-pips{letter-spacing:.12em;margin-right:.4rem;font-size:.5rem;vertical-align:.08em}
 .ds-far{color:var(--warn);border-color:#7a6230}
 .ds-rest{color:var(--muted2);border-style:dashed}
 .ds-road{font-family:var(--sans);font-weight:500;text-transform:none;letter-spacing:0;font-size:.76rem;color:var(--muted);background:var(--bg)}
@@ -260,7 +262,7 @@ footer{margin-top:2.5rem;color:var(--muted2);font-size:.78rem}
   .day-sum{font-size:8.5pt}
   .ds{gap:.35rem}
   .ds-pill{font-size:6pt;padding:.05rem .4rem;border-color:#999;color:#444;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-  .ds-ev{color:#8E4A24;border-color:#8E4A24}.ds-far{color:#6b4a00;border-color:#b08a3c}
+  .ds-ev{color:#8E4A24;border-color:#8E4A24}.ds-ev-many{background:#8E4A24;color:#fff}.ds-far{color:#6b4a00;border-color:#b08a3c}
   .ds-road{font-size:7.5pt;background:none;color:#444}
   .ds-sep{color:#bbb}.ds-t{font-size:8.5pt;color:#555}.ds-t b{color:#1B1D21}.ds-arrow{color:#8E4A24}.ds-muted{font-size:8pt;color:#666}
   .day-body{padding:0;border-top:0}

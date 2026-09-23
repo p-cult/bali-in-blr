@@ -23,7 +23,9 @@
     const pill = function (t, k) { return "<span class='ds-pill" + (k ? " ds-" + k : "") + "'>" + esc(t) + "</span>"; };
     const sep = "<span class='ds-sep' aria-hidden='true'>|</span>";
     const road = function () { return day.travelMin ? pill(dur(day.travelMin) + (day.km ? " · " + Math.round(day.km) + " km" : ""), "road") : ""; };
-    const n = day.events.length, evs = pill(n === 1 ? "1 event" : n + " events", "ev");
+    // One pip per event, so two events read differently from one at a glance.
+    const n = day.events.length;
+    const evs = "<span class='ds-pill ds-ev" + (n > 1 ? " ds-ev-many" : "") + "'><span class='ds-pips' aria-hidden='true'>" + "●".repeat(Math.min(n, 4)) + "</span>" + (n === 1 ? "1 event" : n + " events") + "</span>";
     const t = function (label, v) { return "<span class='ds-t'>" + esc(label) + " <b>" + esc(hm(v)) + "</b></span>"; };
     const arrow = "<span class='ds-arrow' aria-hidden='true'>→</span>";
     if (day.kind === "rest") return "<span class='ds'>" + pill("Rest day", "rest") + sep + "<span class='ds-muted'>no travel</span></span>";
