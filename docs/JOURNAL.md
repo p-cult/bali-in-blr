@@ -1719,3 +1719,23 @@ silently swapped. The day row's pill names the chosen vehicle.
   the stay on screen; the workflow installs openpyxl and commits the
   workbooks. A .tsv was asked for first; a TSV has no tabs, so .xlsx.
 
+## 23 Sep 2026 — Calendar PDF in two editions
+
+**Ask.** A calendar of every event, including not-public shows, skipping
+the photoshoot, with every date, time and venue exact.
+
+**Found on the way.** The public calendar PDF linked from the site
+(`assets/bali-in-bengaluru-calendar.pdf`) was including events marked
+"not public" (Workshop for Students, A Day in Manipal). It now applies
+the same rule as `main.js` and leaves them out.
+
+**Done.** `tools/build-calendar-pdf.py` builds two editions from a fresh
+`data/events.json`: the public one, and `plan/calendar.pdf` (internal:
+every event, "Not public" tagged, under the link-only planner path, not
+linked, not indexed). Both put a multi-day event on every date it runs
+("Day 1 of 2 (6–7 Oct)"), add the venue's area from `data/venues.json`,
+tag the ticket status, and use Archivo at normal width. The photoshoot is
+an internal engagement in the planner sheet, not an Event List row, so it
+never appears. Venue matching normalises punctuation (Parsec's alias);
+a "-" status cell is treated as none.
+
