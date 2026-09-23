@@ -224,8 +224,9 @@ footer{margin-top:2.5rem;color:var(--muted2);font-size:.78rem}footer a{color:var
   h1{font-size:18pt;margin:0 0 .2rem}
   .sub{font-size:9pt;margin:0 0 .6rem}
   .no-print,.bar,.panel.no-print,.btn,footer .np{display:none!important}
-  .glance{margin:0 0 .5rem;border-color:#ccc}
-  .glance-g{padding:.3rem .6rem}
+  .glance{margin:0 0 .5rem;border-color:#ccc;grid-template-columns:1fr 1.2fr 1.3fr}
+  .glance-g{padding:.3rem .6rem;border-top:0;border-left:1px solid #ccc}
+  .glance-g:first-child{border-left:0}
   .glance-k{font-size:6.5pt}.glance-g b{font-size:10pt}.glance-g small{font-size:7.5pt}
   .chip{font-size:7.5pt;-webkit-print-color-adjust:exact;print-color-adjust:exact}
   .tabs{display:none}
