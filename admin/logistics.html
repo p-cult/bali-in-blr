@@ -379,7 +379,7 @@
         if (!confirm("Delete the stay “" + s.name + "”? It leaves the comparison; you can add it again or restore the defaults.")) return;
         cfg().stays.splice(+row.dataset.i, 1); scheduleRebuild(true); return;
       }
-      if (e.target.type === "radio") { selectedStay = s.id; s.active = true; scheduleRebuild(true); }
+      if (e.target.type === "radio") { selectedStay = s.id; s.active = true; showPdfFor(s.id); scheduleRebuild(true); }
     });
     $("restore-stays").addEventListener("click", function () {
       const c = cfg();
@@ -697,12 +697,19 @@
     // Print always prints the plan.
     window.addEventListener("beforeprint", function () { document.getElementById("sec-plan").hidden = false; });
   }
+  // Ready-made PDF for the stay on screen (rendered nightly, one per stay).
+  function showPdfFor(stayId) {
+    const file = "../plan/tour-plan" + (stayId ? "-" + stayId : "") + ".pdf";
+    fetch(file + ".json", { cache: "no-store" }).then(function (r) { return r.ok ? r.json() : null; }).then(function (st) {
+      if (!st || !st.at) { $("pdf").hidden = true; return; }
+      const d = new Date(st.at);
+      $("pdf").hidden = false; $("pdf").href = file; $("pdf").download = "Bali-in-Bengaluru-tour-plan" + (st.stayName ? " — " + st.stayName : "") + ".pdf";
+      $("pdf").title = "Ready-made PDF for " + (st.stayName || "the main stay") + ", rendered " + d.toLocaleString("en-IN", { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" }) + " IST; refreshed every night";
+    }).catch(function () { $("pdf").hidden = true; });
+  }
   async function start(user) {
     $("who").textContent = user;
-    fetch("../plan/tour-plan.pdf.json", { cache: "no-store" }).then(function (r) { return r.ok ? r.json() : null; }).then(function (st) {
-      if (!st || !st.at) return; const d = new Date(st.at);
-      $("pdf").hidden = false; $("pdf").title = "Ready-made PDF rendered " + d.toLocaleString("en-IN", { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" }) + " IST, refreshed every night";
-    }).catch(function () { /* none yet */ });
+
     try {
       loading("Loading the festival schedule…", 0.1);
       const draft = stored();
@@ -716,6 +723,7 @@
       const ex = data.cfg.excludeStatuses || [];
       data.events = data.events.filter(function (e) { return ex.indexOf((e.status || "").toLowerCase()) === -1; });
       selectedStay = data.cfg.selectedStay || (L.activeStays(data.cfg)[0] || {}).id || null;
+      showPdfFor(selectedStay);
       if (data.cfg.sheetUrl) { $("sheet-link").href = data.cfg.sheetUrl; $("sheet-link").hidden = false; }
       bindForms(); wire(); wireTabs();
       await rebuild(true);

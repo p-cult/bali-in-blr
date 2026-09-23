@@ -14,8 +14,19 @@
 import { spawn } from "node:child_process";
 import { writeFileSync, existsSync } from "node:fs";
 
-const PAGE = process.argv[2] || "http://localhost:8000/plan/?print=1";
-const OUT = process.argv[3] || "plan/tour-plan.pdf";
+// With no arguments: one PDF per active stay from data/logistics.json
+// (plan/tour-plan-<stay id>.pdf) plus plan/tour-plan.pdf for the main stay.
+import { readFileSync } from "node:fs";
+const BASE = process.env.PLAN_URL || "http://localhost:8000/plan/";
+const jobs = [];
+if (process.argv[2]) jobs.push({ url: process.argv[2], out: process.argv[3] || "plan/tour-plan.pdf" });
+else {
+  const cfg = JSON.parse(readFileSync("data/logistics.json", "utf8"));
+  const stays = (cfg.stays || []).filter((s) => s.active !== false && s.lat != null);
+  for (const s of stays) jobs.push({ url: BASE + "?print=1&stay=" + encodeURIComponent(s.id), out: "plan/tour-plan-" + s.id + ".pdf", stay: s });
+  const main = stays.find((s) => s.id === cfg.selectedStay) || stays[0];
+  if (main) jobs.push({ url: BASE + "?print=1&stay=" + encodeURIComponent(main.id), out: "plan/tour-plan.pdf", stay: main });
+}
 const CHROME = process.env.CHROME || ["/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", "/usr/bin/google-chrome", "/usr/bin/chromium-browser", "/usr/bin/chromium"].find(existsSync);
 if (!CHROME) { console.error("No Chrome found; set CHROME=/path/to/chrome"); process.exit(1); }
 const PORT = 9333;
@@ -41,20 +52,23 @@ async function evalJS(expression) { const r = await send("Runtime.evaluate", { e
 await connect();
 await send("Page.enable");
 await send("Emulation.setEmulatedMedia", { media: "print" });
-await send("Page.navigate", { url: PAGE });
-let text = "";
-for (let i = 0; i < 90; i++) {
-  await sleep(1000);
-  text = await evalJS("(document.getElementById('loader-text')||{}).textContent||''");
-  if (/Everything is loaded|Could not load/.test(text)) break;
+let failed = 0;
+for (const job of jobs) {
+  await send("Page.navigate", { url: job.url });
+  let text = "";
+  for (let i = 0; i < 120; i++) {
+    await sleep(1000);
+    text = await evalJS("(document.getElementById('loader-text')||{}).textContent||''");
+    if (/Everything is loaded|Could not load/.test(text)) break;
+  }
+  if (!/Everything is loaded/.test(text)) { console.error(job.out + ": plan did not finish loading (" + text + "); keeping the previous file."); failed++; continue; }
+  await sleep(800);
+  const pdf = await send("Page.printToPDF", { printBackground: true, preferCSSPageSize: true, displayHeaderFooter: false });
+  const buf = Buffer.from(pdf.result.data, "base64");
+  writeFileSync(job.out, buf);
+  const pages = (buf.toString("latin1").match(/\/Type\s*\/Page[^s]/g) || []).length;
+  writeFileSync(job.out + ".json", JSON.stringify({ at: new Date().toISOString(), bytes: buf.length, pages: pages, stay: job.stay ? job.stay.id : null, stayName: job.stay ? job.stay.name : null }) + "\n");
+  process.stderr.write("wrote " + job.out + " (" + pages + " pages" + (job.stay ? ", " + job.stay.name : "") + ")\n");
 }
-process.stderr.write("loader: " + text + "\n");
-await sleep(1000);
-const pdf = await send("Page.printToPDF", { printBackground: true, preferCSSPageSize: true, displayHeaderFooter: false });
-const buf = Buffer.from(pdf.result.data, "base64");
-if (!/Everything is loaded/.test(text)) { console.error("Plan did not finish loading; keeping the previous PDF."); ws.close(); chrome.kill(); process.exit(2); }
-writeFileSync(OUT, buf);
-const pages = (buf.toString("latin1").match(/\/Type\s*\/Page[^s]/g) || []).length;
-writeFileSync(OUT + ".json", JSON.stringify({ at: new Date().toISOString(), bytes: buf.length, pages: pages }) + "\n");
-process.stderr.write("wrote " + OUT + " (" + pages + " pages)\n");
 ws.close(); chrome.kill();
+if (failed) process.exit(2);

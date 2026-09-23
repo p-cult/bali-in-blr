@@ -62,11 +62,17 @@
     const pick = $("stay-pick");
     if (stays.length > 1) {
       $("stay-pick-wrap").hidden = false;
-      if (!pick.options.length) stays.forEach(function (s) { const o = document.createElement("option"); o.value = s.id; o.textContent = s.name; pick.appendChild(o); });
+      if (!pick.options.length) {
+        stays.forEach(function (s) { const o = document.createElement("option"); o.value = s.id; o.textContent = s.name; pick.appendChild(o); });
+        // A fresh select answers with its first option; the URL or the sheet's choice must win.
+        const want = params.get("stay") || data.cfg.selectedStay;
+        if (want && stays.some(function (s) { return s.id === want; })) pick.value = want;
+      }
     }
     const stay = stays.find(function (s) { return s.id === (pick.value || params.get("stay") || data.cfg.selectedStay); }) || stays[0];
     if (!stay) { $("sub").textContent = "No stay is configured for this plan."; return; }
     if (pick.value !== stay.id) pick.value = stay.id;
+    if (!pdfShown) { pdfShown = true; pdfFor(stay.id); }
     plan = L.planTour(ctx, data.events, stay);
     const pt = data.cfg.party;
     $("sub").textContent = pt.label + " · " + (pt.artists != null ? pt.artists + " artists + " + (pt.volunteers || 0) + " volunteers" : pt.size + " people") + " · staying at " + stay.name +
@@ -139,14 +145,22 @@
   $("open-all").addEventListener("click", function () { document.querySelectorAll(".day").forEach(function (d) { d.open = true; }); });
   $("close-all").addEventListener("click", function () { document.querySelectorAll(".day").forEach(function (d) { d.open = false; }); });
   $("print").addEventListener("click", function () { window.print(); });
-  // The ready-made PDF (rendered nightly by GitHub Actions); shown when it exists.
-  fetch("tour-plan.pdf.json", { cache: "no-store" }).then(function (r) { return r.ok ? r.json() : null; }).then(function (st) {
-    if (!st || !st.at) return;
-    $("pdf").hidden = false;
-    const d = new Date(st.at);
-    $("pdf-stamp").textContent = "PDF rendered " + d.toLocaleString("en-IN", { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" }) + " IST · " + st.pages + " pages · refreshed every night; “Print this page” always has the latest.";
-    $("pdf-stamp").hidden = false;
-  }).catch(function () { /* no PDF yet */ });
+  // The ready-made PDF (rendered nightly by GitHub Actions, one per stay):
+  // the button follows the stay on screen and is hidden when that stay has
+  // no file yet.
+  function pdfFor(stayId) {
+    const file = stayId ? "tour-plan-" + stayId + ".pdf" : "tour-plan.pdf";
+    fetch(file + ".json", { cache: "no-store" }).then(function (r) { return r.ok ? r.json() : null; }).then(function (st) {
+      if (!st || !st.at) { if (stayId) return pdfFor(null); $("pdf").hidden = true; $("pdf-stamp").hidden = true; return; }
+      $("pdf").hidden = false; $("pdf").href = file;
+      $("pdf").download = "Bali-in-Bengaluru-tour-plan" + (st.stayName ? " — " + st.stayName : "") + ".pdf";
+      const d = new Date(st.at);
+      $("pdf-stamp").textContent = "PDF" + (st.stayName ? " for " + st.stayName : "") + " rendered " + d.toLocaleString("en-IN", { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" }) + " IST · " + st.pages + " pages · refreshed every night; “Print this page” always has the latest.";
+      $("pdf-stamp").hidden = false;
+    }).catch(function () { /* no PDF yet */ });
+  }
+  let pdfShown = false;
+  $("stay-pick").addEventListener("change", function () { pdfFor($("stay-pick").value); });
   // "Print this day": print only that day, then restore.
   document.addEventListener("click", function (e) {
     const b = e.target.closest("[data-printday]"); if (!b) return;

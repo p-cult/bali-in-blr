@@ -1647,3 +1647,18 @@ no instruments). Do it without a new module.
 Mask Making (15 Oct) was set to set-up 0 while testing and left so, as
 the ask named it; Reset on that row restores the default.
 
+## 23 Sep 2026 — One PDF per stay
+
+**Problem.** The nightly PDF was always the main stay; choosing Citadel on
+the page still downloaded Jana Seva. And `?stay=` on the public page was
+silently ignored: a freshly filled `<select>` answers with its first
+option, which beat the URL parameter.
+
+**Done.** `tools/render-plan-pdf.mjs` with no arguments renders
+`plan/tour-plan-<stay id>.pdf` for every active stay (plus
+`tour-plan.pdf` for the main one), each with a stamp naming the stay; the
+workflow commits them all. Both pages point Download PDF at the file for
+the stay on screen (public: the picker; admin: the main-plan radio) and
+hide it when that stay has no file yet. The picker now takes the URL's
+or the sheet's stay when its options are first created.
+
