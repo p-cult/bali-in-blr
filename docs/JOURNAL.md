@@ -1788,3 +1788,23 @@ nightly files follow the admin's edits. Backend Version 15. A
 `setNumberFormat("@")` on the Settings range was caught before deploy:
 it would have turned the existing HH:MM cell into a fraction.
 
+## 23 Sep 2026 — Live check after the day's planner work
+
+Both live pages verified against a fresh backend read (cached sheet copy
+cleared first), signed in as vinod on the admin:
+
+- Admin: engine v34 / render v31, "Everything is loaded · Google traffic ·
+  sheet in step", write-back at 1:47 pm, no warnings. 20 days, 30 Sep –
+  19 Oct. Settings → Flights and → People who join on a day filled from
+  the sheet (30 Sep 15:10 and 20 Oct 00:50 at Kempegowda; 2, 13, 16 Oct
+  with only the 16th in the vehicles).
+- Public: same code, 20 days, Arrival and Departure rows priced by
+  traffic (land 3.10pm → stay 6.00pm; leave 8.14pm → flight 12.50am +1),
+  joiners on their rows, talks in the car, 1 and 5 Oct as rest days.
+  Download PDF (20 pages, 1:26 pm) and Download sheet both present.
+
+State at the end of the day: Event List dates from the schedule sheet;
+flights and joiners maintained in the admin and carried through the
+planner sheet; backend Version 15; nightly job renders PDFs and
+workbooks per stay; the internal calendar poster at /plan/calendar.pdf.
+
