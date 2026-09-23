@@ -1539,6 +1539,8 @@ read (15–40 s) and then 12 sequential leg batches, each paying Apps Script's
 
 **Measured (local, cold cache, old backend):** plan on screen in ~4 s,
 Google traffic settled in ~60 s; warm reload complete in ~5 s.
+Backend deployed as Version 11 of the same deployment (23 Sep, 08:26):
+sheet read 14.5 s cold → 2 s from the script cache; a 41-leg batch in 6 s.
 
 **Lesson.** Never block first paint on Apps Script. Draw from what is on
 the device, then refine; the front-door latency is Google's and cannot be
