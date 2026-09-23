@@ -33,6 +33,7 @@
     <a class="btn btn-sm" id="sheet-link" href="#" target="_blank" rel="noopener" hidden>Open the Google Sheet</a>
     <a class="btn btn-sm" id="pdf" href="../plan/tour-plan.pdf" download="Bali-in-Bengaluru-tour-plan.pdf" hidden title="Ready-made PDF, rendered every night">Download PDF</a>
     <a class="btn btn-sm" id="xlsx" href="../plan/tour-plan.xlsx" download="Bali-in-Bengaluru-tour-plan.xlsx" hidden title="Excel workbook: summary, one tab per day, stays, vehicles; rendered every night">Download sheet</a>
+    <a class="btn btn-sm" id="routine" href="../plan/tour-plan-routine.xlsx" download="Bali-in-Bengaluru-daily-routine.xlsx" hidden title="Excel workbook: only the travel and event routine, leaving the stay to leaving the last venue, dinner included">Routine sheet</a>
     <button class="btn btn-sm" type="button" id="print">Print</button>
     <button type="button" id="traffic" hidden></button><button type="button" id="reload-sheet" hidden></button><button type="button" id="repull-sheet" hidden></button><button type="button" id="save" hidden></button><button type="button" id="share" hidden></button>
   </div>
@@ -788,11 +789,12 @@
   function showPdfFor(stayId) {
     const file = "../plan/tour-plan" + (stayId ? "-" + stayId : "") + ".pdf";
     fetch(file + ".json", { cache: "no-store" }).then(function (r) { return r.ok ? r.json() : null; }).then(function (st) {
-      if (!st || !st.at) { $("pdf").hidden = true; $("xlsx").hidden = true; return; }
+      if (!st || !st.at) { $("pdf").hidden = true; $("xlsx").hidden = true; $("routine").hidden = true; return; }
       const d = new Date(st.at);
       $("pdf").hidden = false; $("pdf").href = file; $("pdf").download = "Bali-in-Bengaluru-tour-plan" + (st.stayName ? " — " + st.stayName : "") + ".pdf";
       $("pdf").title = "Ready-made PDF for " + (st.stayName || "the main stay") + ", rendered " + d.toLocaleString("en-IN", { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" }) + " IST; refreshed every night";
       $("xlsx").hidden = !st.xlsx; $("xlsx").href = file.replace(/\.pdf$/, ".xlsx"); $("xlsx").download = "Bali-in-Bengaluru-tour-plan" + (st.stayName ? " — " + st.stayName : "") + ".xlsx";
+      $("routine").hidden = !st.xlsx; $("routine").href = file.replace(/\.pdf$/, "-routine.xlsx"); $("routine").download = "Bali-in-Bengaluru-daily-routine" + (st.stayName ? " — " + st.stayName : "") + ".xlsx";
     }).catch(function () { $("pdf").hidden = true; });
   }
   async function start(user) {

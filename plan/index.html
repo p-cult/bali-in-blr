@@ -28,6 +28,7 @@
     <button class="btn btn-sm" type="button" id="close-all">Collapse all</button>
     <a class="btn btn-sm btn-primary" id="pdf" href="tour-plan.pdf" download="Bali-in-Bengaluru-tour-plan.pdf" hidden>Download PDF</a>
     <a class="btn btn-sm" id="xlsx" href="tour-plan.xlsx" download="Bali-in-Bengaluru-tour-plan.xlsx" hidden title="Excel workbook: summary, one tab per day, stays, vehicles">Download sheet</a>
+    <a class="btn btn-sm" id="routine" href="tour-plan-routine.xlsx" download="Bali-in-Bengaluru-daily-routine.xlsx" hidden title="Excel workbook: only the travel and event routine, from leaving the stay to leaving the last venue, dinner included">Routine sheet</a>
     <button class="btn btn-sm" type="button" id="print">Print this page</button>
   </div>
   <p class="muted pdf-stamp no-print" id="pdf-stamp" hidden></p>
@@ -158,6 +159,7 @@
       $("pdf").download = "Bali-in-Bengaluru-tour-plan" + (st.stayName ? " — " + st.stayName : "") + ".pdf";
       const xl = file.replace(/\.pdf$/, ".xlsx");
       $("xlsx").hidden = !st.xlsx; $("xlsx").href = xl; $("xlsx").download = "Bali-in-Bengaluru-tour-plan" + (st.stayName ? " — " + st.stayName : "") + ".xlsx";
+      $("routine").hidden = !st.xlsx; $("routine").href = xl.replace(/\.xlsx$/, "-routine.xlsx"); $("routine").download = "Bali-in-Bengaluru-daily-routine" + (st.stayName ? " — " + st.stayName : "") + ".xlsx";
       const d = new Date(st.at);
       $("pdf-stamp").textContent = "PDF" + (st.stayName ? " for " + st.stayName : "") + " rendered " + d.toLocaleString("en-IN", { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" }) + " IST · " + st.pages + " pages · refreshed every night; “Print this page” always has the latest.";
       $("pdf-stamp").hidden = false;

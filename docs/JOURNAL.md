@@ -1814,3 +1814,23 @@ priced in ~20 s, write-back running, vehicle estimate Tempo Traveller
 15 days ₹1,26,486 + Car 2 days ₹3,000 = ₹1,29,486. No change since the
 previous entry; nothing outstanding.
 
+## 23 Sep 2026 — The routine edition (workbook)
+
+**Ask.** A simple .xlsx with only the daily travel and event routine:
+nothing from wake-up to just before leaving the stay, nothing after
+leaving the venue, but always a dinner before that departure; one tab per
+day; arrival and departure days included.
+
+**Done.** `tools/build-plan-routine-xlsx.py` reads the same plan JSON the
+nightly job saves and writes `plan/tour-plan-<stay>-routine.xlsx`: a
+"Days" index (date, kind, events, leave the stay, last venue, dinner,
+note) and one tab per day from the first leg out to the last departure
+from a venue. Instrument-vehicle rows are left out; the final "Return to
+the stay" and everything after it are cut; overnight departures (15/16
+Oct) stay because they are the departure. When the plan's dinner is back
+at the stay, a "Dinner near <venue>" row is added at the end of the
+routine and marked as added, with a note on the tab. Arrival: land →
+stay → check-in → dinner. Departure: dinner → luggage → airport → flight.
+Wired into `render-plan-pdf.mjs` (committed by the workflow's existing
+globs); "Routine sheet" beside the other downloads on both pages.
+

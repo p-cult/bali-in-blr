@@ -75,6 +75,8 @@ for (const job of jobs) {
     writeFileSync(jsonPath, planJSON);
     const py = spawnSync("python3", ["tools/build-plan-xlsx.py", jsonPath, job.out.replace(/\.pdf$/, ".xlsx")], { stdio: "inherit" });
     xlsx = py.status === 0;
+    // The routine edition: leaving the stay → leaving the last venue, one tab per day.
+    spawnSync("python3", ["tools/build-plan-routine-xlsx.py", jsonPath, job.out.replace(/\.pdf$/, "-routine.xlsx")], { stdio: "inherit" });
   }
   writeFileSync(job.out + ".json", JSON.stringify({ at: new Date().toISOString(), bytes: buf.length, pages: pages, stay: job.stay ? job.stay.id : null, stayName: job.stay ? job.stay.name : null, xlsx: xlsx }) + "\n");
   process.stderr.write("wrote " + job.out + " (" + pages + " pages" + (job.stay ? ", " + job.stay.name : "") + (xlsx ? ", + workbook" : "") + ")\n");
