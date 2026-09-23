@@ -16,6 +16,23 @@
       " · " + dur(day.travelMin) + " on the road" + (day.km ? " · " + Math.round(day.km) + " km" : "");
   }
 
+  // The same facts as summaryLine, but set for the eye: pills for what kind
+  // of day it is, times in ink with an arrow between out and back, the
+  // road as one quiet pill at the end. Thin pipes keep the groups apart.
+  function summaryHTML(day) {
+    const pill = function (t, k) { return "<span class='ds-pill" + (k ? " ds-" + k : "") + "'>" + esc(t) + "</span>"; };
+    const sep = "<span class='ds-sep' aria-hidden='true'>|</span>";
+    const road = function () { return day.travelMin ? pill(dur(day.travelMin) + (day.km ? " · " + Math.round(day.km) + " km" : ""), "road") : ""; };
+    const n = day.events.length, evs = pill(n === 1 ? "1 event" : n + " events", "ev");
+    const t = function (label, v) { return "<span class='ds-t'>" + esc(label) + " <b>" + esc(hm(v)) + "</b></span>"; };
+    const arrow = "<span class='ds-arrow' aria-hidden='true'>→</span>";
+    if (day.kind === "rest") return "<span class='ds'>" + pill("Rest day", "rest") + sep + "<span class='ds-muted'>no travel</span></span>";
+    if (day.mealsOnly) return "<span class='ds'>" + pill("Add-ons only", "rest") + sep + t("leave", day.leave) + arrow + t("back", day.back) + sep + road() + "</span>";
+    if (day.kind === "outstation") return "<span class='ds'>" + evs + pill("Out of town", "far") + sep + t("arrive", day.wake) + "<span class='ds-muted'>after the overnight drive</span>" + arrow + t("night drive home", day.sleep) + sep + road() + "</span>";
+    if (day.nightDeparture) return "<span class='ds'>" + evs + pill("Overnight coach", "far") + sep + t("leave", day.leave) + arrow + t("coach to " + day.nightTo, day.sleep) + (day.back == null ? "<span class='ds-muted'>straight from the venue</span>" : "") + sep + road() + "</span>";
+    return "<span class='ds'>" + evs + (day.travelling ? "<span class='ds-muted'>" + day.travelling + " artists</span>" : "") + sep + t("leave", day.leave) + arrow + t("back", day.back) + sep + road() + "</span>";
+  }
+
   // The production vehicle (assets/truck.svg); drawn facing right, so it
   // points at the venue on the way out and is mirrored on the way back.
   const TRUCK = "<svg class='truck-icon' viewBox='0 0 13.91 7.58' aria-hidden='true' focusable='false'><path fill='currentColor' d='M13.68,6.37h-.97c0-.4-.17-.78-.49-1.05-.65-.55-1.62-.49-2.19.15-.22.25-.33.56-.34.9h-5.49c0-.36-.12-.67-.36-.92-.58-.63-1.58-.67-2.21-.09-.29.27-.44.63-.44,1.01H.24c-.13,0-.22-.08-.24-.21v-.53c0-.15.13-.22.29-.24V.48C.3.17.62,0,.9,0h7.63c.27,0,.56.19.56.48v4.91c.1.03.18.03.29,0V1.39c0-.11.16-.19.25-.19h2.24c.22,0,.42.11.53.29l1.06,1.75c.1.17.16.33.16.53v1.63c.12.02.26.06.28.17.04.2.02.4.01.6,0,.1-.1.2-.22.2ZM12.7,3.45c.09,0,.17-.1.13-.17l-.9-1.51h-1.81s-.02,1.52-.02,1.52c0,.09.06.17.15.17h2.45Z'/><path fill='currentColor' d='M12.41,6.37c0,.67-.54,1.21-1.21,1.21s-1.21-.54-1.21-1.21.54-1.21,1.21-1.21,1.21.54,1.21,1.21ZM11.2,6.85c.3,0,.51-.23.5-.49,0-.24-.19-.44-.45-.47-.28-.03-.52.18-.54.43-.03.27.18.53.49.54Z'/><path fill='currentColor' d='M3.91,6.37c0,.67-.54,1.21-1.21,1.21s-1.21-.54-1.21-1.21.54-1.21,1.21-1.21,1.21.54,1.21,1.21ZM3.19,6.37c0-.27-.22-.49-.49-.49s-.49.22-.49.49.22.49.49.49.49-.22.49-.49Z'/></svg>";
@@ -100,7 +117,7 @@
     }).join("") + "</p>" : "";
     const meals = opts.editable && day.kind !== "outstation" ? stopEditor(day, opts.cfg) : "";
     return "<details class='day day-" + day.kind + (day.red ? " day-red" : "") + "'" + open + " data-date='" + day.date + "'>" +
-      "<summary><span class='day-date'>" + esc(L.dateLabel(day.date)) + "</span>" + (day.red ? "<span class='badge-red'>Red flag</span>" : "") + "<span class='day-sum'>" + esc(summaryLine(day)) + "</span></summary>" +
+      "<summary><span class='day-date'>" + esc(L.dateLabel(day.date)) + "</span>" + (day.red ? "<span class='badge-red'>Red flag</span>" : "") + "<span class='day-sum'>" + summaryHTML(day) + "</span></summary>" +
       "<div class='day-body'><button class='btn btn-sm day-print no-print' type='button' data-printday='" + day.date + "'>Print this day</button>" + events + flags + meals +
       "<div class='timeline'>" + day.blocks.map(function (b) { return blockRow(b, Object.assign({}, opts, { date: day.date })); }).join("") + "</div>" +
       "</div></details>";
