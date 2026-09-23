@@ -11,6 +11,7 @@ can be traced end to end. Audited 22 Sep 2026; re-verify with
 | Source | Tab / feed | Read by |
 | --- | --- | --- |
 | **Schedule sheet** ("All things – Bali in Bengaluru") | `Event List` (published TSV, `CONFIG.SCHEDULE_URL`; bridge `?feed=schedule` as the alternate) | Calendar, hero figures, event pages, link builder, `/plan`, `/progress`, `admin/report` |
+| **Planner sheet** ("Bali in Bengaluru — Logistics Planner") | Settings + one tab per tour day: per-event inputs, add-ons, leave time (A2), vehicle (E2); read and written by the logistics web app | `/plan`, `admin/logistics` (two-way) |
 | Schedule sheet | `Collab/venues` — collaborators and their logos (`CONFIG.COLLAB_URL`) | Collaborators section, event cards, `admin/report` |
 | Schedule sheet | BMS listings tab — per-event BookMyShow / District links (`CONFIG.TICKETS_URL`) | Merged into the calendar by title (`mergeRawEvents`) |
 | Schedule sheet | `Event Brief`, `Indicative costing` | `admin/report` only |
@@ -33,6 +34,7 @@ can be traced end to end. Audited 22 Sep 2026; re-verify with
 | Baked copy in `index.html` (`data-content`) | `tools/bake-content.py` | Hourly (`bake-content.yml`) |
 | `assets/bali-in-bengaluru-calendar.pdf`, `assets/print/*.pdf` | `tools/build-calendar-pdf.py`, `tools/build-event-posters.py` | On demand — snapshots, re-run after schedule changes |
 | `data/collab-logos.json` | fallback for collaborator logos | On demand |
+| `plan/tour-plan*.pdf`, `.xlsx`, `.json` + `.pdf.json` stamps — the artist tour plan, one per stay | `tools/render-plan-pdf.mjs` (headless Chrome on the public page) + `tools/build-plan-xlsx.py` | Nightly 00:15 IST (`render-plan-pdf.yml`) and on demand |
 
 ## One pipeline for event identity
 

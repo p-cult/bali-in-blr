@@ -50,8 +50,9 @@ dependencies. Hosted on **GitHub Pages**, auto-deploys on push to `main`.
 - `docs/BRIDGE-SETUP.md` + `docs/apps-script/Code.gs` — the backend bridge (see below)
 - `admin/logistics.html` + `plan/` — artist tour planner (admin) and its link-only
   public page; engine in `plan/engine.js`, data in `data/venues.json` +
-  `data/logistics.json`, optional backend `docs/apps-script/Logistics.gs`.
-  See `docs/LOGISTICS.md`
+  `data/logistics.json`, backend `docs/apps-script/Logistics.gs` (third web
+  app, deployed). Ready-made PDFs `plan/tour-plan*.pdf` are rendered nightly
+  by `tools/render-plan-pdf.mjs`. See `docs/LOGISTICS.md`
 - `event/index.html` + `event.js` — one page per event at `event/?e=<slug>`, live from
   the sheet via main.js; banners in `assets/events/`, mapped in `data/event-banners.json`,
   synced hourly by `tools/sync-event-banners.py`

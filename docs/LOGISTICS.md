@@ -200,69 +200,85 @@ times, the add-on rows (engagements and stops) and the Settings values
 planner into an input cell (for example "Instruments at venue by") is from
 then on the sheet's value, so change it in either place.
 
-## Admin planner layout (after the 22 Sep UX pass)
+## Admin planner (as of 23 Sep 2026)
 
-Five sections, with a jump bar at the top: **Plan** (the stay in use,
-totals, the day cards; inside a day the meal lines and add-ons stay
-read-only until "edit" / "+ Add a stop" is pressed), **Edit a show** (the
-per-show form), **Stays & comparison** (stay list and the two comparison
-tables together), **Settings** (collapsed by default: group & vehicles, day
-rhythm, type defaults, venues), **Share** (public link buttons). Every
-feature is unchanged; only the order and the amount shown at once.
+One toolbar, then five tabs. The toolbar carries a short status and three
+actions: **Sync everything** (re-pull the Event List into the sheet, read
+the sheet's inputs, re-price every leg with Google traffic, write the plan
+back), **Open the Google Sheet**, **Download PDF** (the ready-made file for
+the main stay, see below) and **Print**. The last tab used is remembered.
 
-## Admin planner controls (after the 22 Sep tidy-up)
+- **Plan.** The summary strip (who travels, road time and km with the
+  instrument vehicle counted separately, "needs a look" chips only when
+  there is something to flag), then one row per day: pills for the kind of
+  day (events, rest, out of town, overnight coach, the vehicle when it is
+  not the coach), leave → back times, the road as a quiet pill. Inside a
+  day: a **Vehicle** dropdown (Auto, or any type from Settings →
+  Transport), the event list, flags, the add-ons editor, and the timeline.
+  Show bands are dark with white type and carry an **edit** pill that opens
+  the per-show form in place (artists, cast, set-up, sound check, costume &
+  warm-up, costume off, wrap, note, instruments-at, skip); "Apply &
+  re-time" commits, "Reset" returns to the type defaults, "Done"/Esc
+  closes. Meal rows and add-ons work the same way. **Set-up 0 means no
+  instrument vehicle** for that event.
+- **Shows.** The same per-show form as a picker, for editing without
+  scrolling to the day.
+- **Stays.** Main-plan radio, compare checkbox, guarded Delete, Restore,
+  Add & locate, and the comparison tables.
+- **Settings.** Group; **Transport** (a table of vehicle types with seats,
+  how many, ₹/km and minimum ₹/day, add/remove, with the estimate broken
+  down by type — the first row is the coach; a smaller type is used on its
+  own when the day's party fits in it, e.g. a talk's two people take the
+  car); day rhythm; type defaults (Talk: no set-up, costume or truck, two
+  people); venues; "Start over" (reset the browser draft).
+- **Share.** Copy public link, Open public page, Copy frozen snapshot.
 
-Top bar, four buttons: **Sync everything** (re-pull the Event List into the
-sheet, read the sheet's inputs, re-price every leg with Google traffic,
-write the plan back), **Open the Google Sheet**, **Print / PDF**, **Reset my
-draft** (discard this browser's edits and reload the shipped defaults).
-Panels: places of stay (main-plan radio, compare checkbox, guarded Delete,
-Restore), group and vehicles, day rhythm (durations as HH : MM pickers,
-clock times as time fields), **per-show settings** (with the type defaults
-table folded in as a collapsed section, since a show uses them only until
-it has its own settings) (pick a show from the dropdown, enter its cast, artist
-count and timings, Submit replaces the type defaults for that show and
-recalibrates; "Back to type defaults" clears it), comparison, the day cards
-(each with "Print this day", meal lines and add-ons), venues, and the public
-link (Copy public link, Open public page, Copy frozen snapshot). Internal
-engagements are entered as Engagement rows in the sheet's add-ons, not in a
-separate panel. Per-event inline editors were removed in favour of the
-per-show panel.
+**Cast per show.** Each event carries an artist count and a cast, in the
+sheet's "Artists" and "Cast" columns or the per-show form. The day's
+travelling party is the largest cast any event that day needs.
 
-**Cast per show.** Each event carries an artist count and a cast (names or a
-group), in the sheet's "Artists" and "Cast" columns or the per-show panel.
-The day's travelling party is the largest cast any event that day needs;
-the rest are noted as staying at the stay.
+## Loading, PDFs and sharing
 
-## Sharing and saving
-
-- **Print / save as PDF** on either page prints the plan as one day per
-  page, two-column rows, cream sheet. `/plan/?print=1` opens the public page
-  with every day expanded for headless printing; a PDF was rendered this
-  way with Chrome headless (`--print-to-pdf`, a two-minute virtual time
-  budget so Google traffic finishes first).
-- **Copy public link** puts the entire plan (stays, buffers, overrides,
-  venue pins) in the URL hash of `/plan/`, so the public page shows exactly
-  what the planner shows, with no backend. `?stay=<id>` picks the stay,
-  `?day=YYYY-MM-DD` opens that day (today opens by default).
-- **Save plan** (visible when the bridge is deployed) stores the same
-  configuration in the Logistics sheet; `/plan/` without a hash then loads
-  it. Drafts also persist in the planner's own browser (localStorage).
+- **Draw first, refine later.** Both pages render at once from the
+  schedule, the stored sheet copy and the built-in traffic profile, then
+  one backend round trip brings the fresh sheet inputs and Google traffic
+  for the whole tour; times firm up in place. Cold load ≈ 4 s to a plan,
+  ≈ 40 s to settled; warm reload ≈ 5 s.
+- **Ready-made PDFs.** `tools/render-plan-pdf.mjs` prints the public page
+  with headless Chrome once its loader says "Everything is loaded" — one
+  file per active stay (`plan/tour-plan-<stay id>.pdf`, plus
+  `tour-plan.pdf` for the main stay), each with a stamp (`.pdf.json`).
+  `.github/workflows/render-plan-pdf.yml` runs it nightly at 00:15 IST and
+  on demand, committing the files. **Download PDF** on either page follows
+  the stay on screen; "Print this page" / "Print this day" use the browser
+  for the very latest.
+- **Excel workbook.** The same run saves the computed plan as JSON and
+  `tools/build-plan-xlsx.py` writes `plan/tour-plan-<stay id>.xlsx`:
+  Summary, one tab per day, Stay, Vehicles. **Download sheet** sits beside
+  Download PDF and follows the stay on screen.
+- **Print layout.** Cream sheet, one day per page, dark show bands; a day
+  may flow over a page but rows never split. `/plan/?print=1&stay=<id>`
+  opens the page ready for printing.
+- **Copy public link / frozen snapshot.** The snapshot puts the entire
+  configuration in the URL hash of `/plan/`. `?stay=<id>` picks the stay,
+  `?day=YYYY-MM-DD` opens that day.
 
 ## Backend: `docs/apps-script/Logistics.gs`
 
-A third Apps Script web app, **deployed 22 Sep 2026** as the standalone
-project "Bali-in-Blr Logistics" (owner: the Foundation's Apps Script
-account; deployment "Logistics web app v1", currently Version 2). Its `/exec` URL is in
-`CONFIG.LOGISTICS_URL` in `plan/engine.js` (public by necessity, like the
-bridge URL). It finds the planning workbook by name and keeps its
-`TravelCache` and `Plan` tabs there. To change the code: paste the new
-file, then Deploy → Manage deployments → edit → New version. **Never create
-a second deployment** (the URL would change).
-Actions: `leg` (one traffic-aware duration), `legs` (up to 40 in one
-execution — what the planner uses, 12 at a time, sequentially, because
-Apps Script answers bursts of parallel calls with an HTML error page),
-`geocode`, `load`, `save`. No personal data passes through it.
+A third Apps Script web app, deployed as the standalone project
+"Bali-in-Blr Logistics" (deployment "Logistics web app v1"; the current
+version number is in the vault under `apps_script_logistics`). Its `/exec`
+URL is in `CONFIG.LOGISTICS_URL` in `plan/engine.js`. To change the code:
+paste the new file, then Deploy → Manage deployments → edit → New version.
+**Never create a second deployment** (the URL would change).
+
+Actions: `legs` (up to 120 legs in one execution; with `sheet=1` the
+planner-sheet inputs come back in the same answer), `leg`, `sheetplan`
+(`fresh=1` bypasses the 6-hour script cache, which is re-warmed after
+every write-back), `buildsheet`, `geocode`, `load`; POST `writeback`
+(per-event inputs, add-ons, the day's leave time in A2 and its vehicle in
+E2, settings — the stay dropdown follows what is written) and `save`.
+No personal data passes through it.
 
 ## Known limits
 

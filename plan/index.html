@@ -27,6 +27,7 @@
     <button class="btn btn-sm" type="button" id="open-all">Expand all</button>
     <button class="btn btn-sm" type="button" id="close-all">Collapse all</button>
     <a class="btn btn-sm btn-primary" id="pdf" href="tour-plan.pdf" download="Bali-in-Bengaluru-tour-plan.pdf" hidden>Download PDF</a>
+    <a class="btn btn-sm" id="xlsx" href="tour-plan.xlsx" download="Bali-in-Bengaluru-tour-plan.xlsx" hidden title="Excel workbook: summary, one tab per day, stays, vehicles">Download sheet</a>
     <button class="btn btn-sm" type="button" id="print">Print this page</button>
   </div>
   <p class="muted pdf-stamp no-print" id="pdf-stamp" hidden></p>
@@ -74,6 +75,7 @@
     if (pick.value !== stay.id) pick.value = stay.id;
     if (!pdfShown) { pdfShown = true; pdfFor(stay.id); }
     plan = L.planTour(ctx, data.events, stay);
+    window.LogisticsPlan = { plan: plan, cfg: data.cfg }; // read by tools/render-plan-pdf.mjs
     const pt = data.cfg.party;
     $("sub").textContent = pt.label + " · " + (pt.artists != null ? pt.artists + " artists + " + (pt.volunteers || 0) + " volunteers" : pt.size + " people") + " · staying at " + stay.name +
       " · " + plan.days.length + " days, " + L.dateLabel(plan.days[0].date) + " – " + L.dateLabel(plan.days[plan.days.length - 1].date);
@@ -154,6 +156,8 @@
       if (!st || !st.at) { if (stayId) return pdfFor(null); $("pdf").hidden = true; $("pdf-stamp").hidden = true; return; }
       $("pdf").hidden = false; $("pdf").href = file;
       $("pdf").download = "Bali-in-Bengaluru-tour-plan" + (st.stayName ? " — " + st.stayName : "") + ".pdf";
+      const xl = file.replace(/\.pdf$/, ".xlsx");
+      $("xlsx").hidden = !st.xlsx; $("xlsx").href = xl; $("xlsx").download = "Bali-in-Bengaluru-tour-plan" + (st.stayName ? " — " + st.stayName : "") + ".xlsx";
       const d = new Date(st.at);
       $("pdf-stamp").textContent = "PDF" + (st.stayName ? " for " + st.stayName : "") + " rendered " + d.toLocaleString("en-IN", { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" }) + " IST · " + st.pages + " pages · refreshed every night; “Print this page” always has the latest.";
       $("pdf-stamp").hidden = false;

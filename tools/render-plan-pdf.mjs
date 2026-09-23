@@ -11,7 +11,7 @@
 // Runs nightly on GitHub Actions (.github/workflows/render-plan-pdf.yml) and
 // by hand with a local server on :8000. Needs Node 22+ (built-in WebSocket)
 // and a Chrome; CHROME env overrides the path.
-import { spawn } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import { writeFileSync, existsSync } from "node:fs";
 
 // With no arguments: one PDF per active stay from data/logistics.json
@@ -67,8 +67,17 @@ for (const job of jobs) {
   const buf = Buffer.from(pdf.result.data, "base64");
   writeFileSync(job.out, buf);
   const pages = (buf.toString("latin1").match(/\/Type\s*\/Page[^s]/g) || []).length;
-  writeFileSync(job.out + ".json", JSON.stringify({ at: new Date().toISOString(), bytes: buf.length, pages: pages, stay: job.stay ? job.stay.id : null, stayName: job.stay ? job.stay.name : null }) + "\n");
-  process.stderr.write("wrote " + job.out + " (" + pages + " pages" + (job.stay ? ", " + job.stay.name : "") + ")\n");
+  // The plan itself, as data, for the Excel workbook (tools/build-plan-xlsx.py).
+  const planJSON = await evalJS("JSON.stringify(window.LogisticsPlan ? { stay: window.LogisticsPlan.plan.stay, party: window.LogisticsPlan.plan.party, totals: window.LogisticsPlan.plan.totals, days: window.LogisticsPlan.plan.days.map(function (d) { return { date: d.date, kind: d.kind, wake: d.wake, sleep: d.sleep, leave: d.leave, back: d.back, travelMin: d.travelMin, km: d.km, truckKm: d.truckKm, travelling: d.travelling, vehicle: d.vehicle && d.vehicle.name, vehicles: d.vehicles, red: !!d.red, flags: d.flags.map(function (f) { return f && f.text ? f.text : f; }), events: d.events.map(function (e) { return { title: e.title, category: e.category, venue: e.venue, start: e.start, end: e.end }; }), nightOut: d.nightOut ? { depart: d.nightOut.depart, to: d.nightOut.to } : null, blocks: d.blocks.map(function (b) { return { type: b.type, from: b.from, to: b.to, label: b.label, detail: b.detail || '', note: b.note || '', broad: !!b.broad, dir: b.dir || '', meal: b.meal || '', venue: b.venue ? b.venue.name + (b.venue.area ? ', ' + b.venue.area : '') : '', category: b.ev ? b.ev.category : '', artists: b.artists, cast: b.cast || '' }; }) }; }) } : null)");
+  const jsonPath = job.out.replace(/\.pdf$/, ".json");
+  let xlsx = false;
+  if (planJSON) {
+    writeFileSync(jsonPath, planJSON);
+    const py = spawnSync("python3", ["tools/build-plan-xlsx.py", jsonPath, job.out.replace(/\.pdf$/, ".xlsx")], { stdio: "inherit" });
+    xlsx = py.status === 0;
+  }
+  writeFileSync(job.out + ".json", JSON.stringify({ at: new Date().toISOString(), bytes: buf.length, pages: pages, stay: job.stay ? job.stay.id : null, stayName: job.stay ? job.stay.name : null, xlsx: xlsx }) + "\n");
+  process.stderr.write("wrote " + job.out + " (" + pages + " pages" + (job.stay ? ", " + job.stay.name : "") + (xlsx ? ", + workbook" : "") + ")\n");
 }
 ws.close(); chrome.kill();
 if (failed) process.exit(2);

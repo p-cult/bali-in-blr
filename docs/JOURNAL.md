@@ -1700,3 +1700,22 @@ back, so the sheet and the planner agree either way (Version 14). A
 chosen vehicle too small for the day's party is flagged on the day, not
 silently swapped. The day row's pill names the chosen vehicle.
 
+## 23 Sep 2026 — Full sync, docs refreshed, and an Excel workbook per stay
+
+- **Sync everything** run from the live admin: Event List re-pulled into
+  the planner sheet, inputs read, every leg priced, plan written back
+  (11:50). Sheet and planner in step.
+- `docs/LOGISTICS.md` admin/loading/PDF/backend sections rewritten for
+  the day's changes; `docs/DATA-MAP.md` gained the planner sheet and the
+  rendered PDFs; `CLAUDE.md` file map mentions the nightly PDFs.
+- **Workbook.** The public page exposes its computed plan
+  (`window.LogisticsPlan`); the nightly renderer saves it as
+  `plan/tour-plan-<stay>.json` and `tools/build-plan-xlsx.py` (openpyxl)
+  writes `plan/tour-plan-<stay>.xlsx`: Summary (one row per day: kind,
+  events, artists, vehicle, leave, back, road, km, flags), one tab per day
+  (From / To / What / Detail, dark show bands, gold instrument-vehicle
+  rows, copper meals), Stay, Vehicles (types, days by vehicle, estimate).
+  "Download sheet" sits beside "Download PDF" on both pages and follows
+  the stay on screen; the workflow installs openpyxl and commits the
+  workbooks. A .tsv was asked for first; a TSV has no tabs, so .xlsx.
+
