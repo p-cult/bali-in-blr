@@ -1542,6 +1542,17 @@ Google traffic settled in ~60 s; warm reload complete in ~5 s.
 Backend deployed as Version 11 of the same deployment (23 Sep, 08:26):
 sheet read 14.5 s cold → 2 s from the script cache; a 41-leg batch in 6 s.
 
+**Verified on the live domain (23 Sep, 08:30–08:35).** Public page, cold
+device: plan on screen at 5 s, Google traffic for both stays settled at
+40 s, no warnings; a reload completes in ~5 s. Admin planner, first load
+after sign-in: editable at once, priced at 27 s, sheet written back at
+41 s ("sheet updated 8:33 am"); reload priced in 6 s. Both pages serve
+engine v26 / render v22 against backend Version 11.
+
+**Also this morning.** Add-on and meal editors inside a day now collapse
+again (Cancel / Done buttons, Esc), the meal editor says "Move elsewhere /
+Move here", and the public footer credits Param Foundation | Culture.
+
 **Lesson.** Never block first paint on Apps Script. Draw from what is on
 the device, then refine; the front-door latency is Google's and cannot be
 tuned away, only paid fewer times.
