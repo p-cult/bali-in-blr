@@ -68,11 +68,11 @@
     "ticketUrl": "",
     "passInfo": "",
     "rsvpUrl": "",
-    "capacity": "120",
-    "seatsLeft": "64",
+    "capacity": "",
+    "seatsLeft": "",
     "showSeats": "yes",
-    "status": "waitlist",
-    "statusRaw": "waitlist"
+    "status": "live",
+    "statusRaw": "live"
   },
   {
     "id": "kecak-workshop-2026-10-06",
