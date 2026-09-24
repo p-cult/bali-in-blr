@@ -1916,3 +1916,34 @@ spec'd identically across engines — unlike the earlier appearance:none +
 background-image swap, which depended on how each engine renders a
 replaced native part. Verified locally at 6x zoom: solid, filled ivory
 icon matching the field's own text colour, not a thin grey outline.
+
+## 24 Sep 2026 — Ministry of Culture logo: the one collaborator mark kept as SVG
+
+**Ask.** Add the Ministry of Culture (Government of India) crest to the
+collaborators section, and keep it as `.svg` always — never a raster.
+
+**Why it needed a rule, not just a file.** Every other collaborator logo
+reaches the site through the sheet's *Files* cell → hourly Drive sync →
+`assets/drive/<id>.png`. That path rasterises by design. Putting the
+crest through it would break the "always SVG" instruction on the next
+sync, so the crest lives in the repo instead: `assets/collab/
+ministry-of-culture.svg` (XML prolog and Illustrator comment stripped,
+otherwise the client's file untouched), registered in
+`data/collab-logos.json` under the lowercased name.
+
+**Code.** `loadCollaborators()` used to let the sheet's Files link win
+over the local registry. Now a registry entry that is an `.svg` wins
+regardless — so even if someone later drops a PNG into the Files cell,
+the vector still ships. Publication is still gated by the sheet's
+*Status*: set the Logos-block row for "Ministry of culture" (Collab/venues
+tab, row 28) from Pending to Recieved in the client's sheet; its Files
+cell stays **empty** on purpose.
+
+**Size.** The crest is a wide, low mark and read small at the 60px tile
+height, so it gets the same per-name override Yaksha Kala Academy already
+has in `site.css`: 72px, a fifth larger, per the client. Cache tags:
+main.js `hub83`, site.css `v41`.
+
+**Drive.** The 'web-logos' Drive folder should also hold the SVG for the
+team; that upload needs a native file picker and could not be done from
+this session — left with the user.

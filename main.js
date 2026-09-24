@@ -1278,7 +1278,12 @@ function loadCollaborators() {
     }
     list.forEach((p) => {
       const k = p.name && p.name.trim().toLowerCase();
-      if (!p.logo && k && logos[k]) p.logo = logos[k];
+      if (!k || !logos[k]) return;
+      // The sheet's Files column normally wins over the local registry. A
+      // registry entry that is an SVG wins regardless: those marks are kept as
+      // vector on purpose (Ministry of Culture, 24 Sep 2026) and a Drive
+      // upload would be rasterised to PNG by the sync.
+      if (!p.logo || /\.svg$/i.test(logos[k])) p.logo = logos[k];
     });
     COLLAB_LIST = list;
     COLLAB_BY_NAME = new Map(
