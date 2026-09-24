@@ -1941,8 +1941,9 @@ cell stays **empty** on purpose.
 
 **Size.** The crest is a wide, low mark and read small at the 60px tile
 height, so it gets the same per-name override Yaksha Kala Academy already
-has in `site.css`: 72px, a fifth larger, per the client. Cache tags:
-main.js `hub83`, site.css `v41`.
+has in `site.css`: 72px, a fifth larger, per the client. The same 72px
+went to the Indian Music Experience Museum ("IME" in the sheet) on a
+follow-up ask. Cache tags: main.js `hub83`, site.css `v42`.
 
 **Drive.** The 'web-logos' Drive folder should also hold the SVG for the
 team; that upload needs a native file picker and could not be done from
