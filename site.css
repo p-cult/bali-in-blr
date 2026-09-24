@@ -526,7 +526,8 @@
 .partner-logo[alt="Yaksha Kala Academy"] { max-height: 72px; }
 /* Wide, low crest: reads small at 60px, so a fifth larger (client, 24 Sep 2026). */
 .partner-logo[alt="Ministry of culture"] { max-height: 72px; }
-.partner-logo[alt="IME"] { max-height: 72px; } /* Indian Music Experience Museum, same ask */
+.partner-logo[alt="IME"],
+.partner-logo[alt="Chowdiah"] { max-height: 72px; } /* "music academy" ask: IME and Chowdiah (Academy of Music) */
 /* Dummy monogram stand-in until a real logo lands. On the cream tile. */
 .partner-logo--dummy {
   display: inline-flex;
