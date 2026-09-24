@@ -1899,3 +1899,20 @@ behaves differently per engine. Re-verified in this session's browser at
 high zoom on the same joiner-table field from the report — a full-detail
 calendar icon, not a blank box. Not verified in Safari/WebKit directly
 (no such browser available here); flagged to the user to confirm.
+
+**Correction #2, same day.** `filter:invert(1)` alone still read as a
+dull mid-grey icon, not fixed. Cause: the browser's native glyph isn't
+pure black to begin with (this engine draws it as a mid-tone), so
+inverting a mid-tone just gives another mid-tone — invert has nothing to
+guarantee contrast against. Added `--ui-mark:#F3E9D2` as a proper design
+token (promoted from two places that already hard-coded this exact cream
+for "text on the dark show band" — same colour, one name now) and changed
+the filter to `brightness(0) invert(1) sepia(55%) saturate(280%)
+hue-rotate(-8deg) brightness(1.04)`: brightness(0) forces the source to
+true black regardless of its actual starting shade, invert(1) flips that
+*guaranteed* black to guaranteed white, the rest tints white toward
+--ui-mark. Every step is a standard CSS Filter Effects matrix operation,
+spec'd identically across engines — unlike the earlier appearance:none +
+background-image swap, which depended on how each engine renders a
+replaced native part. Verified locally at 6x zoom: solid, filled ivory
+icon matching the field's own text colour, not a thin grey outline.

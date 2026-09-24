@@ -3,6 +3,12 @@
 :root{
   --bg:#1B1D21; --bg2:#202329; --bg3:#23262B; --ink:#EFE7D8; --muted:#B6B2AA; --muted2:#8C8E92;
   --accent:#ff5a3c; --accent-2:#E0A470; --copper:#C87941; --line:#2C3036; --line2:#3A3F46; --ok:#8fbf7a; --warn:#e6b85c;
+  /* Warm ivory for small UI marks on a dark field (native picker icons,
+     text on the dark show band) — brighter and flatter than --accent-2, so
+     it stays legible at icon size where --accent-2's more saturated tan
+     reads as grey. Was hard-coded in two places; promoted here so both
+     the CSS filter below and any hand-drawn icon can share one name. */
+  --ui-mark:#F3E9D2;
   --radius:8px; --display:"Archivo","Arial Narrow",sans-serif; --sans:"Instrument Sans",system-ui,sans-serif;
 }
 *{box-sizing:border-box}
@@ -90,22 +96,24 @@ section{margin:0 0 1.6rem}
 .field-group{display:grid;grid-template-columns:repeat(4,1fr);gap:.7rem 1rem;padding:.7rem .9rem .8rem;border:1px dashed var(--line2);border-radius:6px}
 .group-label{grid-column:1/-1;font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent-2)}
 .field select{background:var(--bg);border:1px solid var(--line2);border-radius:6px;color:var(--ink);font:inherit;font-size:.9rem;padding:.45rem .6rem;width:100%}
-/* Native time / date pickers, take 2. Replacing the indicator's icon with
-   a custom background-image (appearance:none + background-image) rendered
-   as an empty box in WebKit/Safari — appearance:none there drops the
-   built-in glyph and the replacement image never painted, leaving nothing
-   at all. A plain `filter` on the indicator is the one technique that is
-   actually documented to work the same way in both engines, so the icon
-   itself is left completely alone (still the browser's own glyph, still
-   correctly hit-testable) and just colour-inverted: black becomes white,
-   which is the highest-contrast result achievable without depending on
-   engine-specific rendering of a swapped-in image. */
+/* Native time / date pickers, take 3. A plain invert(1) still read as a
+   dull mid-grey: the browser's own glyph isn't pure black to start with
+   (macOS Chrome draws it as a mid-tone), so inverting it just lands on
+   another mid-tone — invert has nothing to guarantee contrast against.
+   brightness(0) first crushes the source to true black regardless of
+   whatever shade it actually is, THEN invert(1) flips that guaranteed
+   black to guaranteed white, and the rest of the chain tints that white
+   toward --ui-mark (#F3E9D2). Every step is a standard CSS Filter Effects
+   matrix op, computed identically by spec in every engine — unlike the
+   appearance:none + background-image swap this replaced, which depended
+   on how each engine chooses to render a replaced native part. */
 input[type=time],input[type=date]{color-scheme:dark}
 input[type=time]::-webkit-calendar-picker-indicator,input[type=date]::-webkit-calendar-picker-indicator{
-  filter:invert(1);cursor:pointer;opacity:.85;
+  filter:brightness(0) invert(1) sepia(55%) saturate(280%) hue-rotate(-8deg) brightness(1.04);
+  cursor:pointer;opacity:1;
 }
 input[type=time]::-webkit-calendar-picker-indicator:hover,input[type=date]::-webkit-calendar-picker-indicator:hover,
-input[type=time]::-webkit-calendar-picker-indicator:focus,input[type=date]::-webkit-calendar-picker-indicator:focus{opacity:1}
+input[type=time]::-webkit-calendar-picker-indicator:focus,input[type=date]::-webkit-calendar-picker-indicator:focus{opacity:.75}
 /* Firefox draws its own light-on-dark icon from color-scheme:dark above. */
 @media (max-width:760px){.show-form,.field-group{grid-template-columns:1fr 1fr}.show-form .span-3{grid-column:span 2}}
 .dur{display:inline-flex;align-items:center;gap:.25rem}
@@ -202,7 +210,7 @@ input[type=time]::-webkit-calendar-picker-indicator:focus,input[type=date]::-web
 /* The show itself: a solid dark band with white type, so the event name is
    the one thing a glance lands on, on screen and on paper alike. */
 .tl-show{background:#0E0F12;border-left:4px solid var(--accent);padding:.55rem .8rem .55rem .7rem;margin:.2rem 0 .2rem -.75rem;border-radius:0 6px 6px 0;border-bottom:0;align-items:baseline}
-.tl-show .tl-when{color:#F3E9D2}
+.tl-show .tl-when{color:var(--ui-mark)}
 .tl-show .tl-body b{font-family:var(--display);text-transform:uppercase;letter-spacing:.04em;font-size:.95rem;color:#fff;font-weight:700}
 .tl-show .tl-detail{color:#C9C4B8}
 .tl-show .tl-cast{color:var(--accent-2)}
@@ -308,7 +316,7 @@ footer{margin-top:2.5rem;color:var(--muted2);font-size:.78rem}
   .tl-detail{font-size:7.5pt;color:#555}
   .tl-broad{opacity:.7;font-size:8.5pt}
   .tl-show{background:#1B1D21;border-left:4px solid #8E4A24;padding:.3rem .55rem .3rem .5rem;margin:.15rem 0;border-radius:0 3px 3px 0;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-  .tl-show .tl-when{color:#F3E9D2}
+  .tl-show .tl-when{color:var(--ui-mark)}
   .tl-show .tl-body b{font-size:10pt;color:#fff}
   .tl-show .tl-detail{color:#D5D0C5}
   .tl-show .tl-cast{color:#E0A470}
