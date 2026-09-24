@@ -137,8 +137,9 @@
    purpose); a filter turns it cream on the dark hero so the file stays untouched. */
 .hero-supported {
   display: flex;
-  align-items: center;
-  gap: 0.9rem;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.55rem;
   margin: 0 0 1.8rem;
 }
 .hero-supported-label {
