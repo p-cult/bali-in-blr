@@ -1862,3 +1862,25 @@ few minutes, with the plan on screen throughout.
 day; budget it in minutes, not attempts. And check who else shares the
 Apps Script account.
 
+
+## 24 Sep 2026 — Date/time picker icons, fixed at the root
+
+**Problem.** Every native `<input type=date>` / `type=time>` in the
+planner (Flights and joiner-day pickers in admin Settings, "Instruments
+at venue by", etc.) had a near-invisible dark calendar/clock glyph on the
+dark field. The old fix inverted the browser's own icon with a CSS
+`filter`, which is exactly the kind of thing that renders differently —
+or not at all — depending on the engine drawing the native control, so
+it was never reliable.
+
+**Fix.** One shared rule in `plan/plan.css` (the file both planner pages
+load), not a per-field patch: the native indicator is switched off
+(`appearance:none`) and a drawn SVG — an outlined calendar for `date`, a
+clock for `time` — is set as its background, in the cream accent colour,
+with a visible hover/focus hit-area. No dependence on inverting whatever
+glyph a given browser happens to draw. Verified in a throwaway test page
+(deleted after) at 4× zoom: both icons render as clean cream outlines.
+Firefox draws its own dark-scheme icon via `color-scheme:dark`, kept.
+
+Root-level fix, one rule: every date/time field across the planner picks
+it up automatically, present ones and any added later.
