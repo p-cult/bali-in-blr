@@ -132,6 +132,29 @@
   filter: drop-shadow(0 6px 24px rgba(0, 0, 0, 0.45));
 }
 
+/* "Supported by" + the Ministry of Culture crest, directly under the title
+   mark. The crest is the repo SVG (black on transparent, kept vector on
+   purpose); a filter turns it cream on the dark hero so the file stays untouched. */
+.hero-supported {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  margin: 0 0 1.8rem;
+}
+.hero-supported-label {
+  font-family: var(--display);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent-2);
+}
+.hero-supported img {
+  width: auto;
+  height: clamp(44px, 6vw, 64px);
+  filter: brightness(0) invert(1) sepia(20%) saturate(120%) brightness(0.96) opacity(0.92);
+}
+
 .hero-lead {
   max-width: 42rem;
   margin: 0 0 2.2rem;
@@ -1060,6 +1083,9 @@ p.ev-desc { font-size: 1.08rem; line-height: 1.65; color: var(--muted); max-widt
   .hero-kicker span::before { background: var(--copper); }
   .hero h1, .print-title { margin-bottom: 3mm; }
   .hero h1 .logo, .print-title .logo { width: 62mm; filter: none; }
+  .hero-supported { margin-bottom: 3mm; }
+  .hero-supported img { height: 11mm; filter: none; }
+  .hero-supported-label { color: var(--muted) !important; }
   .hero-lead {
     max-width: 120mm;
     font-size: 10pt;

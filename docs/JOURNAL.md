@@ -1950,3 +1950,10 @@ site.css `v43`.
 **Drive.** The 'web-logos' Drive folder should also hold the SVG for the
 team; that upload needs a native file picker and could not be done from
 this session — left with the user.
+
+**Hero.** Same day, a "Supported by" line with the crest went directly
+under the hero title mark (`.hero-supported`). The crest file is black on
+transparent, so a CSS filter (brightness(0) invert(1) + a light warm tint)
+renders it cream on the dark hero; the file itself stays the untouched
+vector. Print reverts the filter and shows it black on the cream page.
+site.css `v44`.
