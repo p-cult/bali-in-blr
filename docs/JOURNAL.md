@@ -1884,3 +1884,18 @@ Firefox draws its own dark-scheme icon via `color-scheme:dark`, kept.
 
 Root-level fix, one rule: every date/time field across the planner picks
 it up automatically, present ones and any added later.
+
+**Correction, same day.** The fix above (a drawn SVG swapped in via
+`appearance:none` + `background-image` on the native indicator) rendered
+as a blank box with no icon at all in the browser the user was actually
+looking at — Chrome painted it, but `appearance:none` on
+`::-webkit-calendar-picker-indicator` drops the built-in glyph in WebKit
+without the replacement image taking its place, so nothing was left.
+Reverted to a single `filter:invert(1)` on the indicator instead: the
+browser's own glyph, untouched and still correctly hit-testable, just
+colour-inverted. This is the long-standing, widely used technique for
+exactly this problem, unlike a from-scratch replacement image, which
+behaves differently per engine. Re-verified in this session's browser at
+high zoom on the same joiner-table field from the report — a full-detail
+calendar icon, not a blank box. Not verified in Safari/WebKit directly
+(no such browser available here); flagged to the user to confirm.
