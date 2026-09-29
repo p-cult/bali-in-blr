@@ -827,6 +827,9 @@ body.view-open { overflow: hidden; }
 .view-head { display: flex; align-items: center; gap: 1.6rem; margin-bottom: 1rem; }
 .view-head-logo { flex: none; line-height: 0; }
 .view-head .logo { height: 76px; width: auto; }
+/* Volunteer signup closed: the #volunteer view shows a notice only. */
+.volunteer-closed { max-width: 40rem; padding-block: 1rem 3rem; }
+.volunteer-closed .volunteer-closed-msg { font-size: 1.35rem; line-height: 1.4; margin: 1rem 0; }
 .view-head .eyebrow { margin-bottom: 0.4rem; }
 .view-head h2 { margin: 0; }
 .view-body > .section { padding-top: 2.6rem; }

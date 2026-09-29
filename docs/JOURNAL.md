@@ -2007,3 +2007,14 @@ plan: a "→" or "Leave/Reach…" row is travel, ALL-CAPS is the show,
 meal/refreshment words are meals. The renderer is `admin/sheet-print.js`,
 which has no sign-in, so it can be reused. It was first used for the
 30 Sep – 3 Oct daily routine sheet.
+
+## 29 Sep 2026 — Volunteer signup closed
+
+The volunteer form is gone from the site, and so is the "Volunteer" nav link
+on the home and event pages. The `#volunteer` view itself stays, because
+posters, QR codes and Instagram bios still carry that link. It now shows
+"The volunteering opportunity for this festival is now closed" and a button
+to the calendar. The view lost its `.onboard` class, so the question
+carousel skips it. Its text has no `data-content` keys, so a sheet value
+can't overwrite the notice. The bridge still accepts `flavour=volunteer`;
+nothing on the site sends it any more.
