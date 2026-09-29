@@ -2018,3 +2018,15 @@ to the calendar. The view lost its `.onboard` class, so the question
 carousel skips it. Its text has no `data-content` keys, so a sheet value
 can't overwrite the notice. The bridge still accepts `flavour=volunteer`;
 nothing on the site sends it any more.
+
+## 29 Sep 2026 — Event banners lost when events were renamed in the sheet
+
+A banner is keyed by the event's slug, which comes from its title. Three
+titles changed in the schedule sheet, so those pages fell back to the
+stand-in. The keys in `data/event-banners.json` and the files in
+`assets/events/` were renamed to match:
+indonesian-shadow-puppetry-performance → shadow-puppetry-performance,
+balinese-shadow-puppetry-workshop → shadow-puppetry-workshop,
+indonesian-indian-shadow-puppetry-performance → indonesian-indian-puppetry-act.
+**Lesson:** renaming an event in the sheet unlinks its banner. Rename the
+key here too. "Kecak Performance" has never had a banner folder.

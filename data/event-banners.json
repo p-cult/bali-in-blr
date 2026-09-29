@@ -1,7 +1,7 @@
 {
   "_note": "Which Drive folder holds each event's banner. Keys are event slugs (the title, lowercased, non-letters as hyphens). tools/sync-event-banners.py fills in 'source' and 'version' — edit only 'folder'. A file named banner* in a folder wins; otherwise the widest landscape image is used.",
   "events": {
-    "indonesian-indian-shadow-puppetry-performance": {
+    "indonesian-indian-puppetry-act": {
       "folder": "1wApekormP63LDjbAB95fvZdQYLat7VTu",
       "label": "Collab - shadow",
       "source": "19CLPMCEWkTl2UhEnaABM-9v7HsXLOmSo",
@@ -10,8 +10,8 @@
       "updated": "2026-09-22",
       "fmt": 2,
       "webp": [
-        "indonesian-indian-shadow-puppetry-performance-1600.webp",
-        "indonesian-indian-shadow-puppetry-performance-800.webp"
+        "indonesian-indian-puppetry-act-1600.webp",
+        "indonesian-indian-puppetry-act-800.webp"
       ]
     },
     "dance-movement-workshop": {
@@ -27,7 +27,7 @@
         "dance-movement-workshop-800.webp"
       ]
     },
-    "indonesian-shadow-puppetry-performance": {
+    "shadow-puppetry-performance": {
       "folder": "127aDTcqpfLO0w2HMwSSpKJcEfDCISTdB",
       "label": "For jagriti",
       "source": "1iqjzYCO9txUExwZaHFQ3iHiR-yivpImz",
@@ -36,8 +36,8 @@
       "updated": "2026-09-22",
       "fmt": 2,
       "webp": [
-        "indonesian-shadow-puppetry-performance-1600.webp",
-        "indonesian-shadow-puppetry-performance-800.webp"
+        "shadow-puppetry-performance-1600.webp",
+        "shadow-puppetry-performance-800.webp"
       ]
     },
     "gamelan-workshop": {
@@ -100,7 +100,7 @@
         "traditional-balinese-dance-800.webp"
       ]
     },
-    "balinese-shadow-puppetry-workshop": {
+    "shadow-puppetry-workshop": {
       "folder": "1ykxdY1v1rXO_mm-sC9rGAIxGhYyWZHVE",
       "label": "workshop - shadow puppetry",
       "source": "16ZEcCRgGTm27rZqoIXk9qqNiY0h51eoD",
@@ -109,8 +109,8 @@
       "updated": "2026-09-22",
       "fmt": 2,
       "webp": [
-        "balinese-shadow-puppetry-workshop-1600.webp",
-        "balinese-shadow-puppetry-workshop-800.webp"
+        "shadow-puppetry-workshop-1600.webp",
+        "shadow-puppetry-workshop-800.webp"
       ]
     },
     "traditional-balinese-dance-yakshagana-performance": {
