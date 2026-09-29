@@ -1993,3 +1993,17 @@ rows and restores the cursor.
   debounced write-back still runs) and saves the whole plan to the backend,
   which carries vehicles to other planners. "Unsaved changes" shows until
   it's pressed.
+
+## 29 Sep 2026 — Daily schedule print (admin/sheet-print.html)
+
+A tool to print any **published** Google Sheet (File → Share → Publish to
+web) in the tour-plan style, one page per tab. It reads the tab list from
+`/pubhtml` and each tab from `/pub?gid=…&output=tsv`; both send CORS
+headers. A private `/edit` link can't be read from the browser.
+Each tab is expected to be a day sheet: date and heading in row 1,
+"key | value" rows (for example "Transport of the day"), then a header row
+containing "What" and From | To | What | Detail rows. Row look follows the
+plan: a "→" or "Leave/Reach…" row is travel, ALL-CAPS is the show,
+meal/refreshment words are meals. The renderer is `admin/sheet-print.js`,
+which has no sign-in, so it can be reused. It was first used for the
+30 Sep – 3 Oct daily routine sheet.

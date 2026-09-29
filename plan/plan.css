@@ -346,3 +346,17 @@ footer{margin-top:2.5rem;color:var(--muted2);font-size:.78rem}
 .t12{display:inline-flex;gap:.2rem;align-items:center}
 .t12 select{background:var(--bg3);border:1px solid var(--line2);border-radius:5px;color:var(--ink);font:inherit;font-size:.8rem;padding:.3rem .35rem;width:auto}
 .save-state{font-size:.78rem;color:var(--accent-2)}
+/* Sheet → print (admin/sheet-print.html): a published sheet, one day per tab. */
+.print-only{display:none}
+.sp-form{display:flex;gap:.6rem;align-items:flex-end;flex-wrap:wrap}
+.sp-form .field{flex:1;min-width:16rem}
+.sp-tabs{display:flex;flex-wrap:wrap;gap:.3rem 1rem;margin:.4rem 0 .8rem}
+.sp-metas{display:flex;flex-wrap:wrap;gap:.3rem 1.4rem;margin:.2rem 0 .6rem;font-size:.86rem}
+.sp-meta i{font-style:normal;color:var(--muted2);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;margin-right:.3rem}
+.sp-meta b{font-weight:600;color:var(--ink)}
+@media print{
+  .print-only{display:block}
+  .sp-day{break-before:page}
+  .sp-day:first-of-type{break-before:auto}
+  .sp-metas{font-size:8.5pt}
+}
