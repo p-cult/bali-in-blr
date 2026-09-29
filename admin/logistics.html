@@ -395,8 +395,20 @@
       $("plan-stay").textContent = stay.name;
       $("totals").innerHTML = R.totalsCard(plan, { internal: true });
       renderVehicleEstimate(plan);
+      // A meal edit re-draws the day; keep its editor open and the cursor in
+      // the field being typed in, or the box closes after one character.
+      const editing = Array.from(document.querySelectorAll(".tl-row.editing .meal-edit")).map(function (b) { return b.dataset.date + "|" + b.dataset.meal; });
+      const act = document.activeElement, actBox = act && act.closest && act.closest(".meal-edit");
+      const focus = actBox ? { key: actBox.dataset.date + "|" + actBox.dataset.meal, k: act.dataset.k, pos: act.selectionStart } : null;
       $("days").innerHTML = R.tour(plan, { editable: true, eventEditor: true, cfg: c });
       open.forEach(function (d) { const el = document.querySelector(".day[data-date='" + d + "']"); if (el) el.open = true; });
+      document.querySelectorAll(".meal-edit").forEach(function (b) {
+        const key = b.dataset.date + "|" + b.dataset.meal;
+        if (editing.indexOf(key) === -1) return;
+        const row = b.closest(".tl-row"); row.classList.add("editing");
+        const t = row.querySelector("[data-mealtoggle]"); if (t) t.textContent = "close";
+        if (focus && focus.key === key) { const f = b.querySelector("[data-k='" + focus.k + "']"); if (f) { f.focus(); try { if (focus.pos != null) f.setSelectionRange(focus.pos, focus.pos); } catch (e) { /* time/number inputs */ } } }
+      });
       $("share-url").textContent = shareUrl(stay);
     } else { $("days").innerHTML = "<p class='muted'>Add a stay to start.</p>"; }
     renderStays(); renderVenues(); renderExtras();
