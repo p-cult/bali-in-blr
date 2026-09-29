@@ -1971,3 +1971,25 @@ A planner must press **Save** for others to get it.
 Separately, typing in a meal's Note field re-drew the day on each keystroke
 and closed the editor after one character. render() now reopens editing meal
 rows and restores the cursor.
+
+## 29 Sep 2026 — Planner: notes in the timeline, 12-hour times, Save to sheet
+
+- **Notes** are a new stop purpose, `note`: free text (snacks and water in
+  the coach, a reminder), with an optional time and no place. They never move
+  the plan. `applyNotes` in `plan/engine.js` drops them into the day's
+  blocks: a timed note at its time, an untimed one at the start of the day.
+  They go to the sheet as purpose "Note" with the text in the Location
+  column. `Logistics.gs` reads them back without geocoding, so it **must be
+  redeployed** (update the existing deployment). Otherwise a sheet reload
+  drops the notes.
+- **12-hour times (admin planner only):** native `<input type=time>` shows
+  24-hour on a 24-hour OS locale, and nothing forces it. `time12()` hides
+  each native field (`.t12-src`) and puts hour / minute / am-pm selects in
+  its place. The hidden field still holds "HH:MM", and its `value` setter
+  keeps the selects in step, so none of the existing readers changed.
+  Displays already used `hm()` (12-hour); the stop list's raw "HH:MM" now
+  does too.
+- **Save to sheet** button: writes the days to the sheet now (the automatic
+  debounced write-back still runs) and saves the whole plan to the backend,
+  which carries vehicles to other planners. "Unsaved changes" shows until
+  it's pressed.

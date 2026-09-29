@@ -337,3 +337,12 @@ footer{margin-top:2.5rem;color:var(--muted2);font-size:.78rem}
   .day-flags .flag-red{color:#c0392b}
   footer{font-size:7.5pt;margin-top:.8rem}
 }
+/* Planner notes (snacks, refreshments…) sit in the timeline at their time. */
+.tl-note{border-left:3px dashed var(--accent-2);padding-left:.6rem;margin-left:-.75rem}
+.tl-note .tl-body b{font-weight:500;color:var(--ink)}
+.tl-note .tl-body b::before{content:"✎ ";color:var(--accent-2)}
+/* 12-hour time picker (planner): the native field stays as the value holder. */
+.t12-src{display:none!important}
+.t12{display:inline-flex;gap:.2rem;align-items:center}
+.t12 select{background:var(--bg3);border:1px solid var(--line2);border-radius:5px;color:var(--ink);font:inherit;font-size:.8rem;padding:.3rem .35rem;width:auto}
+.save-state{font-size:.78rem;color:var(--accent-2)}

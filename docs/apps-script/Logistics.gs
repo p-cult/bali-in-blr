@@ -255,7 +255,7 @@ var PLANNER_NAME = "Bali in Bengaluru — Logistics Planner";
 var HEADER_ROW = 10;
 var EVENT_HEADERS = ["#", "Type", "Title", "Venue", "Start", "End", "Status", "Artists", "Set-up", "Sound check", "Costume & make-up", "Costume off", "Wrap", "Skip?", "Instruments at venue by", "Vehicle leaves storage", "Note", "Cast (who performs — names or group)"];
 var ADDON_HEADERS = ["#", "Purpose", "Location (Maps link or address)", "Start", "End", "Include?", "Note"];
-var PURPOSES = ["Breakfast", "Lunch", "Dinner", "Sightseeing", "Shopping", "Engagement", "Other"];
+var PURPOSES = ["Breakfast", "Lunch", "Dinner", "Sightseeing", "Shopping", "Engagement", "Note", "Other"];
 var ADDON_ROWS = 6;
 var DEFAULT_SEG = { Performance: [30, 30, 60, 20, 30], Workshop: [10, 10, 15, 5, 15], Talk: [0, 10, 0, 0, 10], Internal: [10, 0, 15, 10, 10], default: [15, 10, 20, 5, 15] };
 var SEED_ENGAGEMENTS = [{ date: "2026-10-02", title: "Photoshoot", venue: "Mandala Cultural Centre", start: "07:00", end: "14:00" }];
@@ -511,6 +511,10 @@ function sheetplan_() {
       if (purpose === "engagement") {
         var parts = String(a[2]).split(/\s+—\s+|\s+-\s+/);
         cfg.extras.push({ id: slug_(parts[0]) + "@" + iso, title: parts[0], category: "Internal", date: iso, start: start, end: end, venue: parts[1] || parts[0], note: a[6] || "" });
+      } else if (purpose === "note") {
+        // Free text (snacks in the coach, a reminder): no place to locate.
+        var text = String(a[2] || a[6] || "").trim(); if (!text) continue;
+        (cfg.stops[iso] = cfg.stops[iso] || []).push({ purpose: "note", name: text, note: text, start: start, end: end });
       } else {
         var loc = locate_(a[2]); if (!loc) continue;
         (cfg.stops[iso] = cfg.stops[iso] || []).push({ purpose: purpose, name: loc.name, lat: loc.lat, lon: loc.lon, link: /^https?:/.test(a[2]) ? a[2] : "", start: start, end: end, note: a[6] || "" });

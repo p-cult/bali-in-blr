@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;900&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="../plan/plan.css?v=36" />
+<link rel="stylesheet" href="../plan/plan.css?v=37" />
 </head>
 <body>
 <div class="wrap" id="admin-app" hidden>
@@ -35,7 +35,7 @@
     <a class="btn btn-sm" id="xlsx" href="../plan/tour-plan.xlsx" download="Bali-in-Bengaluru-tour-plan.xlsx" hidden title="Excel workbook: summary, one tab per day, stays, vehicles; rendered every night">Download sheet</a>
     <a class="btn btn-sm" id="routine" href="../plan/tour-plan-routine.xlsx" download="Bali-in-Bengaluru-daily-routine.xlsx" hidden title="Excel workbook: only the travel and event routine, leaving the stay to leaving the last venue, dinner included">Routine sheet</a>
     <button class="btn btn-sm" type="button" id="print">Print</button>
-    <button type="button" id="traffic" hidden></button><button type="button" id="reload-sheet" hidden></button><button type="button" id="repull-sheet" hidden></button><button type="button" id="save" hidden></button><button type="button" id="share" hidden></button>
+    <button type="button" id="traffic" hidden></button><button type="button" id="reload-sheet" hidden></button><button type="button" id="repull-sheet" hidden></button><button type="button" id="save" hidden></button><button class="btn btn-sm btn-primary" type="button" id="save-sheet" title="Send every change to the Google Sheet and the shared plan, so everyone sees it">Save to sheet</button><span class="save-state" id="save-state" aria-live="polite"></span><button type="button" id="share" hidden></button>
   </div>
 
   <nav class="tabs no-print" role="tablist" aria-label="Planner sections">
@@ -189,8 +189,8 @@
 </div>
 
 <script src="auth.js?v=7"></script>
-<script src="../plan/engine.js?v=35"></script>
-<script src="../plan/render.js?v=31"></script>
+<script src="../plan/engine.js?v=36"></script>
+<script src="../plan/render.js?v=32"></script>
 <script>
 (function () {
   "use strict";
@@ -217,7 +217,8 @@
     if (done) loaderHide = setTimeout(function () { el.classList.add("hide"); }, 2500);
   }
   let syncHook = null;
-  function persist() { try { localStorage.setItem(STORE, JSON.stringify(cfg())); } catch (e) { /* ignore */ } if (syncHook) syncHook(); }
+  let dirty = false;
+  function persist() { try { localStorage.setItem(STORE, JSON.stringify(cfg())); } catch (e) { /* ignore */ } if (syncHook) syncHook(); if (!dirty && data && $("save-state")) { dirty = true; $("save-state").textContent = "Unsaved changes"; } }
   function stored() { try { return JSON.parse(localStorage.getItem(STORE) || "null"); } catch (e) { return null; } }
 
   // Transport table (Settings): one row per vehicle type; the first is the coach.
@@ -249,6 +250,37 @@
   }
 
   /* ---- forms ---- */
+  // Planner times in 12-hour form: each native time field is kept (hidden)
+  // as the value holder, so every reader and writer of .value still works,
+  // and hour / minute / am-pm selects sit in its place.
+  const VALUE = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value");
+  function time12(root) {
+    root.querySelectorAll("input[type='time']:not(.t12-src)").forEach(function (inp) {
+      inp.classList.add("t12-src");
+      const w = document.createElement("span"); w.className = "t12"; if (inp.title) w.title = inp.title;
+      const mk = function (vals, lab) { const s = document.createElement("select"); s.setAttribute("aria-label", lab); s.innerHTML = vals.map(function (v) { return "<option value='" + v[0] + "'>" + v[1] + "</option>"; }).join(""); w.appendChild(s); return s; };
+      const hrs = [["", "--"]]; for (let i = 1; i <= 12; i++) hrs.push([String(i), String(i)]);
+      const h = mk(hrs, "Hour");
+      const mins = [["", "--"]]; for (let i = 0; i < 60; i += 5) mins.push([L.pad(i), L.pad(i)]);
+      const m = mk(mins, "Minutes"), ap = mk([["am", "am"], ["pm", "pm"]], "am or pm");
+      function show(v) {
+        const t = /^(\d{1,2}):(\d{2})/.exec(v || "");
+        if (!t) { h.value = ""; m.value = ""; return; }
+        const hh = +t[1];
+        if (!m.querySelector("option[value='" + t[2] + "']")) { const o = document.createElement("option"); o.value = o.textContent = t[2]; m.appendChild(o); }
+        h.value = String(hh % 12 === 0 ? 12 : hh % 12); m.value = t[2]; ap.value = hh < 12 ? "am" : "pm";
+      }
+      Object.defineProperty(inp, "value", { configurable: true, get: function () { return VALUE.get.call(inp); }, set: function (v) { VALUE.set.call(inp, v); show(v); } });
+      w.addEventListener("input", function (e) { e.stopPropagation(); });
+      w.addEventListener("change", function (e) {
+        e.stopPropagation();
+        if (!h.value) VALUE.set.call(inp, "");
+        else { if (!m.value) m.value = "00"; VALUE.set.call(inp, L.pad(+h.value % 12 + (ap.value === "pm" ? 12 : 0)) + ":" + m.value); }
+        inp.dispatchEvent(new Event("input", { bubbles: true })); inp.dispatchEvent(new Event("change", { bubbles: true }));
+      });
+      inp.after(w); show(inp.value);
+    });
+  }
   function bindForms() {
     const c = cfg();
     $("party-artists").value = c.party.artists != null ? c.party.artists : c.party.size; $("party-volunteers").value = c.party.volunteers || 0; $("party-label").value = c.party.label;
@@ -411,7 +443,7 @@
       });
       $("share-url").textContent = shareUrl(stay);
     } else { $("days").innerHTML = "<p class='muted'>Add a stay to start.</p>"; }
-    renderStays(); renderVenues(); renderExtras();
+    renderStays(); renderVenues(); renderExtras(); time12(document);
     if ($("sh-pick").options.length !== showList().length) fillShowPicker(); else fillShowForm();
     const prov = c.provider === "bridge" ? (L.CONFIG.LOGISTICS_URL ? "Google traffic" : "estimated traffic (backend not connected)") : c.provider === "osrm" ? "estimated traffic" : "straight-line estimate";
     $("status").innerHTML = "<span class='ok'>●</span> " + data.events.length + " events" + (data.fromSheet ? " from the live schedule" : " (fallback file)") + " · " + L.esc(prov);
@@ -535,6 +567,10 @@
       if (!("stopadd" in e.target.dataset)) return;
       const q = function (k) { return box.querySelector("[data-k='" + k + "']"); };
       const text = q("where").value.trim(); if (!text) return;
+      if (q("purpose").value === "note") {
+        st[date] = (st[date] || []).concat([{ purpose: "note", name: text, note: text, start: q("start").value || "", end: q("end").value || "" }]);
+        scheduleRebuild(true); return;
+      }
       try {
         const pos = await locate(text);
         if (!pos) { ctx.warnings.push("Could not locate “" + text + "” — paste a Google Maps link that contains coordinates."); render(); return; }
@@ -548,6 +584,12 @@
     $("days").addEventListener("keydown", function (e) {
       if (e.key === "Enter" && e.target.closest(".addon-add")) { e.preventDefault(); e.target.closest(".addon-add").querySelector("[data-stopadd]").click(); }
       if (e.key === "Escape" && e.target.closest(".addon-add")) { e.target.closest(".addons").querySelector("[data-stopcancel]").click(); }
+    });
+
+    // A note needs no place: the text box takes the note instead.
+    $("days").addEventListener("change", function (e) {
+      if (e.target.dataset.k !== "purpose" || !e.target.closest(".addon-add")) return;
+      e.target.closest(".addon-add").querySelector("[data-k='where']").placeholder = e.target.value === "note" ? "e.g. Snacks & water in the coach — 40 packs" : "Google Maps link, address or lat, lon";
     });
 
     // Meal lines: time / length / note edits, "go there", reset, back to default.
@@ -734,7 +776,7 @@
     });
     // Two-way sync: everything the planner knows for each day goes to the
     // sheet — after pricing, and (debounced) after any edit here.
-    const PURPOSE_LABEL = { breakfast: "Breakfast", lunch: "Lunch", dinner: "Dinner", sightseeing: "Sightseeing", shopping: "Shopping", other: "Other" };
+    const PURPOSE_LABEL = { breakfast: "Breakfast", lunch: "Lunch", dinner: "Dinner", sightseeing: "Sightseeing", shopping: "Shopping", other: "Other", note: "Note" };
     let syncTimer = null;
     function sheetPayload() {
       const c = cfg();
@@ -759,7 +801,7 @@
           addons.push({ purpose: "Engagement", location: x.title + " — " + x.venue, start: x.start || "", end: x.end || "", include: true, note: x.note || "" });
         });
         ((c.stops || {})[d.date] || []).forEach(function (p) {
-          addons.push({ purpose: PURPOSE_LABEL[p.purpose] || "Other", location: p.link || p.name, start: p.start || "", end: p.end || "", include: true, note: p.note || "" });
+          addons.push({ purpose: PURPOSE_LABEL[p.purpose] || "Other", location: p.purpose === "note" ? (p.note || p.name) : p.link || p.name, start: p.start || "", end: p.end || "", include: true, note: p.note || "" });
         });
         const jj = (c.joiners || {})[d.date];
         days[d.date] = { leave: d.leave != null && d.kind !== "rest" ? R.hhmm(d.leave) : "", vehicle: (c.dayVehicle || {})[d.date] || "", joiners: jj ? { count: jj.count, label: jj.label, travel: !!jj.travel } : null, events: events, addons: addons };
@@ -767,13 +809,27 @@
       return { action: "writeback", days: days, settings: { stay: stay.name, artists: c.party.artists, volunteers: c.party.volunteers, storage: c.instrumentStore && c.instrumentStore.link ? c.instrumentStore.link : "", lead: c.instrumentLead != null ? R.hhmm(c.instrumentLead) : "", flights: c.travel || null } };
     }
     async function writeBack() {
-      if (!L.CONFIG.LOGISTICS_URL || !cfg().sheetUrl) return;
-      const payload = sheetPayload(); if (!payload) return;
+      if (!L.CONFIG.LOGISTICS_URL || !cfg().sheetUrl) return false;
+      const payload = sheetPayload(); if (!payload) return false;
       try { const ac = new AbortController(); const tm = setTimeout(function () { ac.abort(); }, 90000); await fetch(L.CONFIG.LOGISTICS_URL, { method: "POST", body: JSON.stringify(payload), signal: ac.signal }); clearTimeout(tm); $("status").textContent = $("status").textContent.replace(/ · sheet updated.*$/, "") + " · sheet updated " + new Date().toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit" }); }
       catch (e) { /* the write usually lands even when the reply is not JSON */ }
+      return true;
     }
     function syncSoon() { if (!cfg().sheetUrl) return; clearTimeout(syncTimer); syncTimer = setTimeout(writeBack, 2500); }
     syncHook = syncSoon;
+    // "Save to sheet": send every change now (days, stops, notes, shows) to
+    // the Google Sheet, and the settings (vehicles…) to the shared plan, so
+    // every planner gets them on their next load.
+    $("save-sheet").addEventListener("click", async function () {
+      const b = $("save-sheet"); b.disabled = true; $("save-state").textContent = "Saving…";
+      clearTimeout(syncTimer);
+      let sheet = false, shared = false;
+      try { sheet = await writeBack(); } catch (e) { sheet = false; }
+      try { const r = await fetch(L.CONFIG.LOGISTICS_URL, { method: "POST", body: JSON.stringify({ action: "save", cfg: cfg() }) }).then(function (x) { return x.json(); }); shared = !!(r && r.ok); } catch (e) { shared = false; }
+      b.disabled = false; dirty = false;
+      const at = new Date().toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit" });
+      $("save-state").textContent = sheet && shared ? "Saved to the sheet · " + at : sheet ? "Sheet updated · settings not saved · " + at : shared ? "Settings saved · no planner sheet linked (use Sync everything) · " + at : "Save failed — check the connection and try again";
+    });
     $("save").addEventListener("click", async function () {
       $("status").textContent = "Saving…";
       try {
@@ -836,7 +892,7 @@
       selectedStay = data.cfg.selectedStay || (L.activeStays(data.cfg)[0] || {}).id || null;
       showPdfFor(selectedStay);
       if (data.cfg.sheetUrl) { $("sheet-link").href = data.cfg.sheetUrl; $("sheet-link").hidden = false; }
-      bindForms(); wire(); wireTabs();
+      bindForms(); wire(); wireTabs(); time12(document);
       await rebuild(true);
       if (L.CONFIG.LOGISTICS_URL && cfg().provider === "bridge") await refreshTraffic({ sheet: !L.sheetIsFresh() });
       if (!(L.CONFIG.LOGISTICS_URL && cfg().provider === "bridge")) loading("Everything is loaded · times are estimates", 1, true);

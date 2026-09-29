@@ -784,18 +784,32 @@
   // purpose: breakfast | lunch | dinner | sightseeing | shopping | other.
   // start/end are "HH:MM" and optional: a timed stop is pinned; an untimed
   // meal is auto-placed; an untimed visit takes the first gap that fits.
-  const PURPOSE = { breakfast: "Breakfast", lunch: "Lunch", dinner: "Dinner", sightseeing: "Sightseeing", shopping: "Shopping", other: "Stop" };
+  const PURPOSE = { breakfast: "Breakfast", lunch: "Lunch", dinner: "Dinner", sightseeing: "Sightseeing", shopping: "Shopping", other: "Stop", note: "Note" };
   const VISIT_LEN = 90;
   function dayStops(cfg, dateISO, ctx) {
     let list = (cfg.stops || {})[dateISO] || [];
     // Legacy shape from the first version: mealStops[date] = {lunch, dinner}.
     const legacy = (cfg.mealStops || {})[dateISO];
     if (legacy) ["lunch", "dinner"].forEach(function (k) { if (legacy[k] && legacy[k].lat != null) list = list.concat([Object.assign({ purpose: k }, legacy[k])]); });
-    return list.filter(function (p) { return p && p.lat != null && p.lon != null; }).map(function (p, i) {
+    return list.filter(function (p) { return p && p.purpose !== "note" && p.lat != null && p.lon != null; }).map(function (p, i) {
       const purpose = PURPOSE[p.purpose] ? p.purpose : "other";
       return { i: i, purpose: purpose, label: PURPOSE[purpose], name: p.name || PURPOSE[purpose] + " place", area: p.area || "", lat: +p.lat, lon: +p.lon,
         start: toMin(p.start), end: toMin(p.end), idx: ctx.point(p), stop: true };
     });
+  }
+  // Notes (purpose "note"): free text — snacks in the coach, water, a
+  // reminder — with an optional time. They do not move the plan; a timed
+  // note sits in the timeline at its time, an untimed one opens the day.
+  function applyNotes(cfg, dateISO, day) {
+    const list = ((cfg.stops || {})[dateISO] || []).filter(function (p) { return p && p.purpose === "note"; });
+    if (!list.length || !day.blocks.length) return day;
+    const first = day.blocks.reduce(function (m, b) { return Math.min(m, b.from); }, Infinity);
+    list.forEach(function (p) {
+      const from = toMin(p.start), to = toMin(p.end);
+      day.blocks.push(block("note", from != null ? from : first, from != null && to != null && to > from ? to : null, p.note || p.name || "Note", { userNote: true }));
+    });
+    day.blocks.sort(function (a, b) { return a.from - b.from; });
+    return day;
   }
   function stopLen(D, p) {
     if (p.start != null && p.end != null && p.end > p.start) return p.end - p.start;
@@ -994,7 +1008,7 @@
     if (depDay && depDay > last) last = depDay;
     const days = [];
     for (let d = first; d <= last; d = addDays(d, 1)) {
-      days.push(planDay(ctx, d, events.filter(function (e) { return e.date === d; }), stay, days[days.length - 1]));
+      days.push(applyNotes(ctx.cfg, d, planDay(ctx, d, events.filter(function (e) { return e.date === d; }), stay, days[days.length - 1])));
     }
     days.forEach(function (day, i) { if (day.kind === "outstation") stitchOvernight(days, i); });
     const t = { travelMin: 0, km: 0, truckKm: 0, truckMin: 0, showDays: 0, restDays: 0, earlyCalls: 0, lateNights: 0, earliestWake: null, latestSleep: null, holdsInTown: 0, longestDay: 0 };

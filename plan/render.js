@@ -104,15 +104,16 @@
   function stopEditor(day, cfg) {
     const list = ((cfg.stops || {})[day.date]) || [];
     const rows = list.map(function (p, i) {
-      const when = p.start ? p.start + (p.end ? " – " + p.end : "") : "auto";
+      const when = p.start ? hm(L.toMin(p.start)) + (p.end ? " – " + hm(L.toMin(p.end)) : "") : p.purpose === "note" ? "start of day" : "auto";
+      const isNote = p.purpose === "note";
       return "<div class='addon-row'><span class='pill on'>" + esc(L.PURPOSE[p.purpose] || "Stop") + "</span><span class='addon-name'>" +
-        (p.link ? "<a href='" + esc(p.link) + "' target='_blank' rel='noopener'>" + esc(p.name) + "</a>" : esc(p.name)) + (p.area ? " <small>" + esc(p.area) + "</small>" : "") +
-        (p.lat == null ? " <small class='prec low'>NOT LOCATED</small>" : "") + "</span><span class='addon-when'>" + esc(when) + "</span>" +
+        (isNote ? esc(p.note || p.name) : (p.link ? "<a href='" + esc(p.link) + "' target='_blank' rel='noopener'>" + esc(p.name) + "</a>" : esc(p.name)) + (p.area ? " <small>" + esc(p.area) + "</small>" : "") +
+        (p.lat == null ? " <small class='prec low'>NOT LOCATED</small>" : "")) + "</span><span class='addon-when'>" + esc(when) + "</span>" +
         "<button class='btn btn-sm' type='button' data-stoprm='" + i + "'>remove</button></div>";
     }).join("");
-    const opts = Object.keys(L.PURPOSE).map(function (k) { return "<option value='" + k + "'>" + esc(L.PURPOSE[k]) + "</option>"; }).join("");
+    const opts = Object.keys(L.PURPOSE).map(function (k) { return "<option value='" + k + "'>" + esc(k === "note" ? "Note — snacks, refreshments, anything" : L.PURPOSE[k]) + "</option>"; }).join("");
     return "<div class='addons' data-date='" + day.date + "'>" + rows +
-      "<button type='button' class='addon-toggle no-print' data-addontoggle>+ Add a stop (meal out, sightseeing, shopping…)</button>" +
+      "<button type='button' class='addon-toggle no-print' data-addontoggle>+ Add a stop or note (meal out, sightseeing, snacks in the coach…)</button>" +
       "<div class='addon-add'><select data-k='purpose'>" + opts + "</select>" +
       "<input type='text' data-k='where' placeholder='Google Maps link, address or lat, lon'>" +
       "<input type='time' data-k='start' title='Start (optional)'><input type='time' data-k='end' title='End (optional)'>" +
