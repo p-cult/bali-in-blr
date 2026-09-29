@@ -1957,3 +1957,17 @@ transparent, so a CSS filter (brightness(0) invert(1) + a light warm tint)
 renders it cream on the dark hero; the file itself stays the untouched
 vector. Print reverts the filter and shows it black on the cream page.
 site.css `v44`.
+
+## 29 Sep 2026 — Logistics: vehicles reach other planners; meal note box
+
+A vehicle type added in Settings lived only in that browser's draft
+(localStorage). **Save** wrote the whole plan to the backend's plan tab, but
+nothing ever read it back (`?action=load` had no caller), and the sheet
+round-trip carries head counts, not vehicles. Now the admin page reads
+`?action=load` on open and adds any saved vehicle type it lacks, by name, like
+the shipped defaults. Additive only: removing a type does not propagate.
+A planner must press **Save** for others to get it.
+
+Separately, typing in a meal's Note field re-drew the day on each keystroke
+and closed the editor after one character. render() now reopens editing meal
+rows and restores the cursor.

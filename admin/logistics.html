@@ -822,7 +822,14 @@
       // follow the shipped defaults by id so a rename lands everywhere.
       (data.cfg.stays || []).forEach(function (s) { const d = (defaults.stays || []).find(function (x) { return x.id === s.id; }); if (d) { s.name = d.name; s.address = d.address; s.aliases = d.aliases; } });
       // Vehicle types shipped later than a draft are added to it (by name).
-      (defaults.party.vehicles || []).forEach(function (v) { if (!(data.cfg.party.vehicles || []).some(function (x) { return x.name === v.name; })) data.cfg.party.vehicles.push(L.clone(v)); });
+      // So are types another planner added and saved (Save → backend), so a
+      // new vehicle reaches everyone on their next load.
+      let saved = null;
+      if (L.CONFIG.LOGISTICS_URL) {
+        try { const ac = new AbortController(); const tm = setTimeout(function () { ac.abort(); }, 20000); const r = await fetch(L.CONFIG.LOGISTICS_URL + "?action=load", { signal: ac.signal }).then(function (x) { return x.json(); }); clearTimeout(tm); saved = r && r.ok && r.cfg; } catch (e) { /* offline or slow: keep the local list */ }
+      }
+      data.cfg.party.vehicles = data.cfg.party.vehicles || [];
+      (defaults.party.vehicles || []).concat((saved && saved.party && saved.party.vehicles) || []).forEach(function (v) { if (v && v.name && !data.cfg.party.vehicles.some(function (x) { return x.name === v.name; })) data.cfg.party.vehicles.push(L.clone(v)); });
 
       const ex = data.cfg.excludeStatuses || [];
       data.events = data.events.filter(function (e) { return ex.indexOf((e.status || "").toLowerCase()) === -1; });
