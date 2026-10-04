@@ -41,6 +41,11 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://bali-in-blr.paramfoundation.org/event/?e=dance-movement-workshop-2</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://bali-in-blr.paramfoundation.org/event/?e=shadow-puppetry-workshop</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
