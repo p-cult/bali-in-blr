@@ -2187,3 +2187,15 @@ the last figures this browser saw straight away and refreshes behind
 them, with five spaced retries. A cold first call can still take 20 s on
 Google's side; the page no longer makes the reader feel it.
 
+**15:26 — Campaign results: no more waiting on Google.** The slowness Vinod
+kept seeing was the registration bridge and the tickets app taking 30–50 s
+to wake, with the page retrying in front of him. Fixed at the root: the
+click-log script now prepares the whole answer itself every five minutes
+(a time trigger) and keeps it for six hours; the page makes one call and
+has everything in ~2 s. It reads the tickets sheet's Master/Events tabs
+and the registration sheet's Mint tab **directly** (same owner, no
+personal tab touched) — calling the other web apps from a script would
+have needed the "external request" permission and another consent round.
+Page lives at `admin/results.html` ("Campaign results"); old address
+redirects. Ticket estimates round down to whole tickets. Hits.gs version 7.
+
