@@ -261,8 +261,20 @@
 
   function render(hits, tickets, links) {
     const byRef = hits.byRef || {}, byRefEvent = hits.byRefEvent || {}, byEvent = hits.byEvent || {};
-    const sold = tickets.byEvent || {};
-    const soldTotal = Object.values(sold).reduce((a, b) => a + Number(b || 0), 0) || Number(tickets.totalTickets || 0);
+    // Tickets recorded, for the window being shown. The tickets app reports
+    // sales per day, so "last 7 days" and "since yesterday" count only the
+    // entries stamped inside that window (IST). Whole campaign uses every row.
+    let sold = tickets.byEvent || {};
+    if (DAYS && tickets.daily) {
+      const since = new Date(Date.now() - DAYS * 86400000);
+      const sinceKey = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata" }).format(since);
+      sold = {};
+      Object.keys(tickets.daily).forEach((day) => {
+        if (day < sinceKey) return;
+        Object.keys(tickets.daily[day]).forEach((ev) => { sold[ev] = (sold[ev] || 0) + Number(tickets.daily[day][ev] || 0); });
+      });
+    }
+    const soldTotal = Object.values(sold).reduce((a, b) => a + Number(b || 0), 0) || (DAYS ? 0 : Number(tickets.totalTickets || 0));
 
     // Estimated tickets per ref: each event's sales shared by ticket-click share.
     const est = {};
@@ -296,7 +308,7 @@
       [pct(tagged, sessions), "Arrived via a minted link"],
       [n(tclicks), "Ticket clicks"],
       [n(regs), "Registrations"],
-      [n(soldTotal), "Tickets recorded"],
+      [n(soldTotal), DAYS ? "Tickets recorded in window" : "Tickets recorded"],
       [n1(estTagged), "Est. tickets from links"],
     ].map(([b, l]) => `<div class="stat"><b>${b}</b><span>${l}</span></div>`).join("");
 
