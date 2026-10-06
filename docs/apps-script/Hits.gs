@@ -66,9 +66,20 @@ function doGet(e) {
   const p = (e && e.parameter) || {};
   if (p.hit) return record(p);
   if (!p.summary) return json({ ok: true, service: 'Bali in Bengaluru hits' });
+  const cache = CacheService.getScriptCache();
+  // ?summary=all: the whole campaign, the last 7 days and since yesterday in
+  // one answer from one sheet read, so the dashboard switches windows
+  // without coming back here. Cached two minutes.
+  if (String(p.summary) === 'all') {
+    const hitAll = cache.get('summary:all');
+    if (hitAll) return jsonText(hitAll);
+    const rows = readRows();
+    const outAll = JSON.stringify({ ok: true, all: summary(0, rows), d7: summary(7, rows), d1: summary(1, rows) });
+    try { cache.put('summary:all', outAll, 120); } catch (err) { /* over 100 KB: serve uncached */ }
+    return jsonText(outAll);
+  }
   const days = Math.max(0, parseInt(p.days, 10) || 0);
   const key = 'summary:' + days;
-  const cache = CacheService.getScriptCache();
   const hit = cache.get(key);
   if (hit) return jsonText(hit);
   const out = JSON.stringify(summary(days));
@@ -76,10 +87,14 @@ function doGet(e) {
   return jsonText(out);
 }
 
-function summary(days) {
+function readRows() {
   const sh = sheet();
   const n = sh.getLastRow() - 1;
-  const rows = n > 0 ? sh.getRange(2, 1, n, HEADERS.length).getValues() : [];
+  return n > 0 ? sh.getRange(2, 1, n, HEADERS.length).getValues() : [];
+}
+
+function summary(days, rowsIn) {
+  const rows = rowsIn || readRows();
   const since = days ? Utilities.formatDate(new Date(Date.now() - days * 86400000), TZ, 'yyyy-MM-dd') : '';
   const byRef = {}, byRefEvent = {}, byEvent = {}, daily = {};
   const seen = {}; // ref|sid and day|sid, so a session counts once
@@ -176,7 +191,7 @@ function backfillFromRegistrations() {
     }
   });
   if (out.length) sh.getRange(sh.getLastRow() + 1, 1, out.length, HEADERS.length).setValues(out);
-  CacheService.getScriptCache().removeAll(['summary:0', 'summary:1', 'summary:7']);
+  CacheService.getScriptCache().removeAll(['summary:0', 'summary:1', 'summary:7', 'summary:all']);
   Logger.log('backfilled ' + out.length / 2 + ' registrations');
 }
 

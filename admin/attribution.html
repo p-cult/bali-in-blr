@@ -177,7 +177,6 @@
       try {
         const r = await fetch(url + (url.includes("?") ? "&" : "?") + "_=" + Date.now(), { cache: "no-store", signal: ctrl.signal });
         const j = await r.json();
-        try { localStorage.setItem("attr:" + url.split("?")[0].slice(-24) + url.split("?")[1], JSON.stringify({ at: Date.now(), j })); } catch (e) {}
         return j;
       } catch (e) {
         err = e;
@@ -188,11 +187,8 @@
     }
     throw err;
   }
-  function lastGood(url) {
-    try {
-      const v = JSON.parse(localStorage.getItem("attr:" + url.split("?")[0].slice(-24) + url.split("?")[1]) || "null");
-      return v && v.j ? v : null;
-    } catch (e) { return null; }
+  function lastGood(key) {
+    try { const v = JSON.parse(localStorage.getItem(key) || "null"); return v && v.j ? v : null; } catch (e) { return null; }
   }
 
   const n = (v) => Number(v || 0).toLocaleString("en-IN");
@@ -218,35 +214,49 @@
     el.innerHTML = "<b>Heads up.</b><ul>" + missing.map((m) => "<li>" + m + "</li>").join("") + "</ul>";
   }
 
+  const WIN = { 0: "all", 7: "d7", 1: "d1" };
+  let DATA = null; // { hits: {all, d7, d1}, tickets, links, at }
+
+  function paint() {
+    if (!DATA) return;
+    const hits = (DATA.hits && DATA.hits[WIN[DAYS]]) || { byRef: {}, byRefEvent: {}, byEvent: {}, daily: {}, rows: 0 };
+    render(hits, DATA.tickets || {}, Array.isArray(DATA.links) ? DATA.links : []);
+    $("generated").textContent = "As of " + new Date(DATA.at).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" }) +
+      (hits.from ? " · clicks logged " + hits.from + " to " + hits.to : "") +
+      (DAYS ? " · last " + DAYS + " day" + (DAYS > 1 ? "s" : "") : " · whole campaign");
+  }
+
   async function load() {
-    $("generated").textContent = "Loading…";
+    // 1. Paint the last figures this browser saw, at once.
+    const prev = lastGood("attr:data");
+    if (prev && !DATA) { DATA = prev.j; paint(); $("generated").textContent += " · refreshing…"; }
+    else if (!DATA) $("generated").textContent = "Loading…";
+
+    // 2. Fetch everything once — all three windows in one answer — then keep it.
     const missing = [];
-    let hits = null, tickets = null, links = [];
     if (!HITS) missing.push("The click log is not set up yet (see docs/ATTRIBUTION.md). Until then no clicks are recorded.");
-    const jobs = [
-      HITS ? get(HITS + "?summary=1&days=" + DAYS).catch(() => null) : Promise.resolve(null),
+    const [hits, tickets, links] = await Promise.all([
+      HITS ? get(HITS + "?summary=all").catch(() => null) : Promise.resolve(null),
       get(TICKETS + "?data=1").catch(() => null),
       get(BRIDGE + "?sheet=links").catch(() => []),
-    ];
-    [hits, tickets, links] = await Promise.all(jobs);
-    let stale = [];
+    ]);
+    const stale = [];
+    const fresh = { hits: hits, tickets: tickets, links: Array.isArray(links) ? links : (DATA && DATA.links) || [], at: Date.now() };
     if (HITS && !hits) {
-      const k = lastGood(HITS + "?summary=1&days=" + DAYS);
-      if (k) { hits = k.j; stale.push("click log (" + new Date(k.at).toLocaleTimeString("en-IN", { timeStyle: "short" }) + ")"); }
+      if (DATA && DATA.hits) { fresh.hits = DATA.hits; stale.push("click log"); }
       else missing.push("The click log is not answering right now. Google's script service is slow at the moment — press Refresh in a minute.");
     }
     if (!tickets) {
-      const k = lastGood(TICKETS + "?data=1");
-      if (k) { tickets = k.j; stale.push("ticket sales (" + new Date(k.at).toLocaleTimeString("en-IN", { timeStyle: "short" }) + ")"); }
+      if (DATA && DATA.tickets) { fresh.tickets = DATA.tickets; stale.push("ticket sales"); }
       else missing.push("The tickets app is not answering right now — press Refresh in a minute.");
-    }
+    } else if (!tickets.byEvent) missing.push("The ticket sales app is on an older version, so sales can only be shown as a total (see docs/ATTRIBUTION.md).");
     if (stale.length) missing.push("Showing the last good figures for: " + stale.join(", ") + ". Press Refresh to try again.");
-    else if (!tickets.byEvent) missing.push("The ticket sales app is on an older version, so sales can only be shown as a total (see docs/ATTRIBUTION.md).");
+    if (!fresh.hits && DATA) fresh.hits = DATA.hits;
+    if (!fresh.tickets && DATA) fresh.tickets = DATA.tickets;
+    DATA = fresh;
+    try { localStorage.setItem("attr:data", JSON.stringify({ at: Date.now(), j: DATA })); } catch (e) {}
     showSetup(missing);
-    render(hits || { byRef: {}, byRefEvent: {}, byEvent: {}, daily: {}, rows: 0 }, tickets || {}, Array.isArray(links) ? links : []);
-    $("generated").textContent = "As of " + new Date().toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" }) +
-      (hits && hits.from ? " · clicks logged " + hits.from + " to " + hits.to : "") +
-      (DAYS ? " · last " + DAYS + " day" + (DAYS > 1 ? "s" : "") : " · whole campaign");
+    paint();
   }
 
   function render(hits, tickets, links) {
@@ -376,7 +386,7 @@
     if (!chip) return;
     $("filters").querySelectorAll(".chip").forEach((c) => c.classList.toggle("is-active", c === chip));
     DAYS = Number(chip.dataset.days) || 0;
-    load();
+    paint(); // all three windows are already here — no round trip
   });
   $("reload").addEventListener("click", load);
   AdminAuth.protect({ tool: "attribution", onUnlock: (user) => { $("who").textContent = user; load(); } });
