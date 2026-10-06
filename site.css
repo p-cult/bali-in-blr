@@ -1134,6 +1134,11 @@ p.ev-desc { font-size: 1.08rem; line-height: 1.65; color: var(--muted); max-widt
 [data-look="festive"] .footer-copy { border-top-color: var(--line); }
 
 /* ---- Calendar and form views inherit the paper tokens; their cards go white ---- */
+/* The date chip: a paper tile, brick figures — brick does the dates in print too. */
+[data-look="festive"] .cal-date { background: var(--paper); border-color: rgba(27, 29, 33, 0.12); backdrop-filter: none; }
+[data-look="festive"] .cal-date b { color: var(--brick); }
+[data-look="festive"] .cal-date i { color: var(--ink); }
+[data-look="festive"] .cal-poster--blank .cal-date { background: transparent; }
 [data-look="festive"] .cal-event, [data-look="festive"] .section-tint .cal-event, [data-look="festive"] .onboard-card { background: #FFF; }
 [data-look="festive"] .cal-poster::after, [data-look="festive"] .section-tint .cal-poster::after { background: linear-gradient(100deg, transparent 52%, #FFF); }
 [data-look="festive"] .chip.is-active { color: #2A1206; }
