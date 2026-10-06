@@ -2178,3 +2178,12 @@ committed. The two Google scripts that feed this (the click log and the
 ticket sales app) are updated in place; never create a second deployment
 of either, or the site stops reaching them.
 
+**13:40 — Window switching made instant.** Each click on Whole campaign /
+Last 7 days / Since yesterday used to go back to Google and wait. Now
+`?summary=all` on the Hits app returns all three windows from one sheet
+read (cached two minutes, version 5 of the same deployment); the page
+fetches once, keeps it, and switches in about 100 ms. On open it paints
+the last figures this browser saw straight away and refreshes behind
+them, with five spaced retries. A cold first call can still take 20 s on
+Google's side; the page no longer makes the reader feel it.
+
