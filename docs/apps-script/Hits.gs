@@ -127,3 +127,17 @@ function clean(v) { return String(v == null ? '' : v).trim(); }
 function text(s) { return ContentService.createTextOutput(s).setMimeType(ContentService.MimeType.TEXT); }
 function json(o) { return jsonText(JSON.stringify(o)); }
 function jsonText(s) { return ContentService.createTextOutput(s).setMimeType(ContentService.MimeType.JSON); }
+
+/** Maintenance, run from the editor: drop rows whose Ref is a test marker
+ *  (wire-test, e2e-*, curl-*, probe*, get-*, final-test, bare "direct"). */
+function purgeTestRows() {
+  const sh = sheet();
+  const n = sh.getLastRow() - 1;
+  if (n < 1) return;
+  const refs = sh.getRange(2, 5, n, 1).getValues();
+  const test = /^(wire-test|e2e-|curl-|probe|get-|final-test|direct$)/;
+  for (var i = refs.length - 1; i >= 0; i--) {
+    if (test.test(String(refs[i][0]))) sh.deleteRow(i + 2);
+  }
+}
+

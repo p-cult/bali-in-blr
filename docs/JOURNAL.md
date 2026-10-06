@@ -2091,3 +2091,18 @@ standalone script at the sheet. Lesson for curl tests: a raw "(" in a POST
 body gets a 400 from script.google.com; the site's URLSearchParams encodes
 it, so only the test was wrong.
 
+**Later still, 6 Oct — three traps between the browser and Apps Script.**
+Browser hits never arrived while curl's did. In order: (1) `sendBeacon`
+POSTs never reached `doPost`; (2) ordinary browser POSTs worked for a
+while, then script.google.com began answering them with a 400 before the
+script ran; (3) the cause of most of it turned out to be the parameter
+name **`sid`**, which Google's front end reserves — any request carrying
+it is refused with a 400 before `doGet`/`doPost` run. Hits now travel as
+**GET `?hit=1&…`** with the session id named `vs`. Versions 2–4 of the
+same deployment (never a new one); end-to-end from the live site, a
+visit, an event open and a ticket click land under their campaign ref
+per event. A `purgeTestRows()` helper in Hits.gs, run from the editor,
+clears test rows. Browser-pane limits met today: it refuses clipboard
+writes (set the Monaco model instead), blocks popups and new tabs from
+automated clicks (the OAuth consent had to be clicked by Vinod).
+
