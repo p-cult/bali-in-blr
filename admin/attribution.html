@@ -165,21 +165,36 @@
   const TICKETS = "https://script.google.com/macros/s/AKfycbzX5yeStITITqvM0HXgvZYBNy70Jo8HRxGXYlc6iHzzMYuWnoXWzzOA9QyllWIGDWFA/exec";
   let DAYS = 0;
 
-  // Apps Script's first answer after a cold start can come back late or as an
-  // error page; try up to three times before calling a source down.
+  // Apps Script's first answer after a cold start can come back late, as an
+  // error page, or not at all for a minute. Try five times, spaced out, and
+  // meanwhile keep showing the last good answer (kept in this browser).
   async function get(url, ms) {
     let err;
-    for (let i = 0; i < 3; i++) {
+    const waits = [1500, 3000, 6000, 10000];
+    for (let i = 0; i < 5; i++) {
       const ctrl = new AbortController();
       const t = setTimeout(() => ctrl.abort(), ms || 25000);
       try {
         const r = await fetch(url + (url.includes("?") ? "&" : "?") + "_=" + Date.now(), { cache: "no-store", signal: ctrl.signal });
-        return await r.json();
-      } catch (e) { err = e; await new Promise((res) => setTimeout(res, 1500)); }
+        const j = await r.json();
+        try { localStorage.setItem("attr:" + url.split("?")[0].slice(-24) + url.split("?")[1], JSON.stringify({ at: Date.now(), j })); } catch (e) {}
+        return j;
+      } catch (e) {
+        err = e;
+        $("generated").textContent = "One source is slow — retrying (" + (i + 1) + " of 5)…";
+        if (i < 4) await new Promise((res) => setTimeout(res, waits[i]));
+      }
       finally { clearTimeout(t); }
     }
     throw err;
   }
+  function lastGood(url) {
+    try {
+      const v = JSON.parse(localStorage.getItem("attr:" + url.split("?")[0].slice(-24) + url.split("?")[1]) || "null");
+      return v && v.j ? v : null;
+    } catch (e) { return null; }
+  }
+
   const n = (v) => Number(v || 0).toLocaleString("en-IN");
   const n1 = (v) => (Math.round(v * 10) / 10).toLocaleString("en-IN", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
   const pct = (a, b) => b ? Math.round(100 * a / b) + "%" : "—";
@@ -200,23 +215,33 @@
     const el = $("setup");
     if (!missing.length) { el.hidden = true; return; }
     el.hidden = false;
-    el.innerHTML = "<b>Not fully wired yet.</b><ul>" + missing.map((m) => "<li>" + m + "</li>").join("") + "</ul>";
+    el.innerHTML = "<b>Heads up.</b><ul>" + missing.map((m) => "<li>" + m + "</li>").join("") + "</ul>";
   }
 
   async function load() {
     $("generated").textContent = "Loading…";
     const missing = [];
     let hits = null, tickets = null, links = [];
-    if (!HITS) missing.push("The click log is not deployed: deploy <code>docs/apps-script/Hits.gs</code> and set <code>CONFIG.HITS_URL</code> in main.js (see docs/ATTRIBUTION.md). Until then no clicks are recorded.");
+    if (!HITS) missing.push("The click log is not set up yet (see docs/ATTRIBUTION.md). Until then no clicks are recorded.");
     const jobs = [
       HITS ? get(HITS + "?summary=1&days=" + DAYS).catch(() => null) : Promise.resolve(null),
-      get(TICKETS + "?data=1&_=" + Date.now()).catch(() => null),
+      get(TICKETS + "?data=1").catch(() => null),
       get(BRIDGE + "?sheet=links").catch(() => []),
     ];
     [hits, tickets, links] = await Promise.all(jobs);
-    if (HITS && !hits) missing.push("The click log did not answer — check the Hits web app deployment.");
-    if (!tickets) missing.push("The tickets web app did not answer.");
-    else if (!tickets.byEvent) missing.push("The tickets web app is on an older version: redeploy <code>docs/apps-script/Tickets.gs</code> (update the existing deployment) to get per-event sales. Totals only until then.");
+    let stale = [];
+    if (HITS && !hits) {
+      const k = lastGood(HITS + "?summary=1&days=" + DAYS);
+      if (k) { hits = k.j; stale.push("click log (" + new Date(k.at).toLocaleTimeString("en-IN", { timeStyle: "short" }) + ")"); }
+      else missing.push("The click log is not answering right now. Google's script service is slow at the moment — press Refresh in a minute.");
+    }
+    if (!tickets) {
+      const k = lastGood(TICKETS + "?data=1");
+      if (k) { tickets = k.j; stale.push("ticket sales (" + new Date(k.at).toLocaleTimeString("en-IN", { timeStyle: "short" }) + ")"); }
+      else missing.push("The tickets app is not answering right now — press Refresh in a minute.");
+    }
+    if (stale.length) missing.push("Showing the last good figures for: " + stale.join(", ") + ". Press Refresh to try again.");
+    else if (!tickets.byEvent) missing.push("The ticket sales app is on an older version, so sales can only be shown as a total (see docs/ATTRIBUTION.md).");
     showSetup(missing);
     render(hits || { byRef: {}, byRefEvent: {}, byEvent: {}, daily: {}, rows: 0 }, tickets || {}, Array.isArray(links) ? links : []);
     $("generated").textContent = "As of " + new Date().toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" }) +
