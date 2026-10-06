@@ -2199,3 +2199,34 @@ have needed the "external request" permission and another consent round.
 Page lives at `admin/results.html` ("Campaign results"); old address
 redirects. Ticket estimates round down to whole tickets. Hits.gs version 7.
 
+## 6 Oct 2026, end of day — Where things stand, in plain words
+
+**Tickets sold: 995** so far, entered by the team up to this afternoon.
+920 of them in the last seven days, 191 since yesterday. The biggest
+sellers are the Balinese Dance × Yakshagana show (456) and the Kecak
+Performance (300).
+
+**People who signed up on the website: 416** since 6 Sep, 83 in a hundred
+of them through one of our own campaign links. The Instagram volunteer
+link brought 199, the 10 Sep Instagram post 88, the hero poster link 40,
+Google Ads 22.
+
+**Visitors on the website today: 86** since yesterday, 54 of whom clicked a
+Book button since counting began at 11:00 this morning.
+
+**What changed today, for the team.**
+- The website knows what day it is: past shows say "Concluded" by
+  themselves, a "Today / Next up" panel sits under the hero, the calendar
+  opens at today, and the page is a touch warmer while the festival is on.
+- A new admin page, **Campaign results**, shows which links bring people
+  in, what they do, and roughly how many tickets each link sold. It opens
+  in about two seconds, switches between Whole campaign / Last 7 days /
+  Since yesterday instantly, and shows only links people have actually
+  used. Ticket estimates are whole numbers, rounded down.
+- All of this is live and committed. Nothing is waiting on anyone.
+
+**How to read the ticket estimate.** Book clicks have only been counted
+since 11:00 today, so the share of tickets credited to each link is rough
+for now and firms up every day the festival runs. Compare links with each
+other; don't treat a single figure as exact.
+
