@@ -961,7 +961,9 @@ p.ev-desc { font-size: 1.08rem; line-height: 1.65; color: var(--muted); max-widt
 
 .ticker, .hero-wall { display: none; }
 
-[data-look="festive"] {
+/* :root[...] so this outranks :root[data-phase="live"] in styles.css, which
+   otherwise darkens --bg-2 again mid-festival (seen live, 6 Oct). */
+:root[data-look="festive"] {
   --paper: #F8F1E9;         /* xuan paper, from the reference board */
   --brick: #A32B14;         /* poster ground */
   --bg: var(--paper);
@@ -1072,8 +1074,8 @@ p.ev-desc { font-size: 1.08rem; line-height: 1.65; color: var(--muted); max-widt
   opacity: 1;
   background: repeating-conic-gradient(var(--brick) 0 25%, var(--paper) 0 50%) 0 0 / 26px 26px;
 }
-[data-look="festive"] .seam-scallop { background: radial-gradient(circle at 50% 0%, var(--brick) 46%, transparent 47%) 0 0 / 28px 26px; background-color: var(--bg-2); }
-[data-look="festive"] .seam-scallop.on-cream { background: radial-gradient(circle at 50% 0%, var(--bg-2) 46%, transparent 47%) 0 0 / 28px 26px; background-color: var(--brick); }
+[data-look="festive"] .seam-scallop { background: radial-gradient(circle at 50% 0%, var(--brick) 46%, transparent 47%) 0 0 / 28px 26px; background-color: #EFE7D8; }
+[data-look="festive"] .seam-scallop.on-cream { background: radial-gradient(circle at 50% 0%, #EFE7D8 46%, transparent 47%) 0 0 / 28px 26px; background-color: var(--brick); }
 
 /* ---- Programme: paper, white cards, brick strand titles ---- */
 [data-look="festive"] .section-tint { background: var(--paper); }
@@ -1097,7 +1099,9 @@ p.ev-desc { font-size: 1.08rem; line-height: 1.65; color: var(--muted); max-widt
 [data-look="festive"] #featuring .col-media img { border-bottom: 12px solid var(--gold); border-radius: 0; }
 
 /* ---- Foundation: cream paper (its own rules already) ---- */
-[data-look="festive"] .section-cream { background: var(--bg-2); }
+[data-look="festive"] .section-cream { background: #EFE7D8; color: #1B1D21; }
+[data-look="festive"] .section-cream h2, [data-look="festive"] .section-cream .fact-list li em { color: #1B1D21; }
+[data-look="festive"] .section-cream p { color: #5F574C; }
 
 /* ---- Also includes: brick, the photograph cut out, cream tiles ---- */
 [data-look="festive"] .feature-band-media img { filter: grayscale(1) contrast(1.1); }
