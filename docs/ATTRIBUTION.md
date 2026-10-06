@@ -49,3 +49,12 @@ The dashboard tells you on its own which of these is still missing.
 One row per action: time, day, kind, event title, ref, page, a random
 per-session id, mobile/desktop. No IP, no name, no email, nothing that
 identifies a person. The session id exists only to count a visit once.
+
+## Gotchas learnt the hard way (6 Oct 2026)
+
+- Hits travel as **GET** `?hit=1&…`. Browser POSTs to script.google.com were
+  turned away with a 400 after a short while; a GET never was.
+- The session id parameter is called **`vs`**. `sid` is reserved by Google's
+  front end and gets a 400 before the script even runs.
+- A raw `(` in a hand-made test request also gets a 400; the site encodes it.
+

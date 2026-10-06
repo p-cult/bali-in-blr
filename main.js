@@ -210,7 +210,7 @@ function sendHit(kind, label, extra) {
       label: String(label || "").slice(0, 120),
       ref: CAMPAIGN_REF || "(direct)",
       page: (location.pathname.replace(/^.*\//, "") || "home") + location.search.replace(/[?&]e=([^&]*)/, "?e=$1").replace(/[?&](ref|utm_[a-z]+)=[^&]*/g, "") + location.hash,
-      sid: HIT_SID,
+      vs: HIT_SID, // "sid" is reserved by script.google.com (400 before the script runs, 6 Oct 2026)
       dev: /Mobi|Android/i.test(navigator.userAgent) ? "mobile" : "desktop",
     }, extra || {}));
     // A GET, not a POST or sendBeacon: script.google.com turns browser POSTs

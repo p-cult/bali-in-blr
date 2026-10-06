@@ -10,7 +10,7 @@
  *   label  the event title (or page title / form flavour)
  *   ref    the campaign ref the visit arrived on, or "(direct)"
  *   page   which page it happened on
- *   sid    a random id per browser session — not a person, never joined to one
+ *   vs     a random id per browser session — not a person, never joined to one
  *   dev    mobile | desktop
  *
  * GET ?summary=1[&days=N] returns aggregates only (cached 60 s):
@@ -53,7 +53,7 @@ function record(p) {
       clean(p.label).slice(0, 120),
       clean(p.ref).slice(0, 80) || '(direct)',
       clean(p.page).slice(0, 120),
-      clean(p.sid).slice(0, 16),
+      clean(p.vs).slice(0, 16), // 'vs', never 'sid': that name is reserved by script.google.com (400)
       clean(p.dev) === 'mobile' ? 'mobile' : 'desktop',
     ]);
     return text('ok');
