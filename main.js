@@ -213,10 +213,12 @@ function sendHit(kind, label, extra) {
       sid: HIT_SID,
       dev: /Mobi|Android/i.test(navigator.userAgent) ? "mobile" : "desktop",
     }, extra || {}));
-    // A keepalive fetch, not sendBeacon: beacons never reached Apps Script's
-    // doPost in testing (6 Oct 2026), while a form-encoded fetch does. no-cors
-    // keeps it a simple request; keepalive lets it finish after a navigation.
-    fetch(CONFIG.HITS_URL, { method: "POST", body: body, keepalive: true, mode: "no-cors" }).catch(() => {});
+    // A GET, not a POST or sendBeacon: script.google.com turns browser POSTs
+    // away with a 400 after a while (6 Oct 2026), a GET never. The query holds
+    // no personal data. keepalive lets it finish after a navigation.
+    body.set("hit", "1");
+    body.set("_", String(Date.now())); // never a cached response
+    fetch(CONFIG.HITS_URL + "?" + body.toString(), { method: "GET", keepalive: true, mode: "no-cors" }).catch(() => {});
   } catch (e) { /* analytics never breaks the page */ }
 }
 /* The title of the event a control belongs to: the calendar row around it, or

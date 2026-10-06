@@ -35,9 +35,14 @@ const HEADERS = ['When', 'Day', 'Kind', 'Label', 'Ref', 'Page', 'Session', 'Devi
 const KINDS = ['visit', 'event_open', 'ticket_click', 'register_open', 'register'];
 const TZ = 'Asia/Kolkata';
 
-function doPost(e) {
+/* The site sends hits as GET ?hit=1&kind=…: a cross-origin POST from a
+   browser is turned away by script.google.com with a 400 after a while
+   (seen 6 Oct 2026; curl was fine throughout), a GET never is. The query
+   carries no personal data. POST is kept for tools. */
+function doPost(e) { return record((e && e.parameter) || {}); }
+
+function record(p) {
   try {
-    const p = (e && e.parameter) || {};
     const kind = clean(p.kind);
     if (KINDS.indexOf(kind) === -1) return text('ignored');
     const now = new Date();
@@ -59,6 +64,7 @@ function doPost(e) {
 
 function doGet(e) {
   const p = (e && e.parameter) || {};
+  if (p.hit) return record(p);
   if (!p.summary) return json({ ok: true, service: 'Bali in Bengaluru hits' });
   const days = Math.max(0, parseInt(p.days, 10) || 0);
   const key = 'summary:' + days;
