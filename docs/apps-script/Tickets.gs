@@ -79,7 +79,27 @@ function getData() {
   const recent = rows.filter(r => r[0]).slice(-20).reverse()
     .map(r => ({ when: fmtWhen(r[0]), qty: r[1], event: r[2] }));
   const total = rows.filter(r => r[0]).reduce((s, r) => s + Number(r[1] || 0), 0);
-  return { events: events, recent: recent, totalTickets: total };
+  // Per-event and per-day totals for the attribution dashboard (admin/
+  // attribution.html), which sets ticket clicks against tickets sold.
+  const byEvent = {}, daily = {};
+  rows.filter(r => r[0]).forEach(function (r) {
+    const ev = String(r[2] || '').trim(), qty = Number(r[1] || 0), day = dayOf(r[0]);
+    if (!ev) return;
+    byEvent[ev] = (byEvent[ev] || 0) + qty;
+    const d = daily[day] || (daily[day] = {});
+    d[ev] = (d[ev] || 0) + qty;
+  });
+  return { events: events, recent: recent, totalTickets: total, byEvent: byEvent, daily: daily };
+}
+
+/** yyyy-MM-dd (IST) from a stamped Date or a "dd-MMM | HH:mm" string. */
+function dayOf(v) {
+  if (v instanceof Date) return Utilities.formatDate(v, "Asia/Kolkata", "yyyy-MM-dd");
+  const m = String(v).match(/^(\d{1,2})-([A-Za-z]{3})/);
+  if (!m) return "";
+  const mon = ["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"].indexOf(m[2].toLowerCase()) + 1;
+  const y = new Date().getFullYear();
+  return mon ? y + "-" + String(mon).padStart(2, "0") + "-" + m[1].padStart(2, "0") : "";
 }
 
 /**

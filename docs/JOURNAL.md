@@ -2030,3 +2030,54 @@ balinese-shadow-puppetry-workshop → shadow-puppetry-workshop,
 indonesian-indian-shadow-puppetry-performance → indonesian-indian-puppetry-act.
 **Lesson:** renaming an event in the sheet unlinks its banner. Rename the
 key here too. "Kecak Performance" has never had a banner folder.
+
+## 6 Oct 2026 — The site learns what day it is
+
+Day 4 of the festival, and the 3 Oct inaugural still said "Open to all",
+the 4 Oct shows "Tickets live" with Book buttons. Status only ever changed
+if someone typed "concluded" into the sheet. Fixed at the root in
+`normaliseEvent`: an event whose last day is behind us (by the **IST**
+date, never the visitor's clock) is `past` and reads Concluded with no Book
+button, whatever the Status cell says; a multi-day event stays live to its
+end date. `today` is set the same way. The chip check for "concluded" now
+runs before the "open to all" one, which used to win.
+
+**Media link.** A `media link` (or photos / gallery / album) column on the
+Event List turns a concluded event's button into "See photos". The old
+"View media" on a generic ticket link is gone — a BookMyShow link on a
+past show is not an album.
+
+**Today / Next up strip** (`renderNowStrip`): under the hero and above the
+calendar list, "Day 4 of 16 · Tuesday, 6 Oct", what is on today with time,
+venue and map, and the next day's events. Hidden before the festival; a
+thank-you line after. **Calendar opens at today** while the festival is on
+(once per page load, so filters don't yank the page), past rows dimmed,
+today's row marked at its left edge.
+
+**Live colouring.** `main.js` puts the phase on `<html data-phase>` before
+anything paints; `styles.css` redefines four ground tokens under
+`:root[data-phase="live"]` — a touch warmer toward the oxblood, hairlines
+following. Same palette, the room lit for a show. The festival window is
+taken from the sheet (first/last public event) once loaded;
+`CONFIG.FESTIVAL_START/END` only bridge the first paint.
+
+**Attribution dashboard** (`admin/attribution.html`). The ask: which minted
+link's clicks turned into tickets. Finding first: nothing recorded clicks
+anywhere — `dataLayer` events go to GTM where no tag exists. So a click log
+was built: `sendHit()` in `main.js` beacons visit / event_open /
+ticket_click / register_open / register with the campaign ref and a random
+per-session id (no IP, no PII) to `docs/apps-script/Hits.gs` — its **own**
+web app and sheet, so beacons never queue behind a signup (the 19 Sep
+lesson on shared execution slots). The dashboard joins three sources: the
+hits summary, the tickets app (`getData` now returns `byEvent` + `daily`)
+and the Mint tab, and shares each event's recorded sales across refs by
+ticket-click share. It is honest about being an estimate and about what is
+not yet wired — the two deployments are the user's (see
+`docs/ATTRIBUTION.md`); `CONFIG.HITS_URL` stays empty until then and the
+beacon is a no-op. Verified locally against the live bridge and tickets
+endpoints with the gate stubbed (804 tickets recorded so far).
+
+**Lesson.** A festival site is a clock. Everything that says "live",
+"today" or "book" must derive from the date, or the site lies the morning
+after the opening night.
+

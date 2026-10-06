@@ -214,6 +214,42 @@
 
 .hero-actions { display: flex; flex-wrap: wrap; gap: 1rem; }
 
+/* ---------- Today / Next up strip ---------- */
+.now-strip {
+  background: var(--bg-3);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  padding: 1.1rem var(--gutter) 1.2rem;
+}
+.now-strip--inset { margin: 0 0 1.6rem; padding: 1rem 1.2rem 1.1rem; border: 1px solid var(--line); border-radius: var(--radius); }
+.now-strip > * { max-width: var(--wrap); margin-inline: auto; }
+.now-strip--inset > * { max-width: none; }
+.now-kicker {
+  display: flex; align-items: center; gap: 0.5rem;
+  margin: 0 0 0.5rem;
+  font-family: var(--display); font-size: 0.68rem; font-weight: 700;
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--accent-2);
+}
+.now-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); animation: cal-pulse 1.8s ease-in-out infinite; }
+.now-label { margin: 0.6rem 0 0.3rem; font-family: var(--display); font-weight: 700; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink); }
+.now-label--next { color: var(--muted); }
+.now-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.35rem 1.5rem; }
+.now-item { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.25rem 0.9rem; font-size: 0.95rem; }
+.now-title { font-weight: 600; color: var(--ink); text-decoration: none; }
+a.now-title:hover { color: var(--accent-2); text-decoration: underline; }
+.now-list--next .now-title { font-weight: 500; color: var(--muted); }
+.now-when { color: var(--accent-2); }
+.now-venue { display: inline-flex; align-items: center; gap: 0.3rem; color: var(--muted); text-decoration: none; }
+.now-venue svg { width: 13px; height: 13px; }
+a.now-venue:hover { color: var(--ink); }
+.now-all { margin: 0.7rem 0 0; font-size: 0.85rem; }
+.now-strip--inset .now-all { display: none; }
+
+/* Past rows sink; today's row is marked by its left edge. */
+.cal-event--past { opacity: 0.55; }
+.cal-event--past:hover { opacity: 1; }
+.cal-event--today { box-shadow: inset 3px 0 0 var(--accent); }
+
 /* ---------------------------------------------------- 4. Programme cards */
 
 /* The strand headings are labels, not display type competing with the section
@@ -1088,6 +1124,8 @@ p.ev-desc { font-size: 1.08rem; line-height: 1.65; color: var(--muted); max-widt
   .hero h1, .print-title { margin-bottom: 3mm; }
   .hero h1 .logo, .print-title .logo { width: 62mm; filter: none; }
   .hero-supported { margin-bottom: 3mm; }
+  .now-strip { display: none !important; }
+  .cal-event--past { opacity: 1; }
   .hero-supported img { height: 11mm; filter: none; }
   .hero-supported-label { color: var(--muted) !important; }
   .hero-lead {

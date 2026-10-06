@@ -20,7 +20,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@800&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=hub42" />
+  <link rel="stylesheet" href="styles.css?v=hub43" />
   <link rel="stylesheet" href="site.css?v=46" />
 </head>
 <body>
@@ -77,6 +77,9 @@
       </div>
     </div>
   </section>
+
+  <!-- Today / Next up — filled by main.js while the festival is on -->
+  <section class="now-strip" data-now-strip hidden aria-label="On today"></section>
 
   <div class="seam seam-harlequin" aria-hidden="true"></div>
 
@@ -271,6 +274,7 @@
             </div>
           </div>
           <p data-content="calendar.p2" class="section-intro">Plan your October! Sixteen days across Bengaluru.</p>
+          <div class="now-strip now-strip--inset" data-now-strip hidden aria-label="On today"></div>
           <div class="calendar-filters" id="calendar-filters" hidden>
             <button class="chip is-active" data-filter="all">All</button>
             <button class="chip" data-filter="Performance">Performances</button>
@@ -430,6 +434,6 @@
       }
     })();
   </script>
-  <script src="main.js?v=hub83"></script>
+  <script src="main.js?v=hub84"></script>
 </body>
 </html>

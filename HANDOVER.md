@@ -311,9 +311,13 @@ reports success — reload before assuming a file is missing.
 - [x] **Artist logistics planner** — `/admin/logistics.html` + public `/plan/`.
       Deploy `docs/apps-script/Logistics.gs` and set `CONFIG.LOGISTICS_URL`
       in `plan/engine.js` to switch travel times to live Google traffic.
-- [ ] **Phase 4 — Post-event media:** build a Gallery section; set concluded events'
-      link to a media/album, or add a dedicated `Media` sheet + renderer.
-      Unused images `assets/carvings.jpg` and `assets/batik.jpg` are available.
+- [x] **Phase 4 — Post-event media (first half):** a `media link` column in the
+      Event List turns a concluded event's button into "See photos". Events
+      conclude by themselves once their date has passed (IST). A gallery section
+      is still open; `assets/carvings.jpg` and `assets/batik.jpg` are unused.
+- [ ] **Attribution dashboard wiring:** `admin/attribution.html` is built; deploy
+      `docs/apps-script/Hits.gs` and redeploy `Tickets.gs` (see
+      `docs/ATTRIBUTION.md`) so it has data.
 
 ---
 

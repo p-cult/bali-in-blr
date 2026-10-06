@@ -71,7 +71,40 @@ const CONFIG = {
   // flavour) — to turn RSVP capture on. Ignored while BOOKING_OPEN is true
   // (real ticketing takes precedence).
   RSVP_ENABLED: false,
+
+  // Festival dates, used only before the sheet has loaded (so the page can
+  // paint in the right phase at once); refined from the events afterwards.
+  FESTIVAL_START: "2026-10-03",
+  FESTIVAL_END: "2026-10-18",
+
+  // Click log for the admin attribution dashboard (docs/apps-script/Hits.gs,
+  // its own web app so it never competes with signups). Empty = off.
+  HITS_URL: "",
 };
+
+/* ---------- Festival phase ----------
+   "before" | "live" | "after", by the calendar in Bengaluru (IST), not the
+   visitor's clock — the dates in the sheet are IST dates. The phase goes on
+   <html data-phase> so styles.css can shift the palette while shows are on. */
+function istToday() {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata" }).format(new Date()); // YYYY-MM-DD
+}
+const FESTIVAL = { start: CONFIG.FESTIVAL_START, end: CONFIG.FESTIVAL_END };
+function festivalPhase() {
+  const t = istToday();
+  return t < FESTIVAL.start ? "before" : t > FESTIVAL.end ? "after" : "live";
+}
+function festivalDayNumber() {
+  const ms = Date.parse(istToday() + "T00:00:00Z") - Date.parse(FESTIVAL.start + "T00:00:00Z");
+  return Math.round(ms / 86400000) + 1;
+}
+function festivalDays() {
+  return Math.round((Date.parse(FESTIVAL.end + "T00:00:00Z") - Date.parse(FESTIVAL.start + "T00:00:00Z")) / 86400000) + 1;
+}
+function applyPhase() {
+  document.documentElement.dataset.phase = festivalPhase();
+}
+applyPhase();
 
 /* ---------- Analytics ----------
    Nothing loads until an id is filled in below, so the site ships with no
@@ -155,9 +188,48 @@ const SOURCES = {
   }
 })();
 
+/* ---------- Click log (attribution) ----------
+   A tiny, PII-free record of what each campaign link led to: a visit, an
+   event page opened, a ticket button clicked, a confirmed registration.
+   Sent as a beacon to its own Apps Script web app (never the signup bridge)
+   so the admin attribution dashboard can set ticket clicks against ticket
+   sales. One random id per browser session ties a visit to its clicks; it is
+   not a person and is never joined to a name. */
+const HIT_SID = (() => {
+  try {
+    let v = sessionStorage.getItem("bali.sid");
+    if (!v) { v = Math.random().toString(36).slice(2, 10); sessionStorage.setItem("bali.sid", v); }
+    return v;
+  } catch (e) { return "na"; }
+})();
+function sendHit(kind, label, extra) {
+  if (!CONFIG.HITS_URL) return;
+  try {
+    const body = new URLSearchParams(Object.assign({
+      kind: kind,
+      label: String(label || "").slice(0, 120),
+      ref: CAMPAIGN_REF || "(direct)",
+      page: (location.pathname.replace(/^.*\//, "") || "home") + location.search.replace(/[?&]e=([^&]*)/, "?e=$1").replace(/[?&](ref|utm_[a-z]+)=[^&]*/g, "") + location.hash,
+      sid: HIT_SID,
+      dev: /Mobi|Android/i.test(navigator.userAgent) ? "mobile" : "desktop",
+    }, extra || {}));
+    if (navigator.sendBeacon) navigator.sendBeacon(CONFIG.HITS_URL, body);
+    else fetch(CONFIG.HITS_URL, { method: "POST", body: body, keepalive: true, mode: "no-cors" });
+  } catch (e) { /* analytics never breaks the page */ }
+}
+/* The title of the event a control belongs to: the calendar row around it, or
+   the event page it sits on. */
+function eventTitleNear(el) {
+  const row = el && el.closest(".cal-event");
+  const t = row ? row.querySelector(".cal-title") : document.querySelector(".ev-title");
+  return t ? t.textContent.trim() : "";
+}
+let HIT_VISIT_SENT = false;
+
 /* A screen was opened. This site is one page, so each view is reported as
    its own page view — otherwise every visit looks like a single landing. */
 function trackView(path, title) {
+  if (!HIT_VISIT_SENT) { HIT_VISIT_SENT = true; sendHit("visit", title); }
   // Announced whether or not anything is listening. GTM picks this up as a
   // "virtual_page_view" trigger; with no GTM it simply sits in the array.
   (window.dataLayer = window.dataLayer || []).push({
@@ -195,7 +267,9 @@ function trackAction(kind, label, extra) {
 document.addEventListener("click", (e) => {
   const row = e.target.closest(".cal-event.has-page");
   if (row && !e.target.closest("a, button") && row.dataset.href) {
-    trackAction("event_open", row.querySelector(".cal-title")?.textContent.trim() || "", { href: row.dataset.href });
+    const t = row.querySelector(".cal-title")?.textContent.trim() || "";
+    sendHit("event_open", t);
+    trackAction("event_open", t, { href: row.dataset.href });
     location.href = row.dataset.href;
     return;
   }
@@ -204,12 +278,13 @@ document.addEventListener("click", (e) => {
   const href = el.getAttribute("href") || "";
   const text = (el.textContent || "").replace(/\s+/g, " ").trim();
 
-  if (/^event\/\?e=/.test(href)) return trackAction("event_open", text, { href: href });
+  if (/^event\/\?e=/.test(href)) { sendHit("event_open", text); return trackAction("event_open", text, { href: href }); }
   if (/^tel:/i.test(href)) return trackAction("call_click", text, { number: href.slice(4) });
   if (/^mailto:/i.test(href)) return trackAction("email_click", text);
   if (/^#(register|volunteer|calendar)/.test(href)) {
     const dest = href.slice(1).split("?")[0];
     const prog = (href.match(/programme=([^&]*)/) || [])[1];
+    if (dest === "register") sendHit("register_open", prog ? decodeURIComponent(prog) : text);
     return trackAction("cta_click", text, {
       destination: dest,
       programme: prog ? decodeURIComponent(prog) : undefined,
@@ -217,6 +292,8 @@ document.addEventListener("click", (e) => {
   }
   if (/^https?:/i.test(href) && !href.startsWith(location.origin)) {
     let host = ""; try { host = new URL(href).hostname; } catch (err) {}
+    const isTicket = /bookmyshow|district|in\.bms|dstrct/i.test(host) || el.classList.contains("btn-bms") || el.classList.contains("btn-district");
+    if (isTicket) sendHit("ticket_click", eventTitleNear(el), { host: host });
     return trackAction("outbound_click", text, { host: host });
   }
 });
@@ -227,6 +304,7 @@ document.addEventListener("click", (e) => {
    doubles as Meta's deduplication key against any server-side copy. */
 function trackRegistration(flavour, submissionId) {
   const ref = CAMPAIGN_REF || "(direct)";
+  sendHit("register", flavour);
 
   /* The one event a performance marketer actually needs, pushed once, in a
      shape GTM can route anywhere. No personal data — the submission id is an
@@ -861,6 +939,9 @@ function normaliseEvent(raw, i) {
     endTime: pick("endTime") || (parts[1] || "").trim(),
     venue: pick("venue"),
     mapUrl: pick("mapUrl", "map link"),
+    // Photos/album of a concluded event: paste a link in a "media link"
+    // (or photos / gallery / album) column and its button says "See photos".
+    mediaUrl: toActionUrl(pick("mediaUrl", "media link", "media", "photos", "photo link", "gallery", "gallery link", "album")),
     description: pick("description"),
     image: toImageUrl(pick("image")),
     // Keep the Drive id so the poster can fall back to the live Drive copy
@@ -891,6 +972,13 @@ function normaliseEvent(raw, i) {
   ev.notPublic = /^(internal|private|invite|invite only|invitation|invitation only|closed|not public|not open|no button)$/i.test(ev.statusRaw);
   if (ev.notPublic) { ev.hideStatus = true; ev.statusRaw = ""; }
   ev.status = deriveStatus(ev);
+  // Date-aware: once an event's last day is behind us (IST), it has concluded,
+  // whatever the Status cell says — no Book button lingers on a past show.
+  // A multi-day event stays live until its end date has passed.
+  const last = ev.endDate || ev.startDate;
+  ev.past = !!last && last < istToday();
+  if (ev.past && !ev.notPublic) ev.status = "concluded";
+  ev.today = !!ev.startDate && ev.startDate <= istToday() && istToday() <= last;
   return ev;
 }
 
@@ -967,6 +1055,7 @@ function hasLiveLinks(ev) { const a = eventActions(ev); return !!(a.bms || a.dis
 
 function calStatusChip(ev) {
   if (ev.hideStatus) return "";
+  if (ev.status === "concluded") return '<span class="cal-status cal-status--full">Concluded</span>';
   // A free/open event always shows its badge — it needs no ticket link.
   if (ev.status === "open") return '<span class="cal-status cal-status--live"><span class="dot"></span>Open to all</span>';
   // Show a status chip either when booking is globally open, or — regardless of
@@ -977,7 +1066,6 @@ function calStatusChip(ev) {
     case "fast": return `<span class="cal-status cal-status--fast">${CAL_ICONS.flame}Filling fast</span>`;
     case "soldout": return `<span class="cal-status cal-status--full">${CAL_ICONS.ticketX}Sold out</span>`;
     case "rsvp": return '<span class="cal-status cal-status--live"><span class="dot"></span>RSVP open</span>';
-    case "concluded": return '<span class="cal-status cal-status--full">Concluded</span>';
     case "waitlist": return `<span class="cal-status cal-status--wait">${CAL_ICONS.hour}Opens soon</span>`;
     default: return '<span class="cal-status cal-status--live"><span class="dot"></span>Tickets live</span>';
   }
@@ -1005,8 +1093,11 @@ function calAction(ev) {
   const a = eventActions(ev);
   const pass = ev.passInfo ? `<span class="cal-soon">${esc(ev.passInfo)}</span>` : "";
 
-  // Concluded events never book — offer media if a link is on the row.
-  if (ev.status === "concluded") return a.ticket ? btn(a.ticket, "btn-ghost", "View media") : "";
+  // Concluded events never book — offer the photos if a media link is on the row.
+  if (ev.status === "concluded") {
+    const media = safeUrl(ev.mediaUrl);
+    return media ? btn(media, "btn-ghost", "See photos") : "";
+  }
 
   // The internal register/waitlist route carries the programme so the form can
   // pre-tick it; an external RSVP link (below) is followed as-is.
@@ -1085,6 +1176,79 @@ function eventHref(ev) {
   return "event/?e=" + encodeURIComponent(ev.slug);
 }
 
+/* The sheet is the source of truth for the dates too: once the events are in,
+   the festival window is their first start to their last end. */
+function refineFestivalDates(events) {
+  const pub = events.filter((e) => e.startDate && !e.notPublic);
+  if (!pub.length) return;
+  const starts = pub.map((e) => e.startDate).sort();
+  const ends = pub.map((e) => e.endDate || e.startDate).sort();
+  FESTIVAL.start = starts[0];
+  FESTIVAL.end = ends[ends.length - 1];
+  applyPhase();
+}
+
+/* "Today / Next up": the one question a visitor has while the festival is on.
+   Rendered into every [data-now-strip] (home, under the hero; the calendar,
+   above the list). Hidden outside the festival window. */
+function nowStripItem(ev, kicker) {
+  const mapUrl = safeUrl(ev.mapUrl);
+  const when = (kicker === "next" ? calDateText(ev) + " · " : "") + (ev.startTime || "");
+  const title = ticketsLive(ev)
+    ? `<a class="now-title" href="${esc(eventHref(ev))}">${esc(ev.title)}</a>`
+    : `<span class="now-title">${esc(ev.title)}</span>`;
+  return `<li class="now-item">${title}` +
+    `<span class="now-when">${esc(when.replace(/ · $/, ""))}</span>` +
+    (ev.venue ? (mapUrl
+      ? `<a class="now-venue" href="${esc(mapUrl)}" target="_blank" rel="noopener">${CAL_ICONS.pin}${esc(ev.venue)}</a>`
+      : `<span class="now-venue">${CAL_ICONS.pin}${esc(ev.venue)}</span>`) : "") +
+    `</li>`;
+}
+function renderNowStrip(events) {
+  const strips = document.querySelectorAll("[data-now-strip]");
+  if (!strips.length) return;
+  const phase = festivalPhase();
+  const today = istToday();
+  const pub = events.filter((e) => e.startDate && !e.notPublic);
+  const on = pub.filter((e) => e.today);
+  const next = pub.filter((e) => e.startDate > today).sort((a, b) => a.startDate < b.startDate ? -1 : 1);
+  const nextDay = next.length ? next.filter((e) => e.startDate === next[0].startDate) : [];
+  let html = "";
+  if (phase === "live") {
+    const dayLine = `<span class="now-dot" aria-hidden="true"></span>Day ${festivalDayNumber()} of ${festivalDays()}`;
+    html =
+      `<p class="now-kicker">${dayLine} · ${esc(new Date(today + "T00:00:00").toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "short" }))}</p>` +
+      (on.length
+        ? `<p class="now-label">On today</p><ul class="now-list">${on.map((e) => nowStripItem(e, "today")).join("")}</ul>`
+        : `<p class="now-label">Nothing on today — a rest day</p>`) +
+      (nextDay.length
+        ? `<p class="now-label now-label--next">Next up</p><ul class="now-list now-list--next">${nextDay.map((e) => nowStripItem(e, "next")).join("")}</ul>`
+        : "") +
+      `<p class="now-all"><a class="text-link" href="#calendar">Full calendar &rarr;</a></p>`;
+  } else if (phase === "after") {
+    html = `<p class="now-kicker">That's a wrap</p><p class="now-label">Thank you, Bengaluru. Photos and recordings will appear against each event in the <a class="text-link" href="#calendar">calendar</a>.</p>`;
+  }
+  strips.forEach((el) => { el.innerHTML = html; el.hidden = !html; });
+}
+
+/* When the calendar opens during the festival, start at today — past rows
+   are dimmed and sit above. Once per page load, so a filter re-render or a
+   second visit to the view does not yank the page about. */
+let CAL_SCROLLED = false;
+function scrollCalendarToToday() {
+  if (CAL_SCROLLED || festivalPhase() !== "live") return;
+  if (!/^#calendar/.test(location.hash)) return;
+  const view = document.getElementById("calendar");
+  const first = view && view.querySelector(".cal-event:not(.cal-event--past)");
+  if (!first || view.hidden) return;
+  CAL_SCROLLED = true;
+  requestAnimationFrame(() => {
+    const bar = view.querySelector(".view-bar");
+    const top = first.getBoundingClientRect().top + view.scrollTop - (bar ? bar.offsetHeight : 0) - 12;
+    view.scrollTo({ top: Math.max(0, top), behavior: "auto" });
+  });
+}
+
 function cardHTML(ev) {
   const chip = calDayChip(ev);
   const hasImg = !!ev.image;
@@ -1107,7 +1271,7 @@ function cardHTML(ev) {
     venue + `</p>`;
 
   return `
-    <article class="cal-event${ev.status === "soldout" ? " is-full" : ""}${ticketsLive(ev) ? " has-page" : ""}" data-category="${esc(ev.category || "")}"${ticketsLive(ev) ? ` data-href="${esc(eventHref(ev))}"` : ""}>
+    <article class="cal-event${ev.status === "soldout" ? " is-full" : ""}${ev.past ? " cal-event--past" : ""}${ev.today ? " cal-event--today" : ""}${ticketsLive(ev) ? " has-page" : ""}" data-category="${esc(ev.category || "")}"${ticketsLive(ev) ? ` data-href="${esc(eventHref(ev))}"` : ""}>
       ${poster}
       <div class="cal-body">
         <div class="cal-head">
@@ -1196,8 +1360,12 @@ async function loadCalendar() {
   events = assignSlugs(events.map(normaliseEvent));
 
   updateHeroStats(events);
+  refineFestivalDates(events);
+  renderNowStrip(events);
   await loadCollaborators(); // so cards can show each event's collaborator logos
   render(events);
+  scrollCalendarToToday();
+  window.addEventListener("hashchange", scrollCalendarToToday);
   if (filters) {
     filters.hidden = false;
     filters.addEventListener("click", (e) => {

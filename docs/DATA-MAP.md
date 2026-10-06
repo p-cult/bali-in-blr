@@ -19,6 +19,8 @@ can be traced end to end. Audited 22 Sep 2026; re-verify with
 | **Registration sheet** (PII, never public) | `Master`, `Signups`, `Volunteers`, `Receipts`, `Mint` via the registration bridge (`CONFIG.BRIDGE_URL`) | Forms write; `?sheet=stats` aggregates for the site and `/progress`; `?sheet=links` for the link builder |
 | **Tickets sheet** | Tickets web app (`const API` in `admin/tickets.html`) | Ticket entry and its own `Events` tab |
 | **Drive folders** | Event photos linked in the sheet's `image` column; one banner folder per event (`data/event-banners.json`) | Synced on-site hourly; the site never hotlinks Drive |
+| **Hits sheet** ("Bali in Blr - Hits") | Click log: visit / event open / ticket click / registration per campaign ref — no PII (`docs/apps-script/Hits.gs`, `CONFIG.HITS_URL`) | `admin/attribution` aggregates only |
+| Schedule sheet | `media link` column (or photos / gallery / album): a concluded event's "See photos" button | Calendar, event pages |
 | `data/questions.json` | The onboarding questions (repo, by design — they are form structure, not content) | Register and Volunteer forms; mirrored in `Code.gs` FLAVOURS |
 
 ## Derived copies in the repo (regenerated, never hand-edited)
@@ -35,6 +37,17 @@ can be traced end to end. Audited 22 Sep 2026; re-verify with
 | `assets/bali-in-bengaluru-calendar.pdf` (public, no not-public events), `plan/calendar.pdf` (internal, every event, poster design), `assets/print/*.pdf` | `tools/build-calendar-pdf.py`, `tools/build-event-posters.py` (`--internal` for plan/calendar.pdf) | On demand — snapshots, re-run after schedule changes |
 | `data/collab-logos.json` | fallback for collaborator logos | On demand |
 | `plan/tour-plan*.pdf`, `.xlsx`, `.json` + `.pdf.json` stamps — the artist tour plan, one per stay | `tools/render-plan-pdf.mjs` (headless Chrome on the public page) + `tools/build-plan-xlsx.py` | Nightly 00:15 IST (`render-plan-pdf.yml`) and on demand |
+
+## Time
+
+The site knows the date in Bengaluru (IST), never the visitor's clock.
+`main.js` puts the festival phase on `<html data-phase>` (before / live /
+after), marks an event `past` once its last day is behind us (it then reads
+Concluded and loses its Book button, whatever the Status cell says), and
+`today`. The "Today / Next up" strip and the calendar's open-at-today come
+from the same flags. The festival window is the first and last public event
+date in the sheet; `CONFIG.FESTIVAL_START/END` only cover the moment before
+the sheet has loaded.
 
 ## One pipeline for event identity
 
