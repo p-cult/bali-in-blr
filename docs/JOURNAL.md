@@ -2081,3 +2081,13 @@ endpoints with the gate stubbed (804 tickets recorded so far).
 "today" or "book" must derive from the date, or the site lies the morning
 after the opening night.
 
+**Later, 6 Oct — Hits wired.** No Hits project existed in the account
+(checked My/All/Shared projects and Drive), so it was built from the
+signed-in preview browser: new sheet, a standalone script (the editor's
+Monaco model was set directly — clipboard writes are refused there), Deploy
+▸ Web app, execute as Me, access Anyone. The OAuth popup cannot be opened by
+automation; the user clicked Authorise. `SHEET_ID` in Hits.gs points the
+standalone script at the sheet. Lesson for curl tests: a raw "(" in a POST
+body gets a 400 from script.google.com; the site's URLSearchParams encodes
+it, so only the test was wrong.
+

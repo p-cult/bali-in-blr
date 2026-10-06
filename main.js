@@ -79,7 +79,7 @@ const CONFIG = {
 
   // Click log for the admin attribution dashboard (docs/apps-script/Hits.gs,
   // its own web app so it never competes with signups). Empty = off.
-  HITS_URL: "",
+  HITS_URL: "https://script.google.com/macros/s/AKfycbySw_h8TE9s5YtPyHflVDiiKJ07-STcymyybtR_CvkZQmGWM3OOnK7yVuaSVsEkHmHv/exec",
 };
 
 /* ---------- Festival phase ----------

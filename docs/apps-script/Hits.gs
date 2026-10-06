@@ -19,12 +19,17 @@
  *   byEvent[event]    = { event_open, ticket_click }
  *   daily[yyyy-mm-dd] = { sessions, ticket_click, register }
  *
- * Setup (once): new spreadsheet "Bali in Blr - Hits" → Extensions ▸ Apps
- * Script → paste this → Deploy ▸ New deployment ▸ Web app, execute as Me,
- * access Anyone → copy the /exec URL into CONFIG.HITS_URL in main.js.
+ * Setup (once): a spreadsheet "Bali in Blr - Hits" (SHEET_ID below), a
+ * standalone Apps Script project with this file → Deploy ▸ New deployment ▸
+ * Web app, execute as Me, access Anyone → the /exec URL into
+ * CONFIG.HITS_URL in main.js. Done 6 Oct 2026.
  * After edits: Deploy ▸ Manage deployments ▸ edit ▸ new version. NEVER a
  * second deployment — the URL would change.
  */
+/* The Hits spreadsheet. A standalone script reaches it by id; a script
+   created from inside the sheet (Extensions ▸ Apps Script) may leave this
+   blank. The id is not a secret and the sheet holds no personal data. */
+const SHEET_ID = '16NZtYPy04GGtOFwDGcaSXjCmUfY1yMsqwQfAla2DzZA';
 const TAB = 'Hits';
 const HEADERS = ['When', 'Day', 'Kind', 'Label', 'Ref', 'Page', 'Session', 'Device'];
 const KINDS = ['visit', 'event_open', 'ticket_click', 'register_open', 'register'];
@@ -100,7 +105,7 @@ function summary(days) {
 }
 
 function sheet() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = SHEET_ID ? SpreadsheetApp.openById(SHEET_ID) : SpreadsheetApp.getActiveSpreadsheet();
   let sh = ss.getSheetByName(TAB);
   if (!sh) {
     sh = ss.insertSheet(TAB);

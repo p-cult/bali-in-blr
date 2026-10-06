@@ -22,6 +22,13 @@ likely to have brought. Three sources, none of them personal:
 It is a triangulation, not a receipt: BookMyShow and District never say which
 click bought what. Read it as a fair share, in comparison between links.
 
+## Status
+
+Wired on 6 Oct 2026. The click log is the standalone Apps Script project
+"Bali-in-Blr Hits" writing to the sheet "Bali in Blr - Hits" (both in the
+paramculture Drive); its `/exec` URL is `CONFIG.HITS_URL`. Still pending:
+the Tickets.gs redeploy for per-event sales (step 2 below).
+
 ## Set up (once, about ten minutes)
 
 1. **Click log.** Create a new Google Sheet "Bali in Blr - Hits" (its own
