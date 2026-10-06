@@ -26,8 +26,8 @@ click bought what. Read it as a fair share, in comparison between links.
 
 Wired on 6 Oct 2026. The click log is the standalone Apps Script project
 "Bali-in-Blr Hits" writing to the sheet "Bali in Blr - Hits" (both in the
-paramculture Drive); its `/exec` URL is `CONFIG.HITS_URL`. Still pending:
-the Tickets.gs redeploy for per-event sales (step 2 below).
+paramculture Drive); its `/exec` URL is `CONFIG.HITS_URL`. The tickets app was redeployed
+the same day (version 3) and reports per-event sales. Nothing pending.
 
 ## Set up (once, about ten minutes)
 

@@ -2118,3 +2118,9 @@ onto the ref and the bridge's `cleanRef` dropped the "#", giving
 "insta-vol-regvolunteer". The dashboard now folds those spellings into
 their minted link; `readRef` on the site no longer lets a hash into a ref.
 
+**13:28 — Tickets.gs redeployed** (version 3 of the existing deployment,
+from the preview browser): `getData` now returns `byEvent` and `daily`, so
+the dashboard splits 995 recorded tickets across 17 events and estimates
+per link. Caveat recorded on the page and here: ticket clicks only exist
+from 11:00 today, so the early estimate rests on a thin click sample.
+
