@@ -38,6 +38,18 @@ Choose **GitHub.com** → **HTTPS** → authenticate in the browser. Nothing els
 about the remote needs changing; `origin` is already
 `https://p-cult@github.com/p-cult/bali-in-blr.git`.
 
+If `git push` fails with "could not read Password for 'https://p-cult@github.com'",
+the keychain has no entry for p-cult and git is trying to prompt. When gh holds
+the p-cult account (`gh auth status` lists it, maybe inactive), push through it
+without touching any config:
+
+```bash
+gh auth switch -u p-cult && git -c credential.helper= -c credential.helper='!gh auth git-credential' push origin main
+```
+
+(6 Oct 2026: this machine's active gh account was a personal one with no push
+rights to p-cult; the p-cult login was there but inactive.)
+
 ## Also install
 
 - **Python 3** — serves the site locally; nothing is built or bundled.
