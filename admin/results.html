@@ -177,7 +177,6 @@
         return j;
       } catch (e) {
         err = e;
-        $("generated").textContent = "One source is slow — retrying (" + (i + 1) + " of 5)…";
         if (i < 4) await new Promise((res) => setTimeout(res, waits[i]));
       }
       finally { clearTimeout(t); }
@@ -189,7 +188,7 @@
   }
 
   const n = (v) => Number(v || 0).toLocaleString("en-IN");
-  const n1 = (v) => (Math.round(v * 10) / 10).toLocaleString("en-IN", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  const n1 = (v) => Math.floor(v).toLocaleString("en-IN"); // estimates round down to whole tickets
   const pct = (a, b) => b ? Math.round(100 * a / b) + "%" : "—";
   const bar = (v, max) => `<span class="bar" aria-hidden="true"><i style="width:${max ? Math.round(100 * v / max) : 0}%"></i></span>`;
 
@@ -226,32 +225,21 @@
   async function load() {
     // 1. Paint the last figures this browser saw, at once.
     const prev = lastGood("attr:data");
-    if (prev && !DATA) { DATA = prev.j; paint(); $("generated").textContent += " · refreshing…"; }
+    if (prev && !DATA) { DATA = prev.j; paint(); }
     else if (!DATA) $("generated").textContent = "Loading…";
 
-    // 2. Fetch everything once — all three windows in one answer — then keep it.
+    // 2. One call: the click-log script keeps a ready-made answer (click
+    //    windows, ticket sales, links) refreshed every five minutes.
     const missing = [];
     if (!HITS) missing.push("The click log is not set up yet (see docs/ATTRIBUTION.md). Until then no clicks are recorded.");
-    const [hits, tickets, links] = await Promise.all([
-      HITS ? get(HITS + "?summary=all").catch(() => null) : Promise.resolve(null),
-      get(TICKETS + "?data=1").catch(() => null),
-      get(BRIDGE + "?sheet=links").catch(() => []),
-    ]);
-    const stale = [];
-    const fresh = { hits: hits, tickets: tickets, links: Array.isArray(links) ? links : (DATA && DATA.links) || [], at: Date.now() };
-    if (HITS && !hits) {
-      if (DATA && DATA.hits) { fresh.hits = DATA.hits; stale.push("click log"); }
-      else missing.push("The click log is not answering right now. Google's script service is slow at the moment — press Refresh in a minute.");
+    const d = HITS ? await get(HITS + "?dashboard=1").catch(() => null) : null;
+    if (d && d.hits) {
+      DATA = { hits: d.hits, tickets: d.tickets || (DATA && DATA.tickets) || {}, links: Array.isArray(d.links) ? d.links : (DATA && DATA.links) || [], at: d.at || Date.now() };
+      try { localStorage.setItem("attr:data", JSON.stringify({ at: Date.now(), j: DATA })); } catch (e) {}
+    } else if (!DATA) {
+      missing.push("The figures could not be fetched just now. Press Refresh in a minute.");
     }
-    if (!tickets) {
-      if (DATA && DATA.tickets) { fresh.tickets = DATA.tickets; stale.push("ticket sales"); }
-      else missing.push("The tickets app is not answering right now — press Refresh in a minute.");
-    } else if (!tickets.byEvent) missing.push("The ticket sales app is on an older version, so sales can only be shown as a total (see docs/ATTRIBUTION.md).");
-    if (stale.length) missing.push("Showing the last good figures for: " + stale.join(", ") + ". Press Refresh to try again.");
-    if (!fresh.hits && DATA) fresh.hits = DATA.hits;
-    if (!fresh.tickets && DATA) fresh.tickets = DATA.tickets;
-    DATA = fresh;
-    try { localStorage.setItem("attr:data", JSON.stringify({ at: Date.now(), j: DATA })); } catch (e) {}
+    if (DATA && DATA.tickets && !DATA.tickets.byEvent) missing.push("Ticket sales can only be shown as a total right now.");
     showSetup(missing);
     paint();
   }

@@ -65,6 +65,13 @@ function record(p) {
 function doGet(e) {
   const p = (e && e.parameter) || {};
   if (p.hit) return record(p);
+  // ?dashboard=1: everything the Campaign results page needs, in one answer,
+  // prepared ahead of time by refreshDashboard() (a 5-minute trigger) so the
+  // page never waits on a cold start of the bridge or the tickets app.
+  if (p.dashboard) {
+    const ready = CacheService.getScriptCache().get('dashboard');
+    return jsonText(ready || JSON.stringify(refreshDashboard()));
+  }
   if (!p.summary) return json({ ok: true, service: 'Bali in Bengaluru hits' });
   const cache = CacheService.getScriptCache();
   // ?summary=all: the whole campaign, the last 7 days and since yesterday in
@@ -193,5 +200,39 @@ function backfillFromRegistrations() {
   if (out.length) sh.getRange(sh.getLastRow() + 1, 1, out.length, HEADERS.length).setValues(out);
   CacheService.getScriptCache().removeAll(['summary:0', 'summary:1', 'summary:7', 'summary:all']);
   Logger.log('backfilled ' + out.length / 2 + ' registrations');
+}
+
+/* ---------- Dashboard, prepared ahead of time ----------
+   The registration bridge and the tickets app are other Apps Script web apps
+   and can take 30–50 s to wake up. This script fetches them on a timer and
+   keeps the combined answer in the cache (6 h), so the page gets it in one
+   quick call. Run installTrigger() once from the editor (it asks for
+   permission to fetch URLs and create triggers), which schedules
+   refreshDashboard() every 5 minutes. */
+const BRIDGE_URL = 'https://script.google.com/macros/s/AKfycbyKXzPHQLsHCoryx0aJVpVkP0Z0XrnPxjucaiUJtR1aXeux33ygq2Br2QcBNU_MAB7qDw/exec';
+const TICKETS_URL = 'https://script.google.com/macros/s/AKfycbzX5yeStITITqvM0HXgvZYBNy70Jo8HRxGXYlc6iHzzMYuWnoXWzzOA9QyllWIGDWFA/exec';
+function refreshDashboard() {
+  const rows = readRows();
+  const out = { ok: true, at: Date.now(), hits: { all: summary(0, rows), d7: summary(7, rows), d1: summary(1, rows) } };
+  const prev = (function () { try { return JSON.parse(CacheService.getScriptCache().get('dashboard') || 'null'); } catch (e) { return null; } })();
+  out.tickets = fetchJson(TICKETS_URL + '?data=1') || (prev && prev.tickets) || null;
+  out.links = fetchJson(BRIDGE_URL + '?sheet=links') || (prev && prev.links) || [];
+  const txt = JSON.stringify(out);
+  try { CacheService.getScriptCache().put('dashboard', txt, 21600); } catch (e) { /* too big: served live */ }
+  return out;
+}
+function fetchJson(url) {
+  try {
+    const r = UrlFetchApp.fetch(url, { muteHttpExceptions: true, followRedirects: true });
+    if (r.getResponseCode() !== 200) return null;
+    return JSON.parse(r.getContentText());
+  } catch (e) { return null; }
+}
+function installTrigger() {
+  ScriptApp.getProjectTriggers().forEach(function (t) {
+    if (t.getHandlerFunction() === 'refreshDashboard') ScriptApp.deleteTrigger(t);
+  });
+  ScriptApp.newTrigger('refreshDashboard').timeBased().everyMinutes(5).create();
+  refreshDashboard();
 }
 
