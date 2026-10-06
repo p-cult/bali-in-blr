@@ -363,8 +363,12 @@ function readRef() {
     });
   }
 
-  const ref = params.get("ref") || params.get("utm_source") || "";
-  const campaign = params.get("utm_campaign") || "";
+  // An older link put the "#calendar" hash before its tags, so the ref value
+  // arrived as "insta-hero-cal#calendar" (seen 6 Oct 2026). Anything from a
+  // "#" on is never part of a ref.
+  const tidy = (v) => String(v || "").split("#")[0].trim();
+  const ref = tidy(params.get("ref")) || tidy(params.get("utm_source"));
+  const campaign = tidy(params.get("utm_campaign"));
   const found = [ref, campaign].filter(Boolean).join("/");
 
   try {

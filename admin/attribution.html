@@ -97,7 +97,7 @@
   .setup{background:#2a221c;border:1px solid #8E4A24;color:var(--warn);border-radius:var(--radius);padding:.9rem 1rem;margin:0 0 1.4rem;font-size:.88rem}
   .setup code{font-family:ui-monospace,Menlo,monospace;font-size:.8rem}
 </style>
-<script src="../main.js?v=hub88"></script>
+<script src="../main.js?v=hub89"></script>
 
 </head>
 <body>
@@ -266,15 +266,17 @@
     // Per link table
     const linkByKey = {};
     links.forEach((l) => linkKeys(l).forEach((k) => { if (!linkByKey[k]) linkByKey[k] = l; }));
+    // Refs logged before the "#" fix carry a hash fragment; match without it.
+    const keyOf = (ref) => ref.replace(/#[^/]*/, "");
     const rows = refs.map((ref) => {
-      const r = byRef[ref], l = linkByKey[ref] || null;
+      const r = byRef[ref], l = linkByKey[ref] || linkByKey[keyOf(ref)] || null;
       return { ref, l, r, est: est[ref] || 0 };
     });
     // Minted links that nobody has used yet still deserve a row, so a dead
     // poster shows as dead.
     links.forEach((l) => {
       const keys = linkKeys(l);
-      if (!keys.some((k) => byRef[k])) rows.push({ ref: keys[0] || String(l.Code || ""), l, r: { sessions: 0, event_open: 0, ticket_click: 0, register_open: 0, register: 0 }, est: 0 });
+      if (!keys.some((k) => byRef[k] || refs.some((r) => keyOf(r) === k))) rows.push({ ref: keys[0] || String(l.Code || ""), l, r: { sessions: 0, event_open: 0, ticket_click: 0, register_open: 0, register: 0 }, est: 0 });
     });
     rows.sort((a, b) => (b.r.ticket_click - a.r.ticket_click) || (b.r.sessions - a.r.sessions));
     const maxS = Math.max(1, ...rows.map((x) => x.r.sessions));
