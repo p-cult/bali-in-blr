@@ -952,246 +952,199 @@ p.ev-desc { font-size: 1.08rem; line-height: 1.65; color: var(--muted); max-widt
 
 /* ============================================================ 10. Festive */
 /* The festival-is-on look (Oct 2026). Switched on by <html data-look="festive">
-   (main.js, ?look=festive). Same words, same tokens, same motif — three
-   squares in a podium — but the room is lit: louder seams, posters pasted on
-   the hero wall, a running band of what is on, coloured strand bands on the
-   cards, and the day counted out loud. Everything here is additive; nothing
-   below changes the classic page. */
+   (main.js, ?look=festive). It follows the brand kit's own rules — orange is
+   action, gold is the name, copper does the labels, one ground at a time —
+   and takes the poster language onto the screen: the page is PAPER (cream),
+   the blocks that would be posters are BRICK with white type and gold
+   emphasis. Straight edges only; checkerboard, scallop and the three-square
+   motif are the only ornament. Same words everywhere. */
 
-/* Elements that exist only for this look stay out of the way otherwise. */
 .ticker, .hero-wall { display: none; }
 
 [data-look="festive"] {
-  /* A warmer room: the ground leans to the oxblood, hairlines follow. */
-  --bg: #231B1C;
-  --bg-2: #2A2021;
-  --bg-3: #302425;
-  --line: #3E2F2E;
+  --paper: #F8F1E9;         /* xuan paper, from the reference board */
+  --brick: #A32B14;         /* poster ground */
+  --bg: var(--paper);
+  --bg-2: #EFE7D8;
+  --bg-3: #FFFFFF;
+  --ink: #1B1D21;
+  --muted: #5F574C;
+  --muted-2: #7A7268;
+  --line: rgba(27, 29, 33, 0.14);
+  --accent-2: #8E4A24;      /* labels on paper: oxidised copper */
+  --logo-brown: #8E4A24;
 }
+[data-look="festive"] body { background: var(--paper); color: var(--ink); }
 
-/* ---- Ticker: one line that never stops moving ---- */
-[data-look="festive"] .ticker {
-  display: block;
-  overflow: hidden;
-  background: var(--accent);
-  color: var(--bg);
-  border-bottom: 3px solid var(--gold, #E4AB0E);
-}
+/* Orange stays an action; on paper its type must be dark. */
+[data-look="festive"] .btn-primary,
+[data-look="festive"] .nav-cta { color: #2A1206 !important; }
+[data-look="festive"] .btn-ghost { border-color: rgba(27, 29, 33, 0.3); }
+[data-look="festive"] .btn-ghost:hover { background: rgba(27, 29, 33, 0.05); }
+
+/* Header on paper. */
+[data-look="festive"] .site-header { background: rgba(248, 241, 233, 0.92); border-bottom-color: var(--line); }
+[data-look="festive"] .nav-links a { color: var(--ink); }
+[data-look="festive"] .nav-toggle span { background: var(--ink); }
+
+/* ---- Ticker: a brick band, cream type, gold motif ---- */
+[data-look="festive"] .ticker { display: block; overflow: hidden; background: var(--brick); color: #FFF; }
 [data-look="festive"] .ticker-track {
-  display: inline-flex;
-  align-items: center;
-  gap: 1.6rem;
-  padding: 0.55rem 0;
-  white-space: nowrap;
-  font-family: var(--display);
-  font-size: 0.78rem;
-  font-weight: 800;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  animation: tk-run 46s linear infinite;
+  display: inline-flex; align-items: center; gap: 1.8rem;
+  padding: 0.6rem 0; white-space: nowrap;
+  font-family: var(--display); font-size: 0.76rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+  animation: tk-run 48s linear infinite;
 }
 [data-look="festive"] .ticker:hover .ticker-track { animation-play-state: paused; }
 .tk-item { flex: none; }
 .tk-motif { flex: none; display: inline-grid; grid-template-columns: 6px 6px; gap: 2px; }
-.tk-motif b { display: block; width: 6px; height: 6px; background: var(--bg); }
-.tk-motif b:nth-child(3) { grid-column: 1; } /* three squares: a podium, the fourth corner empty */
+.tk-motif b { display: block; width: 6px; height: 6px; background: var(--gold); }
+.tk-motif b:nth-child(3) { grid-column: 1; }
 @keyframes tk-run { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 @media (prefers-reduced-motion: reduce) { [data-look="festive"] .ticker-track { animation: none; } }
 
-/* ---- Hero: a wall with posters on it ---- */
-[data-look="festive"] .hero { min-height: 0; }
-[data-look="festive"] .hero-scrim {
-  background: linear-gradient(90deg, rgba(35, 27, 28, 0.96) 0%, rgba(35, 27, 28, 0.9) 48%, rgba(80, 0, 0, 0.55) 100%);
-}
+/* ---- Hero: a brick poster. White type, gold name, the photograph as a duotone cut-out. ---- */
+[data-look="festive"] .hero { background: var(--brick); min-height: 0; }
+[data-look="festive"] .hero-media, [data-look="festive"] .hero-scrim { display: none; }
 [data-look="festive"] .hero-content {
-  display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
-  gap: clamp(2rem, 5vw, 4rem);
-  align-items: center;
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: clamp(2rem, 5vw, 4rem); align-items: center;
+  padding-block: clamp(2.5rem, 5vw, 4rem);
 }
 [data-look="festive"] .hero-content > :not(.hero-wall) { grid-column: 1; }
-[data-look="festive"] .hero h1 .logo { width: clamp(260px, 36vw, 480px); }
-[data-look="festive"] .hero-kicker { color: var(--gold, #E4AB0E); }
-[data-look="festive"] .hero-kicker span::before { background: var(--gold, #E4AB0E); }
-[data-look="festive"] .hero-tagline { color: var(--ink); }
+[data-look="festive"] .hero-kicker { color: #FFF; }
+[data-look="festive"] .hero-kicker span::before { background: var(--gold); }
+[data-look="festive"] .hero h1 .logo { width: clamp(260px, 34vw, 460px); filter: none; }
+[data-look="festive"] .hero h1 .logo-orange { fill: #FFF; }   /* on brick the orange pair reads white */
+[data-look="festive"] .hero-supported-label { color: var(--gold); }
+[data-look="festive"] .hero-supported img { filter: brightness(0) invert(1); opacity: 1; }
+[data-look="festive"] .hero-lead { color: #FFF; }
+[data-look="festive"] .hero-tagline { color: var(--gold); }
+/* The numbers on cream tiles, straight, with brick figures. */
+[data-look="festive"] .hero-meta { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; border: 0; padding: 0; margin: 0 0 2rem; background: var(--gold); }
+[data-look="festive"] .hero-meta div { background: var(--paper); padding: 1rem 0.8rem 0.95rem; width: auto; align-items: flex-start; text-align: left; }
+[data-look="festive"] .hero-meta-num { color: var(--brick) !important; font-size: clamp(2rem, 4vw, 3rem); }
+[data-look="festive"] .hero-meta-label { color: var(--ink) !important; font-weight: 600; white-space: normal; }
+/* Buttons on brick: paper, not orange (orange cannot be read on brick). */
+[data-look="festive"] .hero-actions .btn-primary { background: var(--paper); border-color: var(--paper); color: var(--brick) !important; }
+[data-look="festive"] .hero-actions .btn-primary:hover { background: #FFF; border-color: #FFF; }
+[data-look="festive"] .hero-actions .btn-ghost { color: #FFF; border-color: rgba(255, 255, 255, 0.6); }
+[data-look="festive"] .hero-actions .btn-ghost:hover { background: rgba(255, 255, 255, 0.1); border-color: #FFF; }
 
-/* Numbers as three coloured tiles — the podium again, in colour. */
-[data-look="festive"] .hero-meta { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem; border: 0; padding: 0; margin: 0 0 2rem; }
-[data-look="festive"] .hero-meta div { padding: 1rem 1.1rem 1.05rem; border: 0; border-radius: var(--radius); width: auto; }
-[data-look="festive"] .hero-meta div:nth-child(1) { background: var(--accent); }
-[data-look="festive"] .hero-meta div:nth-child(2) { background: var(--gold, #E4AB0E); }
-[data-look="festive"] .hero-meta div:nth-child(3) { background: var(--copper); }
-[data-look="festive"] .hero-meta-num,
-[data-look="festive"] .hero-meta-label { color: var(--bg) !important; opacity: 1; }
-[data-look="festive"] .hero-meta-num { font-size: clamp(2rem, 4vw, 3rem); line-height: 1; }
-[data-look="festive"] .hero-meta-label { font-weight: 600; }
-
-/* The wall: three posters, pasted a little askew, with coloured frames. */
-[data-look="festive"] .hero-wall {
-  display: block;
-  position: relative;
-  grid-column: 2;
-  grid-row: 1 / span 8;
-  align-self: center;
-  aspect-ratio: 4 / 5;
-  max-height: 560px;
-  width: 100%;
-}
-.poster {
-  position: absolute;
-  margin: 0;
-  width: 58%;
-  aspect-ratio: 3 / 4;
-  padding: 6px 6px 22px;
-  background: var(--cream);
-  box-shadow: 0 24px 50px -22px rgba(0, 0, 0, 0.8);
-  transition: transform 0.35s ease;
-}
-.poster img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.poster-a { left: 0; top: 6%; transform: rotate(-6deg); background: var(--gold, #E4AB0E); z-index: 1; }
-.poster-b { right: 0; top: 0; transform: rotate(5deg); background: var(--cream); z-index: 2; }
-.poster-c { left: 18%; bottom: 0; transform: rotate(-2deg); background: var(--accent); z-index: 3; }
-.hero-wall:hover .poster-a { transform: rotate(-8deg) translateY(-6px); }
-.hero-wall:hover .poster-b { transform: rotate(7deg) translateY(-6px); }
-.hero-wall:hover .poster-c { transform: rotate(0deg) translateY(-6px); }
-
-/* The day, said out loud: a round badge that slowly turns. */
+/* The poster panel: one photograph, straight, duotoned in brick, a gold edge at its foot. */
+[data-look="festive"] .hero-wall { display: block; position: relative; grid-column: 2; grid-row: 1 / span 8; align-self: stretch; min-height: 420px; }
+/* Duotone: the photograph's light carried in the brick's hue — a riso print,
+   not a darkened photo. The ground is brick; the grey image lends only its
+   luminance, and a light wash keeps the whole panel bright. */
+.poster-main { position: absolute; inset: 0; margin: 0; overflow: hidden; background: var(--brick); border-bottom: 14px solid var(--gold); }
+.poster-main img { width: 100%; height: 100%; object-fit: cover; filter: grayscale(1) contrast(1.2) brightness(1.15); mix-blend-mode: luminosity; }
+.poster-main::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(248, 241, 233, 0) 55%, rgba(248, 241, 233, 0.18)); }
+/* The day, as a cream tile in the corner. */
 .day-badge {
-  position: absolute;
-  right: 2%;
-  bottom: 8%;
-  z-index: 4;
-  width: 128px;
-  height: 128px;
-  display: grid;
-  place-content: center;
-  text-align: center;
-  border-radius: 50%;
-  background: var(--cream);
-  color: var(--maroon);
-  border: 4px solid var(--accent);
-  box-shadow: 0 16px 40px -18px rgba(0, 0, 0, 0.8);
-  animation: badge-bob 5s ease-in-out infinite;
+  position: absolute; left: 0; bottom: 14px; z-index: 2;
+  padding: 0.9rem 1.1rem 0.85rem; background: var(--paper); color: var(--brick);
+  border-top: 6px solid var(--gold);
 }
-.day-badge b { display: block; font-family: var(--display); font-size: 1.75rem; font-weight: 900; line-height: 1; text-transform: uppercase; }
-.day-badge span { display: block; margin-top: 0.3rem; font-family: var(--display); font-size: 0.6rem; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: var(--copper-ox); }
-@keyframes badge-bob { 0%, 100% { transform: rotate(-6deg) translateY(0); } 50% { transform: rotate(-6deg) translateY(-8px); } }
-@media (prefers-reduced-motion: reduce) { .day-badge { animation: none; } }
-
-/* The motif, large, as a wall decoration behind the posters. */
-.motif { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.motif i { display: block; aspect-ratio: 1; background: var(--copper); opacity: 0.35; }
+.day-badge b { display: block; font-family: var(--display); font-size: 1.9rem; font-weight: 800; line-height: 1; text-transform: uppercase; }
+.day-badge span { display: block; margin-top: 0.3rem; font-family: var(--display); font-size: 0.62rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink); }
+/* The motif, gold, top right of the panel. */
+.motif { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.motif i { display: block; aspect-ratio: 1; background: var(--gold); }
 .motif i:nth-child(3) { grid-column: 1; }
-.motif-hero { position: absolute; left: -6%; bottom: -4%; width: 90px; z-index: 0; }
+.motif-hero { position: absolute; right: 18px; top: 18px; width: 54px; z-index: 2; }
 
-/* ---- Today strip: a bright cream card with an orange tab ---- */
-[data-look="festive"] .now-strip {
-  position: relative;
-  margin: 0;
-  background: var(--cream);
-  color: #1B1D21;
-  border: 0;
-  padding: 1.4rem var(--gutter) 1.5rem;
-}
+/* ---- Today strip: a white card on paper, a checkerboard edge on top ---- */
+[data-look="festive"] .now-strip { background: #FFF; border: 0; padding: 1.3rem var(--gutter) 1.4rem; }
 [data-look="festive"] .now-strip::before {
-  content: "";
-  position: absolute;
-  inset: 0 auto 0 0;
-  width: 10px;
-  background: repeating-linear-gradient(180deg, var(--accent) 0 14px, var(--gold, #E4AB0E) 14px 28px, var(--copper) 28px 42px);
+  content: ""; display: block; height: 12px; margin: -1.3rem calc(-1 * var(--gutter)) 1.1rem;
+  background: repeating-conic-gradient(var(--brick) 0 25%, var(--gold) 0 50%) 0 0 / 24px 24px;
 }
-[data-look="festive"] .now-kicker { color: var(--copper-ox); }
-[data-look="festive"] .now-dot { background: var(--accent); }
-[data-look="festive"] .now-label { color: #1B1D21; font-size: 0.9rem; }
-[data-look="festive"] .now-label--next { color: #5F574C; }
-[data-look="festive"] .now-title { color: #1B1D21; font-size: 1.1rem; }
-[data-look="festive"] .now-list--next .now-title { color: #5F574C; }
-[data-look="festive"] .now-when { color: var(--copper-ox); font-weight: 600; }
-[data-look="festive"] .now-venue { color: #5F574C; }
-[data-look="festive"] a.now-venue:hover { color: #1B1D21; }
-[data-look="festive"] .now-all .text-link { color: #1B1D21; text-decoration-color: var(--copper-ox); }
+[data-look="festive"] .now-strip--inset::before { margin: -1rem -1.2rem 0.9rem; }
+[data-look="festive"] .now-kicker { color: var(--accent-2); }
+[data-look="festive"] .now-dot { background: var(--brick); }
+[data-look="festive"] .now-label { color: var(--ink); font-size: 0.9rem; }
+[data-look="festive"] .now-title { color: var(--ink); font-size: 1.1rem; }
+[data-look="festive"] .now-when { color: var(--brick); font-weight: 600; }
+[data-look="festive"] .now-venue, [data-look="festive"] .now-label--next, [data-look="festive"] .now-list--next .now-title { color: var(--muted); }
 
-/* ---- Seams: louder ---- */
+/* ---- Seams: checkerboard between paper sections, scallop onto brick ---- */
 [data-look="festive"] .seam-harlequin {
   opacity: 1;
-  background: repeating-conic-gradient(from 45deg at 50% 50%, var(--accent) 0deg 90deg, var(--gold, #E4AB0E) 90deg 180deg) 0 0 / 26px 26px;
+  background: repeating-conic-gradient(var(--brick) 0 25%, var(--paper) 0 50%) 0 0 / 26px 26px;
 }
+[data-look="festive"] .seam-scallop { background: radial-gradient(circle at 50% 0%, var(--brick) 46%, transparent 47%) 0 0 / 28px 26px; background-color: var(--bg-2); }
+[data-look="festive"] .seam-scallop.on-cream { background: radial-gradient(circle at 50% 0%, var(--bg-2) 46%, transparent 47%) 0 0 / 28px 26px; background-color: var(--brick); }
 
-/* ---- Programme: strand bands in colour, bigger strand titles ---- */
-[data-look="festive"] .group-title { font-size: 1.05rem; letter-spacing: 0.08em; color: var(--ink); margin-top: 3.2rem; }
-[data-look="festive"] .group-title::before { width: 34px; height: 10px; background: var(--accent); }
-[data-look="festive"] .group-title:nth-of-type(2)::before { background: var(--gold, #E4AB0E); }
-[data-look="festive"] .group-title:nth-of-type(3)::before { background: var(--copper); }
-[data-look="festive"] .card { border-top: 6px solid var(--accent); border-radius: 4px; }
-[data-look="festive"] .group-title:nth-of-type(2) ~ .cards .card { border-top-color: var(--gold, #E4AB0E); }
-[data-look="festive"] .group-title:nth-of-type(3) ~ .cards .card { border-top-color: var(--copper); }
-[data-look="festive"] .card:hover { transform: translateY(-6px) rotate(-0.6deg); border-color: var(--line); }
-[data-look="festive"] .card-body h4 { color: var(--gold, #E4AB0E); }
-[data-look="festive"] .section-tint .card { background: var(--bg-3); }
+/* ---- Programme: paper, white cards, brick strand titles ---- */
+[data-look="festive"] .section-tint { background: var(--paper); }
+[data-look="festive"] .section h2 { color: var(--ink); }
+[data-look="festive"] .section p { color: var(--muted); }
+[data-look="festive"] .group-title { font-size: 1rem; letter-spacing: 0.08em; color: var(--brick); margin-top: 3rem; }
+[data-look="festive"] .group-title::before { width: 12px; height: 12px; background: var(--brick); }
+[data-look="festive"] .card { background: #FFF; border-color: var(--line); border-radius: 4px; }
+[data-look="festive"] .section-tint .card { background: #FFF; }
+[data-look="festive"] .card:hover { transform: translateY(-4px); border-color: var(--copper); box-shadow: 0 16px 36px -22px rgba(27, 29, 33, 0.35); }
+[data-look="festive"] .card-body h4 { color: var(--brick); }
+[data-look="festive"] .card-body p { color: var(--muted); }
 
-/* ---- Featuring: the photograph on a podium of three blocks ---- */
-[data-look="festive"] #featuring .col-media { position: relative; }
-[data-look="festive"] #featuring .col-media::before {
-  content: "";
-  position: absolute;
-  left: -18px; top: -18px; right: 18px; bottom: 18px;
-  background: var(--gold, #E4AB0E);
-  border-radius: var(--radius);
-  z-index: 0;
-}
-[data-look="festive"] #featuring .col-media img { position: relative; z-index: 1; }
-[data-look="festive"] #featuring h2 { color: var(--gold, #E4AB0E); }
+/* ---- Featuring: a brick poster block ---- */
+[data-look="festive"] .section-oxblood { background: var(--brick); }
+[data-look="festive"] .section-oxblood h2 { color: #FFF; }
+[data-look="festive"] .section-oxblood p { color: rgba(255, 255, 255, 0.88); }
+[data-look="festive"] .section-oxblood p strong,
+[data-look="festive"] .section-oxblood .eyebrow,
+[data-look="festive"] .section-oxblood .lead-line { color: var(--gold); }
+[data-look="festive"] #featuring .col-media img { border-bottom: 12px solid var(--gold); border-radius: 0; }
 
-/* ---- Foundation (cream): batik at the edges ---- */
-[data-look="festive"] #foundation {
-  background-image: linear-gradient(90deg, var(--cream) 0 70%, rgba(239, 231, 216, 0.82) 100%), url("assets/batik.jpg");
-  background-size: auto, cover;
-  background-position: center;
-}
+/* ---- Foundation: cream paper (its own rules already) ---- */
+[data-look="festive"] .section-cream { background: var(--bg-2); }
 
-/* ---- Also includes: three coloured tiles ---- */
-[data-look="festive"] .feature-band-scrim { background: linear-gradient(rgba(80, 0, 0, 0.88), rgba(35, 27, 28, 0.95)); }
-[data-look="festive"] .also-item { border: 0; backdrop-filter: none; color: var(--bg); transform: rotate(-1deg); }
-[data-look="festive"] .also-item:nth-child(1) { background: var(--accent); }
-[data-look="festive"] .also-item:nth-child(2) { background: var(--gold, #E4AB0E); transform: rotate(1deg); }
-[data-look="festive"] .also-item:nth-child(3) { background: var(--cream); }
-[data-look="festive"] .also-item h4, [data-look="festive"] .also-item p { color: var(--bg); }
+/* ---- Also includes: brick, the photograph cut out, cream tiles ---- */
+[data-look="festive"] .feature-band-media img { filter: grayscale(1) contrast(1.1); }
+[data-look="festive"] .feature-band-scrim { background: var(--brick); mix-blend-mode: multiply; opacity: 0.92; }
+[data-look="festive"] .feature-band .eyebrow { color: var(--gold); }
+[data-look="festive"] .also-item { background: var(--paper); border: 0; backdrop-filter: none; border-radius: 0; border-top: 6px solid var(--gold); }
+[data-look="festive"] .also-item h4 { color: var(--brick); }
+[data-look="festive"] .also-item p { color: var(--muted); }
 
-/* ---- Partners: cream tiles with a coloured rule on hover ---- */
-[data-look="festive"] .partner { border: 0; box-shadow: inset 0 -5px 0 transparent; transition: box-shadow 0.2s ease, transform 0.2s ease; }
-[data-look="festive"] .partner:hover { transform: translateY(-3px); box-shadow: inset 0 -5px 0 var(--accent); }
+/* ---- Partners: cream tiles on paper ---- */
+[data-look="festive"] #partners { background: var(--paper); }
+[data-look="festive"] .partner { background: #FFF; border-color: var(--line); }
+[data-look="festive"] .partner:hover { border-color: var(--copper); box-shadow: inset 0 -4px 0 var(--copper); }
 
-/* ---- Support: the motif in the corner ---- */
-[data-look="festive"] .support-v2 { position: relative; overflow: hidden; }
-[data-look="festive"] .support-v2::after {
-  content: "";
-  position: absolute; right: -30px; bottom: -30px; width: 180px; height: 180px;
-  background:
-    linear-gradient(var(--accent), var(--accent)) 0 0 / 80px 80px no-repeat,
-    linear-gradient(var(--gold, #E4AB0E), var(--gold, #E4AB0E)) 100px 0 / 80px 80px no-repeat,
-    linear-gradient(var(--copper), var(--copper)) 0 100px / 80px 80px no-repeat;
-  opacity: 0.55;
-}
+/* ---- Support: brick, paper buttons, white type ---- */
+[data-look="festive"] .support-v2 { background: var(--brick); }
+[data-look="festive"] .support-v2 h2, [data-look="festive"] .support-v2 dt { color: #FFF; }
+[data-look="festive"] .support-v2 p, [data-look="festive"] .support-v2 dd { color: rgba(255, 255, 255, 0.88); }
+[data-look="festive"] .support-v2 .eyebrow { color: var(--gold); }
+[data-look="festive"] .support-points > div { border-top-color: rgba(255, 255, 255, 0.25); }
+[data-look="festive"] .btn-paper { background: var(--paper); color: var(--brick); border-color: var(--paper); }
+[data-look="festive"] .btn-outline { color: #FFF; border-color: rgba(255, 255, 255, 0.6); }
+[data-look="festive"] .btn-outline:hover { background: rgba(255, 255, 255, 0.1); border-color: #FFF; }
 
-/* ---- Footer: a coloured hairline ---- */
-[data-look="festive"] .site-footer { border-top: 4px solid; border-image: linear-gradient(90deg, var(--accent), var(--gold, #E4AB0E), var(--copper)) 1; }
+/* ---- Footer: paper with a brick/gold checker edge ---- */
+[data-look="festive"] .site-footer { background: var(--paper); border-top: 0; }
+[data-look="festive"] .site-footer::before { content: ""; display: block; height: 14px; margin-bottom: 2.4rem; background: repeating-conic-gradient(var(--brick) 0 25%, var(--gold) 0 50%) 0 0 / 28px 28px; }
+[data-look="festive"] .footer-sub, [data-look="festive"] .footer-copy { color: var(--muted); }
+[data-look="festive"] .footer-contact a { color: var(--brick); }
+[data-look="festive"] .footer-copy { border-top-color: var(--line); }
+
+/* ---- Calendar and form views inherit the paper tokens; their cards go white ---- */
+[data-look="festive"] .cal-event, [data-look="festive"] .section-tint .cal-event, [data-look="festive"] .onboard-card { background: #FFF; }
+[data-look="festive"] .cal-poster::after, [data-look="festive"] .section-tint .cal-poster::after { background: linear-gradient(100deg, transparent 52%, #FFF); }
+[data-look="festive"] .chip.is-active { color: #2A1206; }
+[data-look="festive"] .view-bar { background: rgba(248, 241, 233, 0.94); }
 
 /* ---- Responsive ---- */
 @media (max-width: 960px) {
   [data-look="festive"] .hero-content { grid-template-columns: 1fr; }
-  [data-look="festive"] .hero-wall { grid-column: 1; grid-row: auto; max-height: 360px; aspect-ratio: 16 / 10; margin-top: 1rem; }
-  .poster { width: 40%; }
-  .poster-c { left: 30%; }
-  .day-badge { width: 104px; height: 104px; right: 0; }
-  .day-badge b { font-size: 1.4rem; }
+  [data-look="festive"] .hero-wall { grid-column: 1; grid-row: auto; min-height: 300px; margin-top: 0.5rem; }
+  [data-look="festive"] .nav-links { background: var(--paper); }
 }
 @media (max-width: 560px) {
-  [data-look="festive"] .hero-meta { grid-template-columns: repeat(3, 1fr); gap: 0.4rem; }
   [data-look="festive"] .hero-meta div { padding: 0.75rem 0.6rem; }
-  [data-look="festive"] .hero-wall { max-height: 300px; }
-  .day-badge { width: 88px; height: 88px; }
-  .day-badge b { font-size: 1.2rem; }
-  .day-badge span { font-size: 0.5rem; }
+  [data-look="festive"] .hero-wall { min-height: 240px; }
+  .day-badge b { font-size: 1.4rem; }
 }
 
 @media (max-width: 900px) {

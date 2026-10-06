@@ -2255,3 +2255,19 @@ What the festive look adds, all from the same tokens and the podium motif:
 Room gets a touch warmer (`--bg` toward oxblood), a `--gold` token joins
 styles.css. Checked at 1280 and on a phone.
 
+**Reworked the same evening.** Vinod on the first festive pass: "not vibrant
+enough, no darkness, no playing-card look or rotated boxes, colouring too
+outlandish — you picked and shaped the design language unpredictably."
+Fair. The first pass kept the charcoal room and added tilted posters and
+colour I invented. The second pass is built from the brand kit's own four
+rules — orange is action, gold is the name, copper does the labels, one
+ground at a time — and takes the **poster** language onto the screen: the
+page is paper (xuan cream from the reference board), the blocks that would
+be posters are **brick** with white type and gold emphasis, the one
+photograph is a riso-style duotone (grey image lending luminance over
+brick), the day is a straight cream tile, seams are brick/cream
+checkerboard, the motif sits flat in gold. Nothing tilted, no dark ground
+anywhere. Same `?look=festive` switch, same words. Lesson recorded: when
+asked for "the design language", read the kit's rules first, do not
+extrapolate from the palette.
+
