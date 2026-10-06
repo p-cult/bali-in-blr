@@ -125,8 +125,8 @@
 
   <div class="card">
     <h2>Per link</h2>
-    <p class="note">One row per campaign ref seen on the site. "Direct / untagged" is every visit that
-      arrived without a minted link. Estimated tickets share each event's recorded sales across the
+    <p class="note">One row per campaign ref that has actually been clicked; a minted link nobody has
+      used is not shown. "Direct / untagged" is every visit that arrived without a minted link. Estimated tickets share each event's recorded sales across the
       links whose ticket clicks led to it.</p>
     <div id="links"></div>
   </div>
@@ -294,12 +294,7 @@
       const r = merged[ref], l = linkByKey[ref] || null;
       return { ref, l, r, est: mergedEst[ref] || 0 };
     });
-    // Minted links that nobody has used yet still deserve a row, so a dead
-    // poster shows as dead.
-    links.forEach((l) => {
-      const keys = linkKeys(l);
-      if (!keys.some((k) => merged[k])) rows.push({ ref: keys[0] || String(l.Code || ""), l, r: { sessions: 0, event_open: 0, ticket_click: 0, register_open: 0, register: 0 }, est: 0 });
-    });
+    // Only links that have actually been clicked are listed (client, 6 Oct 2026).
     rows.sort((a, b) => (b.r.ticket_click - a.r.ticket_click) || (b.r.sessions - a.r.sessions));
     const maxS = Math.max(1, ...rows.map((x) => x.r.sessions));
     const maxE = Math.max(1, ...rows.map((x) => x.est));
