@@ -2106,3 +2106,15 @@ clears test rows. Browser-pane limits met today: it refuses clipboard
 writes (set the Monaco model instead), blocks popups and new tabs from
 automated clicks (the OAuth consent had to be clicked by Vinod).
 
+**Backfill, 6 Oct 12:25.** The log only began at 11:00, so the dashboard's
+history was ninety minutes. `backfillFromRegistrations()` in Hits.gs (run
+once from the editor) wrote a visit + register pair per row of the
+registration sheet's Signups / Volunteers / RSVPs tabs, at the row's
+timestamp and under its Ref — 411 registrations back to 6 Sep. Only the
+timestamp, the ref and the tab name left the registration sheet. Rows are
+marked Page = "backfill", session "bf-<tab>-<row>", so they can be told
+apart or purged. Visible in the result: older links glued the view hash
+onto the ref and the bridge's `cleanRef` dropped the "#", giving
+"insta-vol-regvolunteer". The dashboard now folds those spellings into
+their minted link; `readRef` on the site no longer lets a hash into a ref.
+

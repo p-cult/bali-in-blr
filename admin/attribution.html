@@ -254,6 +254,8 @@
     const sessions = sum("sessions"), tclicks = sum("ticket_click"), regs = sum("register");
     const tagged = refs.filter((r) => r !== "(direct)").reduce((a, r) => a + byRef[r].sessions, 0);
     const estTagged = refs.filter((r) => r !== "(direct)").reduce((a, r) => a + (est[r] || 0), 0);
+    const linkByKey = {};
+    links.forEach((l) => linkKeys(l).forEach((k) => { if (!linkByKey[k]) linkByKey[k] = l; }));
     $("stats").innerHTML = [
       [n(sessions), "Visits (sessions)"],
       [pct(tagged, sessions), "Arrived via a minted link"],
@@ -264,19 +266,39 @@
     ].map(([b, l]) => `<div class="stat"><b>${b}</b><span>${l}</span></div>`).join("");
 
     // Per link table
-    const linkByKey = {};
-    links.forEach((l) => linkKeys(l).forEach((k) => { if (!linkByKey[k]) linkByKey[k] = l; }));
-    // Refs logged before the "#" fix carry a hash fragment; match without it.
+    // Older links glued the view hash onto the ref ("insta-vol-reg#volunteer"),
+    // and the bridge stored it without the "#" ("insta-vol-regvolunteer").
+    // Fold every spelling into the minted link it belongs to.
     const keyOf = (ref) => ref.replace(/#[^/]*/, "");
-    const rows = refs.map((ref) => {
-      const r = byRef[ref], l = linkByKey[ref] || linkByKey[keyOf(ref)] || null;
-      return { ref, l, r, est: est[ref] || 0 };
+    const canon = (ref) => {
+      if (linkByKey[ref]) return ref;
+      if (linkByKey[keyOf(ref)]) return keyOf(ref);
+      const m = ref.match(/^(.*?)(volunteer|calendar|register)(\/.*)?$/);
+      if (m && linkByKey[m[1] + (m[3] || "")]) return m[1] + (m[3] || "");
+      return ref;
+    };
+    const merged = {}, mergedEv = {}, mergedEst = {};
+    Object.keys(byRef).forEach((ref) => {
+      const k = canon(ref);
+      const t = merged[k] || (merged[k] = { sessions: 0, visit: 0, event_open: 0, ticket_click: 0, register_open: 0, register: 0 });
+      Object.keys(t).forEach((f) => { t[f] += byRef[ref][f] || 0; });
+      mergedEst[k] = (mergedEst[k] || 0) + (est[ref] || 0);
+      Object.keys(byRefEvent[ref] || {}).forEach((ev) => {
+        const e = mergedEv[k] || (mergedEv[k] = {});
+        e[ev] = (e[ev] || 0) + byRefEvent[ref][ev];
+      });
+    });
+    Object.keys(byRefEvent).forEach((k) => delete byRefEvent[k]);
+    Object.assign(byRefEvent, mergedEv);
+    const rows = Object.keys(merged).map((ref) => {
+      const r = merged[ref], l = linkByKey[ref] || null;
+      return { ref, l, r, est: mergedEst[ref] || 0 };
     });
     // Minted links that nobody has used yet still deserve a row, so a dead
     // poster shows as dead.
     links.forEach((l) => {
       const keys = linkKeys(l);
-      if (!keys.some((k) => byRef[k] || refs.some((r) => keyOf(r) === k))) rows.push({ ref: keys[0] || String(l.Code || ""), l, r: { sessions: 0, event_open: 0, ticket_click: 0, register_open: 0, register: 0 }, est: 0 });
+      if (!keys.some((k) => merged[k])) rows.push({ ref: keys[0] || String(l.Code || ""), l, r: { sessions: 0, event_open: 0, ticket_click: 0, register_open: 0, register: 0 }, est: 0 });
     });
     rows.sort((a, b) => (b.r.ticket_click - a.r.ticket_click) || (b.r.sessions - a.r.sessions));
     const maxS = Math.max(1, ...rows.map((x) => x.r.sessions));
