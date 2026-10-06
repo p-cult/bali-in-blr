@@ -20,8 +20,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@800&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=hub43" />
-  <link rel="stylesheet" href="site.css?v=46" />
+  <link rel="stylesheet" href="styles.css?v=hub44" />
+  <link rel="stylesheet" href="site.css?v=47" />
 </head>
 <body>
   <!-- Google Tag Manager (noscript) -->
@@ -49,6 +49,9 @@
   </header>
 
   <!-- Hero -->
+  <!-- Festive look: a running band of what is on now (filled by main.js) -->
+  <div class="ticker" data-ticker hidden aria-hidden="true"><div class="ticker-track"></div></div>
+
   <section class="hero hero-v2">
     <div class="hero-media">
       <img src="assets/hero-kecak-sea.jpg" alt="Kecak performers at dusk" />
@@ -74,6 +77,14 @@
       <div class="hero-actions">
         <a data-content="page.a1" class="btn btn-primary" href="#calendar">See what’s on</a>
         <a data-content="page.a2" class="btn btn-ghost" href="#register">Get festival updates</a>
+      </div>
+    <!-- Festive look: three posters pasted on the wall and a day badge -->
+      <div class="hero-wall" aria-hidden="true">
+        <figure class="poster poster-a"><img src="assets/kecak-crowd.jpg" alt="" loading="lazy" /></figure>
+        <figure class="poster poster-b"><img src="assets/yakshagana-trio.jpg" alt="" loading="lazy" /></figure>
+        <figure class="poster poster-c"><img src="assets/shadow-puppetry.jpg" alt="" loading="lazy" /></figure>
+        <div class="day-badge" data-day-badge><b></b><span></span></div>
+        <div class="motif motif-hero"><i></i><i></i><i></i></div>
       </div>
     </div>
   </section>
@@ -434,6 +445,6 @@
       }
     })();
   </script>
-  <script src="main.js?v=hub89"></script>
+  <script src="main.js?v=hub90"></script>
 </body>
 </html>

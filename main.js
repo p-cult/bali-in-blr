@@ -106,6 +106,20 @@ function applyPhase() {
 }
 applyPhase();
 
+/* ---------- Look ----------
+   "festive" is the festival-is-on layout (Oct 2026). Reviewed at ?look=festive
+   before it became the default; ?look=classic brings the quieter page back.
+   The choice sticks for the session so every view agrees. */
+(function applyLook() {
+  const q = new URLSearchParams(location.search).get("look");
+  let look = "";
+  try {
+    if (q) sessionStorage.setItem("bali.look", q);
+    look = q || sessionStorage.getItem("bali.look") || "";
+  } catch (e) { look = q || ""; }
+  if (look === "festive") document.documentElement.dataset.look = "festive";
+})();
+
 /* ---------- Analytics ----------
    Nothing loads until an id is filled in below, so the site ships with no
    trackers at all. Only ids and campaign refs are ever sent — never a name,
@@ -1239,6 +1253,34 @@ function renderNowStrip(events) {
   strips.forEach((el) => { el.innerHTML = html; el.hidden = !html; });
 }
 
+/* Festive look: a running band under the header with today's and the next
+   events, and the day badge in the hero. Derived from the same rows as the
+   strip; no new copy. Hidden outside the festival window. */
+function renderTicker(events) {
+  const el = document.querySelector("[data-ticker]");
+  const badge = document.querySelector("[data-day-badge]");
+  if (!el || document.documentElement.dataset.look !== "festive") return;
+  const phase = festivalPhase();
+  if (phase !== "live") { el.hidden = true; if (badge) badge.hidden = true; return; }
+  const today = istToday();
+  const pub = events.filter((e) => e.startDate && !e.notPublic);
+  const on = pub.filter((e) => e.today);
+  const next = pub.filter((e) => e.startDate > today).sort((a, b) => a.startDate < b.startDate ? -1 : 1);
+  const items = [`Festival on now`, `Day ${festivalDayNumber()} of ${festivalDays()}`];
+  on.forEach((e) => items.push(`Today · ${e.title}${e.startTime ? " · " + e.startTime : ""}${e.venue ? " · " + e.venue : ""}`));
+  if (next.length) items.push(`Next · ${next[0].title} · ${calDateText(next[0])}`);
+  const sep = '<i class="tk-motif"><b></b><b></b><b></b></i>';
+  const html = items.map((t) => `<span class="tk-item">${esc(t)}</span>${sep}`).join("");
+  const track = el.querySelector(".ticker-track");
+  track.innerHTML = html + html; // doubled so the loop is seamless
+  el.hidden = false;
+  if (badge) {
+    badge.hidden = false;
+    badge.querySelector("b").textContent = "Day " + festivalDayNumber();
+    badge.querySelector("span").textContent = "of " + festivalDays() + " · on now";
+  }
+}
+
 /* When the calendar opens during the festival, start at today — past rows
    are dimmed and sit above. Once per page load, so a filter re-render or a
    second visit to the view does not yank the page about. */
@@ -1370,6 +1412,7 @@ async function loadCalendar() {
   updateHeroStats(events);
   refineFestivalDates(events);
   renderNowStrip(events);
+  renderTicker(events);
   await loadCollaborators(); // so cards can show each event's collaborator logos
   render(events);
   scrollCalendarToToday();

@@ -2230,3 +2230,28 @@ since 11:00 today, so the share of tickets credited to each link is rough
 for now and firms up every day the festival runs. Compare links with each
 other; don't treat a single figure as exact.
 
+## 6 Oct 2026, evening — A festive look for the home page (for review)
+
+Vinod: the home page should feel like the festival has started — vibrant,
+fresh layout, nothing in the words changed. Built as a **variant**, not a
+replacement: `<html data-look="festive">`, switched on with `?look=festive`
+(remembered for the session; `?look=classic` to go back). Every rule sits
+under that attribute in `site.css` §10, so the classic page is untouched
+until the look is approved and made the default.
+
+What the festive look adds, all from the same tokens and the podium motif:
+- a **running band** under the header with "Festival on now · Day 4 of 16 ·
+  Today … · Next …" (derived from the sheet rows, no new copy; pauses on
+  hover; honours reduced motion);
+- the hero as a **wall with three posters** pasted askew in gold, cream and
+  orange frames (existing photographs), a round **Day badge** that bobs,
+  and the three numbers as **coloured tiles** (orange, gold, copper);
+- the Today strip as a **cream card** with a striped tab;
+- seams at full strength in orange and gold;
+- strand bands in colour on the programme cards, bigger strand titles;
+- the Featuring photograph on a gold block; batik at the edge of the cream
+  section; the three "also includes" items as coloured tiles; a motif in the
+  Support corner; a coloured hairline on the footer.
+Room gets a touch warmer (`--bg` toward oxblood), a `--gold` token joins
+styles.css. Checked at 1280 and on a phone.
+
