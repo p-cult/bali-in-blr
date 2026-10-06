@@ -2124,3 +2124,57 @@ the dashboard splits 995 recorded tickets across 17 events and estimates
 per link. Caveat recorded on the page and here: ticket clicks only exist
 from 11:00 today, so the early estimate rests on a thin click sample.
 
+## 6 Oct 2026 — Where things stand, in plain words
+
+It is day four of the festival. Here is the picture, written for anyone on
+the team, not just for whoever works on the code.
+
+**Tickets sold so far: 995.** That is the number the team has entered in
+the ticket sales sheet up to this afternoon, from every channel. By event:
+
+| Event | Tickets |
+| --- | --- |
+| Traditional Balinese Dance × Yakshagana Performance | 456 |
+| Kecak Performance | 300 |
+| Shadow Puppetry Performance | 71 |
+| Traditional Balinese Dance | 69 |
+| Dance Movement Workshop | 25 |
+| Indonesian × Indian Puppetry Act | 21 |
+| Kecak Workshop | 19 |
+| Mask Making Workshop | 16 |
+| Shadow Puppetry Workshop | 8 |
+| Gamelan workshop | 7 |
+| Balinese Shadow Puppetry Workshop | 2 |
+| Indonesian × Indian Shadow Puppetry Performance | 1 |
+
+**People who signed up through the website: 414**, going back to 6 Sep.
+Eighty-five in a hundred of them came through one of our own campaign
+links. The volunteer link on Instagram brought 199 of them, the 10 Sep
+Instagram post 85, the hero poster link 40, Google Ads 22.
+
+**What the website now does by itself.** It knows the date in Bengaluru.
+Past shows read "Concluded" and lose their Book button on their own. A
+"Today / Next up" panel under the hero says what is on today and what
+comes next. The calendar opens at today. While the festival is on, the
+page's ground is a touch warmer. Once a show is over, a photo link pasted
+in the schedule sheet puts a "See photos" button on it.
+
+**What the new admin page does.** "Link attribution" shows, for every
+campaign link that has actually been clicked: how many visits it brought,
+how many people opened an event page, how many clicked through to buy,
+how many signed up, and a fair-share estimate of tickets. The estimate
+divides each event's real sales among the links in proportion to the
+Book clicks each link produced. It is an estimate, not a receipt, because
+BookMyShow and District never tell us which click bought what.
+
+**One thing to keep in mind when reading it.** Clicks have only been
+recorded since 11:00 today. Sign-ups go back a month because they were
+copied in from the registration sheet, but Book clicks before this morning
+are simply unknown. So the ticket estimates per link are rough today and
+get better every day the festival runs.
+
+**For the next person at the keyboard.** Everything above is live and
+committed. The two Google scripts that feed this (the click log and the
+ticket sales app) are updated in place; never create a second deployment
+of either, or the site stops reaching them.
+
