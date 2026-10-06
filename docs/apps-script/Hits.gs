@@ -79,7 +79,8 @@ function summary(days) {
   const seen = {}; // ref|sid and day|sid, so a session counts once
   let total = 0, first = '', last = '';
   rows.forEach(function (r) {
-    const day = String(r[1] || '');
+    // Sheets turns the yyyy-MM-dd text into a real date; read it back as text.
+    const day = r[1] instanceof Date ? Utilities.formatDate(r[1], TZ, 'yyyy-MM-dd') : String(r[1] || '');
     if (!day || (since && day < since)) return;
     const kind = String(r[2] || ''), label = String(r[3] || ''), ref = String(r[4] || '(direct)') || '(direct)', sid = String(r[6] || '');
     total++;
