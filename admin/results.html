@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex, nofollow" />
+<title>Campaign results — Admin — Bali in Bengaluru</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;900&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#1B1D21; --bg3:#23262B; --ink:#EFE7D8; --muted:#B6B2AA; --muted2:#8C8E92;
+    --accent:#ff5a3c; --copper:#C87941; --line:#2C3036; --radius:8px;
+    --display:"Archivo","Arial Narrow",sans-serif; --sans:"Instrument Sans",system-ui,sans-serif;
+    --warn:#E0A470;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.55;padding:2.5rem 1.5rem 5rem}
+  .wrap{max-width:1080px;margin:0 auto}
+  .kick{display:flex;align-items:center;gap:.7rem;font-family:var(--display);font-weight:700;text-transform:uppercase;letter-spacing:.2em;font-size:.7rem;color:var(--copper);margin:0 0 .4rem}
+  .kick .logo{height:34px;width:auto;display:block}
+  .kick .logo-gold{fill:#e4ab0e}.kick .logo-orange{fill:#ff5a3d}.kick .logo-brown{fill:#b68367}
+  h1{font-family:var(--display);font-weight:900;text-transform:uppercase;font-size:1.9rem;letter-spacing:-.01em;margin:0 0 .3rem}
+  h2{font-family:var(--display);font-weight:700;text-transform:uppercase;font-size:1rem;letter-spacing:.04em;margin:0 0 .8rem}
+  .sub{color:var(--muted2);margin:0 0 1.6rem;font-size:.95rem;max-width:68ch}
+  .admin-nav{margin:0 0 1.2rem;font-size:.8rem}
+  .admin-nav a{color:var(--copper);text-decoration:none}
+  .admin-nav a:hover{text-decoration:underline}
+  .topbar{display:flex;justify-content:space-between;align-items:baseline;gap:1rem;flex-wrap:wrap;margin-bottom:1.2rem}
+  .who{font-size:.85rem;color:var(--muted2)}
+  .who b{color:var(--ink);font-weight:600}
+  .signout,.btn{font:inherit;cursor:pointer}
+  .signout{background:none;border:1px solid var(--line);color:var(--ink);font-size:.8rem;border-radius:5px;padding:.35rem .8rem}
+  .signout:hover{border-color:var(--ink)}
+  .actions{display:flex;gap:.6rem;flex-wrap:wrap;margin:0 0 1.6rem}
+  .btn{font-family:var(--display);font-weight:700;text-transform:uppercase;letter-spacing:.03em;font-size:.8rem;border:0;border-radius:5px;padding:.7rem 1.2rem}
+  .btn-primary{background:var(--accent);color:#111}
+  .btn-ghost{background:transparent;border:1px solid var(--line);color:var(--ink)}
+  .btn-ghost:hover{border-color:var(--ink)}
+  .stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:.8rem;margin:0 0 2rem}
+  .stat{background:var(--bg3);border:1px solid var(--line);border-radius:var(--radius);padding:1rem 1.1rem}
+  .stat b{display:block;font-family:var(--display);font-weight:900;font-size:1.8rem;letter-spacing:-.02em;line-height:1.1}
+  .stat span{display:block;margin-top:.25rem;color:var(--muted2);font-size:.78rem;text-transform:uppercase;letter-spacing:.06em}
+  .card{background:var(--bg3);border:1px solid var(--line);border-radius:var(--radius);padding:1.3rem 1.4rem;margin-bottom:1.4rem}
+  .note{color:var(--muted2);font-size:.85rem;margin:0 0 1rem}
+  table{width:100%;border-collapse:collapse;font-size:.82rem}
+  th,td{text-align:left;padding:.5rem .55rem;border-bottom:1px solid var(--line);vertical-align:top}
+  th{font-family:var(--display);font-weight:700;text-transform:uppercase;font-size:.64rem;letter-spacing:.06em;color:var(--muted2)}
+  td.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .pill{display:inline-block;font-size:.72rem;letter-spacing:.03em;text-transform:uppercase;border:1px solid var(--line);border-radius:999px;padding:.12rem .5rem;color:var(--muted)}
+  .pill-yes{color:#b7d4b0;border-color:#3d5a3a}
+  .pill-no{color:var(--warn);border-color:#8E4A24}
+  .flag{background:#2a221c;border:1px solid #8E4A24;color:var(--warn);border-radius:var(--radius);padding:.9rem 1rem;margin:0 0 1.4rem;font-size:.88rem}
+  .flag ul{margin:.4rem 0 0;padding-left:1.1rem}
+  .empty,.err{color:var(--muted2);font-size:.9rem}
+  .err{color:var(--accent)}
+  .block-label{margin:1.1rem 0 .45rem;color:var(--muted2);font-size:.85rem}
+  .block-label:first-child{margin-top:0}
+  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+  footer{margin-top:2rem;color:var(--muted2);font-size:.78rem}
+  footer a{color:var(--copper)}
+  @media(max-width:700px){table{font-size:.75rem}th,td{padding:.4rem .3rem}}
+  @media print{
+    @page{margin:12mm}
+    body{background:#F7E9CE;color:#1B1D21;padding:0}
+    .admin-nav,.signout,.actions,.aa-gate{display:none !important}
+    .wrap{max-width:none}
+    .kick,.kick span{color:#8E4A24}
+    h1,h2{color:#1B1D21}
+    .sub,.note,.who,footer{color:#5c564c}
+    .card,.stat,.flag{background:#fff;border-color:#C87941;break-inside:avoid}
+    .stat b,h1,h2{color:#1B1D21}
+    th,td{border-color:#e0d3b8}
+    th{color:#8E4A24}
+    .pill-yes{color:#2d4a28;border-color:#2d4a28}
+    .pill-no{color:#8E4A24;border-color:#8E4A24}
+    a{color:#8E4A24}
+  }
+</style>
+<style>
+  .filters{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;margin:0 0 1.4rem}
+  .chip{font:inherit;font-size:.78rem;cursor:pointer;background:transparent;border:1px solid var(--line);color:var(--muted);border-radius:999px;padding:.3rem .8rem}
+  .chip.is-active{border-color:var(--copper);color:var(--ink)}
+  .bar{position:relative;display:block;height:6px;border-radius:3px;background:var(--line);margin-top:.35rem;min-width:70px}
+  .bar i{position:absolute;inset:0 auto 0 0;border-radius:3px;background:var(--copper)}
+  td.key{white-space:nowrap}
+  td.key small{display:block;color:var(--muted2);font-size:.72rem}
+  tr.is-direct td{color:var(--muted)}
+  .est{font-family:var(--display);font-weight:700}
+  details{margin-top:.4rem}
+  summary{cursor:pointer;color:var(--copper);font-size:.8rem}
+  .sub-table{margin:.5rem 0 .2rem}
+  .sub-table td,.sub-table th{padding:.3rem .45rem;font-size:.78rem}
+  .how{font-size:.85rem;color:var(--muted)}
+  .how ol{padding-left:1.2rem;margin:.4rem 0 0}
+  .setup{background:#2a221c;border:1px solid #8E4A24;color:var(--warn);border-radius:var(--radius);padding:.9rem 1rem;margin:0 0 1.4rem;font-size:.88rem}
+  .setup code{font-family:ui-monospace,Menlo,monospace;font-size:.8rem}
+</style>
+<script src="../main.js?v=hub89"></script>
+
+</head>
+<body>
+<div class="wrap" id="admin-app" hidden>
+  <div class="topbar">
+    <p class="admin-nav"><a href="./">&larr; Admin</a></p>
+    <span class="who">Signed in as <b id="who">—</b> · <button class="signout" id="signout" type="button">Sign out</button></span>
+  </div>
+  <p class="kick"><svg class="logo" viewBox="8.5 8 152 54.5" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path class="logo-gold" d="M9.81,39.57v-17.2h10.51c.88,0,1.69.18,2.4.53.72.35,1.29.84,1.71,1.48.43.63.64,1.38.64,2.23,0,.75-.13,1.39-.39,1.93-.26.53-.6.97-1.03,1.3-.43.33-.91.58-1.44.75v.1c.62.13,1.18.37,1.68.71.5.34.9.81,1.19,1.39.29.58.44,1.29.44,2.13,0,.98-.23,1.82-.7,2.52-.47.69-1.09,1.22-1.85,1.59-.77.37-1.63.55-2.58.55h-10.59ZM14.29,29.21h4.48c.37,0,.68-.08.94-.23.26-.15.46-.36.6-.63.14-.27.21-.58.21-.95,0-.53-.16-.95-.48-1.25-.32-.3-.72-.45-1.2-.45h-4.56v3.5ZM14.29,36.12h4.88c.53,0,.96-.16,1.29-.48.33-.32.49-.8.49-1.45,0-.35-.07-.66-.21-.94-.14-.28-.35-.49-.63-.64-.28-.15-.61-.23-1.01-.23h-4.81v3.73Z"/><path class="logo-gold" d="M25.53,39.57l6.46-17.2h5.38l6.46,17.2h-4.78l-1.03-2.98h-6.86l-1.03,2.98h-4.61ZM32.24,33.24h4.68l-1.23-3.63c-.07-.18-.15-.41-.24-.69-.09-.28-.18-.57-.28-.88-.09-.31-.18-.62-.26-.94-.08-.32-.17-.59-.25-.83h-.18c-.07.32-.16.68-.29,1.08-.13.4-.25.8-.38,1.2-.13.4-.24.75-.34,1.05l-1.25,3.63Z"/><path class="logo-gold" d="M44.63,39.57v-17.2h4.48v13.52h8.74v3.68h-13.22Z"/><path class="logo-gold" d="M66.9,39.57V9.15c-.12.04-.15.18-.21.24-.12.12-.16.21-.22.37-.03.08-.22.12-.17.28.03.09-.06.2-.1.28-.02.05,0,.13-.03.17-.02.03-.09.04-.14.08-.08.06-.14.27-.07.36.06.08.15.11.18.22.04.2.05.4-.02.58-.07-.09-.08-.18-.11-.27-.09-.26-.31-.4-.59-.38-.29.02-.58.13-.7.4-.14.31-.11.74.12,1.01.16.18.3.36.19.62-.02.05-.11.04-.15.02-.05-.03-.1-.09-.09-.16.04-.19-.07-.28-.19-.39-.11-.1-.1-.3-.08-.46-.11-.06-.27-.05-.41,0-.37.14-.33.85-.27,1.34-.2.03-.43.07-.48.25-.11.36.16.93-.14.76-.16-.1.06-.26-.04-.41-.04-.06-.14-.09-.24-.08-.19.03-.26.22-.26.41-.07.02-.14-.04-.16-.07-.07-.09.18-.33-.07-.45-.11-.05-.22-.07-.31-.01-.09.05-.15.15-.16.27-.02.34.34.55.33.62,0,0-.17.17-.08.67h.23c-.11.24-.2.53-.09.66.04.04.1.06.19.09-.11.2-.16.45-.05.66,0,.02.17.06.05.48-.06-.23-.26-.39-.51-.36-.31.03-.51.26-.57.56l-.03.37c-.17.03-.31.08-.39.19-.2.31.05.64.44.85.08,0,.06.09-.02.05-.13.01-.3.05-.35.18-.07.23.05.5.27.61v.65c.07,0,.18.01.18.07v.6c0,.15.09.25.25.28v.71c.41-.09.14.45.46.87.1.14.17.27.09.46-.27-.17-.44-.41-.58-.69-.21-.42-.67-.57-.7-.79-.02-.25.36-.15.42-.46.03-.17-.03-.31-.19-.4-.37-.2-.81-.11-1.09.2-.16.17-.25.37-.29.6-.04.29-.03.58.03.87-.11.21-.16.44-.06.68-.38.3-.15.66-.17.74-.03.11.32-.22.42-.05.09.15,0,.37.03.52.09,0,.21-.03.29.02.04.02.03.11.02.13-.02.04-.08.06-.16.03v.7s.33,0,.33,0c-.03.31.13.57.09.93.1,0,.17-.01.26.01v.74c.07-.01.16-.02.21.01.06.19-.03.35-.16.47-.15.13-.18.38-.09.54.2.34.36.97.15,1.11-.06.04-.16.04-.22-.03-.02-.03-.04-.07-.04-.09,0-.03.06-.07.08-.1.11-.2-.14-.34-.26-.42.02-.64-.47-.74-.79-1.15-.13-.17-.12-.38.07-.49.12-.07.27-.06.35.05,0,.05.05.05.05,0,.07-.28.06-.56-.1-.8-.14-.21-.38-.3-.62-.35-.28-.06-.52-.03-.72.06v13.6h7.93ZM62.3,17.62c0-.05.05-.09.11-.1.13-.02.15-.1.18-.26.07.12.12.21.24.23.14.02.24-.01.35-.12.09-.09.34.03.31.16-.01.09-.04.23-.07.32-.04.04-.19,0-.24.03-.16.13-.06.39.1.62-.18.1-.37,0-.44-.16-.21-.49-.58-.53-.55-.73Z"/><path class="logo-orange" d="M91.39,39.57v-13.57c-.25-.12-.54-.15-.85-.07-.29.07-.55.24-.64.53-.06.2-.04.41,0,.63.02.03.05-.04.07-.06.11-.13.3-.07.4.03.1.1.1.26.01.4-.28.44-.9.56-.79,1.21-.23.01-.34.28-.32.36,0,.03.07.05.09.09.05.1-.04.18-.13.2-.08.01-.19-.06-.2-.17-.03-.38.12-.72.28-1.06.06-.12-.03-.35-.12-.43-.14-.13-.24-.29-.16-.48.03-.03.16-.02.19-.02v-.74s.26-.01.26-.01l.03-.47c.01-.15.09-.28.06-.45h.33s0-.7,0-.7c-.07.01-.13-.01-.15-.04-.02-.04,0-.14.05-.14h.26c0-.18-.06-.38.03-.52.07-.12.3-.01.37.09.17-.24.15-.57-.11-.77.06-.24.05-.47-.08-.69.1-.41.1-.83-.08-1.21-.22-.46-.74-.69-1.21-.49-.17.07-.27.2-.26.36.03.39.46.25.43.52-.02.23-.48.37-.69.78-.14.28-.3.51-.57.7-.08-.18-.03-.32.07-.45.32-.41.05-.97.46-.89l.02-.7c.09-.05.22-.1.23-.2v-.68c.01-.05.11-.09.18-.08v-.65c.25-.12.38-.43.25-.66-.07-.12-.24-.11-.38-.14.37-.23.69-.5.49-.87-.06-.12-.23-.18-.4-.21,0-.19,0-.35-.06-.51-.1-.29-.39-.47-.7-.41-.15.03-.25.15-.33.28,0,0,0,0,0-.01.01.13-.02.25.1.29.05.02.12.03.15.06.04.05.05.16-.01.2-.25.16-.42.38-.54.65-.06.12-.23.18-.4.1.12-.19.23-.37.15-.57-.04-.11-.23-.05-.28-.1-.05-.08-.06-.23-.08-.32-.03-.12.21-.25.3-.17.14.13.32.18.49.08.08-.05.06-.17.13-.24-.05-.2-.06-.35.06-.38.1-.21.06-.46-.05-.66.16-.03.25-.12.24-.25-.01-.17-.08-.32-.14-.48l.22-.02c.03-.17.07-.35,0-.5l-.08-.2c.17-.15.31-.31.32-.52,0-.14-.05-.27-.16-.33-.11-.06-.25-.03-.36.06-.2.16.19.44-.19.5.01-.2-.06-.38-.24-.42-.11-.02-.21,0-.27.08-.1.14.13.33-.03.4-.04.02-.14.05-.16,0,.02-.24.08-.49.03-.72-.04-.2-.3-.25-.5-.28.07-.39.09-.78-.05-1.14-.09-.24-.38-.29-.62-.22,0,.13.05.35-.07.46-.12.12-.25.22-.2.41.01.06-.03.11-.07.14-.05.03-.15.02-.17-.03-.1-.26.06-.43.21-.62.23-.28.27-.72.09-1.04-.19-.35-.69-.46-1.03-.29-.24.13-.27.39-.32.64-.14-.32-.13-.76.17-.9l-.04-.23c-.02-.12-.16-.13-.19-.18-.06-.1-.04-.26-.14-.35.04-.18-.03-.32-.19-.38,0-.16-.06-.28-.2-.35-.03-.1-.08-.19-.16-.23v30.39h7.93Z"/><path class="logo-orange" d="M96.2,39.57v-17.2h3.98l6.26,7.99c.12.13.27.33.46.58.19.25.38.51.56.76.18.26.32.46.4.61l.13-.03v-9.91h4.16v17.2h-3.96l-6.63-8.41c-.22-.27-.42-.54-.61-.83-.19-.28-.35-.52-.46-.7l-.13.03v9.91h-4.16Z"/><path class="logo-gold" d="M9.81,60.9v-17.2h10.51c.88,0,1.69.18,2.4.53.72.35,1.29.84,1.71,1.48.43.63.64,1.38.64,2.23,0,.75-.13,1.39-.39,1.93-.26.53-.6.97-1.03,1.3-.43.33-.91.58-1.44.75v.1c.62.13,1.18.37,1.68.71.5.34.9.81,1.19,1.39.29.58.44,1.29.44,2.13,0,.98-.23,1.82-.7,2.52-.47.69-1.09,1.22-1.85,1.59-.77.37-1.63.55-2.58.55h-10.59ZM14.29,50.54h4.48c.37,0,.68-.08.94-.23.26-.15.46-.36.6-.63.14-.27.21-.58.21-.95,0-.53-.16-.95-.48-1.25-.32-.3-.72-.45-1.2-.45h-4.56v3.5ZM14.29,57.45h4.88c.53,0,.96-.16,1.29-.48.33-.32.49-.8.49-1.45,0-.35-.07-.66-.21-.94-.14-.28-.35-.49-.63-.64-.28-.15-.61-.23-1.01-.23h-4.81v3.73Z"/><path class="logo-gold" d="M26.43,60.9v-17.2h14.19v3.5h-9.71v3.23h8.49v3.43h-8.49v3.53h9.89v3.5h-14.37Z"/><path class="logo-gold" d="M41.93,60.9v-17.2h3.98l6.26,7.99c.12.13.27.33.46.58.19.25.38.51.56.76.18.26.32.46.4.61l.13-.03v-9.91h4.16v17.2h-3.96l-6.63-8.41c-.22-.27-.42-.54-.61-.83-.19-.28-.35-.52-.46-.7l-.13.03v9.91h-4.16Z"/><path class="logo-gold" d="M67.46,61.2c-2.77,0-4.88-.73-6.32-2.2-1.44-1.47-2.17-3.71-2.17-6.71,0-1.99.35-3.63,1.06-4.94.71-1.31,1.74-2.29,3.1-2.95,1.36-.66,3-.99,4.92-.99,1.15,0,2.24.13,3.25.4,1.02.27,1.92.66,2.7,1.19.78.53,1.39,1.19,1.83,1.98.43.79.65,1.72.65,2.79h-4.41c0-.45-.1-.86-.3-1.21-.2-.36-.48-.66-.84-.9-.36-.24-.77-.43-1.24-.55-.47-.13-.96-.19-1.48-.19-.77,0-1.45.1-2.04.3-.59.2-1.08.51-1.46.93-.38.42-.67.93-.86,1.53-.19.6-.29,1.3-.29,2.1v1.1c0,1.07.17,1.96.5,2.68.33.72.84,1.26,1.51,1.61.68.36,1.51.54,2.49.54.77,0,1.46-.12,2.07-.35.61-.23,1.09-.57,1.45-1.01.36-.44.54-.97.54-1.59v-.13h-4.63v-3.15h8.99v9.44h-2.6l-.43-1.8c-.52.47-1.07.86-1.66,1.18-.59.32-1.24.55-1.95.7-.71.15-1.51.23-2.39.23Z"/><path class="logo-gold" d="M77.1,60.9l6.46-17.2h5.38l6.46,17.2h-4.78l-1.03-2.98h-6.86l-1.03,2.98h-4.61ZM83.81,54.57h4.68l-1.23-3.63c-.07-.18-.15-.41-.24-.69-.09-.28-.18-.57-.28-.88-.09-.31-.18-.62-.26-.94-.08-.32-.17-.59-.25-.83h-.18c-.07.32-.16.68-.29,1.08-.13.4-.25.8-.38,1.2-.13.4-.24.75-.34,1.05l-1.25,3.63Z"/><path class="logo-gold" d="M96.2,60.9v-17.2h4.48v13.52h8.74v3.68h-13.22Z"/><path class="logo-gold" d="M117.58,61.2c-1.65,0-3.08-.26-4.27-.78-1.19-.52-2.11-1.29-2.74-2.33-.63-1.03-.95-2.32-.95-3.86v-10.54h4.51v10.44c0,1.1.29,1.97.88,2.6.58.63,1.44.95,2.58.95s2-.32,2.6-.95c.6-.63.9-1.5.9-2.6v-10.44h4.48v10.54c0,1.54-.32,2.82-.95,3.86-.63,1.04-1.54,1.81-2.73,2.33-1.19.52-2.62.78-4.31.78Z"/><path class="logo-gold" d="M126.77,60.9v-17.2h9.99c1.27,0,2.33.24,3.18.71.85.48,1.49,1.13,1.92,1.95s.64,1.75.64,2.77c0,1.1-.25,2.08-.76,2.94-.51.86-1.22,1.53-2.14,2.02l3.45,6.81h-5.01l-2.85-6.06h-3.93v6.06h-4.48ZM131.25,51.51h4.63c.62,0,1.11-.2,1.49-.61.38-.41.56-.96.56-1.64,0-.45-.08-.83-.25-1.15-.17-.32-.4-.56-.7-.74-.3-.18-.67-.26-1.1-.26h-4.63v4.41Z"/><path class="logo-gold" d="M151.76,61.2c-1.65,0-3.08-.26-4.27-.78-1.19-.52-2.11-1.29-2.74-2.33-.63-1.03-.95-2.32-.95-3.86v-10.54h4.51v10.44c0,1.1.29,1.97.88,2.6.58.63,1.44.95,2.58.95s2-.32,2.6-.95c.6-.63.9-1.5.9-2.6v-10.44h4.48v10.54c0,1.54-.32,2.82-.95,3.86-.63,1.04-1.54,1.81-2.73,2.33-1.19.52-2.62.78-4.31.78Z"/><g><path class="logo-brown" d="M17.3,11.41v-2.26h-4.14c-1.85,0-3.35,1.47-3.35,3.27v5.2h1.59v-2.36h2.55c1.89,0,3.35-2.07,3.35-3.85ZM15.7,11.41c0,1-.85,2.3-1.76,2.3h-2.55v-1.29c0-.95.79-1.71,1.76-1.71h2.55v.71Z"/><path class="logo-brown" d="M25.76,12.64v5.07h1.59v-5.07c0-1.07.89-1.94,1.99-1.94h1.19v-1.55h-1.19c-1.97,0-3.58,1.57-3.58,3.49Z"/><path class="logo-brown" d="M24.71,14.56v-2.26h-.02c-.18-1.77-1.71-3.15-3.56-3.15h-2.65v1.55h2.65c.98,0,1.79.69,1.96,1.6h-1.92c-1.85,0-3.35,1.47-3.35,3.27v2.26h3.54c1.85,0,3.35-1.47,3.35-3.27ZM19.41,15.57c0-.95.79-1.71,1.76-1.71h1.95v.71c0,.95-.79,1.71-1.76,1.71h-1.95v-.71Z"/><path class="logo-brown" d="M34.41,9.15h-2.65v1.55h2.65c.98,0,1.79.69,1.96,1.6h-1.92c-1.85,0-3.35,1.47-3.35,3.27v2.26h3.54c1.85,0,3.35-1.47,3.35-3.27v-2.26h-.02c-.18-1.77-1.71-3.15-3.56-3.15ZM36.4,14.35v.21c0,.95-.79,1.71-1.76,1.71h-1.95v-.71c0-.95.79-1.71,1.76-1.71h1.95v.5Z"/><path class="logo-brown" d="M47.02,9.15c-.81,0-1.63.26-2.32.73v-.73h-1.94c-.94,0-1.91.36-2.65.98-.81.68-1.26,1.57-1.26,2.51v5.05h1.59v-5.05c0-1.09,1.25-1.94,2.32-1.94h.35v6.99h1.59v-5.05c0-1.09,1.25-1.94,2.32-1.94h.35v6.99h1.59v-8.55h-1.94Z"/></g></svg><span class="sr-only">Bali in Bengaluru</span><span>· internal</span></p>
+  <h1>Campaign results</h1>
+  <p class="sub">Which links are bringing people in, and which are selling tickets.
+    No personal data anywhere on this page.</p>
+  <div id="setup" class="setup" hidden></div>
+  <p class="note" id="generated">Loading…</p>
+  <div class="filters" id="filters">
+    <span class="how">Show:</span>
+    <button class="chip is-active" data-days="0" type="button">Whole campaign</button>
+    <button class="chip" data-days="7" type="button">Last 7 days</button>
+    <button class="chip" data-days="1" type="button">Since yesterday</button>
+    <button class="btn btn-ghost" type="button" id="reload" style="margin-left:auto">Refresh</button>
+  </div>
+
+  <div class="stats" id="stats"></div>
+
+  <div class="card">
+    <h2>By link</h2>
+    <p class="note">One row per link that people have actually used. "Came on their own" is everyone who
+      arrived without one of our links. The tickets column is an estimate: each event's recorded
+      sales are shared out among the links that sent people to its Book button.</p>
+    <div id="links"></div>
+  </div>
+
+  <div class="card">
+    <h2>By event</h2>
+    <p class="note">"Clicked Book" is people the website sent on to BookMyShow or District. "Tickets sold" is
+      what the team entered in the ticket sales sheet, from every channel.</p>
+    <div id="events"></div>
+  </div>
+
+  <div class="card how">
+    <h2>How the ticket estimate works</h2>
+    <ol>
+      <li>When someone arrives through one of our links, the website remembers which link for the rest of their visit.</li>
+      <li>When they click a Book button, that counts as a "Clicked Book" for that link and that event.</li>
+      <li>Each event's recorded ticket sales are shared out among the links in proportion to those clicks.
+        If a link produced 30% of an event's Book clicks, it is credited with 30% of that event's sales.</li>
+      <li>Sign-ups are counted only once the registration has actually been saved.</li>
+    </ol>
+    <p>It is a fair estimate, not a receipt: BookMyShow and District never tell us which click bought
+      what. Read the numbers by comparing links with each other.</p>
+  </div>
+
+  <footer>Bali in Bengaluru · <a href="campaign-links.html">Campaign Link Builder</a> · <a href="tickets.html">Ticket sales</a> · <a href="../">Public site</a></footer>
+</div>
+
+<script src="auth.js"></script>
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const HITS = CONFIG.HITS_URL;
+  const BRIDGE = CONFIG.BRIDGE_URL;
+  const TICKETS = "https://script.google.com/macros/s/AKfycbzX5yeStITITqvM0HXgvZYBNy70Jo8HRxGXYlc6iHzzMYuWnoXWzzOA9QyllWIGDWFA/exec";
+  let DAYS = 0;
+
+  // Apps Script's first answer after a cold start can come back late, as an
+  // error page, or not at all for a minute. Try five times, spaced out, and
+  // meanwhile keep showing the last good answer (kept in this browser).
+  async function get(url, ms) {
+    let err;
+    const waits = [1500, 3000, 6000, 10000];
+    for (let i = 0; i < 5; i++) {
+      const ctrl = new AbortController();
+      const t = setTimeout(() => ctrl.abort(), ms || 25000);
+      try {
+        const r = await fetch(url + (url.includes("?") ? "&" : "?") + "_=" + Date.now(), { cache: "no-store", signal: ctrl.signal });
+        const j = await r.json();
+        return j;
+      } catch (e) {
+        err = e;
+        $("generated").textContent = "One source is slow — retrying (" + (i + 1) + " of 5)…";
+        if (i < 4) await new Promise((res) => setTimeout(res, waits[i]));
+      }
+      finally { clearTimeout(t); }
+    }
+    throw err;
+  }
+  function lastGood(key) {
+    try { const v = JSON.parse(localStorage.getItem(key) || "null"); return v && v.j ? v : null; } catch (e) { return null; }
+  }
+
+  const n = (v) => Number(v || 0).toLocaleString("en-IN");
+  const n1 = (v) => (Math.round(v * 10) / 10).toLocaleString("en-IN", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  const pct = (a, b) => b ? Math.round(100 * a / b) + "%" : "—";
+  const bar = (v, max) => `<span class="bar" aria-hidden="true"><i style="width:${max ? Math.round(100 * v / max) : 0}%"></i></span>`;
+
+  // The site stores a ref as "ref" or "ref/campaign" (main.js readRef); the
+  // Mint tab holds them apart. Match either way.
+  function linkKeys(link) {
+    const ref = String(link.Ref || "").trim(), camp = String(link.Campaign || "").trim();
+    const out = [];
+    if (ref) { out.push(ref); if (camp) out.push(ref + "/" + camp); }
+    const src = String(link.Source || "").trim();
+    if (src) { out.push(src); if (camp) out.push(src + "/" + camp); }
+    return out;
+  }
+
+  function showSetup(missing) {
+    const el = $("setup");
+    if (!missing.length) { el.hidden = true; return; }
+    el.hidden = false;
+    el.innerHTML = "<b>Heads up.</b><ul>" + missing.map((m) => "<li>" + m + "</li>").join("") + "</ul>";
+  }
+
+  const WIN = { 0: "all", 7: "d7", 1: "d1" };
+  let DATA = null; // { hits: {all, d7, d1}, tickets, links, at }
+
+  function paint() {
+    if (!DATA) return;
+    const hits = (DATA.hits && DATA.hits[WIN[DAYS]]) || { byRef: {}, byRefEvent: {}, byEvent: {}, daily: {}, rows: 0 };
+    render(hits, DATA.tickets || {}, Array.isArray(DATA.links) ? DATA.links : []);
+    $("generated").textContent = "As of " + new Date(DATA.at).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" }) +
+      (hits.from ? " · clicks logged " + hits.from + " to " + hits.to : "") +
+      (DAYS ? " · last " + DAYS + " day" + (DAYS > 1 ? "s" : "") : " · whole campaign");
+  }
+
+  async function load() {
+    // 1. Paint the last figures this browser saw, at once.
+    const prev = lastGood("attr:data");
+    if (prev && !DATA) { DATA = prev.j; paint(); $("generated").textContent += " · refreshing…"; }
+    else if (!DATA) $("generated").textContent = "Loading…";
+
+    // 2. Fetch everything once — all three windows in one answer — then keep it.
+    const missing = [];
+    if (!HITS) missing.push("The click log is not set up yet (see docs/ATTRIBUTION.md). Until then no clicks are recorded.");
+    const [hits, tickets, links] = await Promise.all([
+      HITS ? get(HITS + "?summary=all").catch(() => null) : Promise.resolve(null),
+      get(TICKETS + "?data=1").catch(() => null),
+      get(BRIDGE + "?sheet=links").catch(() => []),
+    ]);
+    const stale = [];
+    const fresh = { hits: hits, tickets: tickets, links: Array.isArray(links) ? links : (DATA && DATA.links) || [], at: Date.now() };
+    if (HITS && !hits) {
+      if (DATA && DATA.hits) { fresh.hits = DATA.hits; stale.push("click log"); }
+      else missing.push("The click log is not answering right now. Google's script service is slow at the moment — press Refresh in a minute.");
+    }
+    if (!tickets) {
+      if (DATA && DATA.tickets) { fresh.tickets = DATA.tickets; stale.push("ticket sales"); }
+      else missing.push("The tickets app is not answering right now — press Refresh in a minute.");
+    } else if (!tickets.byEvent) missing.push("The ticket sales app is on an older version, so sales can only be shown as a total (see docs/ATTRIBUTION.md).");
+    if (stale.length) missing.push("Showing the last good figures for: " + stale.join(", ") + ". Press Refresh to try again.");
+    if (!fresh.hits && DATA) fresh.hits = DATA.hits;
+    if (!fresh.tickets && DATA) fresh.tickets = DATA.tickets;
+    DATA = fresh;
+    try { localStorage.setItem("attr:data", JSON.stringify({ at: Date.now(), j: DATA })); } catch (e) {}
+    showSetup(missing);
+    paint();
+  }
+
+  function render(hits, tickets, links) {
+    const byRef = hits.byRef || {}, byRefEvent = hits.byRefEvent || {}, byEvent = hits.byEvent || {};
+    // Tickets recorded, for the window being shown. The tickets app reports
+    // sales per day, so "last 7 days" and "since yesterday" count only the
+    // entries stamped inside that window (IST). Whole campaign uses every row.
+    let sold = tickets.byEvent || {};
+    if (DAYS && tickets.daily) {
+      const since = new Date(Date.now() - DAYS * 86400000);
+      const sinceKey = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata" }).format(since);
+      sold = {};
+      Object.keys(tickets.daily).forEach((day) => {
+        if (day < sinceKey) return;
+        Object.keys(tickets.daily[day]).forEach((ev) => { sold[ev] = (sold[ev] || 0) + Number(tickets.daily[day][ev] || 0); });
+      });
+    }
+    const soldTotal = Object.values(sold).reduce((a, b) => a + Number(b || 0), 0) || (DAYS ? 0 : Number(tickets.totalTickets || 0));
+
+    // Estimated tickets per ref: each event's sales shared by ticket-click share.
+    const est = {};
+    const clicksPerEvent = {};
+    Object.keys(byRefEvent).forEach((ref) => Object.keys(byRefEvent[ref]).forEach((ev) => {
+      clicksPerEvent[ev] = (clicksPerEvent[ev] || 0) + byRefEvent[ref][ev];
+    }));
+    // Tickets sheet event names and site titles may differ in case/spacing.
+    const norm = (s) => String(s || "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+    const soldByNorm = {};
+    Object.keys(sold).forEach((ev) => { soldByNorm[norm(ev)] = (soldByNorm[norm(ev)] || 0) + Number(sold[ev] || 0); });
+    const soldFor = (ev) => soldByNorm[norm(ev)] || 0;
+    Object.keys(byRefEvent).forEach((ref) => {
+      est[ref] = 0;
+      Object.keys(byRefEvent[ref]).forEach((ev) => {
+        const share = clicksPerEvent[ev] ? byRefEvent[ref][ev] / clicksPerEvent[ev] : 0;
+        est[ref] += share * soldFor(ev);
+      });
+    });
+
+    // KPI tiles
+    const refs = Object.keys(byRef);
+    const sum = (k) => refs.reduce((a, r) => a + (byRef[r][k] || 0), 0);
+    const sessions = sum("sessions"), tclicks = sum("ticket_click"), regs = sum("register");
+    const tagged = refs.filter((r) => r !== "(direct)").reduce((a, r) => a + byRef[r].sessions, 0);
+    const estTagged = refs.filter((r) => r !== "(direct)").reduce((a, r) => a + (est[r] || 0), 0);
+    const linkByKey = {};
+    links.forEach((l) => linkKeys(l).forEach((k) => { if (!linkByKey[k]) linkByKey[k] = l; }));
+    $("stats").innerHTML = [
+      [n(sessions), "Visits"],
+      [pct(tagged, sessions), "Came through our links"],
+      [n(tclicks), "Clicked Book"],
+      [n(regs), "Signed up"],
+      [n(soldTotal), DAYS ? "Tickets sold in this period" : "Tickets sold"],
+      [n1(estTagged), "Tickets our links likely sold"],
+    ].map(([b, l]) => `<div class="stat"><b>${b}</b><span>${l}</span></div>`).join("");
+
+    // Per link table
+    // Older links glued the view hash onto the ref ("insta-vol-reg#volunteer"),
+    // and the bridge stored it without the "#" ("insta-vol-regvolunteer").
+    // Fold every spelling into the minted link it belongs to.
+    const keyOf = (ref) => ref.replace(/#[^/]*/, "");
+    const canon = (ref) => {
+      if (linkByKey[ref]) return ref;
+      if (linkByKey[keyOf(ref)]) return keyOf(ref);
+      const m = ref.match(/^(.*?)(volunteer|calendar|register)(\/.*)?$/);
+      if (m && linkByKey[m[1] + (m[3] || "")]) return m[1] + (m[3] || "");
+      return ref;
+    };
+    const merged = {}, mergedEv = {}, mergedEst = {};
+    Object.keys(byRef).forEach((ref) => {
+      const k = canon(ref);
+      const t = merged[k] || (merged[k] = { sessions: 0, visit: 0, event_open: 0, ticket_click: 0, register_open: 0, register: 0 });
+      Object.keys(t).forEach((f) => { t[f] += byRef[ref][f] || 0; });
+      mergedEst[k] = (mergedEst[k] || 0) + (est[ref] || 0);
+      Object.keys(byRefEvent[ref] || {}).forEach((ev) => {
+        const e = mergedEv[k] || (mergedEv[k] = {});
+        e[ev] = (e[ev] || 0) + byRefEvent[ref][ev];
+      });
+    });
+    Object.keys(byRefEvent).forEach((k) => delete byRefEvent[k]);
+    Object.assign(byRefEvent, mergedEv);
+    const rows = Object.keys(merged).map((ref) => {
+      const r = merged[ref], l = linkByKey[ref] || null;
+      return { ref, l, r, est: mergedEst[ref] || 0 };
+    });
+    // Only links that have actually been clicked are listed (client, 6 Oct 2026).
+    rows.sort((a, b) => (b.r.ticket_click - a.r.ticket_click) || (b.r.sessions - a.r.sessions));
+    const maxS = Math.max(1, ...rows.map((x) => x.r.sessions));
+    const maxE = Math.max(1, ...rows.map((x) => x.est));
+    if (!rows.length) { $("links").innerHTML = '<p class="empty">No clicks logged yet.</p>'; }
+    else {
+      $("links").innerHTML = '<div style="overflow-x:auto"><table><thead><tr>' +
+        "<th>Link</th><th>Where it was used</th><th class=\"num\">Visits</th><th class=\"num\">Opened an event</th><th class=\"num\">Clicked Book</th><th class=\"num\">Signed up</th><th class=\"num\">Tickets (estimate)</th>" +
+        "</tr></thead><tbody>" +
+        rows.map((x) => {
+          const l = x.l || {};
+          const direct = x.ref === "(direct)";
+          const name = direct ? "Came on their own" : (l.Code || x.ref);
+          const where = direct ? "Typed the address, found us on Google, or a shared link without a tag" :
+            [l.Source, l.Medium, l.Campaign, l.Destination ? "→ " + l.Destination : ""].filter(Boolean).join(" · ");
+          const per = byRefEvent[x.ref] ? Object.keys(byRefEvent[x.ref]).sort((a, b) => byRefEvent[x.ref][b] - byRefEvent[x.ref][a]) : [];
+          const detail = per.length ? `<details><summary>${per.length} event${per.length > 1 ? "s" : ""}</summary><table class="sub-table"><tbody>` +
+            per.map((ev) => {
+              const c = byRefEvent[x.ref][ev], share = clicksPerEvent[ev] ? c / clicksPerEvent[ev] : 0;
+              return `<tr><td>${esc(ev)}</td><td class="num">${n(c)} clicks</td><td class="num">${pct(c, clicksPerEvent[ev])} of clicks</td><td class="num">${soldFor(ev) ? "≈ " + n1(share * soldFor(ev)) + " of " + n(soldFor(ev)) + " sold" : "no sales entered"}</td></tr>`;
+            }).join("") + "</tbody></table></details>" : "";
+          return `<tr class="${direct ? "is-direct" : ""}"><td class="key"><b>${esc(name)}</b><small>${esc(direct ? "" : x.ref)}</small>${detail}</td>` +
+            `<td>${esc(where)}</td>` +
+            `<td class="num">${n(x.r.sessions)}${bar(x.r.sessions, maxS)}</td>` +
+            `<td class="num">${n(x.r.event_open)}</td>` +
+            `<td class="num">${n(x.r.ticket_click)}</td>` +
+            `<td class="num">${n(x.r.register)}${x.r.register_open ? ` <small style="color:var(--muted2)">/ ${n(x.r.register_open)} opened</small>` : ""}</td>` +
+            `<td class="num est">${x.est ? "≈ " + n1(x.est) : "—"}${bar(x.est, maxE)}</td></tr>`;
+        }).join("") + "</tbody></table></div>";
+    }
+
+    // Per event table
+    const evNames = new Set([...Object.keys(byEvent), ...Object.keys(sold)]);
+    const evRows = [...evNames].map((ev) => {
+      const e = byEvent[ev] || { event_open: 0, ticket_click: 0 };
+      // Top link for this event by ticket clicks
+      let top = "", topC = 0;
+      Object.keys(byRefEvent).forEach((ref) => {
+        const c = (byRefEvent[ref] || {})[ev] || 0;
+        if (c > topC && ref !== "(direct)") { topC = c; top = (linkByKey[ref] || {}).Code || ref; }
+      });
+      return { ev, opens: e.event_open, clicks: e.ticket_click, sold: soldFor(ev), top, topC };
+    }).sort((a, b) => (b.sold - a.sold) || (b.clicks - a.clicks));
+    if (!evRows.length) $("events").innerHTML = '<p class="empty">Nothing yet.</p>';
+    else $("events").innerHTML = '<div style="overflow-x:auto"><table><thead><tr>' +
+      "<th>Event</th><th class=\"num\">Opened the page</th><th class=\"num\">Clicked Book</th><th class=\"num\">Tickets sold</th><th class=\"num\">Sales per click</th><th>Best link</th>" +
+      "</tr></thead><tbody>" +
+      evRows.map((x) => `<tr><td>${esc(x.ev)}</td><td class="num">${n(x.opens)}</td><td class="num">${n(x.clicks)}</td><td class="num">${n(x.sold)}</td>` +
+        `<td class="num">${x.clicks ? pct(x.sold, x.clicks) : "—"}</td><td>${x.top ? esc(x.top) + ` <small style="color:var(--muted2)">${n(x.topC)} clicks</small>` : "—"}</td></tr>`).join("") +
+      "</tbody></table></div>";
+  }
+
+  $("filters").addEventListener("click", (e) => {
+    const chip = e.target.closest(".chip");
+    if (!chip) return;
+    $("filters").querySelectorAll(".chip").forEach((c) => c.classList.toggle("is-active", c === chip));
+    DAYS = Number(chip.dataset.days) || 0;
+    paint(); // all three windows are already here — no round trip
+  });
+  $("reload").addEventListener("click", load);
+  AdminAuth.protect({ tool: "attribution", onUnlock: (user) => { $("who").textContent = user; load(); } });
+  $("signout").addEventListener("click", AdminAuth.signOut);
+})();
+</script>
+</body>
+</html>

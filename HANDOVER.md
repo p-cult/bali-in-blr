@@ -315,7 +315,7 @@ reports success — reload before assuming a file is missing.
       Event List turns a concluded event's button into "See photos". Events
       conclude by themselves once their date has passed (IST). A gallery section
       is still open; `assets/carvings.jpg` and `assets/batik.jpg` are unused.
-- [x] **Attribution dashboard:** `admin/attribution.html`, live 6 Oct 2026 with
+- [x] **Attribution dashboard:** `admin/results.html`, live 6 Oct 2026 with
       its click log (`docs/apps-script/Hits.gs`) and per-event sales from the
       tickets app. Registrations backfilled to 6 Sep. See `docs/ATTRIBUTION.md`.
 

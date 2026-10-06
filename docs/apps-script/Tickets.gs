@@ -80,7 +80,7 @@ function getData() {
     .map(r => ({ when: fmtWhen(r[0]), qty: r[1], event: r[2] }));
   const total = rows.filter(r => r[0]).reduce((s, r) => s + Number(r[1] || 0), 0);
   // Per-event and per-day totals for the attribution dashboard (admin/
-  // attribution.html), which sets ticket clicks against tickets sold.
+  // results.html), which sets ticket clicks against tickets sold.
   const byEvent = {}, daily = {};
   rows.filter(r => r[0]).forEach(function (r) {
     const ev = String(r[2] || '').trim(), qty = Number(r[1] || 0), day = dayOf(r[0]);

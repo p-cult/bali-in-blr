@@ -1,6 +1,6 @@
 # Link attribution — which minted link sold what
 
-`admin/attribution.html` sets the clicks each campaign link produced against
+`admin/results.html` sets the clicks each campaign link produced against
 the tickets the team recorded, and estimates how many sales each link is
 likely to have brought. Three sources, none of them personal:
 

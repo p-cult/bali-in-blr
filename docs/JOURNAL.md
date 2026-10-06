@@ -2061,7 +2061,7 @@ following. Same palette, the room lit for a show. The festival window is
 taken from the sheet (first/last public event) once loaded;
 `CONFIG.FESTIVAL_START/END` only bridge the first paint.
 
-**Attribution dashboard** (`admin/attribution.html`). The ask: which minted
+**Attribution dashboard** (`admin/results.html`). The ask: which minted
 link's clicks turned into tickets. Finding first: nothing recorded clicks
 anywhere — `dataLayer` events go to GTM where no tag exists. So a click log
 was built: `sendHit()` in `main.js` beacons visit / event_open /
