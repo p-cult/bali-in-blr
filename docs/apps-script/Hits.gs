@@ -204,29 +204,61 @@ function backfillFromRegistrations() {
 
 /* ---------- Dashboard, prepared ahead of time ----------
    The registration bridge and the tickets app are other Apps Script web apps
-   and can take 30–50 s to wake up. This script fetches them on a timer and
-   keeps the combined answer in the cache (6 h), so the page gets it in one
-   quick call. Run installTrigger() once from the editor (it asks for
-   permission to fetch URLs and create triggers), which schedules
-   refreshDashboard() every 5 minutes. */
-const BRIDGE_URL = 'https://script.google.com/macros/s/AKfycbyKXzPHQLsHCoryx0aJVpVkP0Z0XrnPxjucaiUJtR1aXeux33ygq2Br2QcBNU_MAB7qDw/exec';
-const TICKETS_URL = 'https://script.google.com/macros/s/AKfycbzX5yeStITITqvM0HXgvZYBNy70Jo8HRxGXYlc6iHzzMYuWnoXWzzOA9QyllWIGDWFA/exec';
+   and can take 30–50 s to wake up, and calling them from here would need the
+   "external request" permission. So this script reads their SHEETS directly
+   (same owner, same spreadsheets permission it already has): the tickets
+   sheet's Master and Events tabs, and the registration sheet's Mint tab —
+   never a personal tab. refreshDashboard() runs every 5 minutes from a
+   trigger (installTrigger(), once) and keeps the combined answer in the
+   cache for 6 h, so the page gets everything in one quick call. */
+const TICKETS_SHEET_ID = '1WaAzshpYYhSYgGoW64bCPTwQcaNTiXw-fppdZT7jZ3c';
 function refreshDashboard() {
   const rows = readRows();
   const out = { ok: true, at: Date.now(), hits: { all: summary(0, rows), d7: summary(7, rows), d1: summary(1, rows) } };
-  const prev = (function () { try { return JSON.parse(CacheService.getScriptCache().get('dashboard') || 'null'); } catch (e) { return null; } })();
-  out.tickets = fetchJson(TICKETS_URL + '?data=1') || (prev && prev.tickets) || null;
-  out.links = fetchJson(BRIDGE_URL + '?sheet=links') || (prev && prev.links) || [];
+  out.tickets = readTickets();
+  out.links = readLinks();
   const txt = JSON.stringify(out);
   try { CacheService.getScriptCache().put('dashboard', txt, 21600); } catch (e) { /* too big: served live */ }
   return out;
 }
-function fetchJson(url) {
+/* Mirrors getData() in Tickets.gs: Master tab, headers on row 10, data from row 11. */
+function readTickets() {
   try {
-    const r = UrlFetchApp.fetch(url, { muteHttpExceptions: true, followRedirects: true });
-    if (r.getResponseCode() !== 200) return null;
-    return JSON.parse(r.getContentText());
+    const ss = SpreadsheetApp.openById(TICKETS_SHEET_ID);
+    const master = ss.getSheetByName('Master');
+    const evTab = ss.getSheetByName('Events');
+    const events = evTab ? evTab.getDataRange().getValues().slice(1).map(function (r) { return String(r[0]).trim(); }).filter(Boolean) : [];
+    const rows = master.getDataRange().getValues().slice(10).filter(function (r) { return r[0]; });
+    const byEvent = {}, daily = {};
+    let total = 0;
+    rows.forEach(function (r) {
+      const ev = String(r[2] || '').trim(), qty = Number(r[1] || 0);
+      if (!ev) return;
+      total += qty;
+      byEvent[ev] = (byEvent[ev] || 0) + qty;
+      const day = r[0] instanceof Date ? Utilities.formatDate(r[0], TZ, 'yyyy-MM-dd') : dayFromStamp(String(r[0]));
+      const d = daily[day] || (daily[day] = {});
+      d[ev] = (d[ev] || 0) + qty;
+    });
+    return { events: events, totalTickets: total, byEvent: byEvent, daily: daily };
   } catch (e) { return null; }
+}
+function dayFromStamp(v) {
+  const m = v.match(/^(\d{1,2})-([A-Za-z]{3})/);
+  if (!m) return '';
+  const mon = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'].indexOf(m[2].toLowerCase()) + 1;
+  return mon ? new Date().getFullYear() + '-' + ('0' + mon).slice(-2) + '-' + ('0' + m[1]).slice(-2) : '';
+}
+/* The Mint tab of the registration sheet: campaign links only, no personal data. */
+function readLinks() {
+  try {
+    const sh = SpreadsheetApp.openById(REGISTRATION_ID).getSheetByName('Mint');
+    if (!sh || sh.getLastRow() < 2) return [];
+    const values = sh.getDataRange().getValues();
+    const head = values[0].map(function (h) { return String(h).trim(); });
+    return values.slice(1).filter(function (r) { return r.some(function (c) { return c !== '' && c !== null; }); })
+      .map(function (r) { const o = {}; head.forEach(function (h, i) { if (h && h !== 'QR SVG') o[h] = r[i]; }); return o; });
+  } catch (e) { return []; }
 }
 function installTrigger() {
   ScriptApp.getProjectTriggers().forEach(function (t) {
@@ -235,4 +267,3 @@ function installTrigger() {
   ScriptApp.newTrigger('refreshDashboard').timeBased().everyMinutes(5).create();
   refreshDashboard();
 }
-
