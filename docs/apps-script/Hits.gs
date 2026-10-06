@@ -141,3 +141,42 @@ function purgeTestRows() {
   }
 }
 
+/** One-off, run from the editor: fill the log retrospectively from the
+ *  registration sheet (run 6 Oct 2026). For every row on the Signups,
+ *  Volunteers and RSVPs tabs it writes a visit and a register hit at the
+ *  row's timestamp, under the row's Ref. Only the timestamp, the ref and the
+ *  tab name leave the registration sheet — never a name, email or phone.
+ *  Idempotent: a session id of "bf-<tab>-<row>" marks each pair, and a row
+ *  already marked is skipped. Page says "backfill" so these can be told apart. */
+const REGISTRATION_ID = '1MKMG-XC2nJo1GN0vjN3vMyB8FyQghabSYdTRQj4DP6M';
+const BACKFILL_TABS = { Signups: 'updates', Volunteers: 'volunteer', RSVPs: 'rsvp' };
+function backfillFromRegistrations() {
+  const reg = SpreadsheetApp.openById(REGISTRATION_ID);
+  const sh = sheet();
+  const have = {};
+  const n = sh.getLastRow() - 1;
+  if (n > 0) sh.getRange(2, 7, n, 1).getValues().forEach(function (r) { have[String(r[0])] = 1; });
+  const out = [];
+  Object.keys(BACKFILL_TABS).forEach(function (tabName) {
+    const t = reg.getSheetByName(tabName);
+    if (!t || t.getLastRow() < 2) return;
+    const values = t.getDataRange().getValues();
+    const head = values[0].map(function (h) { return String(h).trim().toLowerCase(); });
+    const iTs = head.indexOf('timestamp'), iRef = head.indexOf('ref');
+    if (iTs === -1) return;
+    for (var i = 1; i < values.length; i++) {
+      const ts = values[i][iTs];
+      if (!(ts instanceof Date)) continue;
+      const vs = 'bf-' + tabName.toLowerCase() + '-' + (i + 1);
+      if (have[vs]) continue;
+      const ref = iRef === -1 ? '' : clean(values[i][iRef]).split('#')[0];
+      const day = Utilities.formatDate(ts, TZ, 'yyyy-MM-dd');
+      out.push([ts, day, 'visit', 'backfill', ref || '(direct)', 'backfill', vs, '']);
+      out.push([ts, day, 'register', BACKFILL_TABS[tabName], ref || '(direct)', 'backfill', vs, '']);
+    }
+  });
+  if (out.length) sh.getRange(sh.getLastRow() + 1, 1, out.length, HEADERS.length).setValues(out);
+  CacheService.getScriptCache().removeAll(['summary:0', 'summary:1', 'summary:7']);
+  Logger.log('backfilled ' + out.length / 2 + ' registrations');
+}
+
