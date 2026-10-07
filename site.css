@@ -1061,6 +1061,110 @@ p.ev-desc { font-size: 1.08rem; line-height: 1.65; color: var(--muted); max-widt
 [data-look="bright"] .footer-contact a { color: var(--accent-2); }
 [data-look="bright"] .footer-copy { border-top-color: var(--line); }
 
+/* ---- Professional finish (7 Oct 2026) ----
+   Quieter hero, one type scale, one spacing rhythm, one radius, one shadow.
+   Nothing new; the same parts set with more care. */
+:root[data-look="bright"] {
+  --radius: 6px;
+  --radius-sm: 4px;
+  --section-y: clamp(4rem, 9vw, 7.5rem);
+  --shadow-soft: 0 10px 30px -18px rgba(27, 29, 33, 0.28);
+}
+/* Header: more air, a hairline, the mark a touch smaller. */
+[data-look="bright"] .nav { padding-block: 1.25rem; }
+[data-look="bright"] .brand .logo { height: 46px; }
+[data-look="bright"] .nav-links { gap: 1.9rem; }
+[data-look="bright"] .nav-links a { font-size: 0.9rem; font-weight: 500; color: #3A3A3C; }
+[data-look="bright"] .nav-links a:hover { color: var(--ink); }
+[data-look="bright"] .nav-cta { padding: 0.65rem 1.2rem; border-radius: var(--radius-sm); }
+
+/* Hero: the photograph as a quiet backdrop, the type given room. */
+[data-look="bright"] .hero { min-height: min(72vh, 620px); }
+[data-look="bright"] .hero-scrim {
+  background:
+    linear-gradient(to top, var(--paper) 0%, rgba(248, 241, 233, 0.6) 35%, rgba(248, 241, 233, 0.3) 100%),
+    linear-gradient(to right, rgba(248, 241, 233, 0.97) 0%, rgba(248, 241, 233, 0.9) 42%, rgba(248, 241, 233, 0.2) 100%);
+}
+[data-look="bright"] .hero-content { padding-block: clamp(3rem, 6vw, 5rem); }
+[data-look="bright"] .hero-kicker { margin-bottom: 2rem; font-size: 0.66rem; letter-spacing: 0.18em; }
+[data-look="bright"] .hero h1 { margin-bottom: 1.6rem; }
+[data-look="bright"] .hero h1 .logo { width: clamp(220px, 30vw, 400px); }
+[data-look="bright"] .hero-supported { margin-bottom: 2.2rem; gap: 0.5rem; }
+[data-look="bright"] .hero-supported-label { font-size: 0.62rem; letter-spacing: 0.18em; }
+[data-look="bright"] .hero-supported img { height: clamp(40px, 5vw, 54px); }
+[data-look="bright"] .hero-lead { max-width: 38rem; font-size: clamp(1.05rem, 1.7vw, 1.2rem); line-height: 1.55; color: #2E2E30; margin-bottom: 1.6rem; }
+[data-look="bright"] .hero-lead + .hero-tagline { margin-top: -0.6rem; }
+[data-look="bright"] .hero-tagline { font-size: 0.78rem; letter-spacing: 0.14em; font-weight: 700; margin-bottom: 2.2rem; }
+[data-look="bright"] .hero-meta { justify-content: flex-start; gap: 1rem 3.5rem; padding-block: 1.4rem; margin-bottom: 2.2rem; }
+[data-look="bright"] .hero-meta div { align-items: flex-start; text-align: left; }
+[data-look="bright"] .hero-meta-num { font-size: clamp(2.2rem, 4.5vw, 3rem); font-weight: 800; }
+[data-look="bright"] .hero-meta-label { font-size: 0.8rem; letter-spacing: 0.02em; }
+[data-look="bright"] .hero-actions { gap: 0.8rem; }
+
+/* Buttons: one size, one radius, no lift. */
+[data-look="bright"] .btn { border-radius: var(--radius-sm); font-size: 0.8rem; letter-spacing: 0.06em; padding: 0.9rem 1.5rem; }
+[data-look="bright"] .btn:hover { transform: none; }
+[data-look="bright"] .btn-sm { padding: 0.6rem 1.1rem; font-size: 0.74rem; }
+
+/* Today card sits inside the page width, not as a full-bleed band. */
+[data-look="bright"] .now-strip:not(.now-strip--inset) { padding-block: 0; border: 0; background: transparent; }
+[data-look="bright"] .now-strip:not(.now-strip--inset) > * { max-width: none; }
+[data-look="bright"] .now-strip:not(.now-strip--inset)::after { content: ""; display: block; }
+[data-look="bright"] .now-strip:not(.now-strip--inset) {
+  max-width: calc(var(--wrap) - 2 * var(--gutter)); margin: -2.5rem auto 2.5rem; position: relative; z-index: 3;
+  padding: 1.3rem 1.6rem 1.4rem; background: #FFF; border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow-soft);
+}
+[data-look="bright"] .now-kicker { font-size: 0.64rem; letter-spacing: 0.18em; }
+[data-look="bright"] .now-label { font-size: 0.72rem; letter-spacing: 0.12em; margin-top: 0.9rem; }
+[data-look="bright"] .now-title { font-size: 1.05rem; font-weight: 600; }
+[data-look="bright"] .now-item { font-size: 0.95rem; }
+
+/* Sections: eyebrow + heading + intro on one rhythm, measure held. */
+[data-look="bright"] .eyebrow { font-size: 0.66rem; letter-spacing: 0.18em; margin-bottom: 1.1rem; }
+[data-look="bright"] .section h2 { font-size: clamp(1.5rem, 2.6vw, 2.1rem); letter-spacing: 0; margin-bottom: 1.2rem; }
+[data-look="bright"] .section p { font-size: 1rem; line-height: 1.65; }
+[data-look="bright"] p.section-intro { font-size: 1.05rem; max-width: 40rem; }
+[data-look="bright"] .group-title { font-size: 0.66rem; letter-spacing: 0.18em; margin: 3.2rem 0 1.2rem; }
+[data-look="bright"] .cards { gap: 1.5rem; margin-top: 2rem; }
+
+/* Cards: hairline, soft shadow, no lift on hover, an image that never jumps. */
+[data-look="bright"] .card { border-radius: var(--radius); box-shadow: var(--shadow-soft); }
+[data-look="bright"] .card:hover { transform: none; box-shadow: 0 16px 36px -20px rgba(27, 29, 33, 0.3); }
+[data-look="bright"] .card:hover .card-img img { transform: none; }
+[data-look="bright"] .card-body { padding: 1.3rem 1.4rem 1.5rem; }
+[data-look="bright"] .card-body h4 { font-size: 1.05rem; letter-spacing: 0.01em; margin-bottom: 0.5rem; }
+[data-look="bright"] .card-body p { font-size: 0.92rem; line-height: 1.6; }
+
+/* Photographs in the two-column sections: squared, soft shadow. */
+[data-look="bright"] .col-media img { border-radius: var(--radius); box-shadow: var(--shadow-soft); }
+[data-look="bright"] .lead-line { font-size: 0.8rem; letter-spacing: 0.1em; }
+[data-look="bright"] .fact-list li { padding: 0.95rem 0; }
+[data-look="bright"] .fact-list li span { font-size: 0.66rem; letter-spacing: 0.14em; }
+
+/* "Also includes" as three quiet white tiles. */
+[data-look="bright"] .also-item { padding: 1.6rem 1.3rem; box-shadow: var(--shadow-soft); border-radius: var(--radius); }
+[data-look="bright"] .also-item h4 { font-size: 1rem; }
+
+/* Collaborators: equal tiles, logos sit quiet until hovered. */
+[data-look="bright"] .partner { min-height: 104px; border-radius: var(--radius); box-shadow: none; }
+[data-look="bright"] .partner:hover { box-shadow: var(--shadow-soft); border-color: var(--line); }
+[data-look="bright"] .partner-logo { filter: saturate(0.85); transition: filter 0.2s ease; }
+[data-look="bright"] .partner:hover .partner-logo { filter: none; }
+
+/* Support: the two buttons share one size; the points breathe. */
+[data-look="bright"] .support-actions .btn { padding: 0.85rem 1.2rem; }
+[data-look="bright"] .support-points dt { font-size: 0.78rem; letter-spacing: 0.08em; }
+[data-look="bright"] .support-points > div { padding: 1.3rem 0; }
+
+/* Footer: smaller mark, quieter copy. */
+[data-look="bright"] .footer-brand .logo { height: 52px; }
+[data-look="bright"] .footer-contact a { font-size: 0.9rem; }
+
+@media (max-width: 760px) {
+  [data-look="bright"] .now-strip:not(.now-strip--inset) { margin: 0 var(--gutter) 2rem; max-width: none; }
+  [data-look="bright"] .hero-meta { gap: 0.8rem 1.6rem; }
+}
+
 /* The in-page views: white cards on paper, dates readable on the photographs. */
 [data-look="bright"] .view-bar { background: rgba(248, 241, 233, 0.94); }
 [data-look="bright"] .cal-event, [data-look="bright"] .section-tint .cal-event, [data-look="bright"] .onboard-card, [data-look="bright"] .section-tint .onboard-card { background: #FFF; }
