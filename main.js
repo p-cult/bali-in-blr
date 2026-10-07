@@ -1309,7 +1309,12 @@ async function renderHighlights(events) {
   const sec = document.getElementById("highlights");
   const list = document.getElementById("highlights-list");
   if (!sec || !list) return;
-  const done = events.filter((e) => e.past && !e.notPublic).sort((a, b) => a.startDate < b.startDate ? 1 : -1);
+  // Concluded events, and a multi-day event whose first day is over — it has
+  // already happened in part (the Kecak Workshop on 7 Oct, day two of two).
+  const today = istToday();
+  const done = events
+    .filter((e) => !e.notPublic && e.startDate && (e.past || e.startDate < today))
+    .sort((a, b) => a.startDate < b.startDate ? 1 : -1);
   if (!done.length) { sec.hidden = true; return; }
   const banners = await loadBannerMap();
   list.innerHTML = done.map((ev) => {
@@ -1323,7 +1328,7 @@ async function renderHighlights(events) {
     return `<article class="hl" data-category="${esc(ev.category || "")}">
       ${gallery}
       <div class="hl-body">
-        <p class="hl-when">${esc(calDateText(ev))}${ev.venue ? ` <span class="hl-sep">·</span> ${esc(ev.venue)}` : ""}</p>
+        <p class="hl-when">${esc(calDateText(ev))}${ev.venue ? ` <span class="hl-sep">·</span> ${esc(ev.venue)}` : ""}${!ev.past ? ` <span class="hl-live"><span class="now-dot" aria-hidden="true"></span>Continues today</span>` : ""}</p>
         <h3 class="hl-title"><a href="${esc(eventHref(ev))}">${esc(ev.title)}</a></h3>
         ${short ? `<p class="hl-desc">${esc(short)}</p>` : ""}
         <p class="hl-act">${media ? `<a class="btn btn-ghost btn-sm" href="${esc(media)}" target="_blank" rel="noopener">See photos</a>` : ""}<a class="text-link" href="${esc(eventHref(ev))}">Event page &rarr;</a></p>
