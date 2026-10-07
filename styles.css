@@ -60,7 +60,7 @@
 /* While the festival is on (main.js sets <html data-phase="live"> from the
    IST date), the ground warms a touch toward the oxblood and the hairlines
    follow. Deliberately subtle: same palette, the room lit for a show. */
-:root[data-phase="live"] {
+:root[data-phase="live"]:not([data-look="bright"]) {
   --bg: #211C1D;
   --bg-2: #27201F;
   --bg-3: #2B2423;

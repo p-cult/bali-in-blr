@@ -2344,3 +2344,13 @@ column with container queries, so the calendar's narrower column stacks
 it instead of overflowing. Lesson: say each fact once, in the place it
 belongs; the earlier versions repeated the show name three times.
 
+## 7 Oct 2026 — The paper page is the site
+
+Made the bright look the default under deadline: `main.js` sets
+`data-look="bright"` unless `?look=classic` is asked for. The live-phase
+charcoal tokens in styles.css are scoped away from the bright page so they
+can never darken it again. Reviewed at phone and desktop width first: no
+horizontal overflow, no broken images, no console errors, every section
+on paper with dark type. Event pages and the in-page views follow the same
+tokens. The charcoal page remains one switch away for comparison.
+
