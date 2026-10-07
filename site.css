@@ -240,6 +240,21 @@
 .now-timer b { font-family: var(--display); font-weight: 800; color: var(--ink); }
 .now-timer i { font-style: normal; color: var(--accent-2); font-weight: 700; font-size: 0.85em; }
 .now-head--before { grid-template-columns: auto auto 1fr; }
+
+/* Inside the calendar: "On today" large on the left; on the right the day
+   tag, pointing down at the bar beneath it. */
+.now-strip--inset .now-head { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "date tag" "date bar"; align-items: start; row-gap: 0.7rem; padding-bottom: 1.1rem; margin-bottom: 1rem; }
+/* Element-qualified and deeper than "[data-look] .section p", which would otherwise shrink it inside the calendar. */
+.now-strip--inset .now-panel p.now-date { grid-area: date; align-self: center; margin: 0; font-size: clamp(1.6rem, 3vw, 2.1rem); line-height: 1; color: var(--ink); }
+.now-strip--inset .now-label { white-space: nowrap; flex-wrap: wrap; }
+.now-strip--inset .now-timer { white-space: nowrap; }
+.now-strip--inset .now-tag { grid-area: tag; position: relative; justify-self: center; }
+.now-strip--inset .now-tag::after { content: ""; position: absolute; left: 50%; bottom: -7px; width: 10px; height: 10px; margin-left: -5px; background: var(--bg); border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); transform: rotate(45deg); }
+.now-strip--inset .now-progress { grid-area: bar; width: clamp(14rem, 40cqw, 22rem); max-width: none; justify-self: end; margin-top: 0.3rem; }
+.now-strip--inset .now-label { font-size: 0.66rem; }
+.now-strip--inset .now-title { font-size: 1.1rem; }
+.now-strip--inset .now-venue { font-size: 0.9rem; }
+.now-strip--inset .now-go { width: 1.9rem; height: 1.9rem; }
 .now-before { margin: 0; font-size: 0.9rem; color: var(--muted); display: flex; gap: 1rem; align-items: baseline; justify-content: flex-end; }
 
 .now-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 0 2.2rem; }
@@ -275,8 +290,8 @@ a.now-venue:hover span { text-decoration: underline; }
 /* The panel adapts to the column it sits in (the calendar's is narrower
    than the home page), not to the screen. */
 @container (max-width: 960px) {
-  .now-head { grid-template-columns: auto auto; gap: 0.7rem 1rem; }
-  .now-progress { grid-column: 1 / -1; }
+  .now-head:not(.now-strip--inset .now-head) { grid-template-columns: auto auto; gap: 0.7rem 1rem; }
+  .now-head:not(.now-strip--inset .now-head) .now-progress { grid-column: 1 / -1; }
   .now-item { grid-template-columns: 5.2rem minmax(0, 1fr) 1.6rem; grid-template-areas: "when title go" "when venue go"; row-gap: 0.1rem; padding: 0.35rem 0; }
   .now-item--notime { grid-template-columns: minmax(0, 1fr) 1.6rem; grid-template-areas: "title go" "venue go"; }
   .now-when { grid-area: when; }
@@ -286,6 +301,9 @@ a.now-venue:hover span { text-decoration: underline; }
 }
 @container (max-width: 640px) {
   .now-head { grid-template-columns: 1fr auto; }
+  .now-strip--inset .now-head { grid-template-areas: "date tag" "bar bar"; }
+  .now-strip--inset .now-progress { width: 100%; justify-self: stretch; }
+  .now-strip--inset .now-tag { justify-self: end; }
   .now-label { flex-wrap: wrap; }
   .now-cols { grid-template-columns: 1fr; gap: 0.8rem; }
   .now-col--next::before { display: none; }
