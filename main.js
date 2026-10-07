@@ -1294,9 +1294,10 @@ function fmtLeft(ms) {
   const s = Math.max(0, Math.floor(ms / 1000));
   const d = Math.floor(s / 86400), h = Math.floor((s % 86400) / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
   const pad = (n) => String(n).padStart(2, "0");
+  const u = (v, label) => `<span class="tu"><b>${v}</b><i>${label}</i></span>`;
   return d > 0
-    ? `<b>${d}</b><i>d</i> <b>${pad(h)}</b><i>h</i> <b>${pad(m)}</b><i>m</i>`
-    : `<b>${pad(h)}</b><i>h</i> <b>${pad(m)}</b><i>m</i> <b>${pad(sec)}</b><i>s</i>`;
+    ? u(d, d === 1 ? "day" : "days") + u(pad(h), "hrs") + u(pad(m), "min")
+    : u(pad(h), "hrs") + u(pad(m), "min") + u(pad(sec), "sec");
 }
 let NOW_TIMER = null;
 function startCountdown(events) {
@@ -1332,7 +1333,7 @@ function renderNowStrip(events) {
   let html = "";
   if (phase === "live") {
     const day = festivalDayNumber(), days = festivalDays();
-    const dateLine = new Date(today + "T00:00:00").toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long" });
+    const dateLine = new Date(today + "T00:00:00").toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "short" });
     const ticks = Array.from({ length: days }, (_, i) => `<i${i < day ? ' class="is-done"' : ""}${i === day - 1 ? ' data-today="1"' : ""}></i>`).join("");
     const nextLabel = nextDay.length
       ? "Next up · " + new Date(nextDay[0].startDate + "T00:00:00").toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "short" })
@@ -1340,8 +1341,8 @@ function renderNowStrip(events) {
     html = `<div class="now-panel">
       <div class="now-head">
         <div class="now-head-main">
-          <p class="now-kicker"><span class="now-dot" aria-hidden="true"></span>Festival on now</p>
-          <p class="now-day"><b>Day ${day}</b> of ${days} <span class="now-sep">·</span> ${esc(dateLine)}</p>
+          <p class="now-kicker"><span class="now-dot" aria-hidden="true"></span>Festival on now <span class="now-sep">·</span> ${esc(dateLine)}</p>
+          <p class="now-day"><b>Day ${day}</b><span>of ${days}</span></p>
           <div class="now-progress" aria-hidden="true">${ticks}</div>
         </div>
         <div class="now-timer" data-now-timer hidden></div>

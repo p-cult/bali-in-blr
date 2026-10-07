@@ -215,62 +215,61 @@
 .hero-actions { display: flex; flex-wrap: wrap; gap: 1rem; }
 
 /* ---------- Today / Next up panel ---------- */
-/* A panel, not a line. Head: the kicker, the day counted out loud, a
-   sixteen-step bar. Body: two columns, today and the next day, each event
-   with a date block, title, time, venue and a way in. */
+/* Head: the kicker and date on one line, the day as a figure, a sixteen-step
+   bar, and the countdown as its own tile on the right. Body: two columns —
+   today, the next day — one row per event: date block, title, time and
+   venue, a way in. */
 .now-strip { padding: 1.6rem var(--gutter) 0; background: transparent; border: 0; }
 .now-strip > .now-panel { max-width: var(--wrap); margin: 0 auto; }
-.now-panel {
-  background: var(--bg-3);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: 1.5rem clamp(1.2rem, 2.5vw, 2rem) 1.4rem;
-}
+.now-panel { background: var(--bg-3); border: 1px solid var(--line); border-radius: var(--radius); padding: 1.4rem clamp(1.2rem, 2.5vw, 1.8rem) 1.3rem; }
 .now-strip--inset { margin: 0 0 1.8rem; padding: 0; border: 0; }
-.now-head { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 1rem 2rem; padding-bottom: 1.1rem; border-bottom: 1px solid var(--line); margin-bottom: 1.2rem; }
-.now-head-main { display: grid; grid-template-columns: auto 1fr; grid-template-areas: "kicker day" "bar bar"; align-items: baseline; gap: 0.5rem 1.2rem; }
-/* The countdown: the time left to the next show, ticking. */
-.now-timer { display: grid; justify-items: end; text-align: right; gap: 0.15rem; padding-left: 2rem; border-left: 1px solid var(--line); }
-.now-timer-label { font-family: var(--display); font-size: 0.62rem; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--accent-2); }
-.now-timer-value { font-family: var(--display); font-weight: 800; font-size: clamp(1.4rem, 2.4vw, 1.9rem); line-height: 1; letter-spacing: 0.01em; color: var(--ink); font-variant-numeric: tabular-nums; white-space: nowrap; }
-.now-timer-value b { font-weight: 800; }
-.now-timer-value i { font-style: normal; font-weight: 700; font-size: 0.55em; color: var(--accent-2); margin: 0 0.15em 0 0.05em; }
-.now-timer-for { font-size: 0.82rem; color: var(--muted); }
-.now-kicker {
-  grid-area: kicker; display: inline-flex; align-items: center; gap: 0.5rem; margin: 0;
-  font-family: var(--display); font-size: 0.66rem; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--accent-2);
-}
-.now-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); animation: cal-pulse 1.8s ease-in-out infinite; }
-.now-day { grid-area: day; margin: 0; font-size: 0.95rem; color: var(--muted); }
-.now-day b { font-family: var(--display); font-weight: 800; font-size: 1.15rem; letter-spacing: 0.01em; text-transform: uppercase; color: var(--ink); }
-.now-sep { margin: 0 0.35rem; color: var(--muted-2); }
-.now-progress { grid-area: bar; display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 3px; height: 5px; margin-top: 0.4rem; }
+
+.now-head { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: stretch; gap: 1rem 1.6rem; padding-bottom: 1.2rem; border-bottom: 1px solid var(--line); margin-bottom: 1.2rem; }
+.now-head-main { display: grid; grid-template-rows: auto 1fr auto; gap: 0.35rem; min-width: 0; }
+.now-kicker { display: flex; align-items: center; gap: 0.5rem; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: var(--display); font-size: 0.64rem; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--accent-2); }
+.now-dot { flex: none; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); animation: cal-pulse 1.8s ease-in-out infinite; }
+.now-sep { color: var(--muted-2); font-weight: 500; letter-spacing: 0; }
+.now-day { display: flex; align-items: baseline; gap: 0.45rem; margin: 0; }
+.now-day b { font-family: var(--display); font-weight: 800; font-size: clamp(1.5rem, 2.6vw, 2rem); line-height: 1; letter-spacing: -0.01em; text-transform: uppercase; color: var(--ink); }
+.now-day span { font-size: 0.92rem; color: var(--muted); }
+.now-progress { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 3px; height: 4px; margin-top: 0.5rem; }
 .now-progress i { display: block; background: var(--line); border-radius: 2px; }
 .now-progress i.is-done { background: var(--copper); }
 .now-progress i[data-today] { background: var(--accent); }
-.now-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1.6rem 2.4rem; }
+
+/* The countdown tile. */
+.now-timer { display: grid; align-content: center; justify-items: start; gap: 0.3rem; padding: 0.8rem 1rem 0.75rem; background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius-sm); min-width: 15rem; }
+.now-timer-label { font-family: var(--display); font-size: 0.6rem; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--accent-2); }
+.now-timer-value { display: flex; gap: 0.7rem; }
+.tu { display: grid; justify-items: center; gap: 0.1rem; }
+.tu b { font-family: var(--display); font-weight: 800; font-size: clamp(1.5rem, 2.4vw, 1.9rem); line-height: 1; font-variant-numeric: tabular-nums; color: var(--ink); min-width: 2ch; text-align: center; }
+.tu i { font-family: var(--display); font-style: normal; font-size: 0.55rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted-2); }
+.now-timer-for { font-size: 0.8rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+
+.now-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem 2.4rem; }
+.now-col { min-width: 0; }
 .now-col--next { position: relative; }
 .now-col--next::before { content: ""; position: absolute; left: -1.2rem; top: 0; bottom: 0; width: 1px; background: var(--line); }
-.now-label { margin: 0 0 0.8rem; font-family: var(--display); font-size: 0.66rem; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--accent-2); }
+.now-label { margin: 0 0 0.7rem; font-family: var(--display); font-size: 0.62rem; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--accent-2); }
 .now-col--next .now-label { color: var(--muted-2); }
-.now-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.9rem; }
-.now-item { display: grid; grid-template-columns: auto 1fr auto; gap: 0.95rem; align-items: center; }
-.now-date { display: grid; justify-items: center; align-content: center; width: 52px; height: 52px; border-radius: var(--radius-sm); background: var(--bg); border: 1px solid var(--line); line-height: 1; }
-.now-date b { font-family: var(--display); font-weight: 900; font-size: 1.2rem; color: var(--ink); }
-.now-date i { font-family: var(--display); font-style: normal; font-weight: 700; font-size: 0.52rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent-2); margin-top: 0.15rem; }
+.now-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.7rem; }
+.now-item { display: grid; grid-template-columns: 46px minmax(0, 1fr) auto; gap: 0.85rem; align-items: center; }
+.now-date { display: grid; justify-items: center; align-content: center; width: 46px; height: 46px; border-radius: var(--radius-sm); background: var(--bg); border: 1px solid var(--line); line-height: 1; }
+.now-date b { font-family: var(--display); font-weight: 800; font-size: 1.05rem; letter-spacing: -0.01em; color: var(--ink); }
+.now-date i { font-family: var(--display); font-style: normal; font-weight: 700; font-size: 0.48rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent-2); margin-top: 0.12rem; }
 .now-col--next .now-date b { color: var(--muted); }
 .now-body { min-width: 0; }
-.now-title { display: block; font-family: var(--display); font-weight: 800; font-size: 1.02rem; line-height: 1.15; color: var(--ink); text-decoration: none; }
+.now-title { display: block; font-family: var(--display); font-weight: 800; font-size: 0.98rem; line-height: 1.15; color: var(--ink); text-decoration: none; }
 a.now-title:hover { color: var(--accent-2); }
 .now-col--next .now-title { font-weight: 700; color: var(--muted); }
-.now-meta { display: flex; flex-wrap: wrap; gap: 0.3rem 1rem; margin: 0.3rem 0 0; font-size: 0.88rem; color: var(--muted); }
-.now-time, .now-venue { display: inline-flex; align-items: center; gap: 0.35rem; color: inherit; text-decoration: none; }
-.now-time svg, .now-venue svg { width: 13px; height: 13px; flex: none; color: var(--accent-2); }
+.now-meta { display: flex; flex-wrap: wrap; gap: 0.2rem 0.9rem; margin: 0.25rem 0 0; font-size: 0.84rem; color: var(--muted); }
+.now-time, .now-venue { display: inline-flex; align-items: flex-start; gap: 0.3rem; color: inherit; text-decoration: none; min-width: 0; }
+.now-time svg, .now-venue svg { width: 12px; height: 12px; flex: none; margin-top: 0.2em; color: var(--accent-2); }
 a.now-venue:hover span { text-decoration: underline; }
-.now-go { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--line); color: var(--ink); text-decoration: none; font-size: 1rem; transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease; }
+.now-go { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--line); color: var(--muted); text-decoration: none; font-size: 0.9rem; transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease; }
 .now-go:hover { background: var(--accent); border-color: var(--accent); color: var(--bg); }
-.now-rest { margin: 0; font-size: 0.92rem; color: var(--muted-2); }
-.now-all { margin: 1.1rem 0 0; font-size: 0.85rem; }
+.now-rest { margin: 0; font-size: 0.9rem; color: var(--muted-2); }
+.now-all { margin: 1rem 0 0; font-size: 0.82rem; }
 .now-strip--inset .now-all { display: none; }
 
 /* ---------- The festival so far (home) ---------- */
@@ -334,8 +333,8 @@ a.now-venue:hover span { text-decoration: underline; }
 
 @media (max-width: 760px) {
   .now-head { grid-template-columns: 1fr; }
-  .now-head-main { grid-template-columns: 1fr; grid-template-areas: "kicker" "day" "bar"; }
-  .now-timer { justify-items: start; text-align: left; padding-left: 0; border-left: 0; padding-top: 0.9rem; border-top: 1px solid var(--line); }
+  .now-timer { min-width: 0; }
+  .now-kicker { white-space: normal; }
   .now-cols { grid-template-columns: 1fr; gap: 1.4rem; }
   .now-col--next::before { display: none; }
   .now-col--next { padding-top: 1.2rem; border-top: 1px solid var(--line); }
