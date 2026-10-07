@@ -10,7 +10,7 @@ can be traced end to end. Audited 22 Sep 2026; re-verify with
 
 | Source | Tab / feed | Read by |
 | --- | --- | --- |
-| **Schedule sheet** ("All things – Bali in Bengaluru") | `Event List` (published TSV, `CONFIG.SCHEDULE_URL`; bridge `?feed=schedule` as the alternate) | Calendar, hero figures, event pages, link builder, `/plan`, `/progress`, `admin/report` |
+| **Schedule sheet** ("All things – Bali in Bengaluru") | `Event List` (published TSV, `CONFIG.SCHEDULE_URL`; bridge `?feed=schedule` as the alternate, served by the second deployment, which resolves Drive chips and cell links to URLs) | Calendar, hero figures, event pages, link builder, `/plan`, `/progress`, `admin/report` |
 | **Planner sheet** ("Bali in Bengaluru — Logistics Planner") | Settings + one tab per tour day: per-event inputs, add-ons, leave time (A2), vehicle (E2); read and written by the logistics web app | `/plan`, `admin/logistics` (two-way) |
 | Schedule sheet | `Collab/venues` — collaborators and their logos (`CONFIG.COLLAB_URL`) | Collaborators section, event cards, `admin/report` |
 | Schedule sheet | BMS listings tab — per-event BookMyShow / District links (`CONFIG.TICKETS_URL`) | Merged into the calendar by title (`mergeRawEvents`) |

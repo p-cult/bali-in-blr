@@ -118,6 +118,10 @@ live custom domain (https://bali-in-blr.paramfoundation.org). Also live: an
 `/admin` hub (campaign links, project report, ticket sales) behind a per-tool
 sign-in gate, and a link-only `/progress/` dashboard for stakeholders.
 Collaborator names AND logos come from the Collab/venues sheet, so adding a row
-there puts a partner on the site with no code change. Remaining: add ticket
-links and post-event media as shows go on sale and conclude. Roadmap in
-HANDOVER §7.
+there puts a partner on the site with no code change. Post-event photos are
+sheet-driven too: paste an event's Drive folder (chip or link) in the Event
+List tab's `Gallery` column and the hourly sync serves them, fitted to 800 px
+and under 300 KB, in the home page's "What has already happened" carousels.
+The bridge script has two deployments since 7 Oct 2026 (see
+`docs/BRIDGE-SETUP.md`). Remaining: add ticket links as shows go on sale.
+Roadmap in HANDOVER §7.

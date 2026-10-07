@@ -123,9 +123,13 @@
     "https://docs.google.com/spreadsheets/d/e/2PACX-1vTji37D6cT7J9bLFptJdNaYrvZF_soZyiqIsX-rHYUj4H6rnfMCExu2hIyVjCk48j86rdaBhp_lthzb/pub?single=true&output=tsv";
   const BRIDGE =
     "https://script.google.com/macros/s/AKfycbyKXzPHQLsHCoryx0aJVpVkP0Z0XrnPxjucaiUJtR1aXeux33ygq2Br2QcBNU_MAB7qDw/exec";
+  // Second deployment of the same script (7 Oct 2026): resolves Drive chips
+  // and cell links to URLs in the feeds. Forms and stats stay on BRIDGE.
+  const FEED_BRIDGE =
+    "https://script.google.com/macros/s/AKfycbyKFbh1PSrMO-TPYCiGtXDca_u0-8HSd_vNt8yXcXzfA8FnMnQEpGr1CIqkV3VeNxG4zA/exec";
   const FEEDS = {
     stats: BRIDGE + "?sheet=stats",
-    schedule: [PUB + "&gid=289612903", BRIDGE + "?feed=schedule"],
+    schedule: [PUB + "&gid=289612903", FEED_BRIDGE + "?feed=schedule"],
     collab: [PUB + "&gid=7166598", BRIDGE + "?feed=collab"],
     brief: [PUB + "&gid=1340060458"],
     costing: [PUB + "&gid=2125707033"],

@@ -315,6 +315,14 @@ reports success — reload before assuming a file is missing.
       Event List turns a concluded event's button into "See photos". Events
       conclude by themselves once their date has passed (IST). A gallery section
       is still open; `assets/carvings.jpg` and `assets/batik.jpg` are unused.
+- [x] **Phase 4 — Post-event media (second half):** a `Gallery` column on the
+      Event List tab. Paste the event's Drive folder (a chip or a link, shared
+      "anyone with the link"); the hourly `tools/sync-event-media.py` reads it
+      through the bridge feed, serves every photo within 800 px and under
+      300 KB (`assets/media/<slug>/`, `data/event-media.json`) and lists videos
+      for Drive's player. The home page's "What has already happened" carousels
+      and the calendar's Concluded row follow by date with no prompting. Drive
+      originals are read only.
 - [x] **Attribution dashboard:** `admin/results.html`, live 6 Oct 2026 with
       its click log (`docs/apps-script/Hits.gs`) and per-event sales from the
       tickets app. Registrations backfilled to 6 Sep. See `docs/ATTRIBUTION.md`.

@@ -207,6 +207,14 @@ not a duplicate — it adds a source to their existing `Master` row.
 
 > Re-deploying after code edits: use **Deploy ▸ Manage deployments ▸ edit ▸
 > Version: New version**, so the `/exec` URL stays the same.
+>
+> **State on 7 Oct 2026:** the script has **two** deployments. The original
+> (`CONFIG.BRIDGE_URL`, Version 16) serves the forms, stats and link log. A
+> second one, made that day when the Google Sheets service was added, serves
+> the `?feed=` exports with Drive chips and cell links resolved to URLs
+> (`CONFIG.SCHEDULE_URL_ALT`, `COLLAB_URL_ALT`, `/progress`, `admin/report`,
+> `tools/sync-event-media.py`). Next time, update the **original** deployment
+> to the new version and the second one can be archived; until then, edit both.
 
 ---
 
