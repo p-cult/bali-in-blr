@@ -1119,7 +1119,6 @@ p.ev-desc { font-size: 1.08rem; line-height: 1.65; color: var(--muted); max-widt
 /* Today panel on paper: white, a hairline, a soft shadow; it sits over the foot of the hero. */
 [data-look="bright"] .now-strip:not(.now-strip--inset) { margin: -2.5rem auto 0; position: relative; z-index: 3; }
 [data-look="bright"] .now-panel { background: #FFF; box-shadow: var(--shadow-soft, 0 10px 30px -18px rgba(27, 29, 33, 0.28)); }
-[data-look="bright"] .now-date { background: var(--paper); }
 [data-look="bright"] .now-go:hover { color: #2A1206; }
 [data-look="bright"] .hl, [data-look="bright"] .cal-past { background: #FFF; box-shadow: var(--shadow-soft, none); }
 [data-look="bright"] .hl-pic, [data-look="bright"] .cal-past-thumb, [data-look="bright"] .hl-gallery--blank { background: var(--bg-2); }
