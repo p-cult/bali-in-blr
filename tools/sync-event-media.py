@@ -187,9 +187,14 @@ def sheet_folders():
         base = slugify(title)
         slug = base + ("-" + slugify(cell(i_date)) if seen.get(base) else "")
         seen[base] = seen.get(base, 0) + 1
-        m = FOLDER_RE.search(cell(i_gal))
+        g = cell(i_gal)
+        m = FOLDER_RE.search(g)
         if m:
             out[slug] = m.group(1)
+        elif g and g != "-":
+            # A Drive chip exports as its label (the folder's name). Resolved
+            # against the parent folder's sub-folders by name in main().
+            out[slug] = "name:" + g
     return out
 
 
@@ -234,7 +239,24 @@ def main():
                 print(f"folder '{name}' -> {slug}")
 
     # 0. The sheet wins: a folder link on the event's row is the team's choice.
-    for slug, fid in sheet_folders().items():
+    #    A chip (label only) is matched to a sub-folder of the parent by name.
+    wanted = sheet_folders()
+    by_name = {}
+    if parent and any(v.startswith("name:") for v in wanted.values()):
+        try:
+            for fid in folder_ids(parent):
+                name = page_title(f"https://drive.google.com/drive/folders/{fid}")
+                if name:
+                    by_name[slugify(name)] = fid
+        except Exception as e:
+            print(f"parent folder unreachable ({e})", file=sys.stderr)
+    for slug, fid in wanted.items():
+        if fid.startswith("name:"):
+            label = fid[5:]
+            fid = by_name.get(slugify(label), "")
+            if not fid:
+                print(f"{slug}: no sub-folder named '{label}' under the parent folder; skipped")
+                continue
         ev = events.setdefault(slug, {})
         if ev.get("folder") != fid:
             ev["folder"] = fid
