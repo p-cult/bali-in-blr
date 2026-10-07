@@ -57,6 +57,14 @@ jobs:
         continue-on-error: true
         run: python3 tools/sync-event-banners.py
 
+      # Post-event photos and videos, one Drive sub-folder per event
+      # (data/event-media.json). Re-downloads only when a folder's file list
+      # changes; videos are never downloaded, only their poster. Never blocks
+      # the image sync.
+      - name: Sync event photos and videos
+        continue-on-error: true
+        run: python3 tools/sync-event-media.py
+
       # The offline fallback, the hero's placeholder figures and the sitemap
       # are all derived from the schedule sheet; refresh them so nothing
       # not-read-live can drift from it. Never blocks the image sync.
@@ -66,13 +74,13 @@ jobs:
 
       - name: Commit anything new
         run: |
-          if [ -z "$(git status --porcelain assets/drive assets/events data/event-banners.json data/events.json index.html sitemap.xml)" ]; then
+          if [ -z "$(git status --porcelain assets/drive assets/events assets/media data/event-banners.json data/event-media.json data/events.json index.html sitemap.xml)" ]; then
             echo "Nothing new. Done."
             exit 0
           fi
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add assets/drive assets/events data/event-banners.json data/events.json index.html sitemap.xml
+          git add assets/drive assets/events assets/media data/event-banners.json data/event-media.json data/events.json index.html sitemap.xml
           git commit -m "Sync Drive images (automated)
 
           Picked up by .github/workflows/sync-drive-images.yml — a Drive link in

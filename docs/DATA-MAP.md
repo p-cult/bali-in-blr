@@ -18,7 +18,7 @@ can be traced end to end. Audited 22 Sep 2026; re-verify with
 | **Site-copy Google Doc** | bridge `?feed=content` — every `data-content` line | `main.js loadContent()` live; baked into `index.html` hourly as a safety net |
 | **Registration sheet** (PII, never public) | `Master`, `Signups`, `Volunteers`, `Receipts`, `Mint` via the registration bridge (`CONFIG.BRIDGE_URL`) | Forms write; `?sheet=stats` aggregates for the site and `/progress`; `?sheet=links` for the link builder |
 | **Tickets sheet** | Tickets web app (`const API` in `admin/tickets.html`) | Ticket entry and its own `Events` tab |
-| **Drive folders** | Event photos linked in the sheet's `image` column; one banner folder per event (`data/event-banners.json`) | Synced on-site hourly; the site never hotlinks Drive |
+| **Drive folders** | Event photos linked in the sheet's `image` column; one banner folder per event (`data/event-banners.json`); one post-event media folder per event under a parent folder (`data/event-media.json`) | Synced on-site hourly; the site never hotlinks Drive, except video, which plays in Drive's own player |
 | **Hits sheet** ("Bali in Blr - Hits") | Click log: visit / event open / ticket click / registration per campaign ref — no PII (`docs/apps-script/Hits.gs`, `CONFIG.HITS_URL`) | `admin/attribution` aggregates only |
 | Schedule sheet | `media link` column (or photos / gallery / album): a concluded event's "See photos" button | Calendar, event pages |
 | `data/questions.json` | The onboarding questions (repo, by design — they are form structure, not content) | Register and Volunteer forms; mirrored in `Code.gs` FLAVOURS |
@@ -32,6 +32,7 @@ can be traced end to end. Audited 22 Sep 2026; re-verify with
 | `sitemap.xml` — home, privacy, every public event page | same tool | same |
 | `assets/drive/*.jpg` — event photos | `tools/sync-images.sh --new-only` | Hourly |
 | `assets/events/*` — event page banners (WebP + JPEG) | `tools/sync-event-banners.py` | Hourly |
+| `assets/media/<slug>/*` — post-event photos (JPEG + WebP) and video posters; `data/event-media.json` | `tools/sync-event-media.py`, from one Drive folder per event under the parent in that file | Hourly |
 | `data/event-banners.json` `source/version/webp` fields | same tool | same |
 | Baked copy in `index.html` (`data-content`) | `tools/bake-content.py` | Hourly (`bake-content.yml`) |
 | `assets/bali-in-bengaluru-calendar.pdf` (public, no not-public events), `plan/calendar.pdf` (internal, every event, poster design), `assets/print/*.pdf` | `tools/build-calendar-pdf.py`, `tools/build-event-posters.py` (`--internal` for plan/calendar.pdf) | On demand — snapshots, re-run after schedule changes |

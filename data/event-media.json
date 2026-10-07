@@ -1,0 +1,5 @@
+{
+  "_note": "Post-event photos and videos. 'parent' is the Drive folder that holds one sub-folder per event, named like the event (shared: anyone with the link). Filled by tools/sync-event-media.py (hourly); the site reads it for 'What has already happened'. Leave 'parent' empty until the team's folder exists.",
+  "parent": "",
+  "events": {}
+}

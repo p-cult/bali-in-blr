@@ -1220,6 +1220,15 @@ function loadBannerMap() {
     .then((r) => r.json()).then((j) => (j && j.events) || {}).catch(() => ({}));
   return BANNER_MAP;
 }
+/* Post-event photos and videos, synced from Drive by tools/sync-event-media.py. */
+let MEDIA_MAP = null;
+function loadMediaMap() {
+  if (MEDIA_MAP) return MEDIA_MAP;
+  MEDIA_MAP = fetch(SITE_ROOT + "data/event-media.json", { cache: "no-store" })
+    .then((r) => r.json()).then((j) => (j && j.events) || {}).catch(() => ({}));
+  return MEDIA_MAP;
+}
+
 /* The pictures an event can show: its optimised banner first, then the
    photograph linked in the sheet. Never the same file twice. */
 function eventPictures(ev, banners) {
@@ -1370,6 +1379,58 @@ function renderNowStrip(events) {
    first, with its pictures and its own description from the sheet. Hidden
    until the first event has concluded. A "See photos" button appears the
    moment a media link lands in the sheet. */
+/* A carousel of an event's photos and videos: one slide per item, dots for
+   pagination, arrows, swipe. Videos play in Drive's own player when pressed. */
+function mediaCarouselHTML(slug, media) {
+  const base = SITE_ROOT + "assets/media/" + encodeURIComponent(slug) + "/";
+  const v = media.version ? "?v=" + encodeURIComponent(media.version) : "";
+  const slides = [];
+  (media.photos || []).forEach((p) => {
+    slides.push(`<li class="mc-slide"><picture>
+      <source type="image/webp" sizes="(max-width: 760px) 100vw, 640px" srcset="${esc(base + p.file + "-800.webp" + v)} 800w, ${esc(base + p.file + "-1600.webp" + v)} 1600w" />
+      <img src="${esc(base + p.file + ".jpg" + v)}" alt="" loading="lazy" decoding="async" /></picture></li>`);
+  });
+  (media.videos || []).forEach((vd) => {
+    const poster = vd.poster ? `<img src="${esc(base + vd.poster + v)}" alt="" loading="lazy" decoding="async" />` : "";
+    slides.push(`<li class="mc-slide mc-slide--video" data-video="${esc(vd.id)}">${poster}
+      <button type="button" class="mc-play" aria-label="Play video"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z" fill="currentColor"/></svg></button></li>`);
+  });
+  if (!slides.length) return "";
+  const dots = slides.map((_, i) => `<button type="button" class="mc-dot${i === 0 ? " is-active" : ""}" data-to="${i}" aria-label="Slide ${i + 1} of ${slides.length}"></button>`).join("");
+  return `<div class="mc" data-carousel>
+    <ul class="mc-track">${slides.join("")}</ul>
+    ${slides.length > 1 ? `<button type="button" class="mc-arrow mc-prev" data-dir="-1" aria-label="Previous">&larr;</button>
+    <button type="button" class="mc-arrow mc-next" data-dir="1" aria-label="Next">&rarr;</button>
+    <div class="mc-dots">${dots}</div>` : ""}
+  </div>`;
+}
+function wireCarousels(root) {
+  root.querySelectorAll("[data-carousel]").forEach((c) => {
+    const track = c.querySelector(".mc-track");
+    const slides = [...track.children];
+    const dots = [...c.querySelectorAll(".mc-dot")];
+    const goTo = (i) => {
+      const n = Math.max(0, Math.min(slides.length - 1, i));
+      track.scrollTo({ left: slides[n].offsetLeft, behavior: "smooth" });
+    };
+    const current = () => Math.round(track.scrollLeft / Math.max(1, slides[0].offsetWidth));
+    c.querySelectorAll(".mc-arrow").forEach((b) => b.addEventListener("click", () => goTo(current() + Number(b.dataset.dir))));
+    dots.forEach((d) => d.addEventListener("click", () => goTo(Number(d.dataset.to))));
+    track.addEventListener("scroll", () => {
+      const i = current();
+      dots.forEach((d, k) => d.classList.toggle("is-active", k === i));
+    }, { passive: true });
+    // Videos: press play, and Drive's player takes the slide.
+    c.querySelectorAll(".mc-slide--video").forEach((sl) => {
+      sl.querySelector(".mc-play").addEventListener("click", () => {
+        const id = sl.dataset.video;
+        sl.innerHTML = `<iframe src="https://drive.google.com/file/d/${encodeURIComponent(id)}/preview" allow="autoplay; fullscreen" allowfullscreen title="Video"></iframe>`;
+        sl.classList.add("is-playing");
+      });
+    });
+  });
+}
+
 async function renderHighlights(events) {
   const sec = document.getElementById("highlights");
   const list = document.getElementById("highlights-list");
@@ -1381,13 +1442,17 @@ async function renderHighlights(events) {
     .filter((e) => !e.notPublic && e.startDate && (e.past || e.startDate < today))
     .sort((a, b) => a.startDate < b.startDate ? 1 : -1);
   if (!done.length) { sec.hidden = true; return; }
-  const banners = await loadBannerMap();
+  const [banners, mediaMap] = await Promise.all([loadBannerMap(), loadMediaMap()]);
   list.innerHTML = done.map((ev) => {
     const pics = eventPictures(ev, banners);
-    const media = safeUrl(ev.mediaUrl);
+    const media = mediaMap[ev.slug];
+    const carousel = media ? mediaCarouselHTML(ev.slug, media) : "";
+    const album = safeUrl(ev.mediaUrl);
     const desc = ev.description ? String(ev.description) : "";
     const short = desc.length > 240 ? desc.slice(0, 237).replace(/\s+\S*$/, "") + "…" : desc;
-    const gallery = pics.length
+    // Real photos and videos from the event's Drive folder when they exist;
+    // until then the banner and the sheet's photograph stand in.
+    const gallery = carousel ? `<div class="hl-gallery hl-gallery--carousel">${carousel}</div>` : pics.length
       ? `<div class="hl-gallery hl-gallery--${Math.min(pics.length, 3)}">${pics.slice(0, 3).map((p) => `<figure class="hl-pic">${pictureTag(p, "")}</figure>`).join("")}</div>`
       : `<div class="hl-gallery hl-gallery--blank"><span class="hl-mono">${esc(collabMonogram(ev.title))}</span></div>`;
     return `<article class="hl" data-category="${esc(ev.category || "")}">
@@ -1396,10 +1461,11 @@ async function renderHighlights(events) {
         <p class="hl-when">${esc(calDateText(ev))}${ev.venue ? ` <span class="hl-sep">·</span> ${esc(ev.venue)}` : ""}${!ev.past ? ` <span class="hl-live"><span class="now-dot" aria-hidden="true"></span>Continues today</span>` : ""}</p>
         <h3 class="hl-title"><a href="${esc(eventHref(ev))}">${esc(ev.title)}</a></h3>
         ${short ? `<p class="hl-desc">${esc(short)}</p>` : ""}
-        <p class="hl-act">${media ? `<a class="btn btn-ghost btn-sm" href="${esc(media)}" target="_blank" rel="noopener">See photos</a>` : ""}<a class="text-link" href="${esc(eventHref(ev))}">Event page &rarr;</a></p>
+        <p class="hl-act">${album ? `<a class="btn btn-ghost btn-sm" href="${esc(album)}" target="_blank" rel="noopener">See photos</a>` : ""}<a class="text-link" href="${esc(eventHref(ev))}">Event page &rarr;</a></p>
       </div>
     </article>`;
   }).join("");
+  wireCarousels(list);
   sec.hidden = false;
 }
 

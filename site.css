@@ -286,6 +286,28 @@ a.now-venue:hover span { text-decoration: underline; }
 .hl-pic { margin: 0; overflow: hidden; background: var(--bg-2); }
 .hl-pic img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .hl-gallery--blank { display: grid; place-items: center; background: var(--bg-2); }
+
+/* ---------- Media carousel (photos and videos from Drive) ---------- */
+.hl-gallery--carousel { display: block; aspect-ratio: auto; }
+.mc { position: relative; aspect-ratio: 16 / 10; background: var(--bg-2); overflow: hidden; }
+.mc-track { display: flex; height: 100%; margin: 0; padding: 0; list-style: none; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; scroll-behavior: smooth; }
+.mc-track::-webkit-scrollbar { display: none; }
+.mc-slide { position: relative; flex: 0 0 100%; height: 100%; scroll-snap-align: start; }
+.mc-slide img, .mc-slide iframe { width: 100%; height: 100%; display: block; object-fit: cover; border: 0; }
+.mc-slide--video::after { content: ""; position: absolute; inset: 0; background: rgba(27, 29, 33, 0.25); pointer-events: none; }
+.mc-slide--video.is-playing::after { display: none; }
+.mc-play { position: absolute; left: 50%; top: 50%; z-index: 2; width: 64px; height: 64px; margin: -32px 0 0 -32px; display: grid; place-items: center; border: 0; border-radius: 50%; background: var(--accent); color: var(--bg); cursor: pointer; box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.6); transition: transform 0.15s ease, background 0.15s ease; }
+.mc-play:hover { transform: scale(1.06); background: var(--accent-2); }
+.mc-play svg { width: 28px; height: 28px; margin-left: 3px; }
+.mc-arrow { position: absolute; top: 50%; z-index: 2; width: 36px; height: 36px; margin-top: -18px; display: grid; place-items: center; border: 0; border-radius: 50%; background: rgba(27, 29, 33, 0.55); color: #FFF; cursor: pointer; font-size: 1rem; opacity: 0; transition: opacity 0.15s ease, background 0.15s ease; }
+.mc:hover .mc-arrow, .mc:focus-within .mc-arrow { opacity: 1; }
+.mc-arrow:hover { background: var(--accent); }
+.mc-prev { left: 0.7rem; }
+.mc-next { right: 0.7rem; }
+.mc-dots { position: absolute; left: 0; right: 0; bottom: 0.7rem; z-index: 2; display: flex; justify-content: center; gap: 6px; pointer-events: none; }
+.mc-dot { width: 7px; height: 7px; padding: 0; border: 0; border-radius: 50%; background: rgba(255, 255, 255, 0.55); cursor: pointer; pointer-events: auto; transition: transform 0.15s ease, background 0.15s ease; }
+.mc-dot.is-active { background: var(--accent); transform: scale(1.3); }
+@media (hover: none) { .mc-arrow { opacity: 1; } }
 .hl-mono { font-family: var(--display); font-weight: 900; font-size: 2.4rem; letter-spacing: 0.04em; color: var(--copper); opacity: 0.6; }
 .hl-body { padding: 1.4rem 1.6rem 1.4rem 0; }
 .hl-when { margin: 0 0 0.5rem; font-family: var(--display); font-size: 0.66rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--accent-2); }

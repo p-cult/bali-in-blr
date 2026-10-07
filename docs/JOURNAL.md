@@ -2308,3 +2308,27 @@ Three asks from Vinod, all built from the same sheet rows, no new data:
 Banners are read once from `data/event-banners.json` (`loadBannerMap`), shared
 by the highlights and the carousel.
 
+## 7 Oct 2026 — Highlights carousel from Drive; the countdown
+
+- **"What has already happened"** now carries a **carousel per event** —
+  photos and videos, dots for pagination, arrows, swipe — fed from Google
+  Drive: one parent folder, one sub-folder per event named like the event.
+  `tools/sync-event-media.py` (hourly, in the Drive workflow) discovers the
+  sub-folders, matches them to events by name (exact slug, else the event
+  whose slug the folder name starts with or contains), downloads photos
+  shrink-only as JPEG + 800/1600 WebP into `assets/media/<slug>/`, and for
+  videos keeps only Drive's poster frame — the slide plays the video in
+  Drive's own player when pressed, so no video is hosted here. Until an
+  event has a folder, the banner and the sheet photograph stand in.
+  `data/event-media.json` `parent` is empty until the team's folder exists.
+  Drive quirks learnt: a shared-folder page lists sub-folders as
+  `data-id="…"` (files carry an `-0-16` marker), a folder page's title uses
+  an en dash ("Name – Google Drive"), a file's a hyphen. Proven against the
+  banner folders in a scratch directory (11 folders, 14 MB), not committed.
+- **Countdown** in the Today panel: "Next show in" ticking to the next
+  start time from the sheet, IST, each day of a multi-day run counted, the
+  first of "3.30pm and 7.30pm" taken; "Opening soon" before the festival.
+- The Kecak Workshop (6–7 Oct) now appears in the highlights from its
+  second day, marked "continues today" — an event has happened in part once
+  its first day is over.
+
