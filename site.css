@@ -221,6 +221,7 @@
 .now-strip { padding: 1.6rem var(--gutter) 0; background: transparent; border: 0; }
 /* The same content width as every section: the wrap minus its gutters. */
 .now-strip > .now-panel { max-width: calc(var(--wrap) - 2 * var(--gutter)); margin: 0 auto; }
+.now-strip { container-type: inline-size; }
 .now-panel { background: var(--bg-3); border: 1px solid var(--line); border-radius: var(--radius); padding: 1.1rem clamp(1.1rem, 2.5vw, 1.6rem) 1.1rem; }
 .now-strip--inset { margin: 0 0 1.8rem; padding: 0; border: 0; }
 
@@ -265,6 +266,28 @@ a.now-venue:hover span { text-decoration: underline; }
 .now-rest { margin: 0.4rem 0 0; font-size: 0.88rem; color: var(--muted-2); }
 .now-all { margin: 0.8rem 0 0; font-size: 0.8rem; }
 .now-strip--inset .now-all { display: none; }
+
+
+/* The panel adapts to the column it sits in (the calendar's is narrower
+   than the home page), not to the screen. */
+@container (max-width: 960px) {
+  .now-head { grid-template-columns: auto minmax(4rem, 1fr) auto; gap: 0.6rem 1.2rem; }
+  .now-kicker { grid-column: 1 / -1; white-space: normal; }
+  .now-item { grid-template-columns: 5.2rem minmax(0, 1fr) 1.6rem; grid-template-areas: "when title go" "when venue go"; row-gap: 0.1rem; padding: 0.35rem 0; }
+  .now-when { grid-area: when; }
+  .now-title { grid-area: title; white-space: normal; }
+  .now-venue { grid-area: venue; }
+  .now-go { grid-area: go; }
+}
+@container (max-width: 640px) {
+  .now-head { grid-template-columns: 1fr auto; }
+  .now-progress { grid-column: 1 / -1; }
+  .now-timer { justify-items: start; }
+  .now-cols { grid-template-columns: 1fr; gap: 0.8rem; }
+  .now-col--next::before { display: none; }
+  .now-col--next { padding-top: 0.8rem; border-top: 1px solid var(--line); }
+  .now-item { grid-template-columns: 4.4rem minmax(0, 1fr) 1.6rem; }
+}
 
 /* ---------- The festival so far (home) ---------- */
 .section-highlights { padding-block: clamp(3rem, 7vw, 5.5rem) clamp(2.5rem, 6vw, 4.5rem); }
@@ -326,17 +349,6 @@ a.now-venue:hover span { text-decoration: underline; }
 .cal-past-title { font-size: 0.82rem; font-weight: 600; line-height: 1.25; color: var(--ink); }
 
 @media (max-width: 760px) {
-  .now-head { grid-template-columns: 1fr 1fr; gap: 0.6rem 1rem; }
-  .now-kicker { grid-column: 1 / -1; white-space: normal; }
-  .now-progress { grid-column: 1 / -1; }
-  .now-cols { grid-template-columns: 1fr; gap: 0.8rem; }
-  .now-col--next::before { display: none; }
-  .now-col--next { padding-top: 0.8rem; border-top: 1px solid var(--line); }
-  .now-item { grid-template-columns: 4.6rem minmax(0, 1fr) 1.6rem; grid-template-areas: "when title go" "when venue go"; row-gap: 0.1rem; padding: 0.4rem 0; }
-  .now-when { grid-area: when; }
-  .now-title { grid-area: title; white-space: normal; }
-  .now-venue { grid-area: venue; }
-  .now-go { grid-area: go; }
   .hl { grid-template-columns: 1fr; }
   .hl-body { padding: 1.1rem 1.2rem 1.3rem; }
   .cal-past-item { flex-basis: 128px; }
