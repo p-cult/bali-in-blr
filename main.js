@@ -1464,13 +1464,6 @@ async function renderHighlights(events) {
       </div>
     </article>`;
   }).join("");
-  // Still to come: one empty, outlined thumbnail per future public event, no
-  // information on it — the shape of the festival yet to happen.
-  const ahead = events.filter((e) => !e.notPublic && e.startDate && e.startDate >= today && !(e.past || e.startDate < today));
-  if (ahead.length) {
-    list.innerHTML += `<div class="hl-ahead" aria-label="Still to come">${ahead.map((e) =>
-      `<a class="hl-ghost" href="${esc(eventHref(e))}" title="${esc(e.title)}" aria-label="${esc(e.title)} (to come)"></a>`).join("")}</div>`;
-  }
   wireCarousels(list);
   sec.hidden = false;
 }
@@ -1478,15 +1471,19 @@ async function renderHighlights(events) {
 /* In the calendar, concluded events fold into one row: small thumbnails in a
    carousel at the top, so the live programme starts at once below. */
 function pastRowHTML(past, banners) {
-  // Concluded events: outlined thumbnails only, no text. The title is kept for
-  // screen readers and as a tooltip; the page behind the thumbnail has the rest.
   const items = past.map((ev) => {
     const pic = eventPictures(ev, banners)[0];
-    return `<a class="cal-past-item" href="${esc(eventHref(ev))}" title="${esc(ev.title)}" aria-label="${esc(ev.title)} (concluded)">
-      <span class="cal-past-thumb">${pic ? pictureTag(pic, "") : ""}</span>
+    const chip = calDayChip(ev);
+    return `<a class="cal-past-item" href="${esc(eventHref(ev))}">
+      <span class="cal-past-thumb">${pic ? pictureTag(pic, "") : `<span class="cal-past-mono">${esc(collabMonogram(ev.title))}</span>`}</span>
+      <span class="cal-past-date">${esc(chip.day)} ${esc(chip.mon)}</span>
+      <span class="cal-past-title">${esc(ev.title)}</span>
     </a>`;
   }).join("");
-  return `<section class="cal-past" aria-label="Concluded events"><div class="cal-past-track">${items}</div></section>`;
+  return `<section class="cal-past" aria-label="Concluded events">
+    <p class="cal-past-label">Concluded <span>· ${past.length} event${past.length > 1 ? "s" : ""}</span></p>
+    <div class="cal-past-track">${items}</div>
+  </section>`;
 }
 
 /* When the calendar opens during the festival, start at today — past rows
