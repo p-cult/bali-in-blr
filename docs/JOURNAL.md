@@ -2271,3 +2271,18 @@ anywhere. Same `?look=festive` switch, same words. Lesson recorded: when
 asked for "the design language", read the kit's rules first, do not
 extrapolate from the palette.
 
+## 7 Oct 2026 — "Bright classic": the paper version of the page
+
+After two festive passes Vinod chose "bright classic": today's layout and
+structure, on cream paper, full-colour photographs, dark type, nothing
+added, professional. The variant is now `?look=bright` (`festive` still
+maps to it). Everything invented for the festive passes is gone — running
+band, poster wall, day tile, duotone, brick blocks, checkerboard seams.
+What remains is a token flip under `:root[data-look="bright"]` (paper
+ground, white cards, charcoal ink, oxidised-copper labels, hairlines for
+seams) plus the few places that hard-code a dark value: the hero wash, the
+date chip, the dark-ground sections (Featuring and Support go cream,
+Foundation goes white), the feature band's scrim. Orange stays on buttons
+with dark type. Checked at 1280; the classic charcoal page is still the
+default until Vinod says otherwise.
+
