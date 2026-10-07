@@ -1381,10 +1381,12 @@ function renderNowStrip(events) {
    moment a media link lands in the sheet. */
 /* A carousel of an event's photos and videos: one slide per item, dots for
    pagination, arrows, swipe. Videos play in Drive's own player when pressed. */
-function mediaCarouselHTML(slug, media) {
+function mediaCarouselHTML(slug, media, standIns) {
   const base = SITE_ROOT + "assets/media/" + encodeURIComponent(slug) + "/";
   const v = media.version ? "?v=" + encodeURIComponent(media.version) : "";
   const slides = [];
+  // No Drive media yet: the banner and the sheet's photograph take the slides.
+  (standIns || []).forEach((p) => { slides.push(`<li class="mc-slide">${pictureTag(p, "")}</li>`); });
   (media.photos || []).forEach((p) => {
     slides.push(`<li class="mc-slide"><picture>
       <source type="image/webp" sizes="(max-width: 760px) 100vw, 640px" srcset="${esc(base + p.file + "-800.webp" + v)} 800w, ${esc(base + p.file + "-1600.webp" + v)} 1600w" />
@@ -1448,14 +1450,15 @@ async function renderHighlights(events) {
   list.innerHTML = done.map((ev) => {
     const pics = eventPictures(ev, banners);
     const media = mediaMap[ev.slug];
-    const carousel = media ? mediaCarouselHTML(ev.slug, media) : "";
+    // Every event gets the same carousel; real photos and videos replace the
+    // stand-ins the hour they land in the event's Drive folder.
+    const carousel = media ? mediaCarouselHTML(ev.slug, media) : mediaCarouselHTML(ev.slug, {}, pics);
     const album = safeUrl(ev.mediaUrl);
     const desc = ev.description ? String(ev.description) : "";
     const short = desc.length > 240 ? desc.slice(0, 237).replace(/\s+\S*$/, "") + "…" : desc;
     // Real photos and videos from the event's Drive folder when they exist;
     // until then the banner and the sheet's photograph stand in.
-    const gallery = carousel ? `<div class="hl-gallery hl-gallery--carousel">${carousel}</div>` : pics.length
-      ? `<div class="hl-gallery hl-gallery--${Math.min(pics.length, 3)}">${pics.slice(0, 3).map((p) => `<figure class="hl-pic">${pictureTag(p, "")}</figure>`).join("")}</div>`
+    const gallery = carousel ? `<div class="hl-gallery hl-gallery--carousel">${carousel}</div>`
       : `<div class="hl-gallery hl-gallery--blank"><span class="hl-mono">${esc(collabMonogram(ev.title))}</span></div>`;
     return `<article class="hl" data-category="${esc(ev.category || "")}">
       ${gallery}
