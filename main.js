@@ -717,6 +717,9 @@ function parseSchedule(tsv) {
       endTime: at(cells, "end time"),
       venue: at(cells, "venue"),
       mapUrl: at(cells, "map link"),
+      // A "gallery" (or photos / media / album) column: a Drive folder link
+      // pasted there is pulled on-site hourly for "What has already happened".
+      mediaUrl: atI(cells, find((h) => /gallery|photos|media|album/.test(h) && !/image/.test(h))),
       description: at(cells, "description"),
       image: at(cells, "image"),
       ticketUrl: atI(cells, iTicket) || at(cells, "ticket link"),

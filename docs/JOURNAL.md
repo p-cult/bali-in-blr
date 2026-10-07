@@ -2365,3 +2365,15 @@ hairlines toward oxblood brown. That rule is removed, so the page sits on the
 original slate charcoal whatever the date. Every newer feature stays: the
 Today panel with its countdown, the Concluded row with empty placeholders
 for the shows still to come, and "What has already happened".
+
+### 7 Oct 2026 — photos for "What has already happened" come from the sheet
+
+Vinod wanted concluded events to fill in on their own, photos included,
+without a prompt here. The concluding part already happened by the clock. For
+photos, the team now adds a **Gallery** column to the Event List tab and pastes
+the event's Drive folder link (shared "anyone with the link") on that row.
+The hourly job reads that column, pulls the folder's photos on-site, lists its
+videos for Drive's player, and the carousel on the home page updates by
+itself. Until the column exists the job simply says so and does nothing.
+Also fixed on the way: the site's live sheet reader had never actually
+carried the media column through, so it is now read like the other columns.

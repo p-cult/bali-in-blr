@@ -20,7 +20,7 @@ can be traced end to end. Audited 22 Sep 2026; re-verify with
 | **Tickets sheet** | Tickets web app (`const API` in `admin/tickets.html`) | Ticket entry and its own `Events` tab |
 | **Drive folders** | Event photos linked in the sheet's `image` column; one banner folder per event (`data/event-banners.json`); one post-event media folder per event under a parent folder (`data/event-media.json`) | Synced on-site hourly; the site never hotlinks Drive, except video, which plays in Drive's own player |
 | **Hits sheet** ("Bali in Blr - Hits") | Click log: visit / event open / ticket click / registration per campaign ref — no PII (`docs/apps-script/Hits.gs`, `CONFIG.HITS_URL`) | `admin/attribution` aggregates only |
-| Schedule sheet | `media link` column (or photos / gallery / album): a concluded event's "See photos" button | Calendar, event pages |
+| Schedule sheet | `Gallery` column (any heading with gallery / photos / media / album): paste the event's Drive folder link, shared "anyone with the link". The hourly sync pulls its photos on-site and lists its videos (`data/event-media.json`, `assets/media/<slug>/`) for the home page's "What has already happened" carousel; a non-folder link becomes a "See photos" button | Home highlights, calendar, event pages; `tools/sync-event-media.py` |
 | `data/questions.json` | The onboarding questions (repo, by design — they are form structure, not content) | Register and Volunteer forms; mirrored in `Code.gs` FLAVOURS |
 
 ## Derived copies in the repo (regenerated, never hand-edited)

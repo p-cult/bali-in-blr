@@ -1,5 +1,5 @@
 {
-  "_note": "Post-event photos and videos. 'parent' is the Drive folder that holds one sub-folder per event, named like the event (shared: anyone with the link). Filled by tools/sync-event-media.py (hourly); the site reads it for 'What has already happened'. Leave 'parent' empty until the team's folder exists.",
+  "_note": "Post-event photos and videos. The usual route is the schedule sheet: paste a Drive folder link in the event row's Gallery column (shared: anyone with the link) and the hourly sync fills this file. 'parent' is an optional Drive folder holding one sub-folder per event, named like the event. Filled by tools/sync-event-media.py (hourly); the site reads it for 'What has already happened'. Leave 'parent' empty until the team's folder exists.",
   "parent": "",
   "events": {}
 }

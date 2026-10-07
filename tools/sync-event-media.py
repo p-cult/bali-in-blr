@@ -4,10 +4,12 @@ Bring each concluded event's photos and videos on-site from Google Drive.
 
     python3 tools/sync-event-media.py
 
-data/event-media.json holds one Drive folder for the whole festival ("parent")
-and, under "events", one entry per event slug. A sub-folder of the parent that
-is named like the event (the title, any case; the slug rule is forgiving) is
-picked up by itself; an explicit "folder" on an event wins over the name match.
+Where the folders come from, in order:
+  1. the schedule sheet (Event List tab): a Drive folder link pasted in a
+     "Gallery" column (any heading containing gallery / photos / media / album)
+     on the event's row. This is the everyday route: paste the link, done;
+  2. data/event-media.json "events" entries with an explicit "folder";
+  3. a sub-folder of the "parent" folder named like the event.
 Every folder must be shared "anyone with the link".
 
 For each event folder:
@@ -25,6 +27,9 @@ from pathlib import Path
 from urllib.request import Request, urlopen
 
 ROOT = Path(__file__).resolve().parent.parent
+SCHEDULE_TSV = ("https://docs.google.com/spreadsheets/d/e/2PACX-1vTji37D6cT7J9bLFptJdNaYrvZF_soZyiqIsX-rHYUj4H6rnfMCExu2hIyVjCk48j86rdaBhp_lthzb"
+                "/pub?gid=289612903&single=true&output=tsv")
+FOLDER_RE = re.compile(r"drive\.google\.com/drive/(?:u/\d+/)?folders/([A-Za-z0-9_-]{25,})")
 MAP = ROOT / "data" / "event-media.json"
 OUT = ROOT / "assets" / "media"
 IMG_EXT = re.compile(r"\.(jpe?g|png|webp|tiff?|heic)$", re.I)
@@ -124,6 +129,39 @@ def optimise(src, dest_base):
         return False
 
 
+def sheet_folders():
+    """{slug: folder id} for every event whose Gallery cell holds a Drive folder link.
+    Slugs follow main.js assignSlugs: the title; a repeated title gets -<date>."""
+    try:
+        rows = [l.split("\t") for l in get(SCHEDULE_TSV).decode("utf-8", "replace").splitlines()]
+    except Exception as e:
+        print(f"schedule sheet unreachable ({e}); using the map only", file=sys.stderr)
+        return {}
+    head = next((i for i, r in enumerate(rows) if "title" in [c.strip().lower() for c in r]), -1)
+    if head == -1:
+        return {}
+    header = [c.strip().lower() for c in rows[head]]
+    i_title = header.index("title")
+    i_date = next((i for i, h in enumerate(header) if h in ("start date", "date")), -1)
+    i_gal = next((i for i, h in enumerate(header) if re.search(r"gallery|photos|media|album", h) and "image" not in h), -1)
+    if i_gal == -1:
+        print("no Gallery column in the schedule sheet yet")
+        return {}
+    out, seen = {}, {}
+    for r in rows[head + 1:]:
+        cell = lambda i: (r[i].strip() if 0 <= i < len(r) else "")
+        title = cell(i_title)
+        if not title:
+            continue
+        base = slugify(title)
+        slug = base + ("-" + slugify(cell(i_date)) if seen.get(base) else "")
+        seen[base] = seen.get(base, 0) + 1
+        m = FOLDER_RE.search(cell(i_gal))
+        if m:
+            out[slug] = m.group(1)
+    return out
+
+
 def main():
     if not MAP.exists():
         print("data/event-media.json missing", file=sys.stderr)
@@ -163,6 +201,14 @@ def main():
                 ev["folder"] = fid
                 ev["folderName"] = name
                 print(f"folder '{name}' -> {slug}")
+
+    # 0. The sheet wins: a folder link on the event's row is the team's choice.
+    for slug, fid in sheet_folders().items():
+        ev = events.setdefault(slug, {})
+        if ev.get("folder") != fid:
+            ev["folder"] = fid
+            ev["source"] = "sheet"
+            print(f"sheet: {slug} -> folder {fid[:8]}…")
 
     OUT.mkdir(parents=True, exist_ok=True)
     changed = False
