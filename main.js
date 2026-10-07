@@ -1399,9 +1399,11 @@ function mediaCarouselHTML(slug, media) {
   const dots = slides.map((_, i) => `<button type="button" class="mc-dot${i === 0 ? " is-active" : ""}" data-to="${i}" aria-label="Slide ${i + 1} of ${slides.length}"></button>`).join("");
   return `<div class="mc" data-carousel>
     <ul class="mc-track">${slides.join("")}</ul>
-    ${slides.length > 1 ? `<button type="button" class="mc-arrow mc-prev" data-dir="-1" aria-label="Previous">&larr;</button>
-    <button type="button" class="mc-arrow mc-next" data-dir="1" aria-label="Next">&rarr;</button>
-    <div class="mc-dots">${dots}</div>` : ""}
+    ${slides.length > 1 ? `<div class="mc-nav">
+      <button type="button" class="mc-arrow mc-prev" data-dir="-1" aria-label="Previous"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <div class="mc-dots">${dots}</div>
+      <button type="button" class="mc-arrow mc-next" data-dir="1" aria-label="Next"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    </div>` : ""}
   </div>`;
 }
 function wireCarousels(root) {
