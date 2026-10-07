@@ -2354,3 +2354,14 @@ horizontal overflow, no broken images, no console errors, every section
 on paper with dark type. Event pages and the in-page views follow the same
 tokens. The charcoal page remains one switch away for comparison.
 
+
+### 7 Oct 2026 — back to the charcoal page, no warm tint
+
+Vinod asked for the original dark look back. Two things had moved it away
+and both are undone: the paper-bright page had been made the default on
+7 Oct without his asking (now a `?look=bright` comparison only), and a
+"festival is on" rule from 6 Oct had been warming the charcoal grounds and
+hairlines toward oxblood brown. That rule is removed, so the page sits on the
+original slate charcoal whatever the date. Every newer feature stays: the
+Today panel with its countdown, the Concluded row with empty placeholders
+for the shows still to come, and "What has already happened".

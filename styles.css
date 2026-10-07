@@ -57,16 +57,6 @@
   --radius-sm: 5px;
 }
 
-/* While the festival is on (main.js sets <html data-phase="live"> from the
-   IST date), the ground warms a touch toward the oxblood and the hairlines
-   follow. Deliberately subtle: same palette, the room lit for a show. */
-:root[data-phase="live"]:not([data-look="bright"]) {
-  --bg: #211C1D;
-  --bg-2: #27201F;
-  --bg-3: #2B2423;
-  --line: #372C2B;
-}
-
 /* Display face is Archivo at normal width (no "wdth" 125 expansion). Only the
    ExtraBold (800) instance is loaded, so every heading renders at 800 whatever
    weight it declares — one step lighter than Archivo Black, still not extended. */
