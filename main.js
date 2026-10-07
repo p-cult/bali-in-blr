@@ -1470,7 +1470,9 @@ async function renderHighlights(events) {
 
 /* In the calendar, concluded events fold into one row: small thumbnails in a
    carousel at the top, so the live programme starts at once below. */
-function pastRowHTML(past, banners) {
+function pastRowHTML(past, banners, ahead) {
+  // Events still to come hold their place as empty outlines, no information.
+  const ghosts = (ahead || []).map((ev) => `<span class="cal-past-item cal-past-ghost" aria-hidden="true"><span class="cal-past-thumb"></span></span>`).join("");
   const items = past.map((ev) => {
     const pic = eventPictures(ev, banners)[0];
     const chip = calDayChip(ev);
@@ -1482,7 +1484,7 @@ function pastRowHTML(past, banners) {
   }).join("");
   return `<section class="cal-past" aria-label="Concluded events">
     <p class="cal-past-label">Concluded <span>· ${past.length} event${past.length > 1 ? "s" : ""}</span></p>
-    <div class="cal-past-track">${items}</div>
+    <div class="cal-past-track">${items}${ghosts}</div>
   </section>`;
 }
 
@@ -1643,7 +1645,7 @@ async function loadCalendar() {
     // Concluded events sit in one compact row; everything still to come gets a card.
     const past = list.filter((ev) => ev.past && !ev.notPublic);
     const ahead = list.filter((ev) => !(ev.past && !ev.notPublic));
-    grid.innerHTML = (past.length ? pastRowHTML(past, banners) : "") + ahead.map(cardHTML).join("");
+    grid.innerHTML = (past.length ? pastRowHTML(past, banners, ahead) : "") + ahead.map(cardHTML).join("");
   }
 
 }
