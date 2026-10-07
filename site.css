@@ -243,14 +243,15 @@
 
 /* Inside the calendar: "On today" large on the left; on the right the day
    tag, pointing down at the bar beneath it. */
-.now-strip--inset .now-head { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "date tag" "date bar"; align-items: start; row-gap: 0.7rem; padding-bottom: 1.1rem; margin-bottom: 1rem; }
+.now-strip--inset .now-head { grid-template-columns: minmax(0, 1fr) clamp(14rem, 40cqw, 22rem); grid-template-areas: "date tag" "date bar"; align-items: start; row-gap: 0.7rem; padding-bottom: 1.1rem; margin-bottom: 1rem; }
 /* Element-qualified and deeper than "[data-look] .section p", which would otherwise shrink it inside the calendar. */
 .now-strip--inset .now-panel p.now-date { grid-area: date; align-self: center; margin: 0; font-size: clamp(1.6rem, 3vw, 2.1rem); line-height: 1; color: var(--ink); }
 .now-strip--inset .now-label { white-space: nowrap; flex-wrap: wrap; }
 .now-strip--inset .now-timer { white-space: nowrap; }
-.now-strip--inset .now-tag { grid-area: tag; position: relative; justify-self: center; }
+/* The tag sits over the bar's column and its pointer lands on today's segment: --today is set by main.js. */
+.now-strip--inset .now-tag { grid-area: tag; position: relative; justify-self: start; margin-left: var(--today, 50%); transform: translateX(-50%); }
 .now-strip--inset .now-tag::after { content: ""; position: absolute; left: 50%; bottom: -7px; width: 10px; height: 10px; margin-left: -5px; background: var(--bg); border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); transform: rotate(45deg); }
-.now-strip--inset .now-progress { grid-area: bar; width: clamp(14rem, 40cqw, 22rem); max-width: none; justify-self: end; margin-top: 0.3rem; }
+.now-strip--inset .now-progress { grid-area: bar; width: 100%; max-width: none; justify-self: stretch; margin-top: 0.3rem; }
 .now-strip--inset .now-label { font-size: 0.66rem; }
 .now-strip--inset .now-title { font-size: 1.1rem; }
 .now-strip--inset .now-venue { font-size: 0.9rem; }
@@ -301,9 +302,8 @@ a.now-venue:hover span { text-decoration: underline; }
 }
 @container (max-width: 640px) {
   .now-head { grid-template-columns: 1fr auto; }
-  .now-strip--inset .now-head { grid-template-areas: "date tag" "bar bar"; }
-  .now-strip--inset .now-progress { width: 100%; justify-self: stretch; }
-  .now-strip--inset .now-tag { justify-self: end; }
+  .now-strip--inset .now-head { grid-template-columns: 1fr; grid-template-areas: "date" "tag" "bar"; }
+  .now-strip--inset .now-tag { margin-left: var(--today, 50%); }
   .now-label { flex-wrap: wrap; }
   .now-cols { grid-template-columns: 1fr; gap: 0.8rem; }
   .now-col--next::before { display: none; }

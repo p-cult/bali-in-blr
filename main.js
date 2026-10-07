@@ -1337,7 +1337,7 @@ function renderNowStrip(events) {
       ? "Next · " + new Date(nextDay[0].startDate + "T00:00:00").toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "short" })
       : "Next up";
     html = `<div class="now-panel">
-      <div class="now-head">
+      <div class="now-head" style="--today: ${(((day - 0.5) / days) * 100).toFixed(2)}%">
         <p class="now-date">On today</p>
         <span class="now-tag"><i class="now-dot" aria-hidden="true"></i>Day ${day} <em>of ${days}</em></span>
         <div class="now-progress" aria-hidden="true">${ticks}</div>
