@@ -1259,6 +1259,58 @@ function nowItem(ev) {
     <div class="now-body">${title}<p class="now-meta">${time}${venue}</p></div>${act}
   </li>`;
 }
+/* The next show's start as an instant. Dates in the sheet are IST dates and
+   times IST times; "3.30pm and 7.30pm" counts from its first time. An event
+   with no clock time cannot be counted down to and is skipped. */
+function eventInstants(ev) {
+  const times = String(ev.startTime || "").match(/\d{1,2}[.:]?\d{0,2}\s*(?:am|pm)/gi) || [];
+  const mins = times.map((t) => calClock(t)).filter((m) => m != null);
+  // A multi-day event (a two-day workshop) starts again each day of its run.
+  const first = Date.parse(ev.startDate + "T00:00:00+05:30");
+  const last = ev.endDate ? Date.parse(ev.endDate + "T00:00:00+05:30") : first;
+  const out = [];
+  for (let day = first; day <= last; day += 86400000) mins.forEach((m) => out.push(day + m * 60000));
+  return out;
+}
+function nextShow(events, now) {
+  let best = null;
+  events.filter((e) => e.startDate && !e.notPublic).forEach((ev) => {
+    eventInstants(ev).forEach((at) => {
+      if (at > now && (!best || at < best.at)) best = { ev: ev, at: at };
+    });
+  });
+  return best;
+}
+function fmtLeft(ms) {
+  const s = Math.max(0, Math.floor(ms / 1000));
+  const d = Math.floor(s / 86400), h = Math.floor((s % 86400) / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
+  const pad = (n) => String(n).padStart(2, "0");
+  return d > 0
+    ? `<b>${d}</b><i>d</i> <b>${pad(h)}</b><i>h</i> <b>${pad(m)}</b><i>m</i>`
+    : `<b>${pad(h)}</b><i>h</i> <b>${pad(m)}</b><i>m</i> <b>${pad(sec)}</b><i>s</i>`;
+}
+let NOW_TIMER = null;
+function startCountdown(events) {
+  if (NOW_TIMER) { clearInterval(NOW_TIMER); NOW_TIMER = null; }
+  const tick = () => {
+    const els = document.querySelectorAll("[data-now-timer]");
+    if (!els.length) return;
+    const now = Date.now();
+    const next = nextShow(events, now);
+    els.forEach((el) => {
+      if (!next) { el.hidden = true; return; }
+      el.hidden = false;
+      const when = next.ev.today ? "today" : next.ev.startDate === istToday() ? "today" : calDateText(next.ev);
+      el.innerHTML =
+        `<span class="now-timer-label">Next show in</span>` +
+        `<span class="now-timer-value">${fmtLeft(next.at - now)}</span>` +
+        `<span class="now-timer-for">${esc(next.ev.title)} · ${esc(when === "today" ? (next.ev.startTime || "") : when + (next.ev.startTime ? " · " + next.ev.startTime : ""))}</span>`;
+    });
+  };
+  tick();
+  NOW_TIMER = setInterval(tick, 1000);
+}
+
 function renderNowStrip(events) {
   const strips = document.querySelectorAll("[data-now-strip]");
   if (!strips.length) return;
@@ -1278,9 +1330,12 @@ function renderNowStrip(events) {
       : "Next up";
     html = `<div class="now-panel">
       <div class="now-head">
-        <p class="now-kicker"><span class="now-dot" aria-hidden="true"></span>Festival on now</p>
-        <p class="now-day"><b>Day ${day}</b> of ${days} <span class="now-sep">·</span> ${esc(dateLine)}</p>
-        <div class="now-progress" aria-hidden="true">${ticks}</div>
+        <div class="now-head-main">
+          <p class="now-kicker"><span class="now-dot" aria-hidden="true"></span>Festival on now</p>
+          <p class="now-day"><b>Day ${day}</b> of ${days} <span class="now-sep">·</span> ${esc(dateLine)}</p>
+          <div class="now-progress" aria-hidden="true">${ticks}</div>
+        </div>
+        <div class="now-timer" data-now-timer hidden></div>
       </div>
       <div class="now-cols">
         <section class="now-col now-col--today">
@@ -1294,11 +1349,21 @@ function renderNowStrip(events) {
       </div>
       <p class="now-all"><a class="text-link" href="#calendar">Full calendar &rarr;</a></p>
     </div>`;
+  } else if (phase === "before") {
+    const first = pub.slice().sort((a, b) => a.startDate < b.startDate ? -1 : 1)[0];
+    html = `<div class="now-panel"><div class="now-head">
+      <div class="now-head-main">
+        <p class="now-kicker"><span class="now-dot" aria-hidden="true"></span>Opening soon</p>
+        <p class="now-day">${first ? `<b>${esc(calDateText(first))}</b> <span class="now-sep">·</span> ${esc(first.title)}${first.venue ? " · " + esc(first.venue) : ""}` : ""}</p>
+      </div>
+      <div class="now-timer" data-now-timer hidden></div>
+    </div></div>`;
   } else if (phase === "after") {
     html = `<div class="now-panel"><div class="now-head"><p class="now-kicker">That's a wrap</p>
       <p class="now-day">Thank you, Bengaluru. Photos and recordings will appear against each event in the <a class="text-link" href="#calendar">calendar</a>.</p></div></div>`;
   }
   strips.forEach((el) => { el.innerHTML = html; el.hidden = !html; });
+  if (html) startCountdown(pub);
 }
 
 /* "The festival so far": every concluded public event on the home page, newest
