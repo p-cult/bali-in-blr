@@ -2377,3 +2377,17 @@ videos for Drive's player, and the carousel on the home page updates by
 itself. Until the column exists the job simply says so and does nothing.
 Also fixed on the way: the site's live sheet reader had never actually
 carried the media column through, so it is now read like the other columns.
+
+### 7 Oct 2026 — Gallery column: Drive chips need the bridge to read them
+
+The Gallery cells were pasted as Drive "chips" (the folder name with a hidden
+link), which neither the published export nor the old bridge could turn into
+a URL. The bridge script now has the Google Sheets service added and new code
+that asks the Sheets API for each chip's target; the repo copy in
+`docs/apps-script/Code.gs` carries the same functions. Found on the way: the
+live bridge had never been updated with the hyperlink-reading version of
+`sheetTsv` from the repo, so Ctrl-K links in the sheet were also only labels
+until now. Still to do by the owner in the editor: run any function once to
+grant the new Sheets permission, then Deploy → Manage deployments → edit the
+existing deployment → New version → Deploy. The first hourly sync after that
+fills the galleries.
