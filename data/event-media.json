@@ -1,5 +1,168 @@
 {
   "_note": "Post-event photos and videos. The usual route is the schedule sheet: paste a Drive folder link in the event row's Gallery column (shared: anyone with the link) and the hourly sync fills this file. 'parent' is an optional Drive folder holding one sub-folder per event, named like the event. Filled by tools/sync-event-media.py (hourly); the site reads it for 'What has already happened'. Leave 'parent' empty until the team's folder exists.",
   "parent": "",
-  "events": {}
+  "events": {
+    "an-evening-of-kecak-inaugural-public-performance": {
+      "folder": "1WmqJx5UjhC41orisn6q9dFptBh1fbCRC",
+      "source": "sheet",
+      "photos": [
+        {
+          "file": "01",
+          "name": "VCDR5493.JPG",
+          "w": 800,
+          "h": 534
+        },
+        {
+          "file": "02",
+          "name": "VCDR5510.JPG",
+          "w": 800,
+          "h": 534
+        },
+        {
+          "file": "03",
+          "name": "VCDR5515.JPG",
+          "w": 800,
+          "h": 534
+        },
+        {
+          "file": "04",
+          "name": "VCDR5523.JPG",
+          "w": 800,
+          "h": 534
+        },
+        {
+          "file": "05",
+          "name": "VCDR5564.JPG",
+          "w": 800,
+          "h": 534
+        },
+        {
+          "file": "06",
+          "name": "VCDR5647.JPG",
+          "w": 800,
+          "h": 534
+        },
+        {
+          "file": "07",
+          "name": "VCDR5655.JPG",
+          "w": 800,
+          "h": 534
+        },
+        {
+          "file": "08",
+          "name": "VCDR5669.JPG",
+          "w": 800,
+          "h": 534
+        },
+        {
+          "file": "09",
+          "name": "VCDR5764.JPG",
+          "w": 800,
+          "h": 534
+        },
+        {
+          "file": "10",
+          "name": "VCDR5774.JPG",
+          "w": 800,
+          "h": 534
+        },
+        {
+          "file": "11",
+          "name": "VCDR5788.JPG",
+          "w": 800,
+          "h": 534
+        },
+        {
+          "file": "12",
+          "name": "VCDR5892.JPG",
+          "w": 800,
+          "h": 534
+        }
+      ],
+      "videos": [],
+      "version": "0adfe21c44",
+      "synced": "2026-10-07T09:11:54Z"
+    },
+    "shadow-puppetry-performance": {
+      "folder": "1o0xm2skV2ZuRKIjS3e30yrPx42ij7pdC",
+      "source": "sheet",
+      "photos": [
+        {
+          "file": "01",
+          "name": "VCDR6499.JPG",
+          "w": 800,
+          "h": 534
+        },
+        {
+          "file": "02",
+          "name": "VCDR6509.JPG",
+          "w": 800,
+          "h": 534
+        },
+        {
+          "file": "03",
+          "name": "VCDR6519.JPG",
+          "w": 800,
+          "h": 533
+        },
+        {
+          "file": "04",
+          "name": "VCDR6524.JPG",
+          "w": 800,
+          "h": 534
+        },
+        {
+          "file": "05",
+          "name": "VCDR6550.JPG",
+          "w": 800,
+          "h": 533
+        },
+        {
+          "file": "06",
+          "name": "VCDR6554.JPG",
+          "w": 800,
+          "h": 534
+        },
+        {
+          "file": "07",
+          "name": "VCDR6570.JPG",
+          "w": 800,
+          "h": 534
+        },
+        {
+          "file": "08",
+          "name": "VCDR6596.JPG",
+          "w": 800,
+          "h": 533
+        },
+        {
+          "file": "09",
+          "name": "VCDR6605.JPG",
+          "w": 800,
+          "h": 533
+        },
+        {
+          "file": "10",
+          "name": "VCDR6624.JPG",
+          "w": 800,
+          "h": 533
+        },
+        {
+          "file": "11",
+          "name": "VCDR6634.JPG",
+          "w": 800,
+          "h": 533
+        },
+        {
+          "file": "12",
+          "name": "VCDR6652.JPG",
+          "w": 800,
+          "h": 534
+        }
+      ],
+      "videos": [],
+      "version": "66bf0cb061",
+      "synced": "2026-10-07T09:12:48Z"
+    }
+  }
 }

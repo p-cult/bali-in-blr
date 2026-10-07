@@ -33,7 +33,7 @@ SCHEDULE_TSV = ("https://docs.google.com/spreadsheets/d/e/2PACX-1vTji37D6cT7J9bL
                 "/pub?gid=289612903&single=true&output=tsv")
 # The bridge feed resolves cell hyperlinks and Drive chips to real URLs; the
 # published export only has the labels, so it is the fallback.
-SCHEDULE_FEED = ("https://script.google.com/macros/s/AKfycbyKXzPHQLsHCoryx0aJVpVkP0Z0XrnPxjucaiUJtR1aXeux33ygq2Br2QcBNU_MAB7qDw"
+SCHEDULE_FEED = ("https://script.google.com/macros/s/AKfycbyKFbh1PSrMO-TPYCiGtXDca_u0-8HSd_vNt8yXcXzfA8FnMnQEpGr1CIqkV3VeNxG4zA"
                  "/exec?feed=schedule")
 FOLDER_RE = re.compile(r"drive\.google\.com/drive/(?:u/\d+/)?folders/([A-Za-z0-9_-]{25,})")
 MAP = ROOT / "data" / "event-media.json"

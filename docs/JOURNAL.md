@@ -2391,3 +2391,17 @@ until now. Still to do by the owner in the editor: run any function once to
 grant the new Sheets permission, then Deploy → Manage deployments → edit the
 existing deployment → New version → Deploy. The first hourly sync after that
 fills the galleries.
+
+### 7 Oct 2026 — the galleries are live from the sheet
+
+The Gallery column works end to end. Vinod authorised the bridge's new Sheets
+permission and then published it as a **second deployment** ("CLAUD and its
+MAKERS…", Version 18) rather than updating the first, so the first /exec URL
+kept serving Version 16. Rather than ask again, the site's schedule and
+collaborator fallbacks and the media sync now use the new deployment's URL;
+the original URL stays as `CONFIG.BRIDGE_URL` for sign-ups and still works.
+The first sync pulled 12 photos each for An Evening of Kecak and Shadow
+Puppetry, every one within 800 px and under 300 KB, and the home page's
+"What has already happened" carousels show them. From here the hourly job
+picks up any new folder chip in the Gallery column on its own; the Drive
+originals are read only, never changed.

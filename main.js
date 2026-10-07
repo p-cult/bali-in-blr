@@ -42,9 +42,9 @@ const CONFIG = {
   // longer break the calendar/collaborators. Needs the Apps Script redeployed
   // with the feed handlers in docs/apps-script/Code.gs.
   SCHEDULE_URL_ALT:
-    "https://script.google.com/macros/s/AKfycbyKXzPHQLsHCoryx0aJVpVkP0Z0XrnPxjucaiUJtR1aXeux33ygq2Br2QcBNU_MAB7qDw/exec?feed=schedule",
+    "https://script.google.com/macros/s/AKfycbyKFbh1PSrMO-TPYCiGtXDca_u0-8HSd_vNt8yXcXzfA8FnMnQEpGr1CIqkV3VeNxG4zA/exec?feed=schedule",
   COLLAB_URL_ALT:
-    "https://script.google.com/macros/s/AKfycbyKXzPHQLsHCoryx0aJVpVkP0Z0XrnPxjucaiUJtR1aXeux33ygq2Br2QcBNU_MAB7qDw/exec?feed=collab",
+    "https://script.google.com/macros/s/AKfycbyKFbh1PSrMO-TPYCiGtXDca_u0-8HSd_vNt8yXcXzfA8FnMnQEpGr1CIqkV3VeNxG4zA/exec?feed=collab",
 
   // BookMyShow / District listings (the "BMS" tab). Staff put a hyperlink on
   // the word "Link" in "Event link - BMS" / "Event link - District". The
