@@ -172,6 +172,15 @@ def sheet_folders():
     if head == -1:
         return {}
     header = [c.strip().lower() for c in rows[head]]
+    # The bridge joins cells with tabs and rows with newlines, so a cell that
+    # itself holds line breaks (a long description) spills over several lines.
+    # Rejoin lines until a row has as many cells as the header.
+    fixed, buf = [], None
+    for r in rows[head + 1:]:
+        buf = r if buf is None else buf[:-1] + [buf[-1] + "\n" + r[0]] + r[1:]
+        if len(buf) >= len(header):
+            fixed.append(buf); buf = None
+    rows = rows[:head + 1] + fixed
     i_title = header.index("title")
     i_date = next((i for i, h in enumerate(header) if h in ("start date", "date")), -1)
     i_gal = next((i for i, h in enumerate(header) if re.search(r"gallery|photos|media|album", h) and "image" not in h), -1)

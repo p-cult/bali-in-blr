@@ -163,6 +163,87 @@
       "videos": [],
       "version": "66bf0cb061",
       "synced": "2026-10-07T09:12:48Z"
+    },
+    "dance-movement-workshop": {
+      "folder": "1_ebl_d4jWiXXTajs7Cx4ZntC_HcyfOqt",
+      "source": "sheet",
+      "photos": [
+        {
+          "file": "01",
+          "name": "IMG_5777.jpg",
+          "w": 800,
+          "h": 600
+        },
+        {
+          "file": "02",
+          "name": "IMG_5779.jpg",
+          "w": 800,
+          "h": 600
+        },
+        {
+          "file": "03",
+          "name": "IMG_5791.jpg",
+          "w": 800,
+          "h": 600
+        },
+        {
+          "file": "04",
+          "name": "IMG_5797.jpg",
+          "w": 800,
+          "h": 600
+        },
+        {
+          "file": "05",
+          "name": "IMG_5806.jpg",
+          "w": 800,
+          "h": 600
+        },
+        {
+          "file": "06",
+          "name": "IMG_5807.jpg",
+          "w": 800,
+          "h": 600
+        },
+        {
+          "file": "07",
+          "name": "IMG_5838.jpg",
+          "w": 800,
+          "h": 600
+        },
+        {
+          "file": "08",
+          "name": "IMG_5860.jpg",
+          "w": 600,
+          "h": 800
+        },
+        {
+          "file": "09",
+          "name": "IMG_5882.jpg",
+          "w": 800,
+          "h": 600
+        },
+        {
+          "file": "10",
+          "name": "IMG_5912.jpg",
+          "w": 800,
+          "h": 600
+        },
+        {
+          "file": "11",
+          "name": "IMG_5917.jpg",
+          "w": 800,
+          "h": 600
+        },
+        {
+          "file": "12",
+          "name": "IMG_5918.jpg",
+          "w": 800,
+          "h": 600
+        }
+      ],
+      "videos": [],
+      "version": "70fd55ef26",
+      "synced": "2026-10-07T09:18:21Z"
     }
   }
 }
