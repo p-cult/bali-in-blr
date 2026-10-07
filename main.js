@@ -1211,21 +1211,53 @@ function refineFestivalDates(events) {
   applyPhase();
 }
 
+/* The event banners written by tools/sync-event-banners.py, keyed by slug.
+   Loaded once; the home highlights and the calendar's concluded row use them. */
+let BANNER_MAP = null;
+function loadBannerMap() {
+  if (BANNER_MAP) return BANNER_MAP;
+  BANNER_MAP = fetch(SITE_ROOT + "data/event-banners.json", { cache: "no-store" })
+    .then((r) => r.json()).then((j) => (j && j.events) || {}).catch(() => ({}));
+  return BANNER_MAP;
+}
+/* The pictures an event can show: its optimised banner first, then the
+   photograph linked in the sheet. Never the same file twice. */
+function eventPictures(ev, banners) {
+  const out = [];
+  const b = (banners || {})[ev.slug];
+  if (b && b.source) {
+    const v = b.version ? "?v=" + encodeURIComponent(b.version) : "";
+    const base = SITE_ROOT + "assets/events/" + encodeURIComponent(ev.slug);
+    out.push({ src: (b.webp || []).length ? base + "-800.webp" + v : base + ".jpg" + v, fallback: base + ".jpg" + v });
+  }
+  if (ev.image) out.push({ src: ev.image, fallback: ev.imageId ? "assets/drive/" + ev.imageId + ".png" : "" });
+  return out;
+}
+function pictureTag(pic, cls) {
+  if (!pic) return "";
+  const fb = pic.fallback && pic.fallback !== pic.src ? ` data-fallback="${esc(pic.fallback)}" onerror="imgFallback(this)"` : "";
+  return `<img class="${cls}" src="${esc(pic.src)}" alt="" loading="lazy" decoding="async"${fb} />`;
+}
+
 /* "Today / Next up": the one question a visitor has while the festival is on.
-   Rendered into every [data-now-strip] (home, under the hero; the calendar,
-   above the list). Hidden outside the festival window. */
-function nowStripItem(ev, kicker) {
+   A panel, not a line: the day counted out on a sixteen-step bar, today's
+   events with their date block, time, venue and a way in, and the next day's
+   beside them. Rendered into every [data-now-strip] (home, under the hero;
+   the calendar, above the list). Hidden outside the festival window. */
+function nowItem(ev) {
+  const chip = calDayChip(ev);
   const mapUrl = safeUrl(ev.mapUrl);
-  const when = (kicker === "next" ? calDateText(ev) + " · " : "") + (ev.startTime || "");
-  const title = ticketsLive(ev)
-    ? `<a class="now-title" href="${esc(eventHref(ev))}">${esc(ev.title)}</a>`
-    : `<span class="now-title">${esc(ev.title)}</span>`;
-  return `<li class="now-item">${title}` +
-    `<span class="now-when">${esc(when.replace(/ · $/, ""))}</span>` +
-    (ev.venue ? (mapUrl
-      ? `<a class="now-venue" href="${esc(mapUrl)}" target="_blank" rel="noopener">${CAL_ICONS.pin}${esc(ev.venue)}</a>`
-      : `<span class="now-venue">${CAL_ICONS.pin}${esc(ev.venue)}</span>`) : "") +
-    `</li>`;
+  const venue = !ev.venue ? "" : mapUrl
+    ? `<a class="now-venue" href="${esc(mapUrl)}" target="_blank" rel="noopener">${CAL_ICONS.pin}<span>${esc(ev.venue)}</span></a>`
+    : `<span class="now-venue">${CAL_ICONS.pin}<span>${esc(ev.venue)}</span></span>`;
+  const time = ev.startTime ? `<span class="now-time">${CAL_ICONS.clock}<span>${esc(ev.startTime)}${ev.endTime && hasClock(ev.endTime) ? " – " + esc(ev.endTime) : ""}</span></span>` : "";
+  const page = ticketsLive(ev) || ev.past ? eventHref(ev) : "";
+  const title = page ? `<a class="now-title" href="${esc(page)}">${esc(ev.title)}</a>` : `<span class="now-title">${esc(ev.title)}</span>`;
+  const act = page ? `<a class="now-go" href="${esc(page)}" aria-label="${esc(ev.title)} — details">&rarr;</a>` : "";
+  return `<li class="now-item">
+    <span class="now-date"><b>${esc(chip.day)}</b><i>${esc(chip.mon)}</i></span>
+    <div class="now-body">${title}<p class="now-meta">${time}${venue}</p></div>${act}
+  </li>`;
 }
 function renderNowStrip(events) {
   const strips = document.querySelectorAll("[data-now-strip]");
@@ -1238,20 +1270,85 @@ function renderNowStrip(events) {
   const nextDay = next.length ? next.filter((e) => e.startDate === next[0].startDate) : [];
   let html = "";
   if (phase === "live") {
-    const dayLine = `<span class="now-dot" aria-hidden="true"></span>Day ${festivalDayNumber()} of ${festivalDays()}`;
-    html =
-      `<p class="now-kicker">${dayLine} · ${esc(new Date(today + "T00:00:00").toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "short" }))}</p>` +
-      (on.length
-        ? `<p class="now-label">On today</p><ul class="now-list">${on.map((e) => nowStripItem(e, "today")).join("")}</ul>`
-        : `<p class="now-label">Nothing on today — a rest day</p>`) +
-      (nextDay.length
-        ? `<p class="now-label now-label--next">Next up</p><ul class="now-list now-list--next">${nextDay.map((e) => nowStripItem(e, "next")).join("")}</ul>`
-        : "") +
-      `<p class="now-all"><a class="text-link" href="#calendar">Full calendar &rarr;</a></p>`;
+    const day = festivalDayNumber(), days = festivalDays();
+    const dateLine = new Date(today + "T00:00:00").toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long" });
+    const ticks = Array.from({ length: days }, (_, i) => `<i${i < day ? ' class="is-done"' : ""}${i === day - 1 ? ' data-today="1"' : ""}></i>`).join("");
+    const nextLabel = nextDay.length
+      ? "Next up · " + new Date(nextDay[0].startDate + "T00:00:00").toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "short" })
+      : "Next up";
+    html = `<div class="now-panel">
+      <div class="now-head">
+        <p class="now-kicker"><span class="now-dot" aria-hidden="true"></span>Festival on now</p>
+        <p class="now-day"><b>Day ${day}</b> of ${days} <span class="now-sep">·</span> ${esc(dateLine)}</p>
+        <div class="now-progress" aria-hidden="true">${ticks}</div>
+      </div>
+      <div class="now-cols">
+        <section class="now-col now-col--today">
+          <h3 class="now-label">On today</h3>
+          ${on.length ? `<ul class="now-list">${on.map(nowItem).join("")}</ul>` : `<p class="now-rest">A rest day — nothing on. The calendar has the whole fortnight.</p>`}
+        </section>
+        <section class="now-col now-col--next">
+          <h3 class="now-label">${esc(nextLabel)}</h3>
+          ${nextDay.length ? `<ul class="now-list">${nextDay.map(nowItem).join("")}</ul>` : `<p class="now-rest">That was the last one. Thank you, Bengaluru.</p>`}
+        </section>
+      </div>
+      <p class="now-all"><a class="text-link" href="#calendar">Full calendar &rarr;</a></p>
+    </div>`;
   } else if (phase === "after") {
-    html = `<p class="now-kicker">That's a wrap</p><p class="now-label">Thank you, Bengaluru. Photos and recordings will appear against each event in the <a class="text-link" href="#calendar">calendar</a>.</p>`;
+    html = `<div class="now-panel"><div class="now-head"><p class="now-kicker">That's a wrap</p>
+      <p class="now-day">Thank you, Bengaluru. Photos and recordings will appear against each event in the <a class="text-link" href="#calendar">calendar</a>.</p></div></div>`;
   }
   strips.forEach((el) => { el.innerHTML = html; el.hidden = !html; });
+}
+
+/* "The festival so far": every concluded public event on the home page, newest
+   first, with its pictures and its own description from the sheet. Hidden
+   until the first event has concluded. A "See photos" button appears the
+   moment a media link lands in the sheet. */
+async function renderHighlights(events) {
+  const sec = document.getElementById("highlights");
+  const list = document.getElementById("highlights-list");
+  if (!sec || !list) return;
+  const done = events.filter((e) => e.past && !e.notPublic).sort((a, b) => a.startDate < b.startDate ? 1 : -1);
+  if (!done.length) { sec.hidden = true; return; }
+  const banners = await loadBannerMap();
+  list.innerHTML = done.map((ev) => {
+    const pics = eventPictures(ev, banners);
+    const media = safeUrl(ev.mediaUrl);
+    const desc = ev.description ? String(ev.description) : "";
+    const short = desc.length > 240 ? desc.slice(0, 237).replace(/\s+\S*$/, "") + "…" : desc;
+    const gallery = pics.length
+      ? `<div class="hl-gallery hl-gallery--${Math.min(pics.length, 3)}">${pics.slice(0, 3).map((p) => `<figure class="hl-pic">${pictureTag(p, "")}</figure>`).join("")}</div>`
+      : `<div class="hl-gallery hl-gallery--blank"><span class="hl-mono">${esc(collabMonogram(ev.title))}</span></div>`;
+    return `<article class="hl" data-category="${esc(ev.category || "")}">
+      ${gallery}
+      <div class="hl-body">
+        <p class="hl-when">${esc(calDateText(ev))}${ev.venue ? ` <span class="hl-sep">·</span> ${esc(ev.venue)}` : ""}</p>
+        <h3 class="hl-title"><a href="${esc(eventHref(ev))}">${esc(ev.title)}</a></h3>
+        ${short ? `<p class="hl-desc">${esc(short)}</p>` : ""}
+        <p class="hl-act">${media ? `<a class="btn btn-ghost btn-sm" href="${esc(media)}" target="_blank" rel="noopener">See photos</a>` : ""}<a class="text-link" href="${esc(eventHref(ev))}">Event page &rarr;</a></p>
+      </div>
+    </article>`;
+  }).join("");
+  sec.hidden = false;
+}
+
+/* In the calendar, concluded events fold into one row: small thumbnails in a
+   carousel at the top, so the live programme starts at once below. */
+function pastRowHTML(past, banners) {
+  const items = past.map((ev) => {
+    const pic = eventPictures(ev, banners)[0];
+    const chip = calDayChip(ev);
+    return `<a class="cal-past-item" href="${esc(eventHref(ev))}">
+      <span class="cal-past-thumb">${pic ? pictureTag(pic, "") : `<span class="cal-past-mono">${esc(collabMonogram(ev.title))}</span>`}</span>
+      <span class="cal-past-date">${esc(chip.day)} ${esc(chip.mon)}</span>
+      <span class="cal-past-title">${esc(ev.title)}</span>
+    </a>`;
+  }).join("");
+  return `<section class="cal-past" aria-label="Concluded events">
+    <p class="cal-past-label">Concluded <span>· ${past.length} event${past.length > 1 ? "s" : ""}</span></p>
+    <div class="cal-past-track">${items}</div>
+  </section>`;
 }
 
 /* When the calendar opens during the festival, start at today — past rows
@@ -1385,7 +1482,9 @@ async function loadCalendar() {
   updateHeroStats(events);
   refineFestivalDates(events);
   renderNowStrip(events);
+  renderHighlights(events);
   await loadCollaborators(); // so cards can show each event's collaborator logos
+  const banners = await loadBannerMap();
   render(events);
   scrollCalendarToToday();
   window.addEventListener("hashchange", scrollCalendarToToday);
@@ -1406,7 +1505,10 @@ async function loadCalendar() {
       grid.innerHTML = '<p class="loading">Nothing in this category yet.</p>';
       return;
     }
-    grid.innerHTML = list.map(cardHTML).join("");
+    // Concluded events sit in one compact row; everything still to come gets a card.
+    const past = list.filter((ev) => ev.past && !ev.notPublic);
+    const ahead = list.filter((ev) => !(ev.past && !ev.notPublic));
+    grid.innerHTML = (past.length ? pastRowHTML(past, banners) : "") + ahead.map(cardHTML).join("");
   }
 
 }

@@ -2286,3 +2286,25 @@ Foundation goes white), the feature band's scrim. Orange stays on buttons
 with dark type. Checked at 1280; the classic charcoal page is still the
 default until Vinod says otherwise.
 
+## 7 Oct 2026 — The festival so far, a concluded row, and a proper Today panel
+
+Three asks from Vinod, all built from the same sheet rows, no new data:
+- **"The festival so far"** on the home page (`#highlights`, hidden until an
+  event has concluded): every concluded public event, newest first, with
+  its pictures (the synced banner, then the photograph linked in the sheet)
+  and its own description, trimmed. "See photos" appears when a media link
+  is in the sheet; "Event page" always. The section's two heading lines are
+  the only new words on the page.
+- **Concluded row in the calendar**: past events no longer take a card each.
+  They fold into one row at the top — small thumbnails in a horizontal,
+  snap-scrolling carousel with date and title — so the live programme starts
+  immediately below.
+- **Today / Next up as a panel**, not a line: a sixteen-step bar with the
+  days done in copper and today in orange, the day counted out loud, two
+  columns (today, the next day) with a date block, title, time, venue with
+  icons and a round "→" into the event page. Both looks share the markup;
+  the bright look sets it white with the soft shadow, overlapping the foot
+  of the hero.
+Banners are read once from `data/event-banners.json` (`loadBannerMap`), shared
+by the highlights and the carousel.
+

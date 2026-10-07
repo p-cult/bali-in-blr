@@ -21,7 +21,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@800&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css?v=hub44" />
-  <link rel="stylesheet" href="site.css?v=52" />
+  <link rel="stylesheet" href="site.css?v=53" />
 </head>
 <body>
   <!-- Google Tag Manager (noscript) -->
@@ -81,6 +81,15 @@
 
   <!-- Today / Next up — filled by main.js while the festival is on -->
   <section class="now-strip" data-now-strip hidden aria-label="On today"></section>
+
+  <!-- The festival so far: concluded events with their pictures (filled by main.js; hidden until one has concluded) -->
+  <section class="section section-highlights" id="highlights" hidden>
+    <div class="wrap">
+      <p class="eyebrow">The festival so far</p>
+      <h2>What has already happened</h2>
+      <div class="hl-list" id="highlights-list"></div>
+    </div>
+  </section>
 
   <div class="seam seam-harlequin" aria-hidden="true"></div>
 
@@ -435,6 +444,6 @@
       }
     })();
   </script>
-  <script src="main.js?v=hub92"></script>
+  <script src="main.js?v=hub93"></script>
 </body>
 </html>
