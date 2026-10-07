@@ -357,24 +357,26 @@ a.now-venue:hover span { text-decoration: underline; }
 .section .hl-desc { margin: 0 0 1rem; font-size: 0.95rem; line-height: 1.6; color: var(--muted); }
 .hl-act { display: flex; flex-wrap: wrap; align-items: center; gap: 0.9rem; margin: 0; font-size: 0.88rem; }
 
+/* Still to come: outlined empty thumbnails, no text. */
+.hl-ahead { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 0.4rem; }
+.hl-ghost { display: block; width: 96px; aspect-ratio: 4 / 3; border: 1px dashed var(--line); border-radius: var(--radius-sm); opacity: 0.8; transition: border-color 0.15s ease, opacity 0.15s ease; }
+.hl-ghost:hover { border-color: var(--copper); opacity: 1; }
+
 /* ---------- Calendar: concluded row ---------- */
-.cal-past { padding: 1rem 1.1rem 1.1rem; background: var(--bg-3); border: 1px solid var(--line); border-radius: var(--radius); }
-.section-tint .cal-past { background: var(--bg); }
-.cal-past-label { margin: 0 0 0.75rem; font-family: var(--display); font-size: 0.66rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted-2); }
-.cal-past-label span { color: var(--muted-2); font-weight: 600; letter-spacing: 0.08em; }
-.cal-past-track { display: flex; gap: 0.8rem; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 0.4rem; scrollbar-width: thin; }
-.cal-past-item { flex: 0 0 148px; scroll-snap-align: start; display: grid; gap: 0.35rem; text-decoration: none; color: var(--ink); opacity: 0.8; transition: opacity 0.15s ease; }
-.cal-past-item:hover { opacity: 1; }
-.cal-past-thumb { display: grid; place-items: center; aspect-ratio: 4 / 3; border-radius: var(--radius-sm); overflow: hidden; background: var(--bg-2); border: 1px solid var(--line); }
-.cal-past-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; filter: saturate(0.8); }
-.cal-past-mono { font-family: var(--display); font-weight: 900; color: var(--copper); opacity: 0.6; }
-.cal-past-date { font-family: var(--display); font-size: 0.6rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent-2); }
-.cal-past-title { font-size: 0.82rem; font-weight: 600; line-height: 1.25; color: var(--ink); }
+.cal-past { padding: 0; background: transparent; border: 0; }
+.cal-past-track { display: flex; gap: 0.6rem; overflow-x: auto; scroll-snap-type: x mandatory; padding: 0 0 0.3rem; scrollbar-width: none; }
+.cal-past-track::-webkit-scrollbar { display: none; }
+.cal-past-item { flex: 0 0 96px; scroll-snap-align: start; display: block; text-decoration: none; }
+.cal-past-thumb { display: block; aspect-ratio: 4 / 3; border-radius: var(--radius-sm); overflow: hidden; background: transparent; border: 1px solid var(--line); opacity: 0.55; transition: opacity 0.15s ease, border-color 0.15s ease; }
+.cal-past-item:hover .cal-past-thumb { opacity: 1; border-color: var(--copper); }
+.cal-past-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; filter: saturate(0.6); }
+.cal-past-label, .cal-past-date, .cal-past-mono { display: none; }
+.cal-past-title { display: none; }
 
 @media (max-width: 760px) {
   .hl { grid-template-columns: 1fr; }
   .hl-body { padding: 1.1rem 1.2rem 1.3rem; }
-  .cal-past-item { flex-basis: 128px; }
+  .cal-past-item { flex-basis: 84px; }
 }
 
 /* Past rows sink; today's row is marked by its left edge. */
@@ -1145,7 +1147,7 @@ p.ev-desc { font-size: 1.08rem; line-height: 1.65; color: var(--muted); max-widt
 [data-look="bright"] .now-strip:not(.now-strip--inset) { margin: -2.5rem auto 0; position: relative; z-index: 3; }
 [data-look="bright"] .now-panel { background: #FFF; box-shadow: var(--shadow-soft, 0 10px 30px -18px rgba(27, 29, 33, 0.28)); }
 [data-look="bright"] .now-go:hover { color: #2A1206; }
-[data-look="bright"] .hl, [data-look="bright"] .cal-past { background: #FFF; box-shadow: var(--shadow-soft, none); }
+[data-look="bright"] .hl { background: #FFF; box-shadow: var(--shadow-soft, none); }
 [data-look="bright"] .hl-pic, [data-look="bright"] .cal-past-thumb, [data-look="bright"] .hl-gallery--blank { background: var(--bg-2); }
 
 /* Seams become hairlines. */
