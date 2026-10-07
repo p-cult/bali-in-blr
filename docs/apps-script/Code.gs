@@ -66,11 +66,11 @@ function book() {
 /** Prefer a pasted URL; otherwise the cell's hyperlink (Ctrl-K / Insert link).
     Publish-to-web TSV only exports the visible label ("Link"), so this is how
     the site ever sees the real BookMyShow / District href. */
-function cellExport(display, rich, formula) {
+function cellExport(display, rich, formula, chip) {
   var shown = String(display == null ? '' : display).trim();
   if (/^(https?:|mailto:|tel:)/i.test(shown)) return shown;
-  var link = '';
-  if (rich) {
+  var link = chip || '';
+  if (!link && rich) {
     link = rich.getLinkUrl() || '';
     if (!link) {
       var runs = rich.getRuns();
@@ -97,11 +97,40 @@ function sheetTsv(spreadsheetId, tabName) {
   const display = range.getDisplayValues();
   const rich = range.getRichTextValues();
   const formulas = range.getFormulas();
+  const chips = chipLinks(spreadsheetId, tabName, range);
   return display.map(function (row, r) {
     return row.map(function (cell, c) {
-      return cellExport(cell, rich[r][c], formulas[r][c]);
+      return cellExport(cell, rich[r][c], formulas[r][c], chips[r] && chips[r][c]);
     }).join('\t');
   }).join('\n');
+}
+
+/** Pasting a Drive link into Sheets turns it into a "smart chip" that shows
+    the file or folder name. Rich text cannot see a chip's target; the Sheets
+    API can. Needs the Advanced Sheets service enabled on the script
+    (Services + → Google Sheets API). Without it this quietly returns nothing
+    and chips export as their label, as before. Returns [row][col] → url. */
+function chipLinks(spreadsheetId, tabName, range) {
+  try {
+    const a1 = "'" + tabName.replace(/'/g, "''") + "'!" + range.getA1Notation();
+    const res = Sheets.Spreadsheets.get(spreadsheetId, {
+      ranges: [a1], includeGridData: true,
+      fields: 'sheets.data.rowData.values.chipRuns.chip.richLinkProperties.uri'
+    });
+    const rows = (((res.sheets || [])[0] || {}).data || [])[0];
+    return ((rows && rows.rowData) || []).map(function (row) {
+      return ((row && row.values) || []).map(function (v) {
+        const runs = (v && v.chipRuns) || [];
+        for (var i = 0; i < runs.length; i++) {
+          var u = runs[i].chip && runs[i].chip.richLinkProperties && runs[i].chip.richLinkProperties.uri;
+          if (u) return u;
+        }
+        return '';
+      });
+    });
+  } catch (e) {
+    return [];
+  }
 }
 
 /* The lines of each site-copy Doc tab, in page order. In the Doc each tab is

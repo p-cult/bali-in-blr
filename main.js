@@ -1385,7 +1385,7 @@ function mediaCarouselHTML(slug, media, standIns) {
   (standIns || []).forEach((p) => { slides.push(`<li class="mc-slide">${pictureTag(p, "")}</li>`); });
   (media.photos || []).forEach((p) => {
     slides.push(`<li class="mc-slide"><picture>
-      <source type="image/webp" sizes="(max-width: 760px) 100vw, 640px" srcset="${esc(base + p.file + "-800.webp" + v)} 800w, ${esc(base + p.file + "-1600.webp" + v)} 1600w" />
+      <source type="image/webp" sizes="(max-width: 760px) 100vw, 640px" srcset="${esc(base + p.file + "-800.webp" + v)} 800w" />
       <img src="${esc(base + p.file + ".jpg" + v)}" alt="" loading="lazy" decoding="async" /></picture></li>`);
   });
   (media.videos || []).forEach((vd) => {

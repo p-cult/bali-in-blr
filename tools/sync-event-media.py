@@ -13,8 +13,9 @@ Where the folders come from, in order:
 Every folder must be shared "anyone with the link".
 
 For each event folder:
-  - photos (jpg/png/webp/heic) are downloaded and saved shrink-only as
-    assets/media/<slug>/<n>.jpg plus 800 and 1600 px WebP;
+  - photos (jpg/png/webp/heic) are downloaded and saved as
+    assets/media/<slug>/<n>.jpg plus <n>-800.webp, every one fitted inside
+    800 x 800 px and squeezed under 300 KB (the site never serves more);
   - videos (mp4/mov/m4v/webm) are NOT downloaded — the site plays them in
     Drive's own player (…/file/d/<id>/preview) and shows a local poster taken
     from Drive's thumbnail.
@@ -25,16 +26,23 @@ import hashlib, json, re, shutil, subprocess, sys, tempfile, time
 from html import unescape
 from pathlib import Path
 from urllib.request import Request, urlopen
+from PIL import Image
 
 ROOT = Path(__file__).resolve().parent.parent
 SCHEDULE_TSV = ("https://docs.google.com/spreadsheets/d/e/2PACX-1vTji37D6cT7J9bLFptJdNaYrvZF_soZyiqIsX-rHYUj4H6rnfMCExu2hIyVjCk48j86rdaBhp_lthzb"
                 "/pub?gid=289612903&single=true&output=tsv")
+# The bridge feed resolves cell hyperlinks and Drive chips to real URLs; the
+# published export only has the labels, so it is the fallback.
+SCHEDULE_FEED = ("https://script.google.com/macros/s/AKfycbyKXzPHQLsHCoryx0aJVpVkP0Z0XrnPxjucaiUJtR1aXeux33ygq2Br2QcBNU_MAB7qDw"
+                 "/exec?feed=schedule")
 FOLDER_RE = re.compile(r"drive\.google\.com/drive/(?:u/\d+/)?folders/([A-Za-z0-9_-]{25,})")
 MAP = ROOT / "data" / "event-media.json"
 OUT = ROOT / "assets" / "media"
 IMG_EXT = re.compile(r"\.(jpe?g|png|webp|tiff?|heic)$", re.I)
 VID_EXT = re.compile(r"\.(mp4|mov|m4v|webm|mkv)$", re.I)
 MAX_PHOTOS = 12
+MAX_SIDE = 800            # longest side of any gallery image served
+MAX_BYTES = 300 * 1024    # and never heavier than this
 
 
 def get(url, tries=3):
@@ -109,20 +117,36 @@ def dims(path):
             return 0, 0
 
 
+def fit(im):
+    """Shrink-only so the longer side is at most MAX_SIDE."""
+    w, h = im.size
+    k = MAX_SIDE / max(w, h)
+    if k >= 1:
+        return im.copy()
+    return im.resize((max(1, round(w * k)), max(1, round(h * k))), Image.LANCZOS)
+
+
+def save_under(im, path, fmt, start_q):
+    """Save at falling quality until the file is under MAX_BYTES."""
+    q = start_q
+    while True:
+        if fmt == "JPEG":
+            im.save(path, "JPEG", quality=q, optimize=True, progressive=True)
+        else:
+            im.save(path, "WEBP", quality=q, method=6)
+        if Path(path).stat().st_size <= MAX_BYTES or q <= 30:
+            return
+        q -= 8
+
+
 def optimise(src, dest_base):
-    """dest_base + .jpg (max 2000 wide), -800.webp, -1600.webp; shrink-only."""
+    """dest_base + .jpg and -800.webp: within 800 px and 300 KB each."""
     try:
-        from PIL import Image, ImageOps
+        from PIL import ImageOps
         with Image.open(src) as im:
-            im = ImageOps.exif_transpose(im).convert("RGB")
-            w = im.width
-            def at(width):
-                if im.width <= width:
-                    return im.copy()
-                return im.resize((width, round(im.height * width / im.width)), Image.LANCZOS)
-            at(2000).save(str(dest_base) + ".jpg", "JPEG", quality=82, optimize=True, progressive=True)
-            at(800).save(str(dest_base) + "-800.webp", "WEBP", quality=78, method=6)
-            at(1600).save(str(dest_base) + "-1600.webp", "WEBP", quality=78, method=6)
+            im = fit(ImageOps.exif_transpose(im).convert("RGB"))
+            save_under(im, str(dest_base) + ".jpg", "JPEG", 82)
+            save_under(im, str(dest_base) + "-800.webp", "WEBP", 78)
             return True
     except Exception as e:
         print(f"    optimise failed: {e}", file=sys.stderr)
@@ -132,10 +156,17 @@ def optimise(src, dest_base):
 def sheet_folders():
     """{slug: folder id} for every event whose Gallery cell holds a Drive folder link.
     Slugs follow main.js assignSlugs: the title; a repeated title gets -<date>."""
-    try:
-        rows = [l.split("\t") for l in get(SCHEDULE_TSV).decode("utf-8", "replace").splitlines()]
-    except Exception as e:
-        print(f"schedule sheet unreachable ({e}); using the map only", file=sys.stderr)
+    rows = None
+    for url in (SCHEDULE_FEED, SCHEDULE_TSV):
+        try:
+            rows = [l.split("\t") for l in get(url).decode("utf-8", "replace").splitlines()]
+            if any("title" in [c.strip().lower() for c in r] for r in rows):
+                break
+        except Exception as e:
+            print(f"schedule source unreachable ({e}); trying the next", file=sys.stderr)
+            rows = None
+    if not rows:
+        print("schedule sheet unreachable; using the map only", file=sys.stderr)
         return {}
     head = next((i for i, r in enumerate(rows) if "title" in [c.strip().lower() for c in r]), -1)
     if head == -1:
@@ -255,9 +286,8 @@ def main():
                 try:
                     raw = Path(td) / f"v{i}"
                     raw.write_bytes(get(f"https://drive.google.com/thumbnail?id={fid}&sz=w1600"))
-                    from PIL import Image
                     with Image.open(raw) as im:
-                        im.convert("RGB").save(str(poster), "JPEG", quality=80, optimize=True)
+                        save_under(fit(im.convert("RGB")), str(poster), "JPEG", 80)
                     has_poster = True
                 except Exception:
                     has_poster = False
