@@ -1253,7 +1253,7 @@ function pictureTag(pic, cls) {
    events with their date block, time, venue and a way in, and the next day's
    beside them. Rendered into every [data-now-strip] (home, under the hero;
    the calendar, above the list). Hidden outside the festival window. */
-function nowItem(ev) {
+function nowItem(ev, withTime) {
   const mapUrl = safeUrl(ev.mapUrl);
   const venue = !ev.venue ? '<span class="now-venue"></span>' : mapUrl
     ? `<a class="now-venue" href="${esc(mapUrl)}" target="_blank" rel="noopener">${CAL_ICONS.pin}<span>${esc(ev.venue)}</span></a>`
@@ -1262,7 +1262,7 @@ function nowItem(ev) {
   const page = ticketsLive(ev) || ev.past ? eventHref(ev) : "";
   const title = page ? `<a class="now-title" href="${esc(page)}">${esc(ev.title)}</a>` : `<span class="now-title">${esc(ev.title)}</span>`;
   const act = page ? `<a class="now-go" href="${esc(page)}" aria-label="${esc(ev.title)} — details">&rarr;</a>` : '<span class="now-go now-go--none"></span>';
-  return `<li class="now-item"><span class="now-when">${when}</span>${title}${venue}${act}</li>`;
+  return `<li class="now-item${withTime ? "" : " now-item--notime"}">${withTime ? `<span class="now-when">${when}</span>` : ""}${title}${venue}${act}</li>`;
 }
 
 /* The next show's start as an instant. Dates in the sheet are IST dates and
@@ -1334,22 +1334,22 @@ function renderNowStrip(events) {
     const dateLine = new Date(today + "T00:00:00").toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "short" });
     const ticks = Array.from({ length: days }, (_, i) => `<i${i < day ? ' class="is-done"' : ""}${i === day - 1 ? ' data-today="1"' : ""}></i>`).join("");
     const nextLabel = nextDay.length
-      ? "Next up · " + new Date(nextDay[0].startDate + "T00:00:00").toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "short" })
+      ? "Next · " + new Date(nextDay[0].startDate + "T00:00:00").toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "short" })
       : "Next up";
     html = `<div class="now-panel">
       <div class="now-head">
-        <p class="now-date">${esc(dateLine)}</p>
+        <p class="now-date">On today</p>
         <span class="now-tag"><i class="now-dot" aria-hidden="true"></i>Day ${day} <em>of ${days}</em></span>
         <div class="now-progress" aria-hidden="true">${ticks}</div>
       </div>
       <div class="now-cols">
         <section class="now-col now-col--today">
-          <h3 class="now-label">On today <span class="now-timer" data-now-timer data-slot="today" hidden></span></h3>
-          ${on.length ? `<ul class="now-list">${on.map(nowItem).join("")}</ul>` : `<p class="now-rest">A rest day — nothing on. The calendar has the whole fortnight.</p>`}
+          <h3 class="now-label">${esc(dateLine)}${on.length === 1 && on[0].startTime ? ` <span class="now-sep">·</span> ${esc(on[0].startTime)}` : ""} <span class="now-timer" data-now-timer data-slot="today" hidden></span></h3>
+          ${on.length ? `<ul class="now-list">${on.map((e) => nowItem(e, on.length > 1)).join("")}</ul>` : `<p class="now-rest">A rest day — nothing on. The calendar has the whole fortnight.</p>`}
         </section>
         <section class="now-col now-col--next">
-          <h3 class="now-label">${esc(nextLabel)} <span class="now-timer" data-now-timer data-slot="next" hidden></span></h3>
-          ${nextDay.length ? `<ul class="now-list">${nextDay.map(nowItem).join("")}</ul>` : `<p class="now-rest">That was the last one. Thank you, Bengaluru.</p>`}
+          <h3 class="now-label">${esc(nextLabel)}${nextDay.length === 1 && nextDay[0].startTime ? ` <span class="now-sep">·</span> ${esc(nextDay[0].startTime)}` : ""} <span class="now-timer" data-now-timer data-slot="next" hidden></span></h3>
+          ${nextDay.length ? `<ul class="now-list">${nextDay.map((e) => nowItem(e, nextDay.length > 1)).join("")}</ul>` : `<p class="now-rest">That was the last one. Thank you, Bengaluru.</p>`}
         </section>
       </div>
       <p class="now-all"><a class="text-link" href="#calendar">Full calendar &rarr;</a></p>

@@ -251,6 +251,7 @@
 .now-list { list-style: none; margin: 0; padding: 0; }
 .now-item { display: grid; grid-template-columns: 6.2rem minmax(0, 1.1fr) minmax(0, 1fr) 1.6rem; gap: 0 0.8rem; align-items: center; min-height: 2.4rem; border-top: 1px solid var(--line); }
 .now-item:first-child { border-top: 0; }
+.now-item--notime { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) 1.6rem; }
 .now-when { font-family: var(--display); font-weight: 700; font-size: 0.82rem; letter-spacing: 0.02em; color: var(--ink); white-space: nowrap; }
 .now-title { font-family: var(--display); font-weight: 800; font-size: 0.95rem; line-height: 1.2; color: var(--ink); text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 a.now-title:hover { color: var(--accent-2); }
@@ -273,6 +274,7 @@ a.now-venue:hover span { text-decoration: underline; }
   .now-head { grid-template-columns: auto auto; gap: 0.7rem 1rem; }
   .now-progress { grid-column: 1 / -1; }
   .now-item { grid-template-columns: 5.2rem minmax(0, 1fr) 1.6rem; grid-template-areas: "when title go" "when venue go"; row-gap: 0.1rem; padding: 0.35rem 0; }
+  .now-item--notime { grid-template-columns: minmax(0, 1fr) 1.6rem; grid-template-areas: "title go" "venue go"; }
   .now-when { grid-area: when; }
   .now-title { grid-area: title; white-space: normal; }
   .now-venue { grid-area: venue; }
@@ -285,6 +287,7 @@ a.now-venue:hover span { text-decoration: underline; }
   .now-col--next::before { display: none; }
   .now-col--next { padding-top: 0.8rem; border-top: 1px solid var(--line); }
   .now-item { grid-template-columns: 4.4rem minmax(0, 1fr) 1.6rem; }
+  .now-item--notime { grid-template-columns: minmax(0, 1fr) 1.6rem; }
 }
 
 /* ---------- The festival so far (home) ---------- */
