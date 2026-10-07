@@ -1291,10 +1291,10 @@ function fmtLeft(ms) {
   const s = Math.max(0, Math.floor(ms / 1000));
   const d = Math.floor(s / 86400), h = Math.floor((s % 86400) / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
   const pad = (n) => String(n).padStart(2, "0");
-  const u = (v, label) => `<span class="tu">${v}<i>${label}</i></span>`;
+  const u = (v, label) => `<b>${v}</b><i>${label}</i>`;
   return d > 0
-    ? u(d, "d") + u(pad(h), "h") + u(pad(m), "m")
-    : u(pad(h), "h") + u(pad(m), "m") + u(pad(sec), "s");
+    ? u(d, "d ") + u(pad(h), "h ") + u(pad(m), "m")
+    : u(pad(h), "h ") + u(pad(m), "m ") + u(pad(sec), "s");
 }
 let NOW_TIMER = null;
 function startCountdown(events) {
@@ -1306,16 +1306,13 @@ function startCountdown(events) {
     const next = nextShow(events, now);
     els.forEach((el) => {
       if (!next) { el.hidden = true; return; }
-      el.hidden = false;
-      // The day of that instant, in IST — a two-day event's second day is "today", not its date range.
       const dayKey = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata" }).format(new Date(next.at));
-      const dayText = dayKey === istToday() ? "today"
-        : dayKey === new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata" }).format(new Date(Date.now() + 86400000)) ? "tomorrow"
-        : new Date(dayKey + "T00:00:00").toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" });
-      const timeText = new Date(next.at).toLocaleTimeString("en-IN", { timeZone: "Asia/Kolkata", hour: "numeric", minute: "2-digit" }).toLowerCase().replace(" ", "");
-      el.innerHTML =
-        `<span class="now-timer-value">${fmtLeft(next.at - now)}</span>` +
-        `<span class="now-timer-for"><b>Next show in</b> · ${esc(next.ev.title)} · ${esc(dayText)} ${esc(timeText)}</span>`;
+      const isToday = dayKey === istToday();
+      // The countdown sits beside the list that holds the show it counts to.
+      const slot = el.dataset.slot || "today";
+      if ((slot === "today") !== isToday) { el.hidden = true; return; }
+      el.hidden = false;
+      el.innerHTML = `starts in ${fmtLeft(next.at - now)}`;
     });
   };
   tick();
@@ -1341,18 +1338,17 @@ function renderNowStrip(events) {
       : "Next up";
     html = `<div class="now-panel">
       <div class="now-head">
-          <p class="now-kicker"><span class="now-dot" aria-hidden="true"></span>Festival on now <span class="now-sep">·</span> ${esc(dateLine)}</p>
-          <p class="now-day"><b>Day ${day}</b><span>of ${days}</span></p>
-          <div class="now-progress" aria-hidden="true">${ticks}</div>
-        <div class="now-timer" data-now-timer hidden></div>
+        <p class="now-date">${esc(dateLine)}</p>
+        <span class="now-tag"><i class="now-dot" aria-hidden="true"></i>Day ${day} <em>of ${days}</em></span>
+        <div class="now-progress" aria-hidden="true">${ticks}</div>
       </div>
       <div class="now-cols">
         <section class="now-col now-col--today">
-          <h3 class="now-label">On today</h3>
+          <h3 class="now-label">On today <span class="now-timer" data-now-timer data-slot="today" hidden></span></h3>
           ${on.length ? `<ul class="now-list">${on.map(nowItem).join("")}</ul>` : `<p class="now-rest">A rest day — nothing on. The calendar has the whole fortnight.</p>`}
         </section>
         <section class="now-col now-col--next">
-          <h3 class="now-label">${esc(nextLabel)}</h3>
+          <h3 class="now-label">${esc(nextLabel)} <span class="now-timer" data-now-timer data-slot="next" hidden></span></h3>
           ${nextDay.length ? `<ul class="now-list">${nextDay.map(nowItem).join("")}</ul>` : `<p class="now-rest">That was the last one. Thank you, Bengaluru.</p>`}
         </section>
       </div>
@@ -1361,9 +1357,9 @@ function renderNowStrip(events) {
   } else if (phase === "before") {
     const first = pub.slice().sort((a, b) => a.startDate < b.startDate ? -1 : 1)[0];
     html = `<div class="now-panel"><div class="now-head now-head--before">
-        <p class="now-kicker"><span class="now-dot" aria-hidden="true"></span>Opening soon</p>
-        <p class="now-day">${first ? `<b>${esc(calDateText(first))}</b><span>${esc(first.title)}${first.venue ? " · " + esc(first.venue) : ""}</span>` : ""}</p>
-      <div class="now-timer" data-now-timer hidden></div>
+        <p class="now-date">${first ? esc(calDateText(first)) : "Opening soon"}</p>
+        <span class="now-tag"><i class="now-dot" aria-hidden="true"></i>Opening night</span>
+        <p class="now-before">${first ? `${esc(first.title)}${first.venue ? " · " + esc(first.venue) : ""}` : ""} <span class="now-timer" data-now-timer data-slot="next" hidden></span></p>
     </div></div>`;
   } else if (phase === "after") {
     html = `<div class="now-panel"><div class="now-head"><p class="now-kicker">That's a wrap</p>

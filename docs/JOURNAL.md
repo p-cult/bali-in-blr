@@ -2332,3 +2332,15 @@ by the highlights and the carousel.
   second day, marked "continues today" — an event has happened in part once
   its first day is over.
 
+**Today panel, settled (7 Oct, after three rounds).** Vinod: "too cluttered,
+the design is horrible." What settled it: one unit on the left — the date
+as the line, "Day 5 of 16" as a small tag beside it — the sixteen-step bar
+quiet on the right; no "Festival on now", no "Next show in · title · time"
+repeating what the row beneath already says. The countdown reads "starts
+in 05h 43m 29s" beside the "On today" label, directly above the show it
+counts to (it moves to the "Next up" label when the next show is not
+today). Rows on shared columns, no chips. The panel sizes to its own
+column with container queries, so the calendar's narrower column stacks
+it instead of overflowing. Lesson: say each fact once, in the place it
+belongs; the earlier versions repeated the show name three times.
+
