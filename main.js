@@ -107,9 +107,9 @@ function applyPhase() {
 applyPhase();
 
 /* ---------- Look ----------
-   "bright" is the site (made the default 7 Oct 2026): same layout on cream
-   paper, full-colour photographs, dark type. ?look=classic brings the
-   charcoal page back for comparison. The choice sticks for the session. */
+   The charcoal page is the site. ?look=bright shows the same layout on cream
+   paper for comparison; ?look=classic returns to the charcoal page. The
+   choice sticks for the session. */
 (function applyLook() {
   const q = new URLSearchParams(location.search).get("look");
   let look = "";
@@ -117,8 +117,7 @@ applyPhase();
     if (q) sessionStorage.setItem("bali.look", q);
     look = q || sessionStorage.getItem("bali.look") || "";
   } catch (e) { look = q || ""; }
-  // The paper page is the site (7 Oct 2026); ?look=classic brings the charcoal page back.
-  if (look !== "classic") document.documentElement.dataset.look = "bright";
+  if (look === "bright") document.documentElement.dataset.look = "bright";
 })();
 
 /* ---------- Analytics ----------
