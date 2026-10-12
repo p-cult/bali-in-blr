@@ -294,6 +294,11 @@ def main():
         if ev.get("version") == version and (OUT / slug).exists():
             print(f"{slug}: unchanged ({len(photos)} photos, {len(videos)} videos)")
             continue
+        if not photos and not videos:
+            # Nothing visible yet (files not shared, or still uploading): keep
+            # whatever is on-site and look again next hour.
+            print(f"{slug}: folder shows no files to the public yet; skipped")
+            continue
 
         dest = OUT / slug
         if dest.exists():

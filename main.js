@@ -1445,7 +1445,10 @@ async function renderHighlights(events) {
   const [banners, mediaMap] = await Promise.all([loadBannerMap(), loadMediaMap()]);
   list.innerHTML = done.map((ev) => {
     const pics = eventPictures(ev, banners);
-    const media = mediaMap[ev.slug];
+    const m = mediaMap[ev.slug];
+    // A folder that is mapped but still empty (not shared, or awaiting upload)
+    // counts as no media: the poster stands in rather than a blank carousel.
+    const media = m && ((m.photos || []).length || (m.videos || []).length) ? m : null;
     // Every event gets the same carousel; real photos and videos replace the
     // stand-ins the hour they land in the event's Drive folder.
     const carousel = media ? mediaCarouselHTML(ev.slug, media) : mediaCarouselHTML(ev.slug, {}, pics);
