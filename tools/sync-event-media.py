@@ -8,8 +8,8 @@ Where the folders come from, in order:
   1. the schedule sheet (Event List tab): a Drive folder link pasted in a
      "Gallery" column (any heading containing gallery / photos / media / album)
      on the event's row. This is the everyday route: paste the link, done;
-  2. data/event-media.json "events" entries with an explicit "folder";
-  3. a sub-folder of the "parent" folder named like the event.
+  2. a sub-folder of the "parent" folder named like the event.
+Folder addresses are never written to data/event-media.json (it is public).
 Every folder must be shared "anyone with the link".
 
 For each event folder:
@@ -358,6 +358,13 @@ def main():
         changed = True
         print(f"{slug}: {len(out_photos)} photos, {len(out_videos)} videos")
 
+    # data/event-media.json is served publicly, so the team's Drive folder
+    # addresses never go into it: they are read from the sheet on every run.
+    for ev in events.values():
+        for key in ("folder", "folderName", "source"):
+            ev.pop(key, None)
+    for slug in [k for k, v in events.items() if not v]:
+        del events[slug]
     MAP.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n")
     print("updated data/event-media.json" if changed else "no media changes")
     return 0

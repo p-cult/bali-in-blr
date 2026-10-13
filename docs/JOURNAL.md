@@ -2417,3 +2417,14 @@ Drive are untouched. Six more folders were mapped by name on 12 Oct and
 pasted into the sheet's Gallery column; a folder whose files are not yet
 visible to "anyone with the link" is skipped and retried each hour, and the
 page keeps the poster meanwhile.
+
+### 13 Oct 2026 — Drive folders must never be linked from the site
+
+A mistake, fixed the same day. When the Gallery column was wired in (7 Oct),
+the page's older "See photos" button began reading that column too, so once
+plain Drive folder links were pasted there (12 Oct) the button sent visitors
+straight to the team's Drive folders. Now: the Gallery column is read by the
+hourly sync only; the button reads only a `media link` / `album` column and
+refuses any Google Drive or Docs address; and folder addresses are no longer
+written into the public `data/event-media.json`. Rule for the future: the
+site serves its own optimised copies and never links to Drive.

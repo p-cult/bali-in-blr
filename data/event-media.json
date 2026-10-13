@@ -3,8 +3,6 @@
   "parent": "",
   "events": {
     "an-evening-of-kecak-inaugural-public-performance": {
-      "folder": "1WmqJx5UjhC41orisn6q9dFptBh1fbCRC",
-      "source": "sheet",
       "photos": [
         {
           "file": "01",
@@ -84,8 +82,6 @@
       "synced": "2026-10-13T07:55:09Z"
     },
     "shadow-puppetry-performance": {
-      "folder": "1o0xm2skV2ZuRKIjS3e30yrPx42ij7pdC",
-      "source": "sheet",
       "photos": [
         {
           "file": "01",
@@ -165,8 +161,6 @@
       "synced": "2026-10-07T09:12:48Z"
     },
     "dance-movement-workshop": {
-      "folder": "1_ebl_d4jWiXXTajs7Cx4ZntC_HcyfOqt",
-      "source": "sheet",
       "photos": [
         {
           "file": "01",
@@ -245,35 +239,7 @@
       "version": "70fd55ef26",
       "synced": "2026-10-07T09:18:21Z"
     },
-    "kecak-workshop": {
-      "folder": "1WUC3CLNSfjBsm8CGuCxCvAcheT0TJt8s",
-      "folderName": "Kecak workshop pcpa",
-      "source": "given 12 Oct 2026"
-    },
-    "workshop-for-students": {
-      "folder": "11rFn4P4muaNX8orhW0NeytAOX5mc6lZe",
-      "folderName": "workshops kumarans",
-      "source": "given 12 Oct 2026"
-    },
-    "traditional-balinese-dance": {
-      "folder": "10---ZAUQxYVL0cxdALcBgPEGQ3eqHuhE",
-      "folderName": "meenakshi rangamancha",
-      "source": "given 12 Oct 2026"
-    },
-    "shadow-puppetry-workshop": {
-      "folder": "1R-KG8bWf3PvYCuU3FzgwlHONZBswZVO6",
-      "folderName": "mandala puppet workshop",
-      "source": "given 12 Oct 2026"
-    },
-    "kecak-performance": {
-      "folder": "1399sr91_QsJ9L5Iw2bhqnww7lFDMbMV3",
-      "folderName": "pcpa amphi theatre",
-      "source": "given 12 Oct 2026"
-    },
     "indonesian-indian-puppetry-act": {
-      "folder": "1WKOwuGpQub83DqOG9vXd-EbtWMakECJ8",
-      "folderName": "dhathu puppet bali x indian puppet",
-      "source": "given 12 Oct 2026",
       "photos": [
         {
           "file": "01",
