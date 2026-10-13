@@ -717,9 +717,10 @@ function parseSchedule(tsv) {
       endTime: at(cells, "end time"),
       venue: at(cells, "venue"),
       mapUrl: at(cells, "map link"),
-      // A "gallery" (or photos / media / album) column: a Drive folder link
-      // pasted there is pulled on-site hourly for "What has already happened".
-      mediaUrl: atI(cells, find((h) => /gallery|photos|media|album/.test(h) && !/image/.test(h))),
+      // A public album link in a "media link" / "album" column makes the
+      // "See photos" button. The Gallery column is NOT read here: it holds the
+      // team's Drive folders, which only the hourly sync may read.
+      mediaUrl: atI(cells, find((h) => /media link|album|photo link/.test(h))),
       description: at(cells, "description"),
       image: at(cells, "image"),
       ticketUrl: atI(cells, iTicket) || at(cells, "ticket link"),
@@ -944,6 +945,13 @@ function calDuration(s, e) {
   return (Number.isInteger(h) ? h : Math.round(h * 10) / 10) + (h === 1 ? " hr" : " hrs");
 }
 
+/* A link the public may be sent to for an event's photos. Google Drive and
+   Docs addresses are refused outright (13 Oct 2026: a Gallery-column folder
+   link briefly surfaced as a "See photos" button). */
+function publicAlbumUrl(u) {
+  return /(^|\/\/|\.)(drive|docs)\.google\.com\//i.test(String(u || "")) ? "" : u;
+}
+
 /* Normalise either the sheet shape or the local fallback JSON into one model. */
 function normaliseEvent(raw, i) {
   const pick = (...keys) => {
@@ -966,7 +974,9 @@ function normaliseEvent(raw, i) {
     mapUrl: pick("mapUrl", "map link"),
     // Photos/album of a concluded event: paste a link in a "media link"
     // (or photos / gallery / album) column and its button says "See photos".
-    mediaUrl: toActionUrl(pick("mediaUrl", "media link", "media", "photos", "photo link", "gallery", "gallery link", "album")),
+    // Never a Google Drive / Docs address: the team's working folders must not
+    // be linked from the public site, whatever column they were pasted in.
+    mediaUrl: publicAlbumUrl(toActionUrl(pick("mediaUrl", "media link", "photo link", "album"))),
     description: pick("description"),
     image: toImageUrl(pick("image")),
     // Keep the Drive id so the poster can fall back to the live Drive copy
