@@ -36,7 +36,7 @@ jobs:
 
       - name: Ensure an image tool is available
         run: |
-          python3 -m pip install --quiet --upgrade Pillow
+          python3 -m pip install --quiet --upgrade Pillow rawpy   # rawpy: camera raw galleries
           # The script picks magick / convert / Pillow in that order. Fail loudly
           # rather than silently saving logos as opaque JPEG, which would put a
           # white box on the cream partner tile.

@@ -13,7 +13,9 @@ Where the folders come from, in order:
 Every folder must be shared "anyone with the link".
 
 For each event folder:
-  - photos (jpg/png/webp/heic) are downloaded and saved as
+  - photos (jpg/png/webp/heic, and camera raw: cr2/cr3/nef/arw/dng/raf/orf/rw2,
+    for which Drive's own rendered preview is used, or the raw is decoded
+    with rawpy when Drive has no preview) are downloaded and saved as
     assets/media/<slug>/<n>.jpg plus <n>-800.webp, every one fitted inside
     800 x 800 px and squeezed under 300 KB (the site never serves more);
   - videos (mp4/mov/m4v/webm) are NOT downloaded — the site plays them in
@@ -38,7 +40,8 @@ SCHEDULE_FEED = ("https://script.google.com/macros/s/AKfycbyKFbh1PSrMO-TPYCiGtXD
 FOLDER_RE = re.compile(r"drive\.google\.com/drive/(?:u/\d+/)?folders/([A-Za-z0-9_-]{25,})")
 MAP = ROOT / "data" / "event-media.json"
 OUT = ROOT / "assets" / "media"
-IMG_EXT = re.compile(r"\.(jpe?g|png|webp|tiff?|heic)$", re.I)
+IMG_EXT = re.compile(r"\.(jpe?g|png|webp|tiff?|heic|cr2|cr3|nef|arw|dng|raf|orf|rw2)$", re.I)
+RAW_EXT = re.compile(r"\.(cr2|cr3|nef|arw|dng|raf|orf|rw2)$", re.I)
 VID_EXT = re.compile(r"\.(mp4|mov|m4v|webm|mkv)$", re.I)
 MAX_PHOTOS = 12
 MAX_SIDE = 800            # longest side of any gallery image served
@@ -137,6 +140,28 @@ def save_under(im, path, fmt, start_q):
         if Path(path).stat().st_size <= MAX_BYTES or q <= 30:
             return
         q -= 8
+
+
+def fetch_photo(fid, name, dest):
+    """Drive's rendered preview (also made for camera raw files); if that is
+    not a usable image and the file is raw, download it and decode with rawpy."""
+    try:
+        dest.write_bytes(get(f"https://drive.google.com/thumbnail?id={fid}&sz=w2400"))
+        with Image.open(dest) as im:
+            im.verify()
+        return True
+    except Exception as e:
+        if not RAW_EXT.search(name):
+            raise
+        print(f"    no Drive preview for {name} ({e}); decoding the raw", file=sys.stderr)
+    import rawpy
+    raw_path = dest.with_suffix(".raw")
+    raw_path.write_bytes(get(f"https://drive.google.com/uc?export=download&confirm=t&id={fid}", tries=2))
+    with rawpy.imread(str(raw_path)) as r:
+        rgb = r.postprocess(use_camera_wb=True, no_auto_bright=False, output_bps=8)
+    Image.fromarray(rgb).save(str(dest), "JPEG", quality=92)
+    raw_path.unlink(missing_ok=True)
+    return True
 
 
 def optimise(src, dest_base):
@@ -309,7 +334,7 @@ def main():
             for i, (fid, n) in enumerate(photos, 1):
                 raw = Path(td) / f"p{i}"
                 try:
-                    raw.write_bytes(get(f"https://drive.google.com/thumbnail?id={fid}&sz=w2400"))
+                    fetch_photo(fid, n, raw)
                 except Exception as e:
                     print(f"  {slug}: photo {n} failed: {e}", file=sys.stderr)
                     continue

@@ -2405,3 +2405,15 @@ Puppetry, every one within 800 px and under 300 KB, and the home page's
 "What has already happened" carousels show them. From here the hourly job
 picks up any new folder chip in the Gallery column on its own; the Drive
 originals are read only, never changed.
+
+### 13 Oct 2026 — galleries from camera raw files
+
+Some event folders hold only camera raw files (the 12 Oct puppetry folder is
+28 `.CR3`). The media sync now accepts raw formats: it takes Drive's own
+rendered preview of each raw file and fits it to the usual 800 px / 300 KB
+gallery size as JPG and WebP; if Drive has no preview it downloads the raw
+and decodes it with `rawpy` (added to the hourly workflow). Originals on
+Drive are untouched. Six more folders were mapped by name on 12 Oct and
+pasted into the sheet's Gallery column; a folder whose files are not yet
+visible to "anyone with the link" is skipped and retried each hour, and the
+page keeps the poster meanwhile.
