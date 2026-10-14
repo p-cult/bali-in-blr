@@ -341,15 +341,29 @@ a.now-venue:hover span { text-decoration: underline; }
 .mc-dot { width: 6px; height: 6px; padding: 0; border: 0; border-radius: 50%; background: rgba(27, 29, 33, 0.3); cursor: pointer; transition: transform 0.15s ease, background 0.15s ease; }
 .mc-dot.is-active { background: var(--accent); transform: scale(1.35); }
 .hl-mono { font-family: var(--display); font-weight: 900; font-size: 2.4rem; letter-spacing: 0.04em; color: var(--copper); opacity: 0.6; }
-.hl-body { padding: 1.4rem 1.6rem 1.4rem 0; }
-.hl-when { margin: 0 0 0.5rem; font-family: var(--display); font-size: 0.66rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--accent-2); }
-.hl-sep { color: var(--muted-2); margin: 0 0.2rem; }
-.hl-live { display: inline-flex; align-items: center; gap: 0.4rem; margin-left: 0.6rem; color: var(--accent); }
-.hl-title { margin: 0 0 0.6rem; font-family: var(--display); font-size: 1.3rem; font-weight: 800; line-height: 1.1; text-transform: uppercase; }
-.hl-title a { color: var(--ink); text-decoration: none; }
+.hl-body { padding: 1.6rem 1.8rem 1.6rem 0; }
+/* The card's type, from loud to quiet: title (display, heavy, large) ·
+   kicker and date (copper labels) · venue and text (sans, muted) · the one
+   action in orange. Qualified with "p" so ".section p" cannot grey them. */
+.hl .hl-body p.hl-kicker { display: flex; align-items: center; gap: 0.75rem; margin: 0 0 0.7rem; font-family: var(--display); font-size: 0.68rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent-2); }
+.hl-cat { display: inline-flex; align-items: center; gap: 0.6rem; }
+.hl-cat::before { content: ""; width: 1.6rem; height: 2px; background: var(--copper); }
+.hl-live { display: inline-flex; align-items: center; gap: 0.4rem; letter-spacing: 0.12em; color: var(--accent); }
+.hl-title { margin: 0 0 0.75rem; font-family: var(--display); font-size: clamp(1.35rem, 2.1vw, 1.75rem); font-weight: 800; line-height: 1.05; letter-spacing: -0.01em; text-transform: uppercase; }
+.hl-title a { color: var(--ink); text-decoration: none; transition: color 0.15s ease; }
 .hl-title a:hover { color: var(--accent-2); }
-.section .hl-desc { margin: 0 0 1rem; font-size: 0.95rem; line-height: 1.6; color: var(--muted); }
+.hl .hl-body p.hl-when { display: flex; flex-wrap: wrap; align-items: center; gap: 0.35rem 1.1rem; margin: 0 0 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--line); font-size: 0.92rem; line-height: 1.3; color: var(--muted); }
+.hl-date { font-family: var(--display); font-weight: 800; letter-spacing: 0.02em; color: var(--accent-2); white-space: nowrap; }
+.hl-venue { display: inline-flex; align-items: center; gap: 0.35rem; min-width: 0; color: var(--ink); font-weight: 500; }
+.hl-venue svg { width: 14px; height: 14px; flex: none; color: var(--copper); }
+.section .hl .hl-desc { margin: 0 0 1.2rem; font-size: 0.95rem; line-height: 1.6; color: var(--muted-2); }
+.hl-lede { color: var(--ink); font-weight: 500; }
 .hl-act { display: flex; flex-wrap: wrap; align-items: center; gap: 0.9rem; margin: 0; font-size: 0.88rem; }
+.hl-go { display: inline-flex; align-items: center; gap: 0.45rem; font-family: var(--display); font-size: 0.72rem; font-weight: 800; letter-spacing: 0.16em; text-transform: uppercase; color: var(--accent); text-decoration: none; }
+.hl-go span { transition: transform 0.15s ease; }
+.hl-go:hover span { transform: translateX(4px); }
+.hl { transition: border-color 0.2s ease; }
+.hl:hover { border-color: rgba(200, 121, 65, 0.55); }
 
 /* ---------- Calendar: concluded row ---------- */
 .cal-past { padding: 1rem 1.1rem 1.1rem; background: var(--bg-3); border: 1px solid var(--line); border-radius: var(--radius); }

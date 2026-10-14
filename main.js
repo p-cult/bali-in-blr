@@ -1470,6 +1470,10 @@ async function renderHighlights(events) {
     const album = safeUrl(ev.mediaUrl);
     const desc = ev.description ? String(ev.description) : "";
     const short = desc.length > 240 ? desc.slice(0, 237).replace(/\s+\S*$/, "") + "…" : desc;
+    // The first sentence leads in brighter type; the rest follows quieter.
+    const cut = short.search(/[.!?](\s|$)/);
+    const lede = cut > 0 && cut < short.length - 1 ? short.slice(0, cut + 1) : "";
+    const rest = lede ? short.slice(lede.length) : short;
     // Real photos and videos from the event's Drive folder when they exist;
     // until then the banner and the sheet's photograph stand in.
     const gallery = carousel ? `<div class="hl-gallery hl-gallery--carousel">${carousel}</div>`
@@ -1477,10 +1481,11 @@ async function renderHighlights(events) {
     return `<article class="hl" data-category="${esc(ev.category || "")}">
       ${gallery}
       <div class="hl-body">
-        <p class="hl-when">${esc(calDateText(ev))}${ev.venue ? ` <span class="hl-sep">·</span> ${esc(ev.venue)}` : ""}${!ev.past ? ` <span class="hl-live"><span class="now-dot" aria-hidden="true"></span>Continues today</span>` : ""}</p>
+        <p class="hl-kicker"><span class="hl-cat">${esc(ev.category || "Event")}</span>${!ev.past ? `<span class="hl-live"><span class="now-dot" aria-hidden="true"></span>Continues today</span>` : ""}</p>
         <h3 class="hl-title"><a href="${esc(eventHref(ev))}">${esc(ev.title)}</a></h3>
-        ${short ? `<p class="hl-desc">${esc(short)}</p>` : ""}
-        <p class="hl-act">${album ? `<a class="btn btn-ghost btn-sm" href="${esc(album)}" target="_blank" rel="noopener">See photos</a>` : ""}<a class="text-link" href="${esc(eventHref(ev))}">Event page &rarr;</a></p>
+        <p class="hl-when"><span class="hl-date">${esc(calDateText(ev))}</span>${ev.venue ? `<span class="hl-venue">${CAL_ICONS.pin}<span>${esc(ev.venue)}</span></span>` : ""}</p>
+        ${short ? `<p class="hl-desc">${lede ? `<span class="hl-lede">${esc(lede)}</span>` : ""}${esc(rest)}</p>` : ""}
+        <p class="hl-act">${album ? `<a class="btn btn-ghost btn-sm" href="${esc(album)}" target="_blank" rel="noopener">See photos</a>` : ""}<a class="hl-go" href="${esc(eventHref(ev))}">Event page <span aria-hidden="true">&rarr;</span></a></p>
       </div>
     </article>`;
   }).join("");
