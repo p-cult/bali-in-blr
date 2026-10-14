@@ -2486,3 +2486,12 @@ event's venue and write-up, or set per event in `data/event-collabs.json`
 Rule kept: the page shows only what the Event List tab already publishes
 plus the site's own photo copies. No brief, costing, logistics, capacity or
 seat counts, ever.
+
+### 14 Oct 2026 — open pages now update themselves
+
+Vinod saw the old Today panel hours after the new one went live: a tab
+opened before the change keeps the code it loaded with. `main.js` now asks
+the server every five minutes, and whenever the tab comes back into view,
+which script version the page currently uses; if it has moved on, the page
+reloads. It never reloads while someone is typing in a form. No extra
+bookkeeping: it reads the same `?v=` already bumped on every change.

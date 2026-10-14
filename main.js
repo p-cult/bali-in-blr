@@ -120,6 +120,33 @@ applyPhase();
   if (look === "bright") document.documentElement.dataset.look = "bright";
 })();
 
+/* ---------- Stay current ----------
+   A page left open (or kept by the browser) keeps the code it loaded with,
+   so a fix published since never shows (14 Oct 2026: an hours-old tab still
+   drew the old Today panel). Every few minutes, and whenever the tab comes
+   back into view, ask the server for the page's current script version; if
+   it has moved on, reload. Never while someone is typing in a form. */
+(function stayCurrent() {
+  const mine = (document.querySelector('script[src*="main.js?v="]') || {}).src || "";
+  const have = (mine.match(/main\.js\?v=([^&"]+)/) || [])[1];
+  if (!have || !/^https?:/.test(location.protocol)) return;
+  let busy = false;
+  document.addEventListener("input", () => { busy = true; }, true);
+  async function check() {
+    if (busy || document.hidden) return;
+    const a = document.activeElement;
+    if (a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) return;
+    try {
+      const res = await fetch(location.pathname + "?stay=" + Date.now(), { cache: "no-store" });
+      if (!res.ok) return;
+      const now = ((await res.text()).match(/main\.js\?v=([^&"]+)/) || [])[1];
+      if (now && now !== have) location.reload();
+    } catch (e) { /* offline: try again later */ }
+  }
+  setInterval(check, 5 * 60 * 1000);
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) check(); });
+})();
+
 /* ---------- Analytics ----------
    Nothing loads until an id is filled in below, so the site ships with no
    trackers at all. Only ids and campaign refs are ever sent — never a name,
