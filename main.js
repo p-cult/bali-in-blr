@@ -1457,8 +1457,11 @@ async function renderHighlights(events) {
     .filter((e) => !e.notPublic && e.startDate && (e.past || e.startDate < today))
     .sort((a, b) => a.startDate < b.startDate ? 1 : -1);
   if (!done.length) { sec.hidden = true; return; }
-  const [banners, mediaMap] = await Promise.all([loadBannerMap(), loadMediaMap()]);
+  const [banners, mediaMap, , picks] = await Promise.all([loadBannerMap(), loadMediaMap(), loadCollaborators(),
+    loadJSON(SITE_ROOT + "data/event-collabs.json").catch(() => ({}))]);
   list.innerHTML = done.map((ev) => {
+    // Top-right of the card: the event's collaborators, real logos only.
+    const logos = eventCollabsNamed(ev, picks).slice(0, 3).map((c) => collabMark(c, "hl-logo")).join("");
     const pics = eventPictures(ev, banners);
     const m = mediaMap[ev.slug];
     // A folder that is mapped but still empty (not shared, or awaiting upload)
@@ -1481,7 +1484,10 @@ async function renderHighlights(events) {
     return `<article class="hl" data-category="${esc(ev.category || "")}">
       ${gallery}
       <div class="hl-body">
-        <p class="hl-kicker"><span class="hl-cat">${esc(ev.category || "Event")}</span>${!ev.past ? `<span class="hl-live"><span class="now-dot" aria-hidden="true"></span>Continues today</span>` : ""}</p>
+        <div class="hl-top">
+          <p class="hl-kicker"><span class="hl-cat">${esc(ev.category || "Event")}</span>${!ev.past ? `<span class="hl-live"><span class="now-dot" aria-hidden="true"></span>Continues today</span>` : ""}</p>
+          ${logos ? `<span class="hl-logos" aria-label="In collaboration with">${logos}</span>` : ""}
+        </div>
         <h3 class="hl-title"><a href="${esc(eventHref(ev))}">${esc(ev.title)}</a></h3>
         <p class="hl-when"><span class="hl-date">${esc(calDateText(ev))}</span>${ev.venue ? `<span class="hl-venue">${CAL_ICONS.pin}<span>${esc(ev.venue)}</span></span>` : ""}</p>
         ${short ? `<p class="hl-desc">${lede ? `<span class="hl-lede">${esc(lede)}</span>` : ""}${esc(rest)}</p>` : ""}
@@ -1789,16 +1795,50 @@ function collabMark(p, cls) {
 /* An event's collaborators (a comma-separated list of names in the schedule
    sheet), shown as their logos — or a dummy monogram when no logo yet. Empty
    when the event names none. */
-function calCollaborators(ev) {
-  // Explicit names in a `collaborators` column win; otherwise auto-match by venue.
+/* An event's collaborators: explicit names in a `collaborators` column win;
+   otherwise the collaborator matched by venue. */
+function eventCollabs(ev) {
   const explicit = String(ev.collaborators || "").split(",").map((s) => s.trim()).filter(Boolean);
-  let entries = [];
-  if (explicit.length) {
-    entries = explicit.map((n) => COLLAB_BY_NAME.get(n.toLowerCase()) || { name: n });
-  } else {
-    const v = collabForVenue(ev.venue);
-    if (v) entries = [v];
+  if (explicit.length) return explicit.map((n) => COLLAB_BY_NAME.get(n.toLowerCase()) || { name: n });
+  const v = collabForVenue(ev.venue);
+  return v ? [v] : [];
+}
+/* Collaborators the event's own words name: venue, title and description
+   ("In association with Dhaatu Puppet Museum and Mandala Cultural Centre").
+   A partner matches on its distinctive first word as a whole word, or on a
+   known full name for an acronym. Venue match first, then text order. */
+const COLLAB_ALIASES = {
+  "biaf": ["bengaluru international arts festival"],
+  "ime": ["indian music experience"],
+  "chowdiah": ["chowdiah"],
+  "kumarans": ["kumaran"],
+};
+function eventCollabsNamed(ev, picks) {
+  const chosen = !String(ev.collaborators || "").trim() && picks && picks[ev.slug];
+  if (Array.isArray(chosen)) {
+    return chosen.map((n) => COLLAB_BY_NAME.get(String(n).trim().toLowerCase())).filter((c) => c && c.logo);
   }
+  const text = [ev.venue, ev.title, ev.description].join(" ").toLowerCase();
+  const found = [];
+  const add = (c) => { if (c && c.logo && !found.includes(c)) found.push(c); };
+  eventCollabs(ev).forEach(add);
+  const hits = [];
+  COLLAB_BY_NAME.forEach((c, key) => {
+    if (!c.logo || !collabReceived(c)) return;
+    const first = key.split(/\s+/)[0];
+    const words = (COLLAB_ALIASES[key] || []).concat(first.length >= 4 ? [first.replace(/s$/, "")] : []);
+    let at = -1;
+    words.forEach((w) => {
+      const m = new RegExp("\\b" + w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "s?\\b").exec(text);
+      if (m && (at === -1 || m.index < at)) at = m.index;
+    });
+    if (at !== -1) hits.push([at, c]);
+  });
+  hits.sort((x, y) => x[0] - y[0]).forEach(([, c]) => add(c));
+  return found;
+}
+function calCollaborators(ev) {
+  const entries = eventCollabs(ev);
   if (!entries.length) return "";
   const items = entries.map((p) => collabMark(p, "cal-collab-logo")).join("");
   return `<div class="cal-collabs"><span class="cal-collabs-label">In collaboration with</span><span class="cal-collab-logos">${items}</span></div>`;

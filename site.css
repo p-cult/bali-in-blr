@@ -346,6 +346,11 @@ a.now-venue:hover span { text-decoration: underline; }
    kicker and date (copper labels) · venue and text (sans, muted) · the one
    action in orange. Qualified with "p" so ".section p" cannot grey them. */
 .hl .hl-body p.hl-kicker { display: flex; align-items: center; gap: 0.75rem; margin: 0 0 0.7rem; font-family: var(--display); font-size: 0.68rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent-2); }
+.hl-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: 0.7rem; }
+.hl .hl-top p.hl-kicker { margin: 0.4rem 0 0; }
+/* The event's collaborators, top right, on the same light chip as the calendar's. */
+.hl-logos { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0.4rem; flex: none; max-width: 55%; }
+.hl-logo { height: 34px; width: auto; max-width: 110px; object-fit: contain; background: var(--cream); border-radius: 4px; padding: 4px 7px; }
 .hl-cat { display: inline-flex; align-items: center; gap: 0.6rem; }
 .hl-cat::before { content: ""; width: 1.6rem; height: 2px; background: var(--copper); }
 .hl-live { display: inline-flex; align-items: center; gap: 0.4rem; letter-spacing: 0.12em; color: var(--accent); }
