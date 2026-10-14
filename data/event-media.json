@@ -317,6 +317,305 @@
       "videos": [],
       "version": "1cc928fb19",
       "synced": "2026-10-13T07:56:17Z"
+    },
+    "kecak-workshop": {
+      "photos": [
+        {
+          "file": "01",
+          "name": "IMG_6270.JPG",
+          "w": 800,
+          "h": 600
+        },
+        {
+          "file": "02",
+          "name": "IMG_6275.JPG",
+          "w": 800,
+          "h": 600
+        },
+        {
+          "file": "03",
+          "name": "IMG_6278.JPG",
+          "w": 800,
+          "h": 600
+        },
+        {
+          "file": "04",
+          "name": "IMG_6305.JPG",
+          "w": 800,
+          "h": 600
+        },
+        {
+          "file": "05",
+          "name": "IMG_6349.JPG",
+          "w": 600,
+          "h": 800
+        },
+        {
+          "file": "06",
+          "name": "IMG_E6280.JPG",
+          "w": 800,
+          "h": 600
+        },
+        {
+          "file": "07",
+          "name": "IMG_E6314.JPG",
+          "w": 800,
+          "h": 600
+        },
+        {
+          "file": "08",
+          "name": "IMG_E6341.JPG",
+          "w": 800,
+          "h": 450
+        }
+      ],
+      "videos": [],
+      "version": "a203fd204d",
+      "synced": "2026-10-14T07:37:10Z"
+    },
+    "workshop-for-students": {
+      "photos": [
+        {
+          "file": "01",
+          "name": "IMG_6713.JPG",
+          "w": 800,
+          "h": 600
+        },
+        {
+          "file": "02",
+          "name": "IMG_6788.JPG",
+          "w": 800,
+          "h": 600
+        },
+        {
+          "file": "03",
+          "name": "IMG_6819.JPG",
+          "w": 800,
+          "h": 600
+        },
+        {
+          "file": "04",
+          "name": "IMG_6835.JPG",
+          "w": 800,
+          "h": 600
+        },
+        {
+          "file": "05",
+          "name": "IMG_E6639.JPG",
+          "w": 600,
+          "h": 800
+        },
+        {
+          "file": "06",
+          "name": "IMG_E6655.JPG",
+          "w": 800,
+          "h": 600
+        },
+        {
+          "file": "07",
+          "name": "IMG_E6678.JPG",
+          "w": 800,
+          "h": 600
+        },
+        {
+          "file": "08",
+          "name": "IMG_E6737.JPG",
+          "w": 800,
+          "h": 600
+        },
+        {
+          "file": "09",
+          "name": "IMG_E6739.JPG",
+          "w": 800,
+          "h": 600
+        },
+        {
+          "file": "10",
+          "name": "IMG_E6754.JPG",
+          "w": 800,
+          "h": 600
+        },
+        {
+          "file": "11",
+          "name": "IMG_E6765.JPG",
+          "w": 800,
+          "h": 600
+        },
+        {
+          "file": "12",
+          "name": "IMG_E6838.JPG",
+          "w": 600,
+          "h": 800
+        }
+      ],
+      "videos": [],
+      "version": "388a885eb7",
+      "synced": "2026-10-14T07:37:43Z"
+    },
+    "traditional-balinese-dance": {
+      "photos": [
+        {
+          "file": "01",
+          "name": "VCDR7578.JPG",
+          "w": 800,
+          "h": 534
+        },
+        {
+          "file": "02",
+          "name": "VCDR7614.JPG",
+          "w": 800,
+          "h": 534
+        },
+        {
+          "file": "03",
+          "name": "VCDR7624.JPG",
+          "w": 800,
+          "h": 534
+        },
+        {
+          "file": "04",
+          "name": "VCDR7657.JPG",
+          "w": 800,
+          "h": 534
+        },
+        {
+          "file": "05",
+          "name": "VCDR7727.JPG",
+          "w": 800,
+          "h": 534
+        },
+        {
+          "file": "06",
+          "name": "VCDR7732.JPG",
+          "w": 800,
+          "h": 534
+        },
+        {
+          "file": "07",
+          "name": "VCDR7812.JPG",
+          "w": 800,
+          "h": 534
+        },
+        {
+          "file": "08",
+          "name": "VCDR7828.JPG",
+          "w": 800,
+          "h": 534
+        },
+        {
+          "file": "09",
+          "name": "VCDR7829.JPG",
+          "w": 800,
+          "h": 534
+        },
+        {
+          "file": "10",
+          "name": "VCDR7850.JPG",
+          "w": 800,
+          "h": 534
+        },
+        {
+          "file": "11",
+          "name": "VCDR7856.JPG",
+          "w": 800,
+          "h": 534
+        },
+        {
+          "file": "12",
+          "name": "VCDR7863.JPG",
+          "w": 800,
+          "h": 534
+        }
+      ],
+      "videos": [],
+      "version": "c7e811973d",
+      "synced": "2026-10-14T07:38:46Z"
+    },
+    "shadow-puppetry-workshop": {
+      "photos": [
+        {
+          "file": "01",
+          "name": "IMG_7449.JPG",
+          "w": 800,
+          "h": 600
+        },
+        {
+          "file": "02",
+          "name": "IMG_7453.JPG",
+          "w": 800,
+          "h": 600
+        },
+        {
+          "file": "03",
+          "name": "IMG_7468.JPG",
+          "w": 800,
+          "h": 600
+        },
+        {
+          "file": "04",
+          "name": "IMG_E7467.JPG",
+          "w": 800,
+          "h": 600
+        }
+      ],
+      "videos": [],
+      "version": "ee61b52b5c",
+      "synced": "2026-10-14T07:38:59Z"
+    },
+    "kecak-performance": {
+      "photos": [
+        {
+          "file": "01",
+          "name": "IMG_7508.JPG",
+          "w": 800,
+          "h": 600
+        },
+        {
+          "file": "02",
+          "name": "IMG_7518.JPG",
+          "w": 600,
+          "h": 800
+        },
+        {
+          "file": "03",
+          "name": "IMG_7547.JPG",
+          "w": 800,
+          "h": 600
+        },
+        {
+          "file": "04",
+          "name": "IMG_7548.JPG",
+          "w": 600,
+          "h": 800
+        },
+        {
+          "file": "05",
+          "name": "IMG_7602.JPG",
+          "w": 600,
+          "h": 800
+        },
+        {
+          "file": "06",
+          "name": "IMG_7605.JPG",
+          "w": 800,
+          "h": 600
+        },
+        {
+          "file": "07",
+          "name": "IMG_7609.JPG",
+          "w": 450,
+          "h": 800
+        },
+        {
+          "file": "08",
+          "name": "IMG_E7523.JPG",
+          "w": 800,
+          "h": 600
+        }
+      ],
+      "videos": [],
+      "version": "71963d1e60",
+      "synced": "2026-10-14T07:39:22Z"
     }
   }
 }
