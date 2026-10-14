@@ -695,6 +695,44 @@
       "videos": [],
       "version": "a97f869ada",
       "synced": "2026-10-14T08:35:18Z"
+    },
+    "lecture-demonstration": {
+      "photos": [
+        {
+          "file": "01",
+          "name": "IMG_6545.JPG",
+          "w": 800,
+          "h": 450
+        },
+        {
+          "file": "02",
+          "name": "IMG_6565.JPG",
+          "w": 800,
+          "h": 600
+        },
+        {
+          "file": "03",
+          "name": "IMG_E6542.JPG",
+          "w": 800,
+          "h": 600
+        }
+      ],
+      "videos": [],
+      "version": "92ec1ecb28",
+      "synced": "2026-10-14T12:18:05Z"
+    },
+    "dance-movement-workshop-2": {
+      "photos": [
+        {
+          "file": "01",
+          "name": "IMG_E7336.JPG",
+          "w": 800,
+          "h": 450
+        }
+      ],
+      "videos": [],
+      "version": "85c99f55ce",
+      "synced": "2026-10-14T12:18:08Z"
     }
   }
 }

@@ -353,6 +353,16 @@ def main():
                 except Exception:
                     has_poster = False
                 out_videos.append({"id": fid, "name": n, "poster": poster.name if has_poster else ""})
+        # Videos would play in Drive's own player, which exposes the team's
+        # Drive file to visitors (rule of 13 Oct 2026: the site never points
+        # to Drive). They are counted, not published, until they are hosted
+        # some other way.
+        if out_videos:
+            print(f"  {slug}: {len(out_videos)} video(s) found, not published (Drive player)")
+            for vd in out_videos:
+                if vd.get("poster"):
+                    (dest / vd["poster"]).unlink(missing_ok=True)
+        out_videos = []
         ev.update({"photos": out_photos, "videos": out_videos, "version": version,
                    "synced": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())})
         changed = True

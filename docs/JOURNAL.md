@@ -2551,3 +2551,15 @@ that file.
 - Say each fact once on a page. The first event page repeated the date,
   time, category and "Concluded"; the side panel now holds only what the
   band and heading do not.
+
+### 14 Oct 2026 (evening) — two more galleries; videos held back
+
+Lecture Demonstration (3 photos) and Dance Movement Workshop - 2 (1 photo)
+now have galleries, so every finished public event has photos. The Lecture
+Demonstration folder also holds a video. Videos were designed to play in
+Google Drive's own player, but that player shows visitors the team's Drive
+file and offers to open it in Drive, against the 13 Oct rule that the site
+never points to Drive. The sync now counts videos and does not publish
+them; their Drive file ids no longer go into the public media file. To show
+videos later they need a host of their own (for example the Foundation's
+YouTube channel), which is Vinod's call.
