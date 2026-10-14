@@ -2428,3 +2428,48 @@ hourly sync only; the button reads only a `media link` / `album` column and
 refuses any Google Drive or Docs address; and folder addresses are no longer
 written into the public `data/event-media.json`. Rule for the future: the
 site serves its own optimised copies and never links to Drive.
+
+### 14 Oct 2026 — status in plain words: festival photos on the site
+
+**Where things stand (day 12 of 16)**
+
+| | |
+|---|---|
+| Concluded events with a photo gallery on the home page | 9 |
+| Photos on the site | 92 |
+| Concluded events still showing their poster (no folder yet) | 3 |
+| New collaborator added | HDFC Bank (12 Oct) |
+
+**What visitors see.** Under "What has already happened", each finished
+event has a small slideshow of its photos with a short write-up from the
+sheet. Every photo is a light copy made for the web, at most 800 pixels on
+its longest side and under 300 KB, so the page stays quick on a phone.
+
+**How photos get there.** Someone on the team puts the event's photos in a
+Google Drive folder, shares the folder and its files as "anyone with the
+link", and pastes the folder into that event's row in the **Gallery**
+column of the Event List tab. Within the hour the site picks them up on its
+own. Camera raw files (for example `.CR3`) work too; the site converts them.
+The originals on Drive are never changed, and the site never links to Drive.
+
+**Still waiting for photos:** Lecture Demonstration (8 Oct), Dance Movement
+Workshop - 2 (10 Oct), Traditional Balinese Dance × Yakshagana (13 Oct).
+Workshop for Students has photos synced but stays off the public page, as
+the sheet marks it for Kumarans students only.
+
+**Lessons from this stretch**
+- A shared folder is not enough: the files inside must be shared as well.
+  Five folders sat empty to the public for two days until they were.
+- Before feeding a sheet column into the page, check every part of the page
+  that reads the same field. The Gallery column briefly surfaced Drive
+  folders through an old "See photos" button (13 Oct, fixed the same day).
+- New collaborator logos supplied as SVG go into `assets/collab/` and
+  `data/collab-logos.json`; a vector entry there always wins over the
+  sheet's Drive file, which the sync would rasterise (HDFC Bank, 12 Oct).
+
+**For the next developer.** `tools/sync-event-media.py` reads the Gallery
+column through the second bridge deployment (it resolves Drive chips to
+links), rejoins rows broken by line breaks in descriptions, accepts raw
+formats via Drive's preview with a `rawpy` fallback, skips folders that show
+no files, and never writes folder addresses into the public
+`data/event-media.json`.
