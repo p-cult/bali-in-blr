@@ -2563,3 +2563,13 @@ never points to Drive. The sync now counts videos and does not publish
 them; their Drive file ids no longer go into the public media file. To show
 videos later they need a host of their own (for example the Foundation's
 YouTube channel), which is Vinod's call.
+
+### 14 Oct 2026 (night) — renamed events lose their banner
+
+The 18 Oct event was renamed in the sheet from "Closing Day" to "The Finale"
+and moved to Suchitra. Banners are matched to events by a name-based key, so
+a renamed event no longer has a banner folder, and its new "Closing day"
+folder in the banners parent had never been connected. Now connected; the
+two IME events also point at their own sub-folders ("LecDem", "Dance demo")
+inside the new IME folder. Watch for this: after renaming an event in the
+sheet, its banner folder must be re-pointed in `data/event-banners.json`.

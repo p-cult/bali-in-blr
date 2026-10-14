@@ -54,12 +54,30 @@
       ]
     },
     "lecture-demonstration": {
-      "folder": "1zNIOclWpNSnDAIt9p9EfbEkzQyYrYKvP",
-      "label": "IME"
+      "folder": "1YLCVhQMV51YYJo7ywk03_GPU4dVHBVmz",
+      "label": "IME / LecDem",
+      "source": "1UwN6fgGm-xJrgiRPOEKdosCmu8k93M4y",
+      "version": "1UwN6fgGm--2",
+      "fmt": 2,
+      "webp": [
+        "lecture-demonstration-1600.webp",
+        "lecture-demonstration-800.webp"
+      ],
+      "picked": "BMS-Landscape.png (1920x960)",
+      "updated": "2026-10-14"
     },
     "balinese-dance-demonstration": {
-      "folder": "1zNIOclWpNSnDAIt9p9EfbEkzQyYrYKvP",
-      "label": "IME"
+      "folder": "1VmTV2CPeMu1BUAjAvZY6BkxCluHQIMIj",
+      "label": "IME / Dance demo",
+      "source": "1UeAdScf2xGaIQW7n7c8PuCkSqSUj-1vC",
+      "version": "1UeAdScf2x-2",
+      "fmt": 2,
+      "webp": [
+        "balinese-dance-demonstration-1600.webp",
+        "balinese-dance-demonstration-800.webp"
+      ],
+      "picked": "BMS-Landscape.png (1920x960)",
+      "updated": "2026-10-14"
     },
     "kecak-workshop": {
       "folder": "17t5vuKkKbe7JmLslQNyzUg4SACjWa4vC",
