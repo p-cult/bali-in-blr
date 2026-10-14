@@ -54,11 +54,11 @@
       ]
     },
     "lecture-demonstration": {
-      "folder": "1oqw_L0X5RB1ORgM_cQ3rvxFg13Q5-eCX",
+      "folder": "1zNIOclWpNSnDAIt9p9EfbEkzQyYrYKvP",
       "label": "IME"
     },
     "balinese-dance-demonstration": {
-      "folder": "1oqw_L0X5RB1ORgM_cQ3rvxFg13Q5-eCX",
+      "folder": "1zNIOclWpNSnDAIt9p9EfbEkzQyYrYKvP",
       "label": "IME"
     },
     "kecak-workshop": {
@@ -125,6 +125,19 @@
         "traditional-balinese-dance-yakshagana-performance-1600.webp",
         "traditional-balinese-dance-yakshagana-performance-800.webp"
       ]
+    },
+    "the-finale": {
+      "folder": "1e812ugZjEhUGUZAWZZ1m7IdiOnF8Zjz_",
+      "label": "Closing day",
+      "source": "1sBJf7VJNtfwLMNSX3_r_BQbXa8Sjk3ij",
+      "version": "1sBJf7VJNt-2",
+      "fmt": 2,
+      "webp": [
+        "the-finale-1600.webp",
+        "the-finale-800.webp"
+      ],
+      "picked": "BMS-Landscape.png (1920x960)",
+      "updated": "2026-10-14"
     }
   }
 }
