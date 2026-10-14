@@ -1274,7 +1274,10 @@ function nowItem(ev, withTime) {
   const page = ticketsLive(ev) || ev.past ? eventHref(ev) : "";
   const title = page ? `<a class="now-title" href="${esc(page)}">${esc(ev.title)}</a>` : `<span class="now-title">${esc(ev.title)}</span>`;
   const act = page ? `<a class="now-go" href="${esc(page)}" aria-label="${esc(ev.title)} — details">&rarr;</a>` : '<span class="now-go now-go--none"></span>';
-  return `<li class="now-item${withTime ? "" : " now-item--notime"}">${withTime ? `<span class="now-when">${when}</span>` : ""}${title}${venue}${act}</li>`;
+  // Every entry has the same three lines: time (with the countdown when this
+  // is the next show), title, venue; the arrow sits at the right.
+  const day = withTime || ev.startDate;
+  return `<li class="now-item"><span class="now-when"><span>${when}</span><span class="now-timer" data-now-timer data-slug="${esc(ev.slug)}" data-day="${esc(day)}" hidden></span></span>${title}${venue}${act}</li>`;
 }
 
 /* The next show's start as an instant. Dates in the sheet are IST dates and
@@ -1320,9 +1323,11 @@ function startCountdown(events) {
       if (!next) { el.hidden = true; return; }
       const dayKey = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata" }).format(new Date(next.at));
       const isToday = dayKey === istToday();
-      // The countdown sits beside the list that holds the show it counts to.
-      const slot = el.dataset.slot || "today";
-      if ((slot === "today") !== isToday) { el.hidden = true; return; }
+      // On the entry it counts to (the "before" strip has no entries: there
+      // the one timer has no slug and shows whatever is next).
+      if (el.dataset.slug) {
+        if (el.dataset.slug !== next.ev.slug || el.dataset.day !== dayKey) { el.hidden = true; return; }
+      } else if ((el.dataset.slot || "today") === "today" && !isToday) { el.hidden = true; return; }
       el.hidden = false;
       el.innerHTML = `starts in ${fmtLeft(next.at - now)}`;
     });
@@ -1356,12 +1361,12 @@ function renderNowStrip(events) {
       </div>
       <div class="now-cols">
         <section class="now-col now-col--today">
-          <h3 class="now-label">${esc(dateLine)}${on.length === 1 && on[0].startTime ? ` <span class="now-sep">·</span> ${esc(on[0].startTime)}` : ""} <span class="now-timer" data-now-timer data-slot="today" hidden></span></h3>
-          ${on.length ? `<ul class="now-list">${on.map((e) => nowItem(e, on.length > 1)).join("")}</ul>` : `<p class="now-rest">A rest day — nothing on. The calendar has the whole fortnight.</p>`}
+          <h3 class="now-label">${esc(dateLine)}</h3>
+          ${on.length ? `<ul class="now-list">${on.map((e) => nowItem(e, today)).join("")}</ul>` : `<p class="now-rest">A rest day — nothing on. The calendar has the whole fortnight.</p>`}
         </section>
         <section class="now-col now-col--next">
-          <h3 class="now-label">${esc(nextLabel)}${nextDay.length === 1 && nextDay[0].startTime ? ` <span class="now-sep">·</span> ${esc(nextDay[0].startTime)}` : ""} <span class="now-timer" data-now-timer data-slot="next" hidden></span></h3>
-          ${nextDay.length ? `<ul class="now-list">${nextDay.map((e) => nowItem(e, nextDay.length > 1)).join("")}</ul>` : `<p class="now-rest">That was the last one. Thank you, Bengaluru.</p>`}
+          <h3 class="now-label">${esc(nextLabel)}</h3>
+          ${nextDay.length ? `<ul class="now-list">${nextDay.map((e) => nowItem(e, nextDay[0].startDate)).join("")}</ul>` : `<p class="now-rest">That was the last one. Thank you, Bengaluru.</p>`}
         </section>
       </div>
       <p class="now-all"><a class="text-link" href="#calendar">Full calendar &rarr;</a></p>
