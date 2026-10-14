@@ -1,5 +1,16 @@
 {
   "_note": "Which collaborator logos sit top right on an event's 'What has already happened' card, by event slug, using names from the Collab / venues tab. An event listed here shows exactly these; others are matched from their venue and write-up. A 'collaborators' column in the Event List tab, when added, wins over this file.",
-  "shadow-puppetry-workshop": ["Mandala Bengaluru"],
-  "indonesian-indian-puppetry-act": ["Mandala Bengaluru", "Dhaatu"]
+  "shadow-puppetry-workshop": [
+    "Mandala Bengaluru"
+  ],
+  "indonesian-indian-puppetry-act": [
+    "Mandala Bengaluru",
+    "Dhaatu"
+  ],
+  "traditional-balinese-dance-yakshagana-performance": [
+    "Chowdiah",
+    "BIAF",
+    "AIM",
+    "Rajarajeshwari Kalaniketan"
+  ]
 }

@@ -2473,3 +2473,16 @@ links), rejoins rows broken by line breaks in descriptions, accepts raw
 formats via Drive's preview with a `rawpy` fallback, skips folders that show
 no files, and never writes folder addresses into the public
 `data/event-media.json`.
+
+### 14 Oct 2026 — richer event pages, public data only
+
+Each event page now has a band under the banner (the date large, which day
+of the festival it is, and "starts in…", "On today" or "Concluded"), the
+description with its first sentence brighter, the photos "From the day"
+once an event is over, the collaborators' logos, and three more events from
+the festival. Collaborator logos come from the Collab tab, matched from the
+event's venue and write-up, or set per event in `data/event-collabs.json`
+(the Yakshagana show: Chowdiah, BIAF, AIM, Rajarajeshwari Kalaniketan).
+Rule kept: the page shows only what the Event List tab already publishes
+plus the site's own photo copies. No brief, costing, logistics, capacity or
+seat counts, ever.
