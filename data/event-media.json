@@ -616,6 +616,85 @@
       "videos": [],
       "version": "71963d1e60",
       "synced": "2026-10-14T07:39:22Z"
+    },
+    "traditional-balinese-dance-yakshagana-performance": {
+      "photos": [
+        {
+          "file": "01",
+          "name": "IMG_7053.JPG",
+          "w": 800,
+          "h": 534
+        },
+        {
+          "file": "02",
+          "name": "IMG_7069.JPG",
+          "w": 800,
+          "h": 534
+        },
+        {
+          "file": "03",
+          "name": "IMG_7162.JPG",
+          "w": 800,
+          "h": 533
+        },
+        {
+          "file": "04",
+          "name": "IMG_7175.JPG",
+          "w": 800,
+          "h": 534
+        },
+        {
+          "file": "05",
+          "name": "IMG_7220.JPG",
+          "w": 800,
+          "h": 534
+        },
+        {
+          "file": "06",
+          "name": "IMG_7222.JPG",
+          "w": 800,
+          "h": 534
+        },
+        {
+          "file": "07",
+          "name": "IMG_7354.JPG",
+          "w": 800,
+          "h": 534
+        },
+        {
+          "file": "08",
+          "name": "IMG_7367.JPG",
+          "w": 800,
+          "h": 534
+        },
+        {
+          "file": "09",
+          "name": "IMG_7405.JPG",
+          "w": 800,
+          "h": 534
+        },
+        {
+          "file": "10",
+          "name": "IMG_7453.JPG",
+          "w": 800,
+          "h": 534
+        },
+        {
+          "file": "11",
+          "name": "IMG_7515.JPG",
+          "w": 800,
+          "h": 534
+        },
+        {
+          "file": "12",
+          "name": "IMG_7530.JPG",
+          "w": 800,
+          "h": 534
+        }
+      ],
+      "videos": [],
+      "version": "a97f869ada",
+      "synced": "2026-10-14T08:35:18Z"
     }
   }
 }

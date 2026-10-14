@@ -349,8 +349,8 @@ a.now-venue:hover span { text-decoration: underline; }
 .hl-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: 0.7rem; }
 .hl .hl-top p.hl-kicker { margin: 0.4rem 0 0; }
 /* The event's collaborators, top right, on the same light chip as the calendar's. */
-.hl-logos { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0.4rem; flex: none; max-width: 55%; }
-.hl-logo { height: 34px; width: auto; max-width: 110px; object-fit: contain; background: var(--cream); border-radius: 4px; padding: 4px 7px; }
+.hl-logos { display: flex; flex-wrap: nowrap; justify-content: flex-end; gap: 0.4rem; min-width: 0; max-width: 70%; }
+.hl-logo { flex: 0 1 auto; min-width: 0; height: 34px; width: auto; max-width: 96px; object-fit: contain; background: var(--cream); border-radius: 4px; padding: 4px 7px; }
 .hl-cat { display: inline-flex; align-items: center; gap: 0.6rem; }
 .hl-cat::before { content: ""; width: 1.6rem; height: 2px; background: var(--copper); }
 .hl-live { display: inline-flex; align-items: center; gap: 0.4rem; letter-spacing: 0.12em; color: var(--accent); }

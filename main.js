@@ -1488,7 +1488,10 @@ async function renderHighlights(events) {
     loadJSON(SITE_ROOT + "data/event-collabs.json").catch(() => ({}))]);
   list.innerHTML = done.map((ev) => {
     // Top-right of the card: the event's collaborators, real logos only.
-    const logos = eventCollabsNamed(ev, picks).slice(0, 3).map((c) => collabMark(c, "hl-logo")).join("");
+    // A list set for the event shows in full; a guessed one stops at three.
+    const named = eventCollabsNamed(ev, picks);
+    const chosen = Array.isArray(picks && picks[ev.slug]) && !String(ev.collaborators || "").trim();
+    const logos = (chosen ? named : named.slice(0, 3)).map((c) => collabMark(c, "hl-logo")).join("");
     const pics = eventPictures(ev, banners);
     const m = mediaMap[ev.slug];
     // A folder that is mapped but still empty (not shared, or awaiting upload)
