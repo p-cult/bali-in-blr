@@ -2495,3 +2495,59 @@ the server every five minutes, and whenever the tab comes back into view,
 which script version the page currently uses; if it has moved on, the page
 reloads. It never reloads while someone is typing in a form. No extra
 bookkeeping: it reads the same `?v=` already bumped on every change.
+
+### 14 Oct 2026 (afternoon) — status in plain words, and the day's design work
+
+**Where things stand (day 12 of 16)**
+
+| | |
+|---|---|
+| Finished events with a photo gallery | 10 |
+| Photos on the site | 104 (92 on the public page; the 12 from Workshop for Students stay off it) |
+| Finished events still waiting for photos | Lecture Demonstration, Dance Movement Workshop - 2 |
+
+The Yakshagana show (13 Oct) got its gallery today: 12 photos.
+
+**What changed for visitors today**
+
+- **"On today" panel.** Every show is laid out the same way: time, then
+  title, then venue, with an arrow on the right. The "starts in…" countdown
+  sits on the line of the show it counts down to. Headings carry only the
+  date.
+- **"What has already happened" cards.** Clearer type: a copper label for
+  the kind of show, a larger title, the date in copper with the venue
+  beside it, the first sentence of the write-up brighter, and an orange
+  "Event page" link. The partners' logos sit in the top-right corner of
+  each card.
+- **Event pages.** A band under the banner with the date, the festival day
+  and a countdown or "Concluded"; photos "From the day"; partner logos;
+  three more events. Only public schedule details appear, never costs,
+  briefs, logistics, capacity or seat counts.
+- **Pages keep themselves current.** An open page now reloads by itself
+  when a newer version is published, so nobody is left looking at an old
+  layout.
+
+**Partner logos on cards: how they are chosen**
+
+The site matches partners named in the event's venue and write-up and shows
+up to three. Where the team names the partners for an event, that list is
+shown in full, in `data/event-collabs.json`:
+
+| Event | Logos |
+|---|---|
+| Traditional Balinese Dance × Yakshagana | Chowdiah, BIAF, AIM, Rajarajeshwari Kalaniketan |
+| Indonesian × Indian Puppetry Act | Mandala, Dhaatu |
+| Shadow Puppetry Workshop | Mandala |
+
+A Collaborators column added to the Event List tab would take over from
+that file.
+
+**Lessons**
+
+- A limit that suits guessed lists can hide a chosen one: the Yakshagana
+  card dropped its fourth logo until chosen lists were exempted.
+- "It still looks old" can be an open tab from before the change. Check the
+  live site first; the self-reload now covers this.
+- Say each fact once on a page. The first event page repeated the date,
+  time, category and "Concluded"; the side panel now holds only what the
+  band and heading do not.
