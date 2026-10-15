@@ -736,6 +736,10 @@ a.now-venue:hover span { text-decoration: underline; }
 .partner-logo[alt="Ministry of culture"] { max-height: 72px; }
 .partner-logo[alt="IME"],
 .partner-logo[alt="Chowdiah"] { max-height: 72px; } /* "music academy" ask: IME and Chowdiah (Academy of Music) */
+/* Prabhat's mark is near-square and reads small: 30% larger wherever it appears (client, 15 Oct 2026). */
+.partner-logo[alt="Prabhat arts international"] { max-height: 78px; }
+.hl-logo[alt="Prabhat arts international"] { height: 44px; max-width: 125px; }
+.ev-collab-logo[alt="Prabhat arts international"] { height: 70px; max-width: 220px; }
 /* Dummy monogram stand-in until a real logo lands. On the cream tile. */
 .partner-logo--dummy {
   display: inline-flex;
