@@ -178,3 +178,90 @@ a.fd-link:hover .fd-img { transform: scale(1.06); }
     linear-gradient(90deg, rgba(20, 21, 25, 0.96) 0%, rgba(20, 21, 25, 0.86) 55%, rgba(20, 21, 25, 0.62) 100%),
     image-set(url("assets/festival/bali-yakshagana-finale-1600.webp") type("image/webp"), url("assets/festival/bali-yakshagana-finale.jpg") type("image/jpeg")) center / cover no-repeat;
 }
+
+/* ==================================================================
+   Lower sections, festival treatment
+   ================================================================== */
+
+/* ---- At the heart of the festival: Dr. I Wayan Dibia ---- */
+.feat2 {
+  background:
+    radial-gradient(50rem 36rem at 85% 20%, rgba(228, 171, 14, 0.16), transparent 60%),
+    linear-gradient(160deg, var(--oxblood), var(--maroon));
+}
+.feat2-grid { display: grid; grid-template-columns: 1fr 1.1fr; gap: clamp(2rem, 5vw, 4.5rem); align-items: center; }
+.feat2-media { position: relative; margin: 0; }
+.feat2-media img {
+  display: block; width: 100%; aspect-ratio: 4 / 5; object-fit: cover;
+  border-radius: var(--radius); box-shadow: 0 30px 60px rgba(0, 0, 0, 0.45);
+}
+.feat2-media::before {
+  content: ""; position: absolute; inset: -14px 14px 14px -14px; z-index: -1;
+  border: 1px solid var(--gold); border-radius: var(--radius);
+}
+.feat2-media { z-index: 0; }
+.feat2-media figcaption {
+  position: absolute; left: 1rem; bottom: 1rem; padding: 0.35rem 0.7rem; border-radius: 999px;
+  background: rgba(14, 15, 18, 0.7); backdrop-filter: blur(4px);
+  font-size: 0.78rem; color: var(--ink);
+}
+.feat2 .eyebrow { color: var(--gold); }
+.feat2 h2 { color: var(--ink); font-size: clamp(2rem, 4.5vw, 3.2rem); margin: 0.35rem 0 0.2rem; }
+.feat2-role { color: var(--accent-2); font-family: var(--display); font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.85rem; margin: 0 0 1.2rem; }
+.feat2-text > p { color: var(--muted); line-height: 1.65; }
+.feat2-text > p strong { color: var(--ink); }
+.feat2-facts { list-style: none; padding: 0; margin: 1.8rem 0 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.8rem; }
+.feat2-facts li {
+  padding: 1rem 0.9rem; border-radius: var(--radius);
+  background: rgba(14, 15, 18, 0.28); box-shadow: inset 0 0 0 1px var(--line-warm);
+}
+.feat2-facts b { display: block; font-family: var(--display); font-weight: 900; font-size: 1.9rem; line-height: 1; color: var(--gold); }
+.feat2-facts span { display: block; margin-top: 0.4rem; font-size: 0.8rem; line-height: 1.35; color: var(--rose); }
+
+/* ---- Presented by: a framed photograph on paper ---- */
+.found2-media { position: relative; margin: 0; }
+.found2-media img { display: block; width: 100%; border-radius: var(--radius); box-shadow: 0 24px 48px rgba(27, 29, 33, 0.22); }
+.found2-media::after {
+  content: ""; position: absolute; inset: 14px -14px -14px 14px; z-index: -1;
+  border: 1px solid var(--copper-ox); border-radius: var(--radius);
+}
+.found2-media { z-index: 0; }
+.found2-actions { margin-top: 1.8rem; }
+
+/* ---- Made possible together ---- */
+.collab2 {
+  background:
+    radial-gradient(46rem 26rem at 50% 0%, rgba(255, 90, 60, 0.12), transparent 65%),
+    var(--bg);
+}
+.collab2 .eyebrow { color: var(--gold); }
+.collab2 .section-intro { max-width: 40rem; margin-inline: auto; text-align: center; }
+.collab2 .partners-grid.has-partners { grid-template-columns: repeat(auto-fill, minmax(10.5rem, 1fr)); gap: 0.9rem; }
+.collab2 .partner {
+  min-height: 128px; border: 0; border-radius: var(--radius);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.25), 0 10px 24px rgba(0, 0, 0, 0.18);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.collab2 .partner:hover { transform: translateY(-3px); box-shadow: 0 0 0 2px var(--gold), 0 16px 30px rgba(0, 0, 0, 0.3); }
+
+/* ---- Bring the next festival to life ---- */
+.sup2-lead { font-size: 1.15rem; line-height: 1.55; color: var(--ink) !important; }
+.support-v2 .eyebrow { color: var(--gold); }
+.support-v2 .support-points { gap: 0.8rem; }
+.support-v2 .support-points > div,
+.support-v2 .support-points > div:first-child {
+  padding: 1.1rem 1.2rem; border-top: 0; border-radius: var(--radius);
+  background: rgba(14, 15, 18, 0.55); backdrop-filter: blur(3px);
+  box-shadow: inset 3px 0 0 var(--gold), inset 0 0 0 1px var(--line-warm);
+}
+.support-v2 .support-points dt { color: var(--gold); }
+
+@media (max-width: 960px) {
+  .feat2-grid { grid-template-columns: 1fr; }
+  .feat2-media { max-width: 26rem; margin-inline: auto; }
+}
+@media (max-width: 560px) {
+  .feat2-facts { grid-template-columns: 1fr; }
+  .feat2-facts li { display: flex; align-items: baseline; gap: 0.7rem; }
+  .feat2-facts span { margin-top: 0; }
+}
