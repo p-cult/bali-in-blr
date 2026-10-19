@@ -21,7 +21,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@800&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css?v=hub46" />
-  <link rel="stylesheet" href="site.css?v=80" />
+  <link rel="stylesheet" href="site.css?v=81" />
 </head>
 <body>
   <!-- Google Tag Manager (noscript) -->
@@ -156,10 +156,11 @@
   </section>
 
   <!-- Minimal festival calendar on the home page (main.js renderFestivalDays) -->
-  <section class="section section-tint fdays" id="festival-days" aria-labelledby="fd-title" hidden>
-    <div class="wrap wrap-narrow">
-      <p class="eyebrow" data-content="post.fd.eyebrow">Festival calendar</p>
-      <h2 id="fd-title" data-content="post.fd.title">3 &ndash; 18 October 2026</h2>
+  <section class="section fdays" id="festival-days" aria-labelledby="fd-title" hidden>
+    <div class="wrap">
+      <p class="eyebrow center" data-content="post.fd.eyebrow">Festival calendar</p>
+      <h2 class="center" id="fd-title" data-content="post.fd.title">3 &ndash; 18 October 2026</h2>
+      <p class="fd-intro center" data-content="post.fd.intro">Every performance, workshop and conversation of the sixteen days &mdash; tap one to see its photographs.</p>
       <ol class="fd-list" id="fd-list"></ol>
     </div>
   </section>
@@ -431,6 +432,6 @@
       }
     })();
   </script>
-  <script src="main.js?v=hub123"></script>
+  <script src="main.js?v=hub124"></script>
 </body>
 </html>
