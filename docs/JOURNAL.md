@@ -2665,3 +2665,17 @@ browser only. It reads the same live sheets and scripts as the other admin
 pages, and only totals and programme rows — never names, phones or emails.
 Tool name `reports` in `auth.js`; Kishan does not see it (costing is in it).
 The sign-up lists overlap, so the page never adds them together.
+
+**Reports reads the whole All Things Bali workbook (20 Oct):** at the user's
+request the Reports page now reads every tab of the schedule workbook ("All
+things – Bali in Bengaluru"): Event Brief, Event List, BMS, Collab / venues,
+Indicative costing, Artist Fee, Marketing, Social media, Design, To - Do List,
+Programming, Content, Plan, TravelCache. One general reader (`sheetTab` in
+`admin/reports.html`) finds each tab's header row, drops empty columns, works out
+which columns are numbers, rupees or dates, and leaves out the sheet's own total
+lines (a "Total…" row, or a figure equal to the sum of the other rows) so
+nothing is counted twice. A new tab is added by one line in `WORKBOOK` (its gid
+comes from the workbook's published-tab list). Also added: minted campaign links
+(the Mint tab, via `?sheet=links`) and photos/videos per event
+(`data/event-media.json`). The registration sheet stays counts-only — its rows
+hold personal details and never reach any page.

@@ -93,7 +93,7 @@
   </div>
 
   <h1>Reports</h1>
-  <p class="sub">Build any report from the live festival data: pick a source, filter, group and total. Print it, save it as a PDF or download a spreadsheet. Totals and programme only — no personal details are ever loaded here.</p>
+  <p class="sub">Build any report from the live festival data: pick a source, filter, group and total. Print it, save it as a PDF or download a spreadsheet. Every tab of the All Things Bali workbook plus the ticket, link and sign-up data is here. Sign-ups are counts only — no personal details are ever loaded.</p>
 
   <h2>Ready-made</h2>
   <div class="chips" id="presets"></div>
@@ -206,8 +206,10 @@
   function dateKey(s) {
     s = String(s || "").trim();
     let m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
-    if (m) return m[1] + m[2] + m[3];
-    m = s.match(/^(\d{1,2})[\s-]+([A-Za-z]{3})[a-z]*\.?(?:[\s-]+(\d{2,4}))?/);
+    if (m && +m[2] >= 1 && +m[2] <= 12) return m[1] + m[2] + m[3];
+    m = s.match(/^(\d{1,2})-(\d{1,2})-(\d{4})$/);
+    if (m && +m[2] >= 1 && +m[2] <= 12) return m[3] + m[2].padStart(2, "0") + m[1].padStart(2, "0");
+    m = s.match(/^(\d{1,2})(?:st|nd|rd|th)?[\s-]+([A-Za-z]{3})[a-z]*\.?(?:[\s-]+(\d{2,4}))?/);
     if (m && MON[m[2].toLowerCase()] != null) {
       const y = m[3] ? (m[3].length === 2 ? "20" + m[3] : m[3]) : "2026";
       return y + String(MON[m[2].toLowerCase()] + 1).padStart(2, "0") + m[1].padStart(2, "0");
@@ -216,7 +218,7 @@
   }
   // DD MMM YYYY, the house date style.
   function niceDate(k) {
-    if (!k) return "";
+    if (!k || !/^\d{8}$/.test(k) || +k.slice(4, 6) < 1 || +k.slice(4, 6) > 12) return k ? String(k) : "";
     return k.slice(6, 8) + " " + Object.keys(MON)[+k.slice(4, 6) - 1].replace(/^./, (c) => c.toUpperCase()) + " " + k.slice(0, 4);
   }
 
@@ -244,6 +246,77 @@
   /* ---------- Data sources ----------
      Each returns { cols: [{key, label, type}], rows: [...] }.
      type: "text" | "num" | "money" | "date" (date values are YYYYMMDD keys). */
+  /* ---------- Every tab of the All Things Bali workbook ----------
+     One general reader: it finds the header row (the first row filled at
+     least half as wide as the widest row), drops empty columns, and types each
+     column from its values — number, rupees or date — so any tab, including
+     ones added later, can be filtered, grouped and totalled. */
+  const WORKBOOK = [
+    ["1340060458", "Event Brief", "Per-event brief: partner, ticket type and price, audience, target group."],
+    ["289612903", "Event List", "The festival schedule as the site reads it."],
+    ["41213049", "BMS", "Ticketing listings: status and BookMyShow / District links per event."],
+    ["7166598", "Collab / venues", "Venues, artists and stalls with their status (raw tab)."],
+    ["2125707033", "Indicative costing", "Budget line items (raw tab)."],
+    ["735743467", "Artist Fee", "Fee per showcase / workshop, in ₹ and $."],
+    ["1069338189", "Marketing", "Physical and digital marketing items, owners and costs."],
+    ["749754147", "Social media", "Posts planned and posted: date, type, status."],
+    ["440163265", "Design", "Design requests: purpose, owner, requested date, status."],
+    ["162194782", "To - Do List", "Tasks with owner, status and deadline; marketing initiatives and costs."],
+    ["1454703429", "Programming", "The October programme grid, confirmed and proposed."],
+    ["1548044859", "Content", "Every line of site copy, by key."],
+    ["230278551", "Plan", "Planner key–value settings."],
+    ["1521806811", "TravelCache", "Cached travel times used by the tour planner."],
+  ];
+  function sheetTab(gid, name, note) {
+    return {
+      label: name, note: note + " Live from the All Things Bali workbook.", group: "All Things Bali workbook — every tab",
+      async load() {
+        let rows = tsvRows(await fetchText(PUB + "&gid=" + gid));
+        const filled = (r) => r.filter((c) => c).length;
+        const width = Math.max(0, ...rows.map(filled));
+        if (!width) return { rows: [], cols: [{ key: "c0", label: "Empty tab", type: "text" }] };
+        let at = rows.findIndex((r) => filled(r) >= Math.max(2, Math.ceil(width / 2)));
+        if (at < 0) at = 0;
+        const used = rows[0].map((_, i) => rows.slice(at).some((r) => r[i]));
+        const seen = {};
+        const cols = rows[at].map((h, i) => {
+          let label = h || "Column " + (i + 1), key = label.toLowerCase().replace(/[^a-z0-9]+/g, "_") || "c" + i;
+          while (seen[key]) key += "_";
+          seen[key] = 1;
+          return { i, key, label, type: "text" };
+        }).filter((c) => used[c.i]);
+        const data = rows.slice(at + 1).filter((r) => cols.some((c) => r[c.i])).map((r) => {
+          const o = {}; cols.forEach((c) => { o[c.key] = r[c.i] || ""; }); return o;
+        });
+        // Type each column from what it holds (most filled cells must agree).
+        cols.forEach((c) => {
+          const vals = data.map((r) => r[c.key]).filter((v) => v && v !== "-");
+          if (!vals.length) return;
+          const share = (fn) => vals.filter(fn).length / vals.length;
+          if (share((v) => num(v.replace(/^rs\.?/i, "")) != null) >= 0.7) {
+            c.type = /cost|rs|price|fee|amount|₹|rent|total/i.test(c.label) ? "money" : "num";
+            data.forEach((r) => { r[c.key] = num(String(r[c.key]).replace(/^rs\.?/i, "")); });
+          } else if (share((v) => dateKey(v)) >= 0.7) {
+            c.type = "date";
+            data.forEach((r) => { r[c.key] = dateKey(r[c.key]); });
+          }
+        });
+        // Total lines in the sheet ("Total …", or a figure equal to the sum of
+        // every other row) would count everything twice, so leave them out.
+        const money = cols.filter((c) => c.type === "money" || c.type === "num");
+        const isTotal = (r) => cols.some((c) => c.type === "text" && /^(grand )?total\b/i.test(r[c.key])) ||
+          money.some((c) => {
+            const v = r[c.key];
+            if (!v) return false;
+            const rest = data.reduce((a, x) => a + (x === r ? 0 : x[c.key] || 0), 0);
+            return Math.abs(rest - v) < 0.5;
+          });
+        const kept = data.filter((r) => !isTotal(r));
+        return { rows: kept, cols: cols.map(({ key, label, type }) => ({ key, label, type })) };
+      },
+    };
+  }
+
   const SOURCES = {
     programme: {
       label: "Programme (events)",
@@ -366,7 +439,41 @@
         ], kpi: [], noTotal: true };
       },
     },
+    links: {
+      label: "Minted campaign links",
+      group: "Other wired data",
+      note: "Every link made in the Campaign Link Builder (the Mint tab).",
+      async load() {
+        let d = await fetchJSON(BRIDGE + "?sheet=links");
+        d = Array.isArray(d) ? d : (d && d.data) || [];
+        const out = d.map((r) => ({ code: r.Code || "", made: dateKey(String(r.Timestamp || "").slice(0, 10)), destination: r.Destination || "—",
+          source: r.Source || "—", medium: r.Medium || "—", campaign: r.Campaign || "—", content: r.Content || "", programme: r.Programme || "", ref: r.Ref || "" }));
+        return { rows: out, cols: [
+          { key: "code", label: "Code", type: "text" }, { key: "made", label: "Made on", type: "date" },
+          { key: "destination", label: "Destination", type: "text" }, { key: "source", label: "Source", type: "text" },
+          { key: "medium", label: "Medium", type: "text" }, { key: "campaign", label: "Campaign", type: "text" },
+          { key: "content", label: "Content", type: "text" }, { key: "programme", label: "Programme", type: "text" },
+          { key: "ref", label: "Ref", type: "text" },
+        ] };
+      },
+    },
+    media: {
+      label: "Event photos & videos",
+      group: "Other wired data",
+      note: "Post-event photos and videos synced from each event's Drive folder.",
+      async load() {
+        const m = await (await fetch("../data/event-media.json", { cache: "no-store" })).json();
+        const ev = m.events || {};
+        const out = Object.keys(ev).map((slug) => ({ event: slug.replace(/-/g, " ").replace(/^./, (c) => c.toUpperCase()),
+          photos: (ev[slug].photos || []).length, videos: (ev[slug].videos || []).length }));
+        return { rows: out, cols: [
+          { key: "event", label: "Event", type: "text" }, { key: "photos", label: "Photos", type: "num" }, { key: "videos", label: "Videos", type: "num" },
+        ] };
+      },
+    },
   };
+  Object.keys(SOURCES).forEach((k) => { SOURCES[k].group = SOURCES[k].group || "Ready views (cleaned up)"; });
+  WORKBOOK.forEach(([gid, name, note]) => { SOURCES["tab" + gid] = sheetTab(gid, name, note); });
 
   const PRESETS = [
     { title: "Tickets by event", src: "tickets", group: "event", agg: "sum", mcol: "tickets", sort: "vd" },
@@ -379,6 +486,13 @@
     { title: "Daily site traffic", src: "traffic", group: "day", agg: "sum", mcol: "sessions", sort: "la" },
     { title: "Collaborators by status", src: "collab", group: "type", agg: "count", sort: "vd", filters: [["confirmed", "Confirmed"]] },
     { title: "Costing by item", src: "costing", group: "item", agg: "sum", mcol: "total", sort: "vd" },
+    { title: "Ticket prices (Event Brief)", src: "tab1340060458", group: "event_name", agg: "max", mcol: "final_ticket_price", sort: "vd" },
+    { title: "Artist fees", src: "tab735743467", group: "event", agg: "sum", mcol: "cost_in_rs", sort: "vd" },
+    { title: "Social posts by status", src: "tab749754147", group: "status", agg: "count", sort: "vd" },
+    { title: "Design requests by status", src: "tab440163265", group: "status", agg: "count", sort: "vd" },
+    { title: "To-do by owner", src: "tab162194782", group: "poc", agg: "count", sort: "vd" },
+    { title: "Links minted by source", src: "links", group: "source", agg: "count", sort: "vd" },
+    { title: "Photos per event", src: "media", group: "event", agg: "sum", mcol: "photos", sort: "vd" },
     { title: "Sign-ups", src: "signups", group: "list", agg: "sum", mcol: "people", sort: "vd" },
   ];
   const SAVED_KEY = "bali-reports-saved";
@@ -565,6 +679,7 @@
       paintBuilder(d);
       render();
     } catch (e) {
+      console.error(e);
       $("warn").hidden = false;
       $("warn").innerHTML = "<b>Could not reach " + esc(SOURCES[state.src].label) + " just now.</b> The sheet or script may be waking up — press Refresh in a minute.";
       $("rmeta").textContent = "";
@@ -573,7 +688,9 @@
 
   /* ---------- Wiring ---------- */
   function wire() {
-    $("src").innerHTML = Object.keys(SOURCES).map((k) => opt(k, SOURCES[k].label)).join("");
+    const groups = [...new Set(Object.values(SOURCES).map((x) => x.group))];
+    $("src").innerHTML = groups.map((g) => `<optgroup label="${esc(g)}">` +
+      Object.keys(SOURCES).filter((k) => SOURCES[k].group === g).map((k) => opt(k, SOURCES[k].label)).join("") + "</optgroup>").join("");
     $("src").addEventListener("change", () => use(blank($("src").value)));
     $("group").addEventListener("change", (e) => { state.group = e.target.value; tableSort = null; render(); });
     $("agg").addEventListener("change", (e) => { state.agg = e.target.value; $("mcol").disabled = state.agg === "count"; render(); });
