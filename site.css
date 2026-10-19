@@ -1698,3 +1698,131 @@ p.ev-desc { font-size: 1.08rem; line-height: 1.65; color: var(--muted); max-widt
   /* The name, email and phone boxes stay full width — they are written into. */
   .onboard-signup .field { break-inside: avoid; }
 }
+
+/* ==================================================================
+   Post-festival home (19 Oct 2026): numbers, milestones, what we
+   celebrated, and a minimal calendar. Built on the same tokens.
+   ================================================================== */
+
+/* ---- The festival in numbers ---- */
+.ms { background: var(--maroon); }
+.ms h2 { color: var(--ink); margin-top: 0.3rem; }
+.ms .eyebrow { color: var(--gold); }
+.ms-intro { max-width: 46rem; margin: 1rem auto 0; text-align: center; color: var(--muted); font-size: 1.05rem; line-height: 1.6; }
+.ms-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 1px; margin: clamp(2rem, 5vw, 3.2rem) 0 0;
+  background: var(--line-warm); border: 1px solid var(--line-warm); border-radius: var(--radius);
+  overflow: hidden;
+}
+.ms-item {
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+  gap: 0.55rem; padding: clamp(1.2rem, 3vw, 2rem) 1rem; background: var(--maroon); text-align: center;
+}
+.ms-item dd {
+  order: -1; margin: 0; font-family: var(--display); font-weight: 900; line-height: 1;
+  font-size: clamp(2.4rem, 6vw, 3.6rem); color: var(--gold); font-variant-numeric: tabular-nums;
+}
+.ms-item dt {
+  font-family: var(--display); font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.12em; font-size: 0.72rem; color: var(--rose);
+}
+.ms-item--lead dd { color: var(--accent); }
+
+.ms-timeline {
+  list-style: none; margin: clamp(2.5rem, 6vw, 4rem) 0 0; padding: 0;
+  display: grid; grid-template-columns: repeat(5, 1fr); gap: 1.2rem;
+  position: relative;
+}
+.ms-timeline::before {
+  content: ""; position: absolute; left: 0; right: 0; top: 0.42rem;
+  height: 1px; background: var(--copper);
+}
+.ms-timeline li { position: relative; padding-top: 1.6rem; }
+.ms-timeline li::before {
+  content: ""; position: absolute; top: 0; left: 0; width: 0.85rem; height: 0.85rem;
+  border-radius: 50%; background: var(--gold); box-shadow: 0 0 0 4px var(--maroon);
+}
+.ms-timeline time {
+  font-family: var(--display); font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.12em; font-size: 0.72rem; color: var(--accent-2);
+}
+.ms-timeline h3 { font-size: 1.05rem; margin: 0.35rem 0 0.4rem; color: var(--ink); }
+.ms-timeline p { margin: 0; color: var(--muted); font-size: 0.9rem; line-height: 1.5; }
+
+/* ---- What we celebrated ---- */
+.celebrate { background: var(--bg); }
+.cel-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: clamp(1.8rem, 4vw, 2.6rem); }
+.cel-card {
+  position: relative; margin: 0; border-radius: var(--radius); overflow: hidden;
+  aspect-ratio: 4 / 5; background: var(--bg-2);
+}
+.cel-card picture, .cel-card img { display: block; width: 100%; height: 100%; }
+.cel-card img { object-fit: cover; transition: transform 0.8s ease; }
+.cel-card:hover img { transform: scale(1.04); }
+.cel-card figcaption {
+  position: absolute; inset: auto 0 0 0; padding: 4.5rem 1.3rem 1.3rem;
+  background: linear-gradient(to top, rgba(17, 18, 21, 0.94) 35%, rgba(17, 18, 21, 0));
+}
+.cel-kicker {
+  font-family: var(--display); font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.14em; font-size: 0.7rem; color: var(--gold);
+}
+.cel-card h3 { margin: 0.4rem 0 0.45rem; font-size: 1.25rem; color: var(--ink); }
+.cel-card p { margin: 0; color: var(--muted); font-size: 0.92rem; line-height: 1.5; }
+
+/* ---- Minimal calendar ---- */
+.fd-list { list-style: none; margin: 1.6rem 0 0; padding: 0; border-top: 1px solid var(--line); }
+.fd-row {
+  display: grid; grid-template-columns: 5.5rem 1fr 13rem 7rem; gap: 1rem; align-items: baseline;
+  padding: 0.85rem 0; border-bottom: 1px solid var(--line);
+}
+.fd-date { font-family: var(--display); text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.08em; color: var(--accent-2); }
+.fd-date b { font-size: 1.15rem; color: var(--ink); letter-spacing: 0; }
+.fd-title { font-weight: 600; color: var(--ink); }
+.fd-title a { color: inherit; text-decoration: none; box-shadow: inset 0 -1px 0 var(--line-warm); }
+.fd-title a:hover { color: var(--accent); }
+.fd-venue { color: var(--muted); font-size: 0.9rem; }
+.fd-cat { color: var(--muted-2); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em; text-align: right; }
+
+/* The calendar view, once every day has passed: simple information only. */
+.festival-over .cal-poster,
+.festival-over .cal-desc,
+.festival-over .cal-occ,
+.festival-over .cal-collabs,
+.festival-over .cal-act,
+.festival-over .calendar-filters { display: none; }
+.festival-over .cal-event { grid-template-columns: 1fr; }
+
+@media (max-width: 960px) {
+  .ms-timeline { grid-template-columns: 1fr; gap: 1.4rem; padding-left: 1.6rem; }
+  .ms-timeline::before { left: 0.42rem; right: auto; top: 0; bottom: 0; width: 1px; height: auto; }
+  .ms-timeline li { padding-top: 0; }
+  .ms-timeline li::before { left: -1.6rem; top: 0.15rem; }
+  .cel-grid { grid-template-columns: 1fr; }
+  .cel-card { aspect-ratio: 4 / 3; }
+}
+@media (max-width: 760px) {
+  .ms-grid { grid-template-columns: repeat(2, 1fr); }
+  .fd-row { grid-template-columns: 4.5rem 1fr; row-gap: 0.15rem; }
+  .fd-venue { grid-column: 2; }
+  .fd-cat { display: none; }
+}
+
+/* ---- Moments: a full-bleed photo mosaic ---- */
+.moments { background: var(--bg); padding: 0 0 4px; }
+.mo-grid {
+  display: grid; gap: 4px;
+  grid-template-columns: 1.8fr 1.2fr 0.85fr 1.2fr; grid-template-rows: repeat(2, clamp(10rem, 22vw, 19rem));
+}
+.mo-pic { margin: 0; overflow: hidden; background: var(--bg-2); }
+.mo-pic picture, .mo-pic img { display: block; width: 100%; height: 100%; }
+.mo-pic img { object-fit: cover; transition: transform 0.8s ease; }
+.mo-pic:hover img { transform: scale(1.04); }
+.mo-pic:nth-child(1) { grid-row: span 2; }
+.mo-pic:nth-child(3) { grid-row: span 2; }
+@media (max-width: 760px) {
+  .mo-grid { grid-template-columns: 1fr 1fr; grid-template-rows: none; grid-auto-rows: 9.5rem; }
+  .mo-pic:nth-child(1) { grid-column: span 2; grid-row: span 2; }
+  .mo-pic:nth-child(3) { grid-row: span 2; }
+}
