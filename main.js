@@ -1482,7 +1482,9 @@ async function renderHighlights(events) {
   const today = istToday();
   const done = events
     .filter((e) => !e.notPublic && e.startDate && (e.past || e.startDate < today))
-    .sort((a, b) => a.startDate < b.startDate ? 1 : -1);
+    // The post-festival home tells it in festival order, opening night first;
+    // the original home keeps newest first.
+    .sort((a, b) => (document.getElementById("milestones") ? a.startDate > b.startDate : a.startDate < b.startDate) ? 1 : -1);
   if (!done.length) { sec.hidden = true; return; }
   const [banners, mediaMap, , picks] = await Promise.all([loadBannerMap(), loadMediaMap(), loadCollaborators(),
     loadJSON(SITE_ROOT + "data/event-collabs.json").catch(() => ({}))]);
@@ -1614,6 +1616,90 @@ function cardHTML(ev) {
    Events = public events; Days = their span, first to last, inclusive;
    Venues = distinct venues of public events. Each number in the HTML is a
    fallback, left as-is if the calendar yields nothing. */
+/* ---------- Post-festival home: the festival in numbers ----------
+   Events and venues mirror the hero's computed figures; collaborators are the
+   ones the partners grid publishes; registrations and volunteers come from the
+   bridge's aggregate-only stats. Tickets are final and stay as written in
+   index.html. Any source that fails leaves the written fallback in place. */
+async function renderMilestones() {
+  if (!document.getElementById("milestones")) return; // only the post-festival home
+  const set = (k, v) => {
+    const el = document.querySelector('[data-ms="' + k + '"]');
+    if (el && v != null && v !== "" && !isNaN(v)) el.textContent = Number(v).toLocaleString("en-IN");
+  };
+  ["events", "venues"].forEach((k) => {
+    const h = document.querySelector('.hero-meta-num[data-stat="' + k + '"]');
+    if (h) set(k, parseInt(h.textContent, 10));
+  });
+  try {
+    const list = await loadCollaborators();
+    const n = (Array.isArray(list) ? list : []).filter((p) => collabReceived(p) && safeUrl(toImageUrl(p.logo))).length;
+    if (n) set("collabs", n);
+  } catch (e) { /* keep the fallback */ }
+  if (!CONFIG.BRIDGE_URL) return;
+  try {
+    const res = await fetchWithTimeout(CONFIG.BRIDGE_URL + "?sheet=stats", { cache: "no-store" });
+    const s = await res.json();
+    set("registered", s.registered);
+    set("volunteer", s.volunteer);
+  } catch (e) { /* keep the fallback */ }
+}
+
+/* The home page's festival calendar: one photo tile per event — its date, what
+   it was, where — nothing to book. The picture is the event's own festival
+   photo (a chosen cover, else its first gallery photo), else its banner. */
+const FD_COVERS = {
+  "an-evening-of-kecak-inaugural-public-performance": "08",
+  "shadow-puppetry-performance": "09",
+  "dance-movement-workshop": "03",
+  "indonesian-indian-puppetry-act": "03",
+  "kecak-workshop": "05",
+  "workshop-for-students": "05",
+  "traditional-balinese-dance": "07",
+  "shadow-puppetry-workshop": "04",
+  "kecak-performance": "03",
+  "traditional-balinese-dance-yakshagana-performance": "07",
+  "lecture-demonstration": "02",
+};
+async function renderFestivalDays(allEvents) {
+  const sec = document.getElementById("festival-days");
+  const list = document.getElementById("fd-list");
+  if (!sec || !list) return;
+  const events = allEvents.filter((ev) => ev.title && ev.startDate)
+    .slice().sort((a, b) => a.startDate < b.startDate ? -1 : a.startDate > b.startDate ? 1 : 0);
+  if (!events.length) return;
+  const [banners, media] = await Promise.all([loadBannerMap(), loadMediaMap()]);
+  const cover = (ev) => {
+    const m = media[ev.slug];
+    const photos = (m && m.photos) || [];
+    const want = photos.find((p) => p.file === FD_COVERS[ev.slug]) || photos[0];
+    if (want) {
+      const base = SITE_ROOT + "assets/media/" + encodeURIComponent(ev.slug) + "/" + want.file;
+      const v = m.version ? "?v=" + encodeURIComponent(m.version) : "";
+      return { src: base + "-800.webp" + v, fallback: base + ".jpg" + v };
+    }
+    return eventPictures(ev, banners)[0] || null;
+  };
+  const kind = (c) => /work/i.test(c) ? "workshop" : /talk|lecture/i.test(c) ? "talk" : "performance";
+  list.innerHTML = events.map((ev) => {
+    const chip = calDayChip(ev);
+    const href = ev.notPublic ? "" : eventHref(ev);
+    const pic = cover(ev);
+    const inner = `
+      <div class="fd-media">${pic ? pictureTag(pic, "fd-img") : ""}</div>
+      <span class="fd-date"><b>${esc(chip.day)}</b>${esc(chip.mon)}</span>
+      ${ev.category ? `<span class="fd-cat fd-cat--${kind(ev.category)}">${esc(ev.category)}</span>` : ""}
+      <span class="fd-text">
+        <span class="fd-title">${esc(ev.title)}</span>
+        <span class="fd-venue">${CAL_ICONS.pin}${esc(ev.venue || "")}</span>
+      </span>`;
+    return `<li class="fd-tile${ev.notPublic ? " fd-tile--private" : ""}">${href ? `<a class="fd-link" href="${esc(href)}">${inner}</a>` : `<div class="fd-link">${inner}</div>`}</li>`;
+  }).join("");
+  sec.hidden = false;
+  // Once every day is behind us the calendar view goes compact too.
+  if (events.every((ev) => ev.past)) document.body.classList.add("festival-over");
+}
+
 function updateHeroStats(allEvents) {
   const events = allEvents.filter((ev) => !ev.notPublic);
   const setNum = (key, val) => {
@@ -1681,6 +1767,8 @@ async function loadCalendar() {
   refineFestivalDates(events);
   renderNowStrip(events);
   renderHighlights(events);
+  renderFestivalDays(events);
+  renderMilestones();
   await loadCollaborators(); // so cards can show each event's collaborator logos
   const banners = await loadBannerMap();
   render(events);

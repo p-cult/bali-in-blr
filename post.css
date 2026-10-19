@@ -1,0 +1,180 @@
+/* post.css — the post-festival home page (/preview/ until approved).
+   Loaded only by that page, after styles.css and site.css. */
+
+/* ==================================================================
+   Post-festival home (19 Oct 2026): numbers, milestones, what we
+   celebrated, and a minimal calendar. Built on the same tokens.
+   ================================================================== */
+
+/* ---- The festival in numbers ---- */
+.ms {
+  background:
+    linear-gradient(rgba(80, 0, 0, 0.9), rgba(60, 4, 4, 0.94)),
+    image-set(url("assets/festival/kecak-chorus-1600.webp") type("image/webp"), url("assets/festival/kecak-chorus.jpg") type("image/jpeg")) center / cover no-repeat,
+    var(--maroon);
+}
+.ms h2 { color: var(--ink); margin-top: 0.3rem; }
+.ms .eyebrow { color: var(--gold); }
+.ms-intro { max-width: 46rem; margin: 1rem auto 0; text-align: center; color: var(--muted); font-size: 1.05rem; line-height: 1.6; }
+.ms-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 1px; margin: clamp(2rem, 5vw, 3.2rem) 0 0;
+  background: var(--line-warm); border: 1px solid var(--line-warm); border-radius: var(--radius);
+  overflow: hidden;
+}
+.ms-item {
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+  gap: 0.55rem; padding: clamp(1.2rem, 3vw, 2rem) 1rem; background: rgba(60, 4, 4, 0.72); text-align: center;
+  backdrop-filter: blur(2px);
+}
+.ms-item dd {
+  order: -1; margin: 0; font-family: var(--display); font-weight: 900; line-height: 1;
+  font-size: clamp(2.4rem, 6vw, 3.6rem); color: var(--gold); font-variant-numeric: tabular-nums;
+}
+.ms-item dt {
+  font-family: var(--display); font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.12em; font-size: 0.72rem; color: var(--rose);
+}
+.ms-item--lead dd { color: var(--accent); }
+
+.ms-timeline {
+  list-style: none; margin: clamp(2.5rem, 6vw, 4rem) 0 0; padding: 0;
+  display: grid; grid-template-columns: repeat(5, 1fr); gap: 1.2rem;
+  position: relative;
+}
+.ms-timeline::before {
+  content: ""; position: absolute; left: 0; right: 0; top: 0.42rem;
+  height: 1px; background: var(--copper);
+}
+.ms-timeline li { position: relative; padding-top: 1.6rem; }
+.ms-timeline li::before {
+  content: ""; position: absolute; top: 0; left: 0; width: 0.85rem; height: 0.85rem;
+  border-radius: 50%; background: var(--gold); box-shadow: 0 0 0 4px rgba(60, 4, 4, 1);
+}
+.ms-timeline time {
+  font-family: var(--display); font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.12em; font-size: 0.72rem; color: var(--accent-2);
+}
+.ms-timeline h3 { font-size: 1.05rem; margin: 0.35rem 0 0.4rem; color: var(--ink); }
+.ms-timeline p { margin: 0; color: var(--muted); font-size: 0.9rem; line-height: 1.5; }
+
+/* ---- What we celebrated ---- */
+.celebrate { background: var(--bg); }
+.cel-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: clamp(1.8rem, 4vw, 2.6rem); }
+.cel-card {
+  position: relative; margin: 0; border-radius: var(--radius); overflow: hidden;
+  aspect-ratio: 4 / 5; background: var(--bg-2);
+}
+.cel-card picture, .cel-card img { display: block; width: 100%; height: 100%; }
+.cel-card img { object-fit: cover; transition: transform 0.8s ease; }
+.cel-card:hover img { transform: scale(1.04); }
+.cel-card figcaption {
+  position: absolute; inset: auto 0 0 0; padding: 4.5rem 1.3rem 1.3rem;
+  background: linear-gradient(to top, rgba(17, 18, 21, 0.94) 35%, rgba(17, 18, 21, 0));
+}
+.cel-kicker {
+  font-family: var(--display); font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.14em; font-size: 0.7rem; color: var(--gold);
+}
+.cel-card h3 { margin: 0.4rem 0 0.45rem; font-size: 1.25rem; color: var(--ink); }
+.cel-card p { margin: 0; color: var(--muted); font-size: 0.92rem; line-height: 1.5; }
+
+/* ---- Festival calendar: photo tiles ---- */
+.fdays {
+  background:
+    radial-gradient(60rem 30rem at 15% 0%, rgba(255, 90, 60, 0.14), transparent 60%),
+    radial-gradient(50rem 30rem at 90% 100%, rgba(228, 171, 14, 0.12), transparent 60%),
+    var(--bg-2);
+}
+.fdays .eyebrow { color: var(--gold); }
+.fd-intro { max-width: 40rem; margin: 0.8rem auto 0; color: var(--muted); text-align: center; }
+.fd-list {
+  list-style: none; margin: clamp(1.8rem, 4vw, 2.8rem) 0 0; padding: 0;
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;
+}
+.fd-tile { margin: 0; }
+.fd-link {
+  position: relative; display: flex; flex-direction: column; justify-content: flex-end;
+  aspect-ratio: 4 / 3; border-radius: var(--radius); overflow: hidden;
+  background: var(--bg-3); color: var(--ink); text-decoration: none;
+  box-shadow: 0 0 0 1px var(--line);
+  transition: transform 0.35s ease, box-shadow 0.35s ease;
+}
+a.fd-link:hover { transform: translateY(-4px); box-shadow: 0 0 0 1px var(--copper), 0 18px 40px rgba(0, 0, 0, 0.45); }
+.fd-media { position: absolute; inset: 0; }
+.fd-img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.9s ease; }
+a.fd-link:hover .fd-img { transform: scale(1.06); }
+.fd-link::after {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(to top, rgba(14, 15, 18, 0.95) 0%, rgba(14, 15, 18, 0.55) 38%, rgba(14, 15, 18, 0) 70%);
+}
+.fd-date {
+  position: absolute; z-index: 1; top: 0.8rem; left: 0.8rem;
+  display: flex; flex-direction: column; align-items: center; min-width: 3.3rem;
+  padding: 0.35rem 0.55rem 0.4rem; border-radius: var(--radius-sm);
+  background: var(--gold); color: #1B1D21;
+  font-family: var(--display); font-weight: 700; text-transform: uppercase; font-size: 0.64rem; letter-spacing: 0.12em;
+}
+.fd-date b { font-size: 1.35rem; line-height: 1; letter-spacing: 0; font-weight: 900; }
+.fd-cat {
+  position: absolute; z-index: 1; top: 0.95rem; right: 0.8rem;
+  padding: 0.28rem 0.6rem; border-radius: 999px;
+  font-family: var(--display); font-weight: 700; text-transform: uppercase; font-size: 0.62rem; letter-spacing: 0.12em;
+  background: rgba(14, 15, 18, 0.6); backdrop-filter: blur(4px);
+}
+.fd-cat--performance { color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.fd-cat--workshop { color: var(--gold); box-shadow: inset 0 0 0 1px var(--gold); }
+.fd-cat--talk { color: var(--rose); box-shadow: inset 0 0 0 1px var(--rose); }
+.fd-text { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 0.3rem; padding: 1rem 1.05rem 1.05rem; }
+.fd-title { font-family: var(--display); font-weight: 800; font-size: 1.05rem; line-height: 1.2; text-transform: uppercase; letter-spacing: 0.01em; }
+.fd-venue { display: flex; align-items: center; gap: 0.35rem; color: var(--muted); font-size: 0.85rem; }
+.fd-venue svg { width: 0.95rem; height: 0.95rem; flex: none; color: var(--accent-2); }
+.fd-tile--private .fd-link { opacity: 0.82; }
+
+/* The calendar view, once every day has passed: simple information only. */
+.festival-over .cal-poster,
+.festival-over .cal-desc,
+.festival-over .cal-occ,
+.festival-over .cal-collabs,
+.festival-over .cal-act,
+.festival-over .calendar-filters { display: none; }
+.festival-over .cal-event { grid-template-columns: 1fr; }
+
+@media (max-width: 960px) {
+  .ms-timeline { grid-template-columns: 1fr; gap: 1.4rem; padding-left: 1.6rem; }
+  .ms-timeline::before { left: 0.42rem; right: auto; top: 0; bottom: 0; width: 1px; height: auto; }
+  .ms-timeline li { padding-top: 0; }
+  .ms-timeline li::before { left: -1.6rem; top: 0.15rem; }
+  .cel-grid { grid-template-columns: 1fr; }
+  .cel-card { aspect-ratio: 4 / 3; }
+}
+@media (max-width: 960px) { .fd-list { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 760px) {
+  .ms-grid { grid-template-columns: repeat(2, 1fr); }
+  .fd-list { grid-template-columns: 1fr; }
+}
+
+/* ---- Moments: a full-bleed photo mosaic ---- */
+.moments { background: var(--bg); padding: 0 0 4px; }
+.mo-grid {
+  display: grid; gap: 4px;
+  grid-template-columns: 1.8fr 1.2fr 0.85fr 1.2fr; grid-template-rows: repeat(2, clamp(10rem, 22vw, 19rem));
+}
+.mo-pic { margin: 0; overflow: hidden; background: var(--bg-2); }
+.mo-pic picture, .mo-pic img { display: block; width: 100%; height: 100%; }
+.mo-pic img { object-fit: cover; transition: transform 0.8s ease; }
+.mo-pic:hover img { transform: scale(1.04); }
+.mo-pic:nth-child(1) { grid-row: span 2; }
+.mo-pic:nth-child(3) { grid-row: span 2; }
+@media (max-width: 760px) {
+  .mo-grid { grid-template-columns: 1fr 1fr; grid-template-rows: none; grid-auto-rows: 9.5rem; }
+  .mo-pic:nth-child(1) { grid-column: span 2; grid-row: span 2; }
+  .mo-pic:nth-child(3) { grid-row: span 2; }
+}
+
+/* Support, over the festival's spotlights */
+.support-v2 {
+  background:
+    linear-gradient(90deg, rgba(20, 21, 25, 0.96) 0%, rgba(20, 21, 25, 0.86) 55%, rgba(20, 21, 25, 0.62) 100%),
+    image-set(url("assets/festival/bali-yakshagana-finale-1600.webp") type("image/webp"), url("assets/festival/bali-yakshagana-finale.jpg") type("image/jpeg")) center / cover no-repeat;
+}

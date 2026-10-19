@@ -17,3 +17,6 @@ Disallow: /progress/
 Disallow: /plan/
 
 Sitemap: https://bali-in-blr.paramfoundation.org/sitemap.xml
+
+# Post-festival home under review — link-only until approved.
+Disallow: /preview/
