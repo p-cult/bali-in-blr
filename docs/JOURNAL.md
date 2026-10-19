@@ -2649,3 +2649,9 @@ folders for five events that show posters, and past-tense descriptions.
 account (`gh auth switch --user p-cult` + `gh auth setup-git`). The
 `vinod-gowda` login was removed at the user's request — it has no write access
 to `p-cult/bali-in-blr`, so a push from it fails with 403.
+
+**Backups that must not be published (19 Oct):** `backup/` is a local-only,
+git-ignored folder on the drive — for files to keep but never put on the site
+(everything committed is served by GitHub Pages). First item: the artist tour
+daily-routine workbook (23 Sep export, one tab per day 30 Sep – 19 Oct); its
+copy is also in git history at commit `b78d309`.
