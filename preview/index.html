@@ -41,9 +41,9 @@
       </a>
       <button class="nav-toggle" aria-label="Menu" aria-expanded="false"><span></span><span></span><span></span></button>
       <ul class="nav-links">
+        <li><a data-content="post.nav3" href="preview/#festival-days">Events</a></li>
         <li><a data-content="post.nav1" href="preview/#milestones">In numbers</a></li>
         <li><a data-content="post.nav2" href="preview/#highlights">Highlights</a></li>
-        <li><a data-content="post.nav3" href="preview/#festival-days">Calendar</a></li>
         <li><a data-content="nav.a3" href="preview/#featuring">Featuring</a></li>
         <li><a data-content="nav.a4" href="preview/#partners">Collaborators</a></li>
         <li><a data-content="nav.a5" href="preview/#support">Support</a></li>
@@ -80,9 +80,19 @@
         <div><span class="hero-meta-num" data-stat="venues">14</span><span data-content="page.span5" class="hero-meta-label">Venues across the city</span></div>
       </div>
       <div class="hero-actions">
-        <a data-content="post.a1" class="btn btn-primary" href="preview/#highlights">Relive the festival</a>
+        <a data-content="post.a1" class="btn btn-primary" href="preview/#festival-days">Relive the festival</a>
         <a data-content="post.a2" class="btn btn-ghost" href="preview/#milestones">The festival in numbers</a>
       </div>
+    </div>
+  </section>
+
+  <!-- Minimal festival calendar on the home page (main.js renderFestivalDays) -->
+  <section class="section fdays" id="festival-days" aria-labelledby="fd-title" hidden>
+    <div class="wrap">
+      <p class="eyebrow center" data-content="post.fd.eyebrow">Festival calendar</p>
+      <h2 class="center" id="fd-title" data-content="post.fd.title">3 &ndash; 18 October 2026</h2>
+      <p class="fd-intro center" data-content="post.fd.intro">Every performance, workshop and conversation of the sixteen days &mdash; tap one to see its photographs.</p>
+      <ol class="fd-list" id="fd-list"></ol>
     </div>
   </section>
 
@@ -158,15 +168,6 @@
     </div>
   </section>
 
-  <!-- Minimal festival calendar on the home page (main.js renderFestivalDays) -->
-  <section class="section fdays" id="festival-days" aria-labelledby="fd-title" hidden>
-    <div class="wrap">
-      <p class="eyebrow center" data-content="post.fd.eyebrow">Festival calendar</p>
-      <h2 class="center" id="fd-title" data-content="post.fd.title">3 &ndash; 18 October 2026</h2>
-      <p class="fd-intro center" data-content="post.fd.intro">Every performance, workshop and conversation of the sixteen days &mdash; tap one to see its photographs.</p>
-      <ol class="fd-list" id="fd-list"></ol>
-    </div>
-  </section>
 
   <!-- Featuring -->
   <section class="section section-oxblood" id="featuring">
