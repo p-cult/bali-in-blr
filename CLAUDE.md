@@ -110,6 +110,11 @@ python3 -m http.server 8000   # http://localhost:8000  (a server is required; pa
 ```
 
 ## Current status
+**Post-festival (since 19 Oct 2026):** the festival ran 3–18 Oct and the home page is now a
+celebration of it — numbers, milestones, photo-tile event calendar, photo mosaic, per-event
+galleries. Its extra styles are in `post.css`. The home page as it was before/during the
+festival is archived, unlisted, at `/live/`. See `docs/JOURNAL.md`, 19 Oct.
+
 Live and deployed. The hub is built and running: signup + volunteer forms saving
 through the Google Apps Script bridge (flavours → deduplicated `Master` registry,
 receipts), a calendar reading real dates live from the schedule sheet, GTM

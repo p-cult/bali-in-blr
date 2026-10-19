@@ -2630,3 +2630,22 @@ The festival ended on 18 Oct. The home page was reorganised to celebrate it:
 - Lower sections went back to the house components after the user rejected a
   framed/shadowed Featuring as "not the design language" — reuse existing
   components; don't invent new motifs.
+- **"That's a wrap" banner (calendar view, home and `/live/`).** The Today /
+  Next up panel's after-festival state was one line in an empty box. It is now
+  a banner in the hero's language: Kecak chorus photo under the hero scrim,
+  "That's a wrap" in the display face, the sixteen-step bar complete in gold,
+  days · events · venues, and buttons to `/#festival-days` and `/#highlights`
+  (absolute to the site root, so they work from `/live/` too). Styles in
+  `site.css` because both pages use them.
+
+**In plain words, where things stand (19 Oct 2026):** the festival is over and
+the website now says so. The home page celebrates it — 1,139 tickets sold, 482
+people registered, 213 volunteers, 16 events at 14 venues with 17
+collaborating institutions — with the festival's own photographs. The old home
+page is kept, unlisted, at `/live/`. Still to do in the sheet: Drive photo
+folders for five events that show posters, and past-tense descriptions.
+
+**GitHub access on this computer (19 Oct):** pushes come from the **p-cult**
+account (`gh auth switch --user p-cult` + `gh auth setup-git`). The
+`vinod-gowda` login was removed at the user's request — it has no write access
+to `p-cult/bali-in-blr`, so a push from it fails with 403.
