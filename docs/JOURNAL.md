@@ -2573,37 +2573,3 @@ folder in the banners parent had never been connected. Now connected; the
 two IME events also point at their own sub-folders ("LecDem", "Dance demo")
 inside the new IME folder. Watch for this: after renaming an event in the
 sheet, its banner folder must be re-pointed in `data/event-banners.json`.
-
-### 19 Oct 2026 — the home page becomes a "the festival happened" site
-The festival ended on 18 Oct. The home page was reorganised to celebrate it:
-- **Hero:** the opening-night Kecak fire photo, a thank-you line, "3 – 18 Oct
-  2026", and buttons to "Relive the festival" and "The festival in numbers".
-- **A festival in numbers** (`#milestones`): 1,139 tickets sold, 482 people
-  registered, 213 volunteer sign-ups, 16 events, 14 venues, 17 collaborating
-  institutions — plus five milestones (opening night free at Orion Mall; the
-  Kumarans students' workshop; Kecak Performance, 300 tickets; Bali ×
-  Yakshagana, 528 tickets, the biggest house; The Finale). Registrations and
-  volunteers update live from the bridge's aggregate `?sheet=stats`; events,
-  venues and collaborators from the sheet. **Tickets are written in by hand
-  (final figure)** — the tickets sheet is deliberately not read by the public site.
-- **What we celebrated** (`#celebrate`): Traditions / Cultures in conversation /
-  Collaboration, each with a festival photo.
-- **Moments:** a six-photo mosaic.
-- **Sixteen days, relived** (`#highlights`): the existing per-event photo
-  carousels, now in festival order (opening night first) instead of newest first.
-- **Minimal calendar** on the home page (`#festival-days`): date · event · venue ·
-  type, nothing to book. Once every event has passed, `body.festival-over` also
-  strips the calendar view down to simple information.
-- Removed: the Programme cards and the "festival will also include" band (both
-  future tense). Nav: In numbers · Highlights · Calendar · Featuring ·
-  Collaborators · Support · Stay in touch. Register view is now "Stay in touch".
-- New wording uses `post.*` keys (listed in `data/content.tsv`), so the Content
-  tab can override any of it without code.
-- Hero/feature photos are hi-res originals (2400 px from Drive, via the
-  sync script's helpers) optimised into `assets/festival/` — the gallery copies
-  are capped at 800 px and too small for full-width use.
-- **Lesson:** check what a photo actually shows before captioning it. Two picks
-  from the "Traditional Balinese Dance" folder were Yakshagana performers, nearly
-  captioned as Balinese tradition.
-- Still to do in the sheet: some event descriptions are still forward-looking
-  ("Come experience Bali…").

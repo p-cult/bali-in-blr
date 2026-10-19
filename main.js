@@ -1482,8 +1482,7 @@ async function renderHighlights(events) {
   const today = istToday();
   const done = events
     .filter((e) => !e.notPublic && e.startDate && (e.past || e.startDate < today))
-    // Told in festival order, opening night first — the story of the sixteen days.
-    .sort((a, b) => a.startDate < b.startDate ? -1 : 1);
+    .sort((a, b) => a.startDate < b.startDate ? 1 : -1);
   if (!done.length) { sec.hidden = true; return; }
   const [banners, mediaMap, , picks] = await Promise.all([loadBannerMap(), loadMediaMap(), loadCollaborators(),
     loadJSON(SITE_ROOT + "data/event-collabs.json").catch(() => ({}))]);
@@ -1615,58 +1614,6 @@ function cardHTML(ev) {
    Events = public events; Days = their span, first to last, inclusive;
    Venues = distinct venues of public events. Each number in the HTML is a
    fallback, left as-is if the calendar yields nothing. */
-/* ---------- Post-festival home: the festival in numbers ----------
-   Events and venues mirror the hero's computed figures; collaborators are the
-   ones the partners grid publishes; registrations and volunteers come from the
-   bridge's aggregate-only stats. Tickets are final and stay as written in
-   index.html. Any source that fails leaves the written fallback in place. */
-async function renderMilestones() {
-  const set = (k, v) => {
-    const el = document.querySelector('[data-ms="' + k + '"]');
-    if (el && v != null && v !== "" && !isNaN(v)) el.textContent = Number(v).toLocaleString("en-IN");
-  };
-  ["events", "venues"].forEach((k) => {
-    const h = document.querySelector('.hero-meta-num[data-stat="' + k + '"]');
-    if (h) set(k, parseInt(h.textContent, 10));
-  });
-  try {
-    const list = await loadCollaborators();
-    const n = (Array.isArray(list) ? list : []).filter((p) => collabReceived(p) && safeUrl(toImageUrl(p.logo))).length;
-    if (n) set("collabs", n);
-  } catch (e) { /* keep the fallback */ }
-  if (!CONFIG.BRIDGE_URL) return;
-  try {
-    const res = await fetchWithTimeout(CONFIG.BRIDGE_URL + "?sheet=stats", { cache: "no-store" });
-    const s = await res.json();
-    set("registered", s.registered);
-    set("volunteer", s.volunteer);
-  } catch (e) { /* keep the fallback */ }
-}
-
-/* The home page's minimal calendar: date, event, venue — nothing to book. */
-function renderFestivalDays(allEvents) {
-  const sec = document.getElementById("festival-days");
-  const list = document.getElementById("fd-list");
-  if (!sec || !list) return;
-  const events = allEvents.filter((ev) => ev.title && ev.startDate)
-    .slice().sort((a, b) => a.startDate < b.startDate ? -1 : a.startDate > b.startDate ? 1 : 0);
-  if (!events.length) return;
-  list.innerHTML = events.map((ev) => {
-    const chip = calDayChip(ev);
-    const href = ev.notPublic ? "" : eventHref(ev);
-    const title = href ? `<a href="${esc(href)}">${esc(ev.title)}</a>` : esc(ev.title);
-    return `<li class="fd-row">
-      <span class="fd-date"><b>${esc(chip.day)}</b> ${esc(chip.mon)}</span>
-      <span class="fd-title">${title}</span>
-      <span class="fd-venue">${esc(ev.venue || "")}</span>
-      <span class="fd-cat">${esc(ev.category || "")}</span>
-    </li>`;
-  }).join("");
-  sec.hidden = false;
-  // Once every day is behind us the calendar view goes compact too.
-  if (events.every((ev) => ev.past)) document.body.classList.add("festival-over");
-}
-
 function updateHeroStats(allEvents) {
   const events = allEvents.filter((ev) => !ev.notPublic);
   const setNum = (key, val) => {
@@ -1734,8 +1681,6 @@ async function loadCalendar() {
   refineFestivalDates(events);
   renderNowStrip(events);
   renderHighlights(events);
-  renderFestivalDays(events);
-  renderMilestones();
   await loadCollaborators(); // so cards can show each event's collaborator logos
   const banners = await loadBannerMap();
   render(events);
