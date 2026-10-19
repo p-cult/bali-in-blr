@@ -2613,7 +2613,7 @@ The festival ended on 18 Oct. The home page was reorganised to celebrate it:
   robots.txt) with its own `post.css`; `main.js` carries the new functions but
   they run only when their sections exist, so the live home is unchanged. The
   full commits are kept on the `post-festival` branch.
-- **To publish later:** copy the current `index.html` to `pre-festival/index.html`
+- **To publish later:** copy the current `index.html` to `live/index.html` (agreed name, 19 Oct: the site as it was during the festival)
   (add `<base href="../">` + `noindex`), make `preview/index.html` the new
   `index.html` (drop its `<base>`, `noindex` and the `preview/` prefix on its
   `#` links), keep `post.css` linked, and remove `/preview/`.
