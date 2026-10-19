@@ -1643,55 +1643,24 @@ async function renderMilestones() {
   } catch (e) { /* keep the fallback */ }
 }
 
-/* The home page's festival calendar: one photo tile per event — its date, what
-   it was, where — nothing to book. The picture is the event's own festival
-   photo (a chosen cover, else its first gallery photo), else its banner. */
-const FD_COVERS = {
-  "an-evening-of-kecak-inaugural-public-performance": "08",
-  "shadow-puppetry-performance": "09",
-  "dance-movement-workshop": "03",
-  "indonesian-indian-puppetry-act": "03",
-  "kecak-workshop": "05",
-  "workshop-for-students": "05",
-  "traditional-balinese-dance": "07",
-  "shadow-puppetry-workshop": "04",
-  "kecak-performance": "03",
-  "traditional-balinese-dance-yakshagana-performance": "07",
-  "lecture-demonstration": "02",
-};
-async function renderFestivalDays(allEvents) {
+/* The home page's minimal calendar: date, event, venue — nothing to book. */
+function renderFestivalDays(allEvents) {
   const sec = document.getElementById("festival-days");
   const list = document.getElementById("fd-list");
   if (!sec || !list) return;
   const events = allEvents.filter((ev) => ev.title && ev.startDate)
     .slice().sort((a, b) => a.startDate < b.startDate ? -1 : a.startDate > b.startDate ? 1 : 0);
   if (!events.length) return;
-  const [banners, media] = await Promise.all([loadBannerMap(), loadMediaMap()]);
-  const cover = (ev) => {
-    const m = media[ev.slug];
-    const photos = (m && m.photos) || [];
-    const want = photos.find((p) => p.file === FD_COVERS[ev.slug]) || photos[0];
-    if (want) {
-      const base = SITE_ROOT + "assets/media/" + encodeURIComponent(ev.slug) + "/" + want.file;
-      const v = m.version ? "?v=" + encodeURIComponent(m.version) : "";
-      return { src: base + "-800.webp" + v, fallback: base + ".jpg" + v };
-    }
-    return eventPictures(ev, banners)[0] || null;
-  };
-  const kind = (c) => /work/i.test(c) ? "workshop" : /talk|lecture/i.test(c) ? "talk" : "performance";
   list.innerHTML = events.map((ev) => {
     const chip = calDayChip(ev);
     const href = ev.notPublic ? "" : eventHref(ev);
-    const pic = cover(ev);
-    const inner = `
-      <div class="fd-media">${pic ? pictureTag(pic, "fd-img") : ""}</div>
-      <span class="fd-date"><b>${esc(chip.day)}</b>${esc(chip.mon)}</span>
-      ${ev.category ? `<span class="fd-cat fd-cat--${kind(ev.category)}">${esc(ev.category)}</span>` : ""}
-      <span class="fd-text">
-        <span class="fd-title">${esc(ev.title)}</span>
-        <span class="fd-venue">${CAL_ICONS.pin}${esc(ev.venue || "")}</span>
-      </span>`;
-    return `<li class="fd-tile${ev.notPublic ? " fd-tile--private" : ""}">${href ? `<a class="fd-link" href="${esc(href)}">${inner}</a>` : `<div class="fd-link">${inner}</div>`}</li>`;
+    const title = href ? `<a href="${esc(href)}">${esc(ev.title)}</a>` : esc(ev.title);
+    return `<li class="fd-row">
+      <span class="fd-date"><b>${esc(chip.day)}</b> ${esc(chip.mon)}</span>
+      <span class="fd-title">${title}</span>
+      <span class="fd-venue">${esc(ev.venue || "")}</span>
+      <span class="fd-cat">${esc(ev.category || "")}</span>
+    </li>`;
   }).join("");
   sec.hidden = false;
   // Once every day is behind us the calendar view goes compact too.
