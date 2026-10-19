@@ -1406,8 +1406,26 @@ function renderNowStrip(events) {
         <p class="now-before">${first ? `${esc(first.title)}${first.venue ? " · " + esc(first.venue) : ""}` : ""} <span class="now-timer" data-now-timer data-slot="next" hidden></span></p>
     </div></div>`;
   } else if (phase === "after") {
-    html = `<div class="now-panel"><div class="now-head"><p class="now-kicker">That's a wrap</p>
-      <p class="now-day">Thank you, Bengaluru. Photos and recordings will appear against each event in the <a class="text-link" href="#calendar">calendar</a>.</p></div></div>`;
+    // The festival is over: a wrap banner — the hero's photo-under-scrim, the
+    // sixteen-step bar run to the end, and two ways into the festival's story
+    // on the home page (from /live/ too, so links are absolute to the site root).
+    const days = festivalDays();
+    const ticks = Array.from({ length: days }, () => '<i class="is-done"></i>').join("");
+    const evN = pub.length;
+    const venN = new Set(pub.map((e) => (e.venue || "").trim().toLowerCase()).filter(Boolean)).size;
+    html = `<div class="now-panel now-wrap">
+      <div class="now-wrap-media" aria-hidden="true"><img src="${esc(SITE_ROOT + "assets/festival/kecak-chorus-1600.webp")}" alt="" loading="lazy" decoding="async" /></div>
+      <div class="now-wrap-body">
+        <p class="eyebrow now-wrap-kicker">3 &ndash; 18 October 2026</p>
+        <h2 class="now-wrap-title">That&rsquo;s a wrap</h2>
+        <div class="now-progress now-wrap-bar" aria-hidden="true">${ticks}</div>
+        <p class="now-wrap-line">${days} days &middot; ${evN} events &middot; ${venN} venues. Thank you, Bengaluru.</p>
+        <div class="now-wrap-actions">
+          <a class="btn btn-primary" href="${esc(SITE_ROOT + "#festival-days")}">Relive the festival</a>
+          <a class="btn btn-outline" href="${esc(SITE_ROOT + "#highlights")}">See the photographs</a>
+        </div>
+      </div>
+    </div>`;
   }
   strips.forEach((el) => { el.innerHTML = html; el.hidden = !html; });
   if (html) startCountdown(pub);
