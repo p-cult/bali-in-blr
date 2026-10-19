@@ -2617,3 +2617,16 @@ The festival ended on 18 Oct. The home page was reorganised to celebrate it:
   (add `<base href="../">` + `noindex`), make `preview/index.html` the new
   `index.html` (drop its `<base>`, `noindex` and the `preview/` prefix on its
   `#` links), keep `post.css` linked, and remove `/preview/`.
+
+### 19 Oct 2026 (night) — post-festival home published
+- Approved and published. The new design is now `index.html` (still loads
+  `post.css` after `site.css`). The home page as it was before and during the
+  festival is archived at **`/live/`** (`live/index.html`: `<base href="../">`,
+  `noindex`, robots Disallow, its `#` links prefixed `live/`), and works off
+  the same main.js — the post-festival functions only run where their
+  sections exist.
+- `/preview/` is now a redirect to `/` (keeps any shared preview links alive).
+- Event pages' menu "Programme" link now goes to `#festival-days`.
+- Lower sections went back to the house components after the user rejected a
+  framed/shadowed Featuring as "not the design language" — reuse existing
+  components; don't invent new motifs.

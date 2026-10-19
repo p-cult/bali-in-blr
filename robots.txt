@@ -18,5 +18,5 @@ Disallow: /plan/
 
 Sitemap: https://bali-in-blr.paramfoundation.org/sitemap.xml
 
-# Post-festival home under review — link-only until approved.
-Disallow: /preview/
+# The home page as it was before and during the festival — archived, not indexed.
+Disallow: /live/
