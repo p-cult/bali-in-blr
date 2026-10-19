@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex, nofollow" />
+<title>Reports — Bali in Bengaluru</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;900&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#1B1D21; --bg3:#23262B; --bg4:#2A2E34; --ink:#EFE7D8; --muted:#B6B2AA; --muted2:#8C8E92;
+    --accent:#ff5a3c; --copper:#C87941; --gold:#e4ab0e; --line:#2C3036; --radius:8px;
+    --display:"Archivo","Arial Narrow",sans-serif; --sans:"Instrument Sans",system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.55;padding:2.5rem 1.5rem 5rem}
+  .wrap{max-width:1180px;margin:0 auto}
+  .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  .kick{display:flex;align-items:center;gap:.7rem;font-family:var(--display);font-weight:700;text-transform:uppercase;letter-spacing:.2em;font-size:.7rem;color:var(--copper);margin:0 0 .4rem}
+  .kick a{color:inherit;text-decoration:none}
+  h1{font-family:var(--display);font-weight:900;text-transform:uppercase;font-size:1.9rem;letter-spacing:-.01em;margin:0 0 .3rem}
+  h2{font-family:var(--display);font-weight:700;text-transform:uppercase;font-size:.78rem;letter-spacing:.14em;color:var(--copper);margin:0 0 .7rem}
+  .sub{color:var(--muted2);margin:0 0 1.6rem;font-size:.95rem}
+  .topbar{display:flex;justify-content:space-between;align-items:baseline;gap:1rem;flex-wrap:wrap;margin-bottom:1.4rem}
+  .who{font-size:.85rem;color:var(--muted2)} .who b{color:var(--ink);font-weight:600}
+  button,select,input{font:inherit;color:var(--ink)}
+  .btn{background:none;border:1px solid var(--line);border-radius:5px;padding:.4rem .85rem;font-size:.8rem;cursor:pointer}
+  .btn:hover{border-color:var(--ink)}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#111;font-family:var(--display);font-weight:700;text-transform:uppercase;letter-spacing:.03em}
+  .btn.primary:hover{background:var(--copper);border-color:var(--copper)}
+  .chips{display:flex;flex-wrap:wrap;gap:.5rem;margin:0 0 1.6rem}
+  .chip{background:var(--bg3);border:1px solid var(--line);border-radius:999px;padding:.35rem .9rem;font-size:.82rem;cursor:pointer}
+  .chip:hover,.chip[aria-pressed="true"]{border-color:var(--accent);color:var(--accent)}
+  .chip .x{margin-left:.4rem;color:var(--muted2)}
+  .layout{display:grid;grid-template-columns:300px 1fr;gap:1.4rem;align-items:start}
+  .panel{background:var(--bg3);border:1px solid var(--line);border-radius:var(--radius);padding:1.2rem}
+  .builder{position:sticky;top:1rem;display:flex;flex-direction:column;gap:.9rem}
+  .field{display:flex;flex-direction:column;gap:.3rem}
+  .field label{font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted2)}
+  select,input[type=text],input[type=number]{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:.5rem .6rem;font-size:.88rem}
+  select:focus,input:focus{outline:none;border-color:var(--accent)}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:.5rem}
+  .filter{display:grid;grid-template-columns:1fr 1fr auto;gap:.35rem;align-items:center}
+  .filter .rm{border:0;background:none;color:var(--muted2);cursor:pointer;font-size:1.1rem}
+  .link{background:none;border:0;color:var(--copper);cursor:pointer;font-size:.82rem;padding:0;text-align:left}
+  .cols{display:flex;flex-wrap:wrap;gap:.3rem .8rem;font-size:.82rem;color:var(--muted)}
+  .cols label{display:flex;gap:.3rem;align-items:center;text-transform:none;letter-spacing:0}
+  .out{display:flex;flex-direction:column;gap:1.2rem;min-width:0}
+  .head{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap}
+  .head h3{font-family:var(--display);font-weight:900;text-transform:uppercase;font-size:1.35rem;margin:0}
+  .meta{color:var(--muted2);font-size:.8rem;margin:.2rem 0 0}
+  .actions{display:flex;gap:.4rem;flex-wrap:wrap}
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.8rem}
+  .kpi{background:var(--bg3);border:1px solid var(--line);border-radius:var(--radius);padding:1rem 1.1rem}
+  .kpi b{display:block;font-family:var(--display);font-weight:900;font-size:1.9rem;line-height:1.1;color:var(--gold)}
+  [hidden]{display:none!important}
+  .kpi b .long{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-family:var(--sans);font-weight:600;font-size:.95rem;line-height:1.3;margin:.35rem 0 .4rem}
+  .kpi span{font-size:.75rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted2)}
+  .chart{display:flex;flex-direction:column;gap:.45rem}
+  .bar{display:grid;grid-template-columns:minmax(120px,32%) 1fr auto;gap:.7rem;align-items:center;font-size:.85rem}
+  .bar .lbl{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)}
+  .bar .trk{height:14px;background:var(--bg);border-radius:3px;overflow:hidden}
+  .bar .trk i{display:block;height:100%;background:var(--accent);border-radius:3px}
+  .bar:nth-child(even) .trk i{background:var(--copper)}
+  .bar .v{font-variant-numeric:tabular-nums;font-weight:600;min-width:3.5rem;text-align:right}
+  .tablewrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;font-size:.85rem}
+  th,td{text-align:left;padding:.5rem .6rem;border-bottom:1px solid var(--line);vertical-align:top}
+  th{font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted2);font-weight:600;cursor:pointer;white-space:nowrap}
+  th:hover{color:var(--ink)}
+  td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+  tfoot th{color:var(--ink);cursor:default}
+  .empty{color:var(--muted2);font-size:.9rem;padding:1rem 0}
+  .note{font-size:.8rem;color:var(--muted2);margin:0}
+  .warn{border-color:var(--copper);color:var(--muted);font-size:.85rem}
+  footer{margin-top:2.5rem;color:var(--muted2);font-size:.78rem} footer a{color:var(--copper)}
+  @media (max-width:860px){.layout{grid-template-columns:1fr}.builder{position:static}}
+  @media print{
+    :root{--bg:#fff;--bg3:#fff;--ink:#111;--muted:#333;--muted2:#555;--line:#ccc;--gold:#111}
+    body{padding:0} .builder,.chips,.actions,.topbar .who,.sub,footer,.noprint{display:none!important}
+    .layout{display:block} .panel,.kpi{border-color:#ccc} .bar .trk{background:#eee}
+    .bar .trk i{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  }
+</style>
+</head>
+<body>
+<div class="wrap" id="admin-app" hidden>
+  <div class="topbar">
+    <p class="kick"><a href="./">Admin</a><span>· Reports</span></p>
+    <span class="who">Signed in as <b id="who">—</b> · <button class="btn" id="signout" type="button">Sign out</button></span>
+  </div>
+
+  <h1>Reports</h1>
+  <p class="sub">Build any report from the live festival data: pick a source, filter, group and total. Print it, save it as a PDF or download a spreadsheet. Totals and programme only — no personal details are ever loaded here.</p>
+
+  <h2>Ready-made</h2>
+  <div class="chips" id="presets"></div>
+
+  <div class="layout">
+    <aside class="panel builder" aria-label="Report builder">
+      <div class="field">
+        <label for="src">Data source</label>
+        <select id="src"></select>
+        <p class="note" id="srcnote"></p>
+      </div>
+      <div class="field">
+        <label>Filters</label>
+        <div id="filters"></div>
+        <button class="link" id="addf" type="button">+ Add a filter</button>
+      </div>
+      <div class="field">
+        <label for="group">Group by</label>
+        <select id="group"></select>
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label for="agg">Measure</label>
+          <select id="agg">
+            <option value="count">Count of rows</option>
+            <option value="sum">Sum of</option>
+            <option value="avg">Average of</option>
+            <option value="max">Highest</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="mcol">Column</label>
+          <select id="mcol"></select>
+        </div>
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label for="sort">Sort</label>
+          <select id="sort">
+            <option value="vd">Largest first</option>
+            <option value="va">Smallest first</option>
+            <option value="la">A → Z / by date</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="top">Show top</label>
+          <input id="top" type="number" min="0" placeholder="All" />
+        </div>
+      </div>
+      <div class="field" id="colsfield">
+        <label>Columns in the detail table</label>
+        <div class="cols" id="cols"></div>
+      </div>
+      <div class="field">
+        <label for="title">Report title</label>
+        <input id="title" type="text" placeholder="Untitled report" />
+      </div>
+      <button class="btn primary" id="save" type="button">Save this report</button>
+    </aside>
+
+    <main class="out">
+      <div class="head">
+        <div>
+          <h3 id="rtitle">Report</h3>
+          <p class="meta" id="rmeta">Loading live data…</p>
+        </div>
+        <div class="actions">
+          <button class="btn" id="reload" type="button">Refresh</button>
+          <button class="btn" id="csv" type="button">Download CSV</button>
+          <button class="btn" id="copy" type="button">Copy link</button>
+          <button class="btn" id="print" type="button">Print / PDF</button>
+        </div>
+      </div>
+      <div class="panel warn" id="warn" hidden></div>
+      <div class="kpis" id="kpis"></div>
+      <section class="panel" id="chartbox"><h2 id="charth">Chart</h2><div class="chart" id="chart"></div></section>
+      <section class="panel"><h2>Detail</h2><div class="tablewrap" id="table"></div></section>
+    </main>
+  </div>
+
+  <footer>Bali in Bengaluru · Param Foundation · internal · <a href="./">Back to Admin</a></footer>
+</div>
+
+<script src="auth.js?v=7"></script>
+<script>
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+
+  // Same live sources the other admin pages read. Every one of them is a
+  // programme sheet or a running total; none holds names, phones or emails.
+  const PUB = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTji37D6cT7J9bLFptJdNaYrvZF_soZyiqIsX-rHYUj4H6rnfMCExu2hIyVjCk48j86rdaBhp_lthzb/pub?single=true&output=tsv";
+  const BRIDGE = "https://script.google.com/macros/s/AKfycbyKXzPHQLsHCoryx0aJVpVkP0Z0XrnPxjucaiUJtR1aXeux33ygq2Br2QcBNU_MAB7qDw/exec";
+  const TICKETS = "https://script.google.com/macros/s/AKfycbzX5yeStITITqvM0HXgvZYBNy70Jo8HRxGXYlc6iHzzMYuWnoXWzzOA9QyllWIGDWFA/exec";
+  const HITS = "https://script.google.com/macros/s/AKfycbySw_h8TE9s5YtPyHflVDiiKJ07-STcymyybtR_CvkZQmGWM3OOnK7yVuaSVsEkHmHv/exec";
+  const MON = { jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5, jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11 };
+
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  }
+  function num(v) {
+    if (typeof v === "number") return v;
+    const s = String(v == null ? "" : v).replace(/[₹,\s]/g, "");
+    if (!s) return null;
+    const n = Number(s);
+    return isFinite(n) ? n : null;
+  }
+  const fmt = (v, money) => v == null ? "—" : (money ? "₹" : "") + (Math.round(v * 100) / 100).toLocaleString("en-IN");
+  // "3 Oct 26", "08-Oct", "2026-10-03" → a sortable key; anything else sorts as text.
+  function dateKey(s) {
+    s = String(s || "").trim();
+    let m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (m) return m[1] + m[2] + m[3];
+    m = s.match(/^(\d{1,2})[\s-]+([A-Za-z]{3})[a-z]*\.?(?:[\s-]+(\d{2,4}))?/);
+    if (m && MON[m[2].toLowerCase()] != null) {
+      const y = m[3] ? (m[3].length === 2 ? "20" + m[3] : m[3]) : "2026";
+      return y + String(MON[m[2].toLowerCase()] + 1).padStart(2, "0") + m[1].padStart(2, "0");
+    }
+    return null;
+  }
+  // DD MMM YYYY, the house date style.
+  function niceDate(k) {
+    if (!k) return "";
+    return k.slice(6, 8) + " " + Object.keys(MON)[+k.slice(4, 6) - 1].replace(/^./, (c) => c.toUpperCase()) + " " + k.slice(0, 4);
+  }
+
+  async function fetchText(url, ms) {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), ms || 20000);
+    try {
+      const r = await fetch(url + (url.includes("?") ? "&" : "?") + "_=" + Date.now(), { cache: "no-store", signal: ctrl.signal });
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      return await r.text();
+    } finally { clearTimeout(t); }
+  }
+  // Apps Script can be slow on a cold start: try three times before giving up.
+  async function fetchJSON(url) {
+    let err;
+    for (let i = 0; i < 3; i++) {
+      try { return JSON.parse(await fetchText(url, 25000)); }
+      catch (e) { err = e; await new Promise((r) => setTimeout(r, 2000 * (i + 1))); }
+    }
+    throw err;
+  }
+  function tsvRows(tsv) { return String(tsv || "").replace(/\r/g, "").split("\n").map((l) => l.split("\t").map((c) => c.trim())); }
+  function headerAt(rows, name) { return rows.findIndex((r) => r.some((c) => c.toLowerCase() === name)); }
+
+  /* ---------- Data sources ----------
+     Each returns { cols: [{key, label, type}], rows: [...] }.
+     type: "text" | "num" | "money" | "date" (date values are YYYYMMDD keys). */
+  const SOURCES = {
+    programme: {
+      label: "Programme (events)",
+      note: "Every event on the festival schedule sheet.",
+      async load() {
+        const rows = tsvRows(await fetchText(PUB + "&gid=289612903"));
+        const at = headerAt(rows, "title");
+        const h = rows[at].map((c) => c.toLowerCase());
+        const g = (r, k) => r[h.indexOf(k)] || "";
+        const out = rows.slice(at + 1).filter((r) => g(r, "title")).map((r) => {
+          const ticketed = g(r, "bookmyshow link") || g(r, "district link") || g(r, "ticket link");
+          return {
+            title: g(r, "title"), category: g(r, "category") || "Other", date: dateKey(g(r, "start date")),
+            venue: g(r, "venue") || "—", collaboration: /^y/i.test(g(r, "collaboration")) ? "Yes" : "No",
+            ticketing: ticketed ? "Ticketed" : (/free/i.test(g(r, "pass info")) ? "Free" : "Open / other"),
+            capacity: num(g(r, "capacity")), status: g(r, "status") || "—",
+          };
+        });
+        return { rows: out, cols: [
+          { key: "title", label: "Event", type: "text" }, { key: "date", label: "Date", type: "date" },
+          { key: "category", label: "Category", type: "text" }, { key: "venue", label: "Venue", type: "text" },
+          { key: "ticketing", label: "Ticketing", type: "text" }, { key: "collaboration", label: "Collaboration", type: "text" },
+          { key: "capacity", label: "Capacity", type: "num" }, { key: "status", label: "Status", type: "text" },
+        ] };
+      },
+    },
+    tickets: {
+      label: "Ticket sales",
+      note: "Tickets recorded in Admin → Ticket sales, one row per event per day.",
+      async load() {
+        const d = await fetchJSON(TICKETS + "?data=1");
+        const out = [];
+        Object.keys(d.daily || {}).forEach((day) => Object.keys(d.daily[day]).forEach((ev) => {
+          out.push({ day: dateKey(day), event: ev, tickets: Number(d.daily[day][ev] || 0) });
+        }));
+        return { rows: out, cols: [
+          { key: "day", label: "Day", type: "date" }, { key: "event", label: "Event", type: "text" },
+          { key: "tickets", label: "Tickets", type: "num" },
+        ] };
+      },
+    },
+    clicks: {
+      label: "Campaign links",
+      note: "What each minted link brought in, over the whole campaign. \"(direct)\" is people who came without a link.",
+      async load() {
+        const all = ((await fetchJSON(HITS + "?dashboard=1")).hits || {}).all || {};
+        const out = Object.keys(all.byRef || {}).map((ref) => {
+          const v = all.byRef[ref] || {};
+          return { link: ref, channel: ref.split("/")[0], visits: v.visit || 0, sessions: v.sessions || 0, ticket_click: v.ticket_click || 0, register: v.register || 0 };
+        });
+        return { rows: out, cols: [
+          { key: "link", label: "Link", type: "text" }, { key: "channel", label: "Channel", type: "text" },
+          { key: "visits", label: "Visits", type: "num" }, { key: "sessions", label: "Sessions", type: "num" },
+          { key: "ticket_click", label: "Ticket clicks", type: "num" }, { key: "register", label: "Sign-ups", type: "num" },
+        ] };
+      },
+    },
+    traffic: {
+      label: "Site traffic by day",
+      note: "Sessions, ticket-button clicks and sign-ups on the site, per day.",
+      async load() {
+        const all = ((await fetchJSON(HITS + "?dashboard=1")).hits || {}).all || {};
+        const out = Object.keys(all.daily || {}).map((day) => {
+          const v = all.daily[day] || {};
+          return { day: dateKey(day), sessions: v.sessions || 0, ticket_click: v.ticket_click || 0, register: v.register || 0 };
+        });
+        return { rows: out, cols: [
+          { key: "day", label: "Day", type: "date" }, { key: "sessions", label: "Sessions", type: "num" },
+          { key: "ticket_click", label: "Ticket clicks", type: "num" }, { key: "register", label: "Sign-ups", type: "num" },
+        ] };
+      },
+    },
+    collab: {
+      label: "Collaborators",
+      note: "Venues, artists and stalls from the Collab sheet, with their status.",
+      async load() {
+        const rows = tsvRows(await fetchText(PUB + "&gid=7166598"));
+        const at = headerAt(rows, "venues");
+        const h = rows[at].map((c) => c.toLowerCase());
+        const groups = [["Venue", h.indexOf("venues")], ["Artist", h.indexOf("artists")], ["Stall", h.findIndex((c) => c.startsWith("for stalls"))]];
+        const out = [];
+        rows.slice(at + 1).forEach((r) => groups.forEach(([type, i]) => {
+          if (i < 0 || !r[i]) return;
+          const st = r[i + 1] || "";
+          out.push({ type, name: r[i], status: st || "Not stated", confirmed: /confirm/i.test(st) ? "Confirmed" : "Not yet" });
+        }));
+        return { rows: out, cols: [
+          { key: "type", label: "Type", type: "text" }, { key: "name", label: "Name", type: "text" },
+          { key: "confirmed", label: "Confirmed?", type: "text" }, { key: "status", label: "Status / notes", type: "text" },
+        ] };
+      },
+    },
+    costing: {
+      label: "Indicative costing",
+      note: "Line items from the costing tab of the planning workbook.",
+      async load() {
+        const rows = tsvRows(await fetchText(PUB + "&gid=2125707033"));
+        const at = headerAt(rows, "item");
+        const h = rows[at].map((c) => c.toLowerCase());
+        const i = (p) => h.findIndex((c) => c.startsWith(p));
+        const out = rows.slice(at + 1).filter((r) => r[i("item")] && !/^total/i.test(r[i("item")])).map((r) => ({
+          item: r[i("item")], description: r[i("description")] || "", amount: num(r[i("amount")]),
+          days: num(r[i("days")]), numbers: num(r[i("numbers")]), total: num(r[i("total")]),
+        }));
+        return { rows: out, cols: [
+          { key: "item", label: "Item", type: "text" }, { key: "description", label: "Description", type: "text" },
+          { key: "amount", label: "Amount", type: "money" }, { key: "days", label: "Days", type: "num" },
+          { key: "numbers", label: "Qty", type: "num" }, { key: "total", label: "Line total", type: "money" },
+        ], kpi: ["total"] };
+      },
+    },
+    signups: {
+      label: "Sign-up totals",
+      note: "Running totals from the registration bridge — counts only. The lists overlap, so they are never added together.",
+      async load() {
+        const d = await fetchJSON(BRIDGE + "?sheet=stats");
+        const names = { registered: "Registered (all)", updates: "Asked for updates", volunteer: "Volunteers" };
+        return { rows: Object.keys(d).filter((k) => typeof d[k] === "number").map((k) => ({ list: names[k] || k, people: d[k] })), cols: [
+          { key: "list", label: "List", type: "text" }, { key: "people", label: "People", type: "num" },
+        ], kpi: [], noTotal: true };
+      },
+    },
+  };
+
+  const PRESETS = [
+    { title: "Tickets by event", src: "tickets", group: "event", agg: "sum", mcol: "tickets", sort: "vd" },
+    { title: "Tickets by day", src: "tickets", group: "day", agg: "sum", mcol: "tickets", sort: "la" },
+    { title: "Events by category", src: "programme", group: "category", agg: "count", sort: "vd" },
+    { title: "Events by venue", src: "programme", group: "venue", agg: "count", sort: "vd" },
+    { title: "Programme calendar", src: "programme", group: "date", agg: "count", sort: "la" },
+    { title: "Top campaign links", src: "clicks", group: "link", agg: "sum", mcol: "visits", sort: "vd", top: 15 },
+    { title: "Ticket clicks by channel", src: "clicks", group: "channel", agg: "sum", mcol: "ticket_click", sort: "vd" },
+    { title: "Daily site traffic", src: "traffic", group: "day", agg: "sum", mcol: "sessions", sort: "la" },
+    { title: "Collaborators by status", src: "collab", group: "type", agg: "count", sort: "vd", filters: [["confirmed", "Confirmed"]] },
+    { title: "Costing by item", src: "costing", group: "item", agg: "sum", mcol: "total", sort: "vd" },
+    { title: "Sign-ups", src: "signups", group: "list", agg: "sum", mcol: "people", sort: "vd" },
+  ];
+  const SAVED_KEY = "bali-reports-saved";
+
+  const cache = {};       // source key → { cols, rows, at }
+  let state = {};         // the report being built
+  let tableSort = null;   // { key, dir } for the detail table
+
+  function blank(src) { return { src, title: "", filters: [], group: "", agg: "count", mcol: "", sort: "vd", top: "", hide: [] }; }
+
+  async function data(src, force) {
+    if (!cache[src] || force) {
+      $("rmeta").textContent = "Fetching " + SOURCES[src].label.toLowerCase() + "…";
+      const d = await SOURCES[src].load();
+      d.at = new Date();
+      cache[src] = d;
+    }
+    return cache[src];
+  }
+
+  /* ---------- Builder controls ---------- */
+  const opt = (v, l, sel) => `<option value="${esc(v)}"${sel ? " selected" : ""}>${esc(l)}</option>`;
+
+  function paintBuilder(d) {
+    const cols = d.cols;
+    $("srcnote").textContent = SOURCES[state.src].note;
+    $("group").innerHTML = opt("", "No grouping — list every row", !state.group) +
+      cols.map((c) => opt(c.key, c.label, state.group === c.key)).join("");
+    const nums = cols.filter((c) => c.type === "num" || c.type === "money");
+    $("mcol").innerHTML = nums.map((c) => opt(c.key, c.label, state.mcol === c.key)).join("") || opt("", "—");
+    if (!state.mcol && nums[0]) state.mcol = nums[0].key;
+    $("mcol").disabled = state.agg === "count" || !nums.length;
+    $("agg").value = state.agg;
+    $("sort").value = state.sort;
+    $("top").value = state.top || "";
+    $("title").value = state.title || "";
+    $("filters").innerHTML = state.filters.map((f, i) => `<div class="filter" data-i="${i}">
+        <select class="fc">${cols.map((c) => opt(c.key, c.label, f[0] === c.key)).join("")}</select>
+        <select class="fv">${opt("", "Any", !f[1])}${distinct(d, f[0]).map((v) => opt(v, label(d, f[0], v), f[1] === v)).join("")}</select>
+        <button class="rm" type="button" aria-label="Remove filter">×</button></div>`).join("");
+    $("cols").innerHTML = cols.map((c) => `<label><input type="checkbox" value="${esc(c.key)}"${state.hide.includes(c.key) ? "" : " checked"} /> ${esc(c.label)}</label>`).join("");
+  }
+  function distinct(d, key) {
+    const set = [...new Set(d.rows.map((r) => r[key]).filter((v) => v != null && v !== ""))].map(String);
+    return set.sort();
+  }
+  function colOf(d, key) { return d.cols.find((c) => c.key === key) || { type: "text", label: key }; }
+  function label(d, key, v) {
+    const c = colOf(d, key);
+    if (c.type === "date") return niceDate(String(v)) || "No date";
+    if (c.type === "money") return fmt(num(v), true);
+    return v == null || v === "" ? "—" : String(v);
+  }
+
+  /* ---------- Compute and render ---------- */
+  function compute(d) {
+    const rows = d.rows.filter((r) => state.filters.every(([k, v]) => !v || String(r[k]) === v));
+    const mval = (r) => state.agg === "count" ? 1 : num(r[state.mcol]);
+    let groups = null;
+    if (state.group) {
+      const map = new Map();
+      rows.forEach((r) => {
+        const k = r[state.group] == null ? "" : String(r[state.group]);
+        if (!map.has(k)) map.set(k, []);
+        map.get(k).push(r);
+      });
+      groups = [...map].map(([k, rs]) => {
+        const vals = rs.map(mval).filter((v) => v != null);
+        let v = vals.reduce((a, b) => a + b, 0);
+        if (state.agg === "avg") v = vals.length ? v / vals.length : 0;
+        if (state.agg === "max") v = vals.length ? Math.max(...vals) : 0;
+        return { key: k, value: v, n: rs.length };
+      });
+      const byLabel = (a, b) => a.key.localeCompare(b.key, "en", { numeric: true });
+      groups.sort(state.sort === "la" ? byLabel : state.sort === "va" ? (a, b) => a.value - b.value : (a, b) => b.value - a.value);
+      const top = parseInt(state.top, 10);
+      if (top > 0) groups = groups.slice(0, top);
+    }
+    return { rows, groups };
+  }
+
+  function render() {
+    const d = cache[state.src];
+    if (!d) return;
+    const { rows, groups } = compute(d);
+    const mc = colOf(d, state.mcol);
+    const money = state.agg !== "count" && mc.type === "money";
+    const measureName = state.agg === "count" ? "Rows" : ({ sum: "Total", avg: "Average", max: "Highest" })[state.agg] + " " + mc.label.toLowerCase();
+    const title = state.title || autoTitle(d);
+    $("rtitle").textContent = title;
+    document.title = title + " — Reports — Bali in Bengaluru";
+    const filt = state.filters.filter((f) => f[1]).map((f) => colOf(d, f[0]).label + ": " + label(d, f[0], f[1]));
+    $("rmeta").textContent = SOURCES[state.src].label + (filt.length ? " · " + filt.join(" · ") : "") +
+      " · live as of " + niceDate(new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata" }).format(d.at).replace(/-/g, "")) + ", " + d.at.toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit", hour12: true, timeZone: "Asia/Kolkata" }) + " IST";
+
+    // Headline numbers: rows, the measure's total, and the leading group.
+    const kp = [[rows.length.toLocaleString("en-IN"), "Rows"]];
+    const numCols = d.cols.filter((c) => c.type === "num" || c.type === "money");
+    (d.kpi ? numCols.filter((c) => d.kpi.includes(c.key)) : numCols.slice(0, 2)).forEach((c) => {
+      const s = rows.reduce((a, r) => a + (num(r[c.key]) || 0), 0);
+      kp.push([fmt(s, c.type === "money"), "Total " + c.label.toLowerCase()]);
+    });
+    if (groups && groups.length) {
+      kp.push([groups.length.toLocaleString("en-IN"), colOf(d, state.group).label + " groups"]);
+      const lead = groups.slice().sort((a, b) => b.value - a.value)[0];
+      kp.push([esc(label(d, state.group, lead.key)), "Leads, with " + fmt(lead.value, money)]);
+    }
+    $("kpis").innerHTML = kp.map(([b, s]) => `<div class="kpi"><b>${b.length > 14 ? `<small class="long">${b}</small>` : b}</b><span>${esc(s)}</span></div>`).join("");
+
+    // Chart: one bar per group.
+    $("chartbox").hidden = !groups;
+    if (groups) {
+      $("charth").textContent = measureName + " by " + colOf(d, state.group).label.toLowerCase();
+      const max = Math.max(...groups.map((g) => g.value), 0);
+      $("chart").innerHTML = groups.length ? groups.map((g) => `<div class="bar">
+          <span class="lbl" title="${esc(label(d, state.group, g.key))}">${esc(label(d, state.group, g.key))}</span>
+          <span class="trk"><i style="width:${max ? (100 * g.value / max).toFixed(1) : 0}%"></i></span>
+          <span class="v">${fmt(g.value, money)}</span></div>`).join("") : '<p class="empty">Nothing matches these filters.</p>';
+    }
+
+    // Table: grouped summary, or every row.
+    let head, body, foot = "";
+    if (groups) {
+      const gl = colOf(d, state.group).label;
+      head = [{ key: "key", label: gl }, { key: "n", label: "Rows", num: 1 }].concat(state.agg === "count" ? [] : [{ key: "value", label: measureName, num: 1 }]);
+      let list = sortTable(groups);
+      body = list.map((g) => `<tr><td>${esc(label(d, state.group, g.key))}</td><td class="num">${g.n.toLocaleString("en-IN")}</td>${state.agg === "count" ? "" : `<td class="num">${fmt(g.value, money)}</td>`}</tr>`).join("");
+      const tot = groups.reduce((a, g) => a + g.value, 0);
+      foot = `<tfoot><tr><th>Total</th><th class="num">${groups.reduce((a, g) => a + g.n, 0).toLocaleString("en-IN")}</th>${state.agg === "count" ? "" : `<th class="num">${state.agg === "sum" && !d.noTotal ? fmt(tot, money) : ""}</th>`}</tr></tfoot>`;
+    } else {
+      const shown = d.cols.filter((c) => !state.hide.includes(c.key));
+      head = shown.map((c) => ({ key: c.key, label: c.label, num: c.type === "num" || c.type === "money" }));
+      body = sortTable(rows).map((r) => "<tr>" + shown.map((c) => {
+        const isNum = c.type === "num" || c.type === "money";
+        return `<td${isNum ? ' class="num"' : ""}>${esc(isNum ? fmt(num(r[c.key]), c.type === "money") : label(d, c.key, r[c.key]))}</td>`;
+      }).join("") + "</tr>").join("");
+    }
+    $("table").innerHTML = (body ? `<table><thead><tr>${head.map((h) => `<th data-k="${esc(h.key)}"${h.num ? ' class="num"' : ""}>${esc(h.label)}${tableSort && tableSort.key === h.key ? (tableSort.dir > 0 ? " ▲" : " ▼") : ""}</th>`).join("")}</tr></thead><tbody>${body}</tbody>${foot}</table>` : '<p class="empty">Nothing matches these filters.</p>');
+    $("colsfield").hidden = !!groups;
+    location.replace("#" + encodeURIComponent(JSON.stringify(state)));
+  }
+  function sortTable(list) {
+    if (!tableSort) return list;
+    const { key, dir } = tableSort;
+    return list.slice().sort((a, b) => {
+      const x = a[key], y = b[key];
+      if (typeof x === "number" || typeof y === "number") return dir * ((x || 0) - (y || 0));
+      return dir * String(x || "").localeCompare(String(y || ""), "en", { numeric: true });
+    });
+  }
+  function autoTitle(d) {
+    const src = SOURCES[state.src].label;
+    return state.group ? src + " by " + colOf(d, state.group).label.toLowerCase() : src;
+  }
+
+  /* ---------- CSV export (what is on screen) ---------- */
+  function csv() {
+    const t = $("table").querySelector("table");
+    if (!t) return;
+    const q = (s) => '"' + String(s).replace(/ [▲▼]$/, "").replace(/"/g, '""') + '"';
+    const lines = [...t.querySelectorAll("tr")].map((tr) => [...tr.children].map((c) => q(c.textContent)).join(","));
+    const blob = new Blob(["﻿" + lines.join("\r\n")], { type: "text/csv" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = ($("rtitle").textContent || "report").replace(/[^\w]+/g, "-").toLowerCase() + ".csv";
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  }
+
+  /* ---------- Saved reports (this browser) and presets ---------- */
+  function saved() { try { return JSON.parse(localStorage.getItem(SAVED_KEY) || "[]"); } catch (e) { return []; } }
+  function paintPresets() {
+    const mine = saved();
+    $("presets").innerHTML = PRESETS.map((p, i) => `<button class="chip" type="button" data-p="${i}">${esc(p.title)}</button>`).join("") +
+      mine.map((p, i) => `<button class="chip" type="button" data-s="${i}">★ ${esc(p.title || "Untitled")}<span class="x" data-del="${i}" title="Remove">×</span></button>`).join("");
+  }
+  async function use(s) {
+    state = Object.assign(blank(s.src), JSON.parse(JSON.stringify(s)));
+    tableSort = null;
+    $("src").value = state.src;
+    try {
+      const d = await data(state.src);
+      $("warn").hidden = true;
+      paintBuilder(d);
+      render();
+    } catch (e) {
+      $("warn").hidden = false;
+      $("warn").innerHTML = "<b>Could not reach " + esc(SOURCES[state.src].label) + " just now.</b> The sheet or script may be waking up — press Refresh in a minute.";
+      $("rmeta").textContent = "";
+    }
+  }
+
+  /* ---------- Wiring ---------- */
+  function wire() {
+    $("src").innerHTML = Object.keys(SOURCES).map((k) => opt(k, SOURCES[k].label)).join("");
+    $("src").addEventListener("change", () => use(blank($("src").value)));
+    $("group").addEventListener("change", (e) => { state.group = e.target.value; tableSort = null; render(); });
+    $("agg").addEventListener("change", (e) => { state.agg = e.target.value; $("mcol").disabled = state.agg === "count"; render(); });
+    $("mcol").addEventListener("change", (e) => { state.mcol = e.target.value; render(); });
+    $("sort").addEventListener("change", (e) => { state.sort = e.target.value; render(); });
+    $("top").addEventListener("input", (e) => { state.top = e.target.value; render(); });
+    $("title").addEventListener("input", (e) => { state.title = e.target.value; render(); });
+    $("addf").addEventListener("click", () => { state.filters.push([cache[state.src].cols[0].key, ""]); paintBuilder(cache[state.src]); });
+    $("filters").addEventListener("change", (e) => {
+      const row = e.target.closest(".filter"); const i = +row.dataset.i;
+      if (e.target.classList.contains("fc")) state.filters[i] = [e.target.value, ""];
+      else state.filters[i][1] = e.target.value;
+      paintBuilder(cache[state.src]); render();
+    });
+    $("filters").addEventListener("click", (e) => {
+      if (!e.target.classList.contains("rm")) return;
+      state.filters.splice(+e.target.closest(".filter").dataset.i, 1);
+      paintBuilder(cache[state.src]); render();
+    });
+    $("cols").addEventListener("change", () => {
+      state.hide = [...$("cols").querySelectorAll("input")].filter((i) => !i.checked).map((i) => i.value);
+      render();
+    });
+    $("table").addEventListener("click", (e) => {
+      const th = e.target.closest("thead th"); if (!th) return;
+      const k = th.dataset.k;
+      tableSort = tableSort && tableSort.key === k ? { key: k, dir: -tableSort.dir } : { key: k, dir: th.classList.contains("num") ? -1 : 1 };
+      render();
+    });
+    $("presets").addEventListener("click", (e) => {
+      const del = e.target.closest("[data-del]");
+      if (del) {
+        const list = saved(); list.splice(+del.dataset.del, 1);
+        try { localStorage.setItem(SAVED_KEY, JSON.stringify(list)); } catch (x) {}
+        paintPresets(); return;
+      }
+      const b = e.target.closest(".chip"); if (!b) return;
+      use(b.dataset.p != null ? PRESETS[+b.dataset.p] : saved()[+b.dataset.s]);
+    });
+    $("save").addEventListener("click", () => {
+      if (!state.title) state.title = autoTitle(cache[state.src]);
+      const list = saved().filter((s) => s.title !== state.title);
+      list.push(JSON.parse(JSON.stringify(state)));
+      try { localStorage.setItem(SAVED_KEY, JSON.stringify(list)); } catch (x) {}
+      paintPresets(); render();
+      $("save").textContent = "Saved ✓"; setTimeout(() => { $("save").textContent = "Save this report"; }, 1500);
+    });
+    $("reload").addEventListener("click", async () => { await data(state.src, true).catch(() => null); paintBuilder(cache[state.src]); render(); });
+    $("csv").addEventListener("click", csv);
+    $("print").addEventListener("click", () => window.print());
+    $("copy").addEventListener("click", () => {
+      navigator.clipboard.writeText(location.href).then(() => { $("copy").textContent = "Copied ✓"; setTimeout(() => { $("copy").textContent = "Copy link"; }, 1500); });
+    });
+  }
+
+  AdminAuth.protect({
+    tool: "reports",
+    onUnlock: function (user) {
+      $("who").textContent = user;
+      wire();
+      paintPresets();
+      let start = PRESETS[0];
+      try { const h = JSON.parse(decodeURIComponent(location.hash.slice(1))); if (h && SOURCES[h.src]) start = h; } catch (e) {}
+      use(start);
+    },
+  });
+  $("signout").addEventListener("click", AdminAuth.signOut);
+})();
+</script>
+</body>
+</html>

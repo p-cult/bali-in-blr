@@ -2655,3 +2655,13 @@ git-ignored folder on the drive — for files to keep but never put on the site
 (everything committed is served by GitHub Pages). First item: the artist tour
 daily-routine workbook (23 Sep export, one tab per day 30 Sep – 19 Oct); its
 copy is also in git history at commit `b78d309`.
+
+**Reports page (19 Oct):** `admin/reports.html` is a report builder that needs
+no AI tool: pick a source (programme, ticket sales, campaign links, site traffic
+by day, collaborators, costing, sign-up totals), filter, group, total, then
+print/PDF, download CSV or copy a link that reopens the same report. Twelve
+ready-made reports sit at the top; "Save this report" keeps your own in that
+browser only. It reads the same live sheets and scripts as the other admin
+pages, and only totals and programme rows — never names, phones or emails.
+Tool name `reports` in `auth.js`; Kishan does not see it (costing is in it).
+The sign-up lists overlap, so the page never adds them together.

@@ -56,6 +56,7 @@ dependencies. Hosted on **GitHub Pages**, auto-deploys on push to `main`.
 - `event/index.html` + `event.js` — one page per event at `event/?e=<slug>`, live from
   the sheet via main.js; banners in `assets/events/`, mapped in `data/event-banners.json`,
   synced hourly by `tools/sync-event-banners.py`
+- `admin/reports.html` — build-your-own reports from the live data (filter, group, chart, PDF/CSV)
 - `admin/results.html` — which minted link led to what, and an estimate of tickets
   per link; click log in `docs/apps-script/Hits.gs`. See `docs/ATTRIBUTION.md`
 - `docs/ANOTHER-MACHINE.md` — working from the drive on a new computer
