@@ -138,11 +138,7 @@ post.reg.eyebrow	Stay in the loop	post-festival home · p
 post.reg.title	Stay in touch	post-festival home · h2
 post.reg.text	The festival may be over, but the conversation isn’t. Sign up for photographs, recordings and first word of what Param Foundation brings to Bengaluru next.	post-festival home · p
 post.fd.intro	Every performance, workshop and conversation of the sixteen days — tap one to see its photographs.	post-festival home · p
-post.feat.caption	Dr. I Wayan Dibia with a Topeng mask	post-festival home · figcaption
 post.feat.eyebrow	At the heart of the festival	post-festival home · p
-post.feat.f1	choreographic works	post-festival home · span
-post.feat.f2	books on Balinese arts	post-festival home · span
-post.feat.f3	Padma Shri, Government of India	post-festival home · span
 post.found.fact3.label	First international festival	post-festival home · span
 post.found.fact3.value	Bali in Bengaluru, 3 – 18 October 2026	post-festival home · em
 post.collab.eyebrow	Made possible together	post-festival home · p
@@ -151,3 +147,9 @@ post.collab.intro	Cultural institutions, venues, schools and partners across Ben
 post.sup.eyebrow	Partner with us	post-festival home · p
 post.sup.title	Bring the next festival to life	post-festival home · h2
 post.sup.lead	This edition was made possible by partners who believed in it. Help Param Foundation bring the next one to Bengaluru.	post-festival home · p
+post.feat.f1.label	Choreographic works	post-festival home · span
+post.feat.f1	Over 150	post-festival home · em
+post.feat.f2.label	Books	post-festival home · span
+post.feat.f2	Seven, on Balinese arts	post-festival home · em
+post.feat.f3.label	Padma Shri	post-festival home · span
+post.feat.f3	2021, Government of India	post-festival home · em
