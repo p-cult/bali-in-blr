@@ -13,3 +13,6 @@ secure/*.plain
 .secrets/
 .bake-changed
 .bake-state
+
+# Local-only backups: kept on the drive, never committed or published.
+backup/
