@@ -129,7 +129,7 @@ function verifyById(id) {
 function authOk(user, pass) {
   const HASHES = {
     kishan: "21e72236a640e3217ca075262b8f40b0a3b0be6f735df7d86f6e890195059a29",
-    vinod:  "df6fcc5c1774a5292e5b8c61bb0e9cc57034b3b4f25b439231fe7c9cd726c820",
+    vinod:  "4e9dd5a1f0129ff2b7608e66fd269207d721ce5ad7d089298eb84b092c82483d",
     jois:   "ee9d41e56dce85563d3e14b0a37eb48dde121c27539a2f4f9884e56b2ea1e0c7",
   };
   if (!user || !pass || !HASHES[user]) return false;
