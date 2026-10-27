@@ -733,6 +733,282 @@
       "videos": [],
       "version": "85c99f55ce",
       "synced": "2026-10-14T12:18:08Z"
+    },
+    "mask-making-workshop": {
+      "photos": [
+        {
+          "file": "01",
+          "name": "IMG_8203.JPG",
+          "w": 800,
+          "h": 600
+        },
+        {
+          "file": "02",
+          "name": "IMG_8204.JPG",
+          "w": 600,
+          "h": 800
+        },
+        {
+          "file": "03",
+          "name": "IMG_8264.JPG",
+          "w": 800,
+          "h": 600
+        },
+        {
+          "file": "04",
+          "name": "IMG_8649.jpg",
+          "w": 800,
+          "h": 600
+        },
+        {
+          "file": "05",
+          "name": "IMG_8650.jpg",
+          "w": 800,
+          "h": 600
+        },
+        {
+          "file": "06",
+          "name": "IMG_8651.jpg",
+          "w": 800,
+          "h": 600
+        },
+        {
+          "file": "07",
+          "name": "IMG_8652.jpg",
+          "w": 800,
+          "h": 600
+        },
+        {
+          "file": "08",
+          "name": "IMG_E8224.JPG",
+          "w": 800,
+          "h": 600
+        },
+        {
+          "file": "09",
+          "name": "IMG_E8225.JPG",
+          "w": 800,
+          "h": 600
+        }
+      ],
+      "videos": [],
+      "version": "2d2afb38d6",
+      "synced": "2026-10-27T14:02:56Z"
+    },
+    "gamelan-workshop": {
+      "photos": [
+        {
+          "file": "01",
+          "name": "IMG_8448.JPG",
+          "w": 600,
+          "h": 800
+        },
+        {
+          "file": "02",
+          "name": "IMG_8492.JPG",
+          "w": 800,
+          "h": 600
+        },
+        {
+          "file": "03",
+          "name": "IMG_8507.JPG",
+          "w": 800,
+          "h": 600
+        },
+        {
+          "file": "04",
+          "name": "IMG_8517.JPG",
+          "w": 800,
+          "h": 600
+        },
+        {
+          "file": "05",
+          "name": "IMG_8631.JPG",
+          "w": 800,
+          "h": 600
+        },
+        {
+          "file": "06",
+          "name": "IMG_E8540.JPG",
+          "w": 800,
+          "h": 600
+        }
+      ],
+      "videos": [],
+      "version": "c79d1dd2cc",
+      "synced": "2026-10-27T14:03:14Z"
+    },
+    "balinese-shadow-puppetry-performance": {
+      "photos": [
+        {
+          "file": "01",
+          "name": "IMG_8729.jpg",
+          "w": 800,
+          "h": 600
+        },
+        {
+          "file": "02",
+          "name": "IMG_8753.jpg",
+          "w": 800,
+          "h": 600
+        },
+        {
+          "file": "03",
+          "name": "IMG_8769.jpg",
+          "w": 800,
+          "h": 600
+        },
+        {
+          "file": "04",
+          "name": "IMG_8794.JPG",
+          "w": 800,
+          "h": 600
+        },
+        {
+          "file": "05",
+          "name": "IMG_8802.jpg",
+          "w": 800,
+          "h": 600
+        },
+        {
+          "file": "06",
+          "name": "IMG_8826.jpg",
+          "w": 800,
+          "h": 600
+        },
+        {
+          "file": "07",
+          "name": "IMG_8832.jpg",
+          "w": 800,
+          "h": 600
+        }
+      ],
+      "videos": [],
+      "version": "eef319015b",
+      "synced": "2026-10-27T14:03:34Z"
+    },
+    "a-day-in-manipal": {
+      "photos": [
+        {
+          "file": "01",
+          "name": "DSC02260.JPG",
+          "w": 800,
+          "h": 450
+        },
+        {
+          "file": "02",
+          "name": "DSC02286.JPG",
+          "w": 800,
+          "h": 450
+        },
+        {
+          "file": "03",
+          "name": "DSC02304.JPG",
+          "w": 800,
+          "h": 450
+        },
+        {
+          "file": "04",
+          "name": "DSC02342.JPG",
+          "w": 800,
+          "h": 450
+        },
+        {
+          "file": "05",
+          "name": "DSC02380.JPG",
+          "w": 800,
+          "h": 450
+        },
+        {
+          "file": "06",
+          "name": "DSC02384.JPG",
+          "w": 800,
+          "h": 450
+        },
+        {
+          "file": "07",
+          "name": "DSC02425.JPG",
+          "w": 800,
+          "h": 450
+        },
+        {
+          "file": "08",
+          "name": "DSC02431.JPG",
+          "w": 800,
+          "h": 450
+        }
+      ],
+      "videos": [],
+      "version": "7cab2a890b",
+      "synced": "2026-10-27T14:04:06Z"
+    },
+    "balinese-dance-demonstration": {
+      "photos": [
+        {
+          "file": "01",
+          "name": "IMG_9042.JPG",
+          "w": 600,
+          "h": 800
+        },
+        {
+          "file": "02",
+          "name": "IMG_9043.jpg",
+          "w": 800,
+          "h": 450
+        }
+      ],
+      "videos": [],
+      "version": "dce6a20b44",
+      "synced": "2026-10-27T14:04:12Z"
+    },
+    "the-finale": {
+      "photos": [
+        {
+          "file": "01",
+          "name": "049A2459.CR3",
+          "w": 800,
+          "h": 533
+        },
+        {
+          "file": "02",
+          "name": "049A2463.CR3",
+          "w": 800,
+          "h": 533
+        },
+        {
+          "file": "03",
+          "name": "049A2554.CR3",
+          "w": 800,
+          "h": 533
+        },
+        {
+          "file": "04",
+          "name": "049A2595.CR3",
+          "w": 800,
+          "h": 533
+        },
+        {
+          "file": "05",
+          "name": "049A2651.CR3",
+          "w": 800,
+          "h": 533
+        },
+        {
+          "file": "06",
+          "name": "049A2703.CR3",
+          "w": 800,
+          "h": 533
+        },
+        {
+          "file": "07",
+          "name": "049A2785.CR3",
+          "w": 800,
+          "h": 533
+        }
+      ],
+      "videos": [],
+      "version": "dc340df671",
+      "synced": "2026-10-27T14:04:36Z"
     }
   }
 }
