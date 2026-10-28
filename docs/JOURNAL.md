@@ -2679,3 +2679,18 @@ comes from the workbook's published-tab list). Also added: minted campaign links
 (the Mint tab, via `?sheet=links`) and photos/videos per event
 (`data/event-media.json`). The registration sheet stays counts-only — its rows
 hold personal details and never reach any page.
+
+**"In Numbers" report online at /numbers/ (29 Oct):** the post-festival report
+deck (twelve slides: programme, attendance, tickets, ticket sources, website,
+both Instagram accounts, reach) is now a slide show at `/numbers/`, link-only
+like `/progress/` (noindex, disallowed in robots.txt, not linked from the site).
+The deck itself lives in a Claude Slides artifact; `tools/build-numbers.py` turns
+its files (`deck.json` + `slides/<id>.html`) into `numbers/index.html`, so to
+change a figure, edit the deck and re-run the script. On the way the script
+drops the speaker notes (they hold working detail, not for the public page),
+points the deck's images at the identical files already in `assets/`, and
+swaps the cover's typed title for the inline logo. The slides keep the deck's
+inline styles on purpose — an exception to the "no inline styles" rule, so a
+re-run reproduces the deck exactly; the page's own styles are in
+`numbers/numbers.css`. Arrow keys, space, swipe and the buttons move between
+slides; `#5` in the address opens slide 5; printing gives one slide per page.

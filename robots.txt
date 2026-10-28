@@ -20,3 +20,6 @@ Sitemap: https://bali-in-blr.paramfoundation.org/sitemap.xml
 
 # The home page as it was before and during the festival — archived, not indexed.
 Disallow: /live/
+
+# "In Numbers" festival report slide show — shared by link, not indexed
+Disallow: /numbers/

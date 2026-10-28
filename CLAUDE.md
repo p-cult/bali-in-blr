@@ -59,6 +59,8 @@ dependencies. Hosted on **GitHub Pages**, auto-deploys on push to `main`.
 - `admin/reports.html` — build-your-own reports from the live data (filter, group, chart, PDF/CSV)
 - `admin/results.html` — which minted link led to what, and an estimate of tickets
   per link; click log in `docs/apps-script/Hits.gs`. See `docs/ATTRIBUTION.md`
+- `numbers/` — the "in Numbers" festival report as a link-only slide show; generated
+  from the Slides deck by `tools/build-numbers.py` (edit the deck, re-run — don't hand-edit)
 - `docs/ANOTHER-MACHINE.md` — working from the drive on a new computer
 - `tools/doctor.sh` — checks a machine can carry on (reads only)
 - `docs/JOURNAL.md` — decisions, problems solved, lessons (the project's memory)
