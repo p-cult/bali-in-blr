@@ -77,6 +77,14 @@ const CONFIG = {
   FESTIVAL_START: "2026-10-03",
   FESTIVAL_END: "2026-10-18",
 
+  // Programmes that ran but are not rows of the Event List tab, so they are
+  // not on the calendar. They count in the hero's Events and Venues figures
+  // only (Vinod, 29 Oct 2026: the festival's final tally is 20 events).
+  OFF_LIST_PROGRAMMES: [
+    { title: "Programme at Janaseva", date: "2026-10-08", venue: "Janaseva Vidya Kendra" },
+    { title: "Dance movement workshop", date: "2026-10-18", venue: "Prabhat Kala Poornima Auditorium" },
+  ],
+
   // Click log for the admin attribution dashboard (docs/apps-script/Hits.gs,
   // its own web app so it never competes with signups). Empty = off.
   HITS_URL: "https://script.google.com/macros/s/AKfycbySw_h8TE9s5YtPyHflVDiiKJ07-STcymyybtR_CvkZQmGWM3OOnK7yVuaSVsEkHmHv/exec",
@@ -1720,11 +1728,14 @@ async function renderFestivalDays(allEvents) {
 
 function updateHeroStats(allEvents) {
   const events = allEvents.filter((ev) => !ev.notPublic);
+  const extra = CONFIG.OFF_LIST_PROGRAMMES || [];
   const setNum = (key, val) => {
     const el = document.querySelector('.hero-meta-num[data-stat="' + key + '"]');
     if (el && val != null) el.textContent = val;
   };
-  setNum("events", events.length);
+  // Events: every programme the festival ran, public and private, plus the
+  // ones that are not on the Event List tab.
+  setNum("events", allEvents.length + extra.length);
 
   const times = [];
   events.forEach((ev) => {
@@ -1742,7 +1753,8 @@ function updateHeroStats(allEvents) {
   // Distinct venues, matched case/space-insensitively so "Jagriti Theatre" and
   // "jagriti theatre " count once.
   const venues = new Set();
-  events.forEach((ev) => {
+  // Venues: those of public events, plus the off-list programmes' venues.
+  events.concat(extra).forEach((ev) => {
     const v = (ev.venue || "").trim().toLowerCase();
     if (v) venues.add(v);
   });

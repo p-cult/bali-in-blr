@@ -17,7 +17,7 @@
 .ms .eyebrow { color: var(--gold); }
 .ms-intro { max-width: 46rem; margin: 1rem auto 0; text-align: center; color: var(--muted); font-size: 1.05rem; line-height: 1.6; }
 .ms-grid {
-  display: grid; grid-template-columns: repeat(3, 1fr);
+  display: grid; grid-template-columns: repeat(4, 1fr); /* four figures; events and venues are in the hero */
   gap: 1px; margin: clamp(2rem, 5vw, 3.2rem) 0 0;
   background: var(--line-warm); border: 1px solid var(--line-warm); border-radius: var(--radius);
   overflow: hidden;

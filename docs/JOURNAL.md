@@ -2694,3 +2694,24 @@ inline styles on purpose — an exception to the "no inline styles" rule, so a
 re-run reproduces the deck exactly; the page's own styles are in
 `numbers/numbers.css`. Arrow keys, space, swipe and the buttons move between
 slides; `#5` in the address opens slide 5; printing gives one slide per page.
+
+### 29 Oct 2026 — the final tally: 20 events, 16 venues
+
+Vinod's final count is **20 events**. The Event List tab has 18 rows (16
+public, 2 private: Workshop for Students at Kumarans, A Day in Manipal); two
+more programmes ran but are only on the Programming tab: the Janaseva school
+programme (8 Oct, Janaseva Vidya Kendra) and a dance movement workshop
+(18 Oct, Prabhat Kala Poornima Auditorium). They sit in
+`CONFIG.OFF_LIST_PROGRAMMES` in main.js and count in the hero figures only,
+not on the calendar.
+
+How the hero counts now (this reverses the public-only rule for Events):
+- **Events** = every Event List row, public and private, plus the off-list
+  programmes = 20.
+- **Venues** = venues of public events plus the off-list programmes' venues =
+  16 (Kumarans and Manipal stay out of "venues across the city").
+- **Days** unchanged, 16.
+
+No repeats: the hero sentence no longer carries figures, and Events and
+Venues left the "In numbers" grid (now four figures in one row), so each
+number is stated once, in the hero.
