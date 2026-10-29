@@ -2712,7 +2712,8 @@ How the hero counts now (this reverses the public-only rule for Events):
   16 (Kumarans and Manipal stay out of "venues across the city").
 - **Days** unchanged, 16.
 
-Only the hero numbers changed (Vinod's instruction). The hero sentence
-("Sixteen days, sixteen events and fourteen venues later…") and the
-"In numbers" grid were left as they were; the grid's Events and Venues copy
-the hero's figures, so they read 20 and 16 too.
+No repeats: the hero sentence no longer carries figures, and Events and
+Venues left the "In numbers" grid (now four figures in one row), so each
+number is stated once, in the hero. (Briefly reverted to "hero numbers
+only", then restored at Vinod's word the same day.) The event tiles and
+carousels were not touched.
